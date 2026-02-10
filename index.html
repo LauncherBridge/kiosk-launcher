@@ -1,0 +1,2877 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Mystische Uhr – Theme System + PIN + Google Fotos</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --accent: #b38cff;
+      --text-color: #e0e0e0;
+      --button-bg: rgba(0,0,0,0.3);
+      --button-hover: rgba(255,255,255,0.2);
+      --glow: none;
+      --overlay-color: rgba(0,0,0,0.4);
+
+      --clock-font: 'Cinzel';
+      --clock-size: 80px;
+      --clock-color: #ffffff;
+
+      --date-font: 'Cinzel';
+      --date-size: 32px;
+      --date-color: #ffffff;
+
+      --weather-font: 'Cinzel';
+      --weather-size: 24px;
+      --weather-color: #ffffff;
+    }
+
+    /* THEME: Dark Fantasy */
+    .theme-darkfantasy {
+      --accent: #b38cff;
+      --text-color: #e8e0ff;
+      --button-bg: rgba(0,0,0,0.35);
+      --button-hover: rgba(180,140,255,0.25);
+      --glow: 0 0 12px #b38cff;
+      --overlay-color: rgba(0,0,0,0.55);
+    }
+
+    /* THEME: Cyberpunk Neon */
+    .theme-cyberpunk {
+      --accent: #00f0ff;
+      --text-color: #d0ffff;
+      --button-bg: rgba(0,255,255,0.15);
+      --button-hover: rgba(0,255,255,0.35);
+      --glow: 0 0 14px #00f0ff;
+      --overlay-color: rgba(0,0,0,0.45);
+    }
+
+    /* THEME: Minimal White */
+    .theme-minimal {
+      --accent: #333333;
+      --text-color: #222222;
+      --button-bg: rgba(255,255,255,0.6);
+      --button-hover: rgba(255,255,255,0.9);
+      --glow: none;
+      --overlay-color: rgba(255,255,255,0.2);
+    }
+
+    /* THEME: Nature Soft Green */
+    .theme-nature {
+      --accent: #7fbf7f;
+      --text-color: #e8ffe8;
+      --button-bg: rgba(0,50,0,0.25);
+      --button-hover: rgba(0,80,0,0.35);
+      --glow: 0 0 10px #7fbf7f;
+      --overlay-color: rgba(0,30,0,0.45);
+    }
+
+    /* THEME: Glass Morphism */
+    .theme-glass {
+      --accent: #ffffff;
+      --text-color: #ffffff;
+      --button-bg: rgba(255,255,255,0.15);
+      --button-hover: rgba(255,255,255,0.25);
+      --glow: 0 0 18px rgba(255,255,255,0.6);
+      --overlay-color: rgba(255,255,255,0.1);
+    }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      /*align-items: center;*/
+      background: #000 no-repeat center center fixed;
+      background-size: cover;
+      color: var(--text-color);
+      font-family: 'Cinzel', serif;
+      text-shadow: 2px 2px 6px #000;
+      transition: background-image 1s ease-in-out;
+    }
+
+    /* Übergänge */
+
+/* SLIDE LEFT */
+.bgLayer.slide-left {
+  animation: slideLeft 1s ease forwards;
+}
+@keyframes slideLeft {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+/* SLIDE RIGHT */
+.bgLayer.slide-right {
+  animation: slideRight 1s ease forwards;
+}
+@keyframes slideRight {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0); }
+}
+
+/* SLIDE UP */
+.bgLayer.slide-up {
+  animation: slideUp 1s ease forwards;
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+/* SLIDE DOWN */
+.bgLayer.slide-down {
+  animation: slideDown 1s ease forwards;
+}
+@keyframes slideDown {
+  from { transform: translateY(-100%); }
+  to   { transform: translateY(0); }
+}
+
+/* ZOOM IN */
+.bgLayer.zoom-in {
+  animation: zoomIn 1.2s ease forwards;
+}
+@keyframes zoomIn {
+  from { transform: scale(1.2); }
+  to   { transform: scale(1); }
+}
+
+/* ZOOM OUT */
+.bgLayer.zoom-out {
+  animation: zoomOut 1.2s ease forwards;
+}
+@keyframes zoomOut {
+  from { transform: scale(0.8); }
+  to   { transform: scale(1); }
+}
+
+/* BLUR FADE */
+.bgLayer.blur-fade {
+  animation: blurFade 1.2s ease forwards;
+}
+@keyframes blurFade {
+  0%   { filter: blur(10px); opacity: 0; }
+  100% { filter: blur(0); opacity: 1; }
+}
+
+/* CUT */
+.bgLayer.cut {
+  animation: none;
+}
+
+    /* Overlay */
+    #overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      background-color: var(--overlay-color);
+    }
+
+#bgEngine {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2; /* unter Overlay, über Body */
+  pointer-events: none;
+}
+
+/* Grundzustand */
+.bgLayer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0;
+  transition: transform 1.2s ease, filter 1.2s ease;
+}
+
+/* Fade NUR wenn fade gewählt wurde */
+.bgLayer.fade.visible {
+  opacity: 1;
+  transition: opacity 1.2s ease;
+}
+
+/* Alle anderen Effekte: sofort sichtbar, Animation übernimmt */
+.bgLayer:not(.fade).visible {
+  opacity: 1;
+  transition: none;
+}
+
+    /* Texte – jetzt absolut positioniert, zentriert, skalierbar */
+    #clock, #date, #weather {
+      width: 100%;
+    /*  text-align: center;*/
+      z-index: 10;
+      transition: opacity 0.4s ease;
+      pointer-events: auto;
+    }
+/* TextContainer – stapelt Uhr/Datum/Wetter sauber */
+#textContainer {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  pointer-events: auto;
+  z-index: 10; /* Text unter den Pfeilen */
+  padding-left: 36px;
+
+}
+
+/* Einzeltexte jetzt relativ */
+#clock, #date, #weather {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+  width: auto;
+}
+
+
+
+/* Positionen */
+.text-center {
+  top: 50% !important;
+  left: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+.text-top-left {
+  top: 5% !important;
+  left: 2% !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+}
+
+.text-top-center {
+  top: 5% !important;
+  left: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: translateX(-50%) !important;
+}
+
+.text-top-right {
+  top: 5% !important;
+  right: 2% !important;
+  left: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+}
+
+.text-bottom-left {
+  bottom: 5% !important;
+  left: 2% !important;
+  top: auto !important;
+  right: auto !important;
+  transform: none !important;
+}
+
+.text-bottom-center {
+  bottom: 5% !important;
+  left: 50% !important;
+  top: auto !important;
+  right: auto !important;
+  transform: translateX(-50%) !important;
+}
+
+.text-bottom-right {
+  bottom: 5% !important;
+  right: 2% !important;
+  top: auto !important;
+  left: auto !important;
+  transform: none !important;
+}
+
+.text-middle-left {
+  top: 50% !important;
+  left: 2% !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: translateY(-50%) !important;
+  text-align: left !important;
+}
+
+.text-middle-right {
+  top: 50% !important;
+  right: 2% !important;
+  left: auto !important;
+  bottom: auto !important;
+  transform: translateY(-50%) !important;
+  text-align: right !important;
+}
+
+.align-left {
+  align-items: flex-start !important;
+}
+
+.align-center {
+  align-items: center !important;
+}
+
+.align-right {
+  align-items: flex-end !important;
+}
+
+    #clock {
+      font-size: var(--clock-size);
+      color: var(--clock-color);
+      font-family: var(--clock-font);
+    }
+
+    #date {
+      font-size: var(--date-size);
+      color: var(--date-color);
+      font-family: var(--date-font);
+    }
+
+    #weather {
+      font-size: var(--weather-size);
+      color: var(--weather-color);
+      font-family: var(--weather-font);
+    }
+
+#infoBox {
+  position: absolute;
+  padding: 20px;
+  border-radius: 12px;
+
+
+  /* Anfangszustand: unsichtbar */
+  opacity: 0;
+
+  /* Weiches Ein-/Ausblenden */
+
+  transition: opacity 0.3s ease;
+
+  /* Layering: 
+     - über dem Hintergrund
+     - unter dem Overlay
+     - unter den Texten
+  */
+  z-index: 4;
+background-clip: padding-box;
+
+}
+
+/* … dein kompletter CSS-Code … */
+
+/* PATCH 5 – Body-Background deaktivieren */
+body {
+  background-image: none !important;
+}
+
+/* ============================================================
+   KACHELBAND – LAUNCHER-LEISTE UNTEN
+============================================================ */
+
+/* Untere Leiste mit Pfeilen + Kachelband */
+#bottomBar {
+  position: fixed;
+  bottom: 20px;
+  left: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  z-index: 20;
+}
+
+/* Pfeile dürfen nicht mehr absolute Position haben */
+#navHistory,
+#navCategory {
+  position: static !important;
+}
+
+/* Kachelband zwischen den Pfeilen */
+.tilebar-container {
+  flex: 1;
+  max-width: 60%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding: 10px 0;
+}
+
+.tilebar {
+  display: flex;
+  gap: 16px;
+  padding: 0 16px;
+  opacity: 1;
+  transition: opacity 0.4s ease;
+}
+
+
+.tile {
+  min-width: 140px;
+  height: 140px;
+  background: rgba(0,0,0,0.35);
+opacity: 1; /* inaktiver Zustand */
+  border-radius: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  scroll-snap-align: start;
+  font-size: 18px;
+  color: #fff;
+  backdrop-filter: blur(10px);
+  user-select: none;
+  cursor: pointer;
+  transition:
+  transform 0.15s ease,
+  box-shadow 0.15s ease,
+  background 0.6s ease,
+  opacity 0.4s ease;
+}
+
+
+
+.tiles-colored .tile {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+}
+
+/* Hover-Effekt nur für die berührte Kachel */
+.tile.hovered {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+}
+
+.tiles-colored .tile {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+}
+
+
+.tile.tile-add {
+  font-size: 40px;
+  font-weight: 300;
+}
+
+.panel {
+  position: fixed;
+  bottom: -300px; /* Panel ist versteckt */
+  left: 0;
+  width: 100%;
+  height: 300px;
+  background: rgba(20,20,20,0.95);
+  backdrop-filter: blur(10px);
+  color: white;
+  padding: 20px;
+  box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
+  transition: bottom 0.4s ease;
+  z-index: 999;
+}
+
+.panel.open {
+  bottom: 0; /* Panel fährt hoch */
+}
+
+#panelTitle {
+  font-size: 24px;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+#panelContent {
+  font-size: 18px;
+  opacity: 0.8;
+}
+
+#panelCloseBtn {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  padding: 10px 20px;
+  background: #444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+#panelCloseBtn:hover {
+  background: #666;
+}
+
+.app-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.app-item {
+  background: #333;
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.app-item:hover {
+  background: #555;
+}
+
+
+/* Tabs oben im Settings-Fenster */
+#settingsTabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.settingsTab {
+  flex: 1;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.1);
+  border: none;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.2s ease;
+}
+
+.settingsTab.active {
+  background: rgba(255,255,255,0.25);
+}
+
+.settingsContent {
+  display: none;
+}
+
+.settingsContent.active {
+  display: block;
+}
+
+
+  </style>
+</head>
+<body class="theme-darkfantasy">
+<div id="overlay"></div>
+
+<!-- Hintergrund-Engine -->
+<div id="bgEngine">
+  <div class="bgLayer" id="bgA"></div>
+  <div class="bgLayer" id="bgB"></div>
+</div>
+
+  <style>
+#controls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  z-index: 20;
+  font-size: 1.9em;
+}
+    .controlRow {
+      display: flex;
+      flex-direction: row;
+      gap: 12px;
+    }
+
+    .ctrlBtn {
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.2s, opacity 0.2s, background-color 0.2s, box-shadow 0.2s;
+      opacity: 0.9;
+      padding: 4px 8px;
+      border-radius: 10px;
+      background: var(--button-bg);
+      box-shadow: var(--glow);
+      color: var(--text-color);
+    }
+
+    .ctrlBtn:hover {
+      transform: scale(1.15);
+      opacity: 1;
+      background: var(--button-hover);
+    }
+
+    #masterToggle {
+      margin-top: 6px;
+      align-self: flex-end;
+    }
+
+#masterToggle.master-hidden {
+  opacity: 0.2 !important;
+  transform: none !important;
+  background: rgba(0,0,0,0.1) !important;
+}
+
+
+    .navBtn {
+      cursor: pointer;
+      user-select: none;
+      font-size: 2.2em;
+      opacity: 0.35;
+      padding: 8px 14px;
+      border-radius: 12px;
+      transition:
+        opacity 0.25s ease,
+        transform 0.25s ease,
+        background-color 0.25s ease,
+        box-shadow 0.25s ease;
+      background: rgba(0,0,0,0.15);
+      backdrop-filter: blur(4px);
+      color: var(--text-color);
+    }
+
+    .navBtn:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+      background: rgba(255,255,255,0.08);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+    }
+
+    #navHistory, #navCategory {
+      position: absolute;
+      bottom: 25px;
+      display: flex;
+      gap: 40px;
+      z-index: 20;
+    }
+
+    #navHistory { left: 40px; }
+    #navCategory { right: 40px; }
+
+    #settingsPanel {
+      position: absolute;
+      top: 60px;
+      right: 10px;
+      background: rgba(0,0,0,0.85);
+      padding: 15px;
+      border-radius: 8px;
+      display: none;
+      color: #fff;
+      max-height: 80vh;
+      overflow-y: auto;
+      z-index: 20;
+      min-width: 280px;
+      font-size: 0.9em;
+    }
+
+    label { display:block; margin-top:8px; }
+
+    #favGallery {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+
+    #favGalleryBox {
+      background: #111;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 80%;
+      max-height: 80%;
+      overflow-y: auto;
+      color: white;
+    }
+
+    #favGalleryContent {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, 150px);
+      gap: 15px;
+    }
+
+    .favItem { position: relative; }
+    .favItem img {
+      width: 150px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .favDelete {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: rgba(255,0,0,0.8);
+      padding: 3px 6px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    #fav.active {
+      color: gold;
+      transform: scale(1.2);
+    }
+
+    /* PIN-Dialog */
+    #pinOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    #pinBox {
+      background: #111;
+      padding: 20px 24px;
+      border-radius: 10px;
+      box-shadow: 0 0 18px rgba(0,0,0,0.7);
+      min-width: 260px;
+      color: #fff;
+      font-family: 'Cinzel', serif;
+    }
+
+    #pinBox h3 {
+      margin-top: 0;
+      margin-bottom: 10px;
+    }
+
+    #pinBox input[type="password"] {
+      width: 100%;
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: 1px solid #444;
+      background: #000;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    #pinBox button {
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      background: var(--accent);
+      color: #000;
+      font-weight: bold;
+      margin-right: 6px;
+    }
+
+    #pinError {
+      color: #ff6666;
+      font-size: 0.8em;
+      min-height: 1.2em;
+    }
+  </style>
+<div id="controls">
+
+  <!-- Alle Buttons außer Master -->
+  <div class="controlRow" id="rowAll">
+    <div id="settings" class="ctrlBtn">⚙️</div>
+    <div id="pause" class="ctrlBtn">⏸️</div>
+    <div id="fav" class="ctrlBtn">🌟</div>
+    <div id="toggleText" class="ctrlBtn">👁️</div>
+    <div id="toggleOverlay" class="ctrlBtn">🌓</div>
+    <div id="toggleFullscreen" class="ctrlBtn">⛶</div>
+  </div>
+
+  <!-- Master Toggle separat -->
+  <div id="masterToggle" class="ctrlBtn">🎛️</div>
+
+</div>
+
+<div id="bottomBar">
+  
+  <div id="navHistory">
+    <div id="histPrev" class="navBtn">⟸</div>
+    <div id="histNext" class="navBtn">⟹</div>
+  </div>
+
+  <div class="tilebar-container">
+    <div class="tilebar" id="tilebar"></div>
+  </div>
+
+  <div id="navCategory">
+    <div id="catPrev" class="navBtn">◁</div>
+    <div id="catNext" class="navBtn">▷</div>
+  </div>
+
+</div>
+
+
+  <div id="settingsPanel" class="settings Panel">
+
+  <!-- Tabs oben -->
+  <div id="settingsTabs">
+    <button class="settingsTab active" data-target="generalSettings">Grundeinstellungen</button>
+    <button class="settingsTab" data-target="tileSettings">Kachel</button>
+  </div>
+
+
+
+  <!-- Inhalt: Grundeinstellungen -->
+  <div id="generalSettings" class="settingsContent active">
+
+
+
+    <h3>Kategorien</h3>
+
+    <h4>🌿 Natur & Landschaft</h4>
+    <label><input type="checkbox" class="bgCat" value="forest" checked> Wälder</label>
+    <label><input type="checkbox" class="bgCat" value="mountains"> Berge</label>
+    <label><input type="checkbox" class="bgCat" value="ocean"> Meer</label>
+    <label><input type="checkbox" class="bgCat" value="rivers"> Flüsse & Seen</label>
+    <label><input type="checkbox" class="bgCat" value="desert"> Wüste</label>
+
+    <h4>🌌 Fantasy & Mystik</h4>
+    <label><input type="checkbox" class="bgCat" value="darkmystic"> Düster & Nebel</label>
+    <label><input type="checkbox" class="bgCat" value="fantasy"> Fantasy</label>
+    <label><input type="checkbox" class="bgCat" value="space"> Weltraum</label>
+    <label><input type="checkbox" class="bgCat" value="dreamy"> Traumhaft</label>
+
+    <h4>🌆 Urban & Modern</h4>
+    <label><input type="checkbox" class="bgCat" value="citynight"> Stadt bei Nacht</label>
+    <label><input type="checkbox" class="bgCat" value="architecture"> Architektur</label>
+    <label><input type="checkbox" class="bgCat" value="street"> Street Photography</label>
+
+    <h4>🔥 Elemente & Energie</h4>
+    <label><input type="checkbox" class="bgCat" value="firelight"> Feuer & Licht</label>
+    <label><input type="checkbox" class="bgCat" value="storm"> Sturm</label>
+    <label><input type="checkbox" class="bgCat" value="aurora"> Polarlichter</label>
+
+    <h4>🧪 Futuristisch & Sci‑Fi</h4>
+    <label><input type="checkbox" class="bgCat" value="cyberpunk"> Cyberpunk</label>
+    <label><input type="checkbox" class="bgCat" value="technology"> Technologie</label>
+    <label><input type="checkbox" class="bgCat" value="scifi"> Sci‑Fi</label>
+
+    <h4>🎨 Kunst & Abstrakt</h4>
+    <label><input type="checkbox" class="bgCat" value="abstract"> Abstrakt</label>
+    <label><input type="checkbox" class="bgCat" value="minimal"> Minimalistisch</label>
+    <label><input type="checkbox" class="bgCat" value="geometric"> Geometrisch</label>
+
+    <h4>Übergangseffekt</h4>
+    <select id="transitionEffect">
+      <option value="fade">Weiches Überblenden</option>
+      <option value="slide-left">Slide nach links</option>
+      <option value="slide-right">Slide nach rechts</option>
+      <option value="slide-up">Slide nach oben</option>
+      <option value="slide-down">Slide nach unten</option>
+      <option value="zoom-in">Zoom In</option>
+      <option value="zoom-out">Zoom Out</option>
+      <option value="blur-fade">Blur + Fade</option>
+      <option value="cut">Sofortiger Wechsel</option>
+      <option value="random">Zufällig</option>
+    </select>
+
+    <label>Hintergrundwechsel alle (Minuten):
+      <input type="number" id="bgInterval" value="5">
+    </label>
+
+    <h4>Overlay</h4>
+    <label>Overlay-Farbe:
+      <input type="color" id="overlayColor" value="#000000">
+    </label>
+    <label>Overlay-Transparenz (0–1):
+      <input type="number" id="overlayOpacity" step="0.1" min="0" max="1" value="0.3">
+    </label>
+
+    <h4>🕒 Uhrzeit – Schrift</h4>
+    <label>Schriftart:
+      <select id="fontClock"></select>
+    </label>
+    <label>Größe (px):
+      <input type="number" id="sizeClock" value="80">
+    </label>
+    <label>Farbe:
+      <input type="color" id="colorClock" value="#ffffff">
+    </label>
+
+    <h4>📅 Datum – Schrift</h4>
+    <label>Schriftart:
+      <select id="fontDate"></select>
+    </label>
+    <label>Größe (px):
+      <input type="number" id="sizeDate" value="32">
+    </label>
+    <label>Farbe:
+      <input type="color" id="colorDate" value="#ffffff">
+    </label>
+
+    <h4>🌦️ Wetter – Schrift</h4>
+    <label>Schriftart:
+      <select id="fontWeather"></select>
+    </label>
+    <label>Größe (px):
+      <input type="number" id="sizeWeather" value="24">
+    </label>
+    <label>Farbe:
+      <input type="color" id="colorWeather" value="#ffffff">
+    </label>
+
+    <h4>Weitere Optionen</h4>
+    <label><input type="checkbox" id="showSeconds"> Sekunden anzeigen</label>
+    <label><input type="checkbox" id="syncColors"> Schriftfarbe gemeinsam ändern</label>
+
+<h4>Textposition</h4>
+<select id="textPosition">
+  <option value="text-top-left">Oben links</option>
+  <option value="text-top-center">Oben Mitte</option>
+  <option value="text-top-right">Oben rechts</option>
+<option value="text-middle-left">Mitte links</option>
+  <option value="text-center">Mitte</option>
+<option value="text-middle-right">Mitte rechts</option>
+  <option value="text-bottom-left">Unten links</option>
+  <option value="text-bottom-center">Unten Mitte</option>
+  <option value="text-bottom-right">Unten rechts</option>
+</select>
+
+<label for="infoBoxColor">Infotafel-Farbe:</label>
+<input type="color" id="infoBoxColor">
+<label for="infoBoxDuration">Infotafel-Dauer (ms):</label>
+<input type="number" id="infoBoxDuration" min="500" max="10000" step="100">
+<label>
+  <input type="checkbox" id="infoBoxAlwaysVisible">
+  Infotafel immer anzeigen
+</label>
+
+<label>Transparenz:</label>
+<input type="range" id="infoBoxOpacity" min="0" max="1" step="0.01">
+
+<!-- Glow aktivieren -->
+<label>
+  <input type="checkbox" id="infoBoxGlowEnable">
+  Glow aktivieren
+</label>
+
+<!-- Glow-Stärke -->
+<label for="infoBoxGlowStrength">Glow-Stärke:</label>
+<input type="range" id="infoBoxGlowStrength" min="0" max="50" step="1">
+
+<!-- Blur aktivieren -->
+<label>
+  <input type="checkbox" id="infoBoxBlurEnable">
+  Blur aktivieren
+</label>
+
+<!-- Blur-Stärke -->
+<label for="infoBoxBlurStrength">Blur-Stärke:</label>
+<input type="range" id="infoBoxBlurStrength" min="0" max="20" step="1">
+
+    <h4>Theme</h4>
+    <select id="themeSelect">
+      <option value="darkfantasy">Dark Fantasy</option>
+      <option value="cyberpunk">Cyberpunk Neon</option>
+      <option value="minimal">Minimal White</option>
+      <option value="nature">Nature Soft Green</option>
+      <option value="glass">Glass Morphism</option>
+    </select>
+
+    <h3>Bildquellen</h3>
+    <label><input type="checkbox" id="useUnsplash" checked> Unsplash verwenden</label>
+
+    <h4>Google Fotos – Ordner 1</h4>
+    <label>Freigabelink:
+      <input type="text" id="gAlbum1Url" placeholder="https://photos.app.goo.gl/..." />
+    </label>
+    <label><input type="checkbox" id="useGAlbum1"> Bilder aus Ordner 1 verwenden</label>
+
+    <h4>Google Fotos – Ordner 2</h4>
+    <label>Freigabelink:
+      <input type="text" id="gAlbum2Url" placeholder="https://photos.app.goo.gl/..." />
+    </label>
+    <label><input type="checkbox" id="useGAlbum2"> Bilder aus Ordner 2 verwenden</label>
+
+    <h3>❤️ Favoriten</h3>
+    <label><input type="checkbox" id="favMode"> Nur Favoriten anzeigen</label>
+    <button id="openFavGallery">Favoriten anzeigen</button>
+
+    <h3>🔐 PIN für Vollbild verlassen</h3>
+    <label>Neue PIN:
+      <input type="password" id="pinNew">
+    </label>
+    <label>PIN bestätigen:
+      <input type="password" id="pinConfirm">
+    </label>
+    <button id="savePinBtn">PIN speichern</button>
+<small style="display:block;margin-top:4px;opacity:0.8;">
+  Wird als Hash lokal gespeichert.<br>
+  Ohne korrekte PIN kann der<br>Vollbildmodus nicht verlassen werden.
+</small>
+  </div>
+
+
+
+  <!-- Inhalt: Kachel-Einstellungen -->
+  <div id="tileSettings" class="settingsContent">
+    <h2>Kachel‑Einstellungen</h2>
+    <div id="tileSettingsContent"></div>
+  </div>
+
+</div>
+
+
+
+
+<div id="textContainer">
+  <div id="clock"></div>
+  <div id="date"></div>
+  <div id="weather">Wetter wird geladen...</div>
+</div>
+
+<div id="infoBox"></div>
+
+
+  <div id="favGallery">
+    <div id="favGalleryBox">
+      <h3>Deine Favoriten</h3>
+      <div id="favGalleryContent"></div>
+      <button onclick="closeFavoritesGallery()">Schließen</button>
+    </div>
+  </div>
+
+  <div id="pinOverlay">
+    <div id="pinBox">
+      <h3>PIN eingeben</h3>
+      <input type="password" id="pinInput" placeholder="PIN">
+      <div id="pinError"></div>
+      <button id="pinOkBtn">OK</button>
+      <button id="pinCancelBtn">Abbrechen</button>
+    </div>
+</div>
+<!-- Kachelband unten -->
+<div class="tilebar-container">
+  <div class="tilebar" id="tilebar"></div>
+
+  </div>
+
+<div id="categoryPanel" class="panel">
+  <div id="panelTitle"></div>
+  <div id="panelContent"></div>
+  <button id="panelCloseBtn">Schließen</button>
+</div>
+
+<script>
+/* ============================================================
+   KONSTANTEN & GRUNDSTRUKTUR
+============================================================ */
+
+const UNSPLASH_KEY = "UKjVnBbe0BHcVbsEW_qLZsa7JgjT3QCk2Wm2-Ne4vSE";
+
+const allEffects = [
+  "fade",
+  "slide-left",
+  "slide-right",
+  "slide-up",
+  "slide-down",
+  "zoom-in",
+  "zoom-out",
+  "blur-fade",
+  "cut"
+];
+
+
+let settingsOpen = false;
+
+let currentImageList = [];
+let currentImageIndex = 0;
+
+let history = [];
+let historyIndex = -1;
+
+let favorites = [];
+let favMode = false;
+
+let bgInterval = 5;
+let bgTimer;
+let bgPaused = false;
+
+let textVisible = true;
+let overlayEnabled = true;
+let syncColors = false;
+let showSeconds = false;
+
+let masterFadeTimer;
+let wereButtonsVisible = true;
+
+/* Bildquellen-Flags */
+let useUnsplash = true;
+let useGAlbum1 = false;
+let useGAlbum2 = false;
+
+/* Google Fotos – Bildlisten */
+let gAlbum1Images = [];
+let gAlbum2Images = [];
+
+/* PIN-Hash */
+let storedPinHash = null;
+let fullscreenLockActive = true;
+let pendingExitFullscreen = false;
+
+/* PIN-Schutz für Google-Links */
+let googleEditUnlocked = false;
+
+
+let categories = [
+  { id: "media",  name: "Media",       type: "apps",         color: "#444444" },
+  { id: "games",  name: "Games",       type: "apps",         color: "#444444" },
+  { id: "home",   name: "Smart Home",  type: "smart_home",   color: "#444444" },
+  { id: "alarm",  name: "Alarm System", type: "alarm_system", color: "#444444" }
+];
+function saveCategories() {
+  localStorage.setItem("categories", JSON.stringify(categories));
+}
+
+function loadCategories() {
+  const saved = localStorage.getItem("categories");
+  if (saved) categories = JSON.parse(saved);
+}
+const imageCache = {};
+const cacheTimestamp = {};
+const CACHE_REFRESH_INTERVAL = 60 * 60 * 1000;
+
+
+
+
+const categoryQueries = {
+  forest: "forest woods fog trees",
+  mountains: "mountains alpine snow peaks",
+  ocean: "ocean sea waves coast",
+  rivers: "river lake water reflections",
+  desert: "desert dunes sand landscape",
+
+  darkmystic: "dark forest fog mystical moody",
+  fantasy: "fantasy magic surreal enchanted",
+  space: "space galaxy nebula stars",
+  dreamy: "dreamy ethereal soft light",
+
+  citynight: "city night skyline neon",
+  architecture: "architecture minimal modern building",
+  street: "street photography urban life",
+
+  firelight: "fire flames warm light",
+  storm: "storm lightning dramatic sky",
+  aurora: "aurora borealis northern lights",
+
+  cyberpunk: "cyberpunk neon futuristic",
+  technology: "technology circuit futuristic",
+  scifi: "sci-fi futuristic alien world",
+
+  abstract: "abstract shapes colors art",
+  minimal: "minimal abstract pastel",
+  geometric: "geometric shapes pattern symmetry"
+};
+
+/* ============================================================
+   PERSISTENZ
+============================================================ */
+
+function saveSetting(key, value) {
+  localStorage.setItem(key, value);
+}
+
+function loadSetting(key) {
+  return localStorage.getItem(key);
+}
+
+/* ============================================================
+   THEME-SYSTEM
+============================================================ */
+
+function setTheme(name) {
+  document.body.classList.remove(
+    "theme-darkfantasy",
+    "theme-cyberpunk",
+    "theme-minimal",
+    "theme-nature",
+    "theme-glass"
+  );
+  document.body.classList.add("theme-" + name);
+  saveSetting("theme", name);
+}
+
+/* ============================================================
+   API & CACHING – UNSPLASH
+============================================================ */
+
+async function loadImagesFromAPI(category) {
+  try {
+    const query = categoryQueries[category];
+    const url =
+      `https://api.unsplash.com/search/photos?query=${query}` +
+      `&per_page=30&orientation=landscape&client_id=${UNSPLASH_KEY}`;
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (!data.results) return [];
+
+    return data.results.map(img => img.urls.full);
+  } catch {
+    return [];
+  }
+}
+
+async function getImages(category) {
+  const now = Date.now();
+
+  if (imageCache[category] && (now - cacheTimestamp[category] < CACHE_REFRESH_INTERVAL)) {
+    return imageCache[category];
+  }
+
+  const imgs = await loadImagesFromAPI(category);
+  imageCache[category] = imgs;
+  cacheTimestamp[category] = now;
+
+  return imgs;
+}
+
+/* ============================================================
+   GOOGLE FOTOS – FREIGABELINK-BASIERTE BILDER
+============================================================ */
+
+async function loadGoogleAlbumImages(sharedUrl) {
+  if (!sharedUrl) return [];
+
+  try {
+    const resp = await fetch(sharedUrl);
+    const html = await resp.text();
+
+    const urls = [];
+    const regex = /"(https:\/\/lh3\.googleusercontent\.com\/[^"]+)"/g;
+    let match;
+    while ((match = regex.exec(html)) !== null) {
+      const u = match[1];
+      if (!urls.includes(u)) urls.push(u);
+    }
+
+    return urls;
+  } catch {
+    return [];
+  }
+}
+
+/* ============================================================
+   HISTORY-SYSTEM
+============================================================ */
+
+let activeBg = "A";
+
+function showImage(url) {
+  const next = activeBg === "A" ? "B" : "A";
+
+  const nextLayer = document.getElementById("bg" + next);
+  const currentLayer = document.getElementById("bg" + activeBg);
+
+let effect = loadSetting("transitionEffect") || "fade";
+
+if (effect === "random") {
+  effect = allEffects[Math.floor(Math.random() * allEffects.length)];
+}
+
+// SCHRITT 4 – Klick-Events für Uhr, Datum und Wetter
+document.getElementById("clock").addEventListener("click", showInfoBox);
+document.getElementById("date").addEventListener("click", showInfoBox);
+document.getElementById("weather").addEventListener("click", showInfoBox);
+
+/*Infobox*/
+
+document.getElementById("infoBoxDuration").addEventListener("change", e => {
+  saveSetting("infoBoxDuration", parseInt(e.target.value));
+});
+document.getElementById("infoBoxColor").addEventListener("input", e => {
+  saveSetting("infoBoxColor", e.target.value);
+  updateInfoBoxStyles();
+});
+
+document.getElementById("infoBoxDuration").addEventListener("input", e => {
+  saveSetting("infoBoxDuration", e.target.value);
+});
+
+document.getElementById("infoBoxOpacity").addEventListener("input", e => {
+  saveSetting("infoBoxOpacity", e.target.value);
+  updateInfoBoxStyles();
+});
+
+document.getElementById("infoBoxGlowEnable").addEventListener("change", e => {
+  saveSetting("infoBoxGlowEnable", e.target.checked);
+  updateInfoBoxStyles();
+});
+
+document.getElementById("infoBoxGlowStrength").addEventListener("input", e => {
+  saveSetting("infoBoxGlowStrength", e.target.value);
+  updateInfoBoxStyles();
+});
+
+document.getElementById("infoBoxBlurEnable").addEventListener("change", e => {
+  saveSetting("infoBoxBlurEnable", e.target.checked);
+  updateInfoBoxStyles();
+});
+
+document.getElementById("infoBoxBlurStrength").addEventListener("input", e => {
+  saveSetting("infoBoxBlurStrength", e.target.value);
+  updateInfoBoxStyles();
+});
+
+document.getElementById("infoBoxAlwaysVisible").addEventListener("change", e => {
+  saveSetting("infoBoxAlwaysVisible", e.target.checked);
+  updateInfoBoxStyles();
+});
+
+
+
+
+
+
+  const img = new Image();
+  img.src = url;
+
+  img.onload = () => {
+    nextLayer.style.backgroundImage = `url('${url}')`;
+
+// Animation neu starten
+nextLayer.classList.remove("slide-left","slide-right","slide-up","slide-down",
+                           "zoom-in","zoom-out","blur-fade","cut","fade");
+void nextLayer.offsetWidth; // Reflow erzwingen
+nextLayer.classList.add(effect); // Effekt neu setzen
+
+// Sichtbarkeit umschalten
+nextLayer.classList.add("visible");
+currentLayer.classList.remove("visible");
+
+    activeBg = next;
+  };
+
+  img.onerror = () => {
+    nextLayer.style.backgroundImage = `url('${url}')`;
+
+    nextLayer.classList.add("visible");
+    currentLayer.classList.remove("visible");
+
+    activeBg = next;
+  };
+}
+
+function pushToHistory(url) {
+  if (historyIndex < history.length - 1) {
+    history = history.slice(0, historyIndex + 1);
+  }
+
+  history.push(url);
+  historyIndex = history.length - 1;
+}
+
+/* ============================================================
+   HINTERGRUND & TRANSITION
+============================================================ */
+
+function getSelectedCategories() {
+  return [...document.querySelectorAll('.bgCat:checked')].map(cb => cb.value);
+}
+
+function applyTransitionEffect() {
+  let effect = loadSetting("transitionEffect") || "fade";
+
+  // Wenn "random" gewählt ist, hier einmalig einen Effekt ziehen
+  if (effect === "random") {
+    effect = allEffects[Math.floor(Math.random() * allEffects.length)];
+  }
+
+  document.querySelectorAll(".bgLayer").forEach(layer => {
+    layer.classList.remove(
+      "fade","slide-left","slide-right","slide-up","slide-down",
+      "zoom-in","zoom-out","blur-fade","cut"
+    );
+    layer.classList.add(effect);
+  });
+}
+
+/* Quelle wählen: Unsplash / GAlbum1 / GAlbum2 */
+function getActiveSources() {
+  const sources = [];
+  if (useUnsplash) sources.push("unsplash");
+  if (useGAlbum1 && gAlbum1Images.length > 0) sources.push("galbum1");
+  if (useGAlbum2 && gAlbum2Images.length > 0) sources.push("galbum2");
+  return sources;
+}
+
+function pickRandom(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+async function changeBackground() {
+  if (bgPaused) return;
+
+  applyTransitionEffect();
+
+  if (favMode) {
+    if (favorites.length === 0) return;
+
+    currentImageList = [...favorites];
+    currentImageIndex = Math.floor(Math.random() * favorites.length);
+
+    const url = currentImageList[currentImageIndex];
+    showImage(url);
+    pushToHistory(url);
+    updateFavButton();
+    return;
+  }
+
+  const activeSources = getActiveSources();
+  if (activeSources.length === 0) return;
+
+  const source = pickRandom(activeSources);
+
+  if (source === "galbum1") {
+    currentImageList = gAlbum1Images;
+  } else if (source === "galbum2") {
+    currentImageList = gAlbum2Images;
+  } else {
+    const selected = getSelectedCategories();
+    if (selected.length === 0) return;
+
+    const results = await Promise.all(selected.map(getImages));
+    currentImageList = results.flat();
+  }
+
+  if (!currentImageList || currentImageList.length === 0) return;
+
+  currentImageIndex = Math.floor(Math.random() * currentImageList.length);
+
+  const url = currentImageList[currentImageIndex];
+  showImage(url);
+  pushToHistory(url);
+  updateFavButton();
+}
+/* ============================================================
+   KATEGORIE-NAVIGATION
+============================================================ */
+
+function catNextImage() {
+  if (!currentImageList.length) return;
+
+  currentImageIndex = (currentImageIndex + 1) % currentImageList.length;
+
+  const url = currentImageList[currentImageIndex];
+  showImage(url);
+  updateFavButton();
+}
+
+function catPrevImage() {
+  if (!currentImageList.length) return;
+
+  currentImageIndex = (currentImageIndex - 1 + currentImageList.length) % currentImageList.length;
+
+  const url = currentImageList[currentImageIndex];
+  showImage(url);
+  updateFavButton();
+}
+
+/* ============================================================
+   HISTORY-NAVIGATION
+============================================================ */
+
+function histPrevImage() {
+  if (historyIndex > 0) {
+    historyIndex--;
+    const url = history[historyIndex];
+    showImage(url);
+    updateFavButton();
+  }
+}
+
+function histNextImage() {
+  if (historyIndex < history.length - 1) {
+    historyIndex++;
+    const url = history[historyIndex];
+    showImage(url);
+    updateFavButton();
+  }
+}
+
+/* ============================================================
+   FAVORITEN
+============================================================ */
+
+function saveFavorites() {
+  localStorage.setItem("favorites", JSON.stringify(favorites));
+}
+
+function loadFavorites() {
+  favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+}
+
+function updateFavButton() {
+  const favBtn = document.getElementById("fav");
+  const currentUrl = history[historyIndex];
+
+  if (!currentUrl) {
+    favBtn.classList.remove("active");
+    return;
+  }
+
+  favBtn.classList.toggle("active", favorites.includes(currentUrl));
+}
+
+function toggleFavorite() {
+  const url = history[historyIndex];
+  if (!url) return;
+
+  if (favorites.includes(url)) {
+    favorites = favorites.filter(f => f !== url);
+  } else {
+    favorites.push(url);
+  }
+
+  saveFavorites();
+  updateFavButton();
+}
+
+/* ============================================================
+   FAVORITEN-GALERIE
+============================================================ */
+
+function openFavoritesGallery() {
+  renderFavoritesGallery();
+  document.getElementById("favGallery").style.display = "flex";
+}
+
+function closeFavoritesGallery() {
+  document.getElementById("favGallery").style.display = "none";
+}
+
+function renderFavoritesGallery() {
+  const container = document.getElementById("favGalleryContent");
+  container.innerHTML = "";
+
+  favorites.forEach((img, index) => {
+    const item = document.createElement("div");
+    item.className = "favItem";
+
+    const image = document.createElement("img");
+    image.src = img;
+
+    image.onclick = () => {
+      showImage(img);
+      pushToHistory(img);
+      updateFavButton();
+      closeFavoritesGallery();
+    };
+
+    const del = document.createElement("div");
+    del.className = "favDelete";
+    del.textContent = "❌";
+
+    del.onclick = () => {
+      favorites.splice(index, 1);
+      saveFavorites();
+      renderFavoritesGallery();
+      updateFavButton();
+    };
+
+    item.appendChild(image);
+    item.appendChild(del);
+    container.appendChild(item);
+  });
+}
+
+/* ============================================================
+   OVERLAY
+============================================================ */
+
+function updateOverlay() {
+  const colorInput = document.getElementById("overlayColor").value;
+  const opacity = document.getElementById("overlayOpacity").value;
+  const overlay = document.getElementById("overlay");
+
+  const baseColor = colorInput || getComputedStyle(document.body).getPropertyValue("--overlay-color");
+  overlay.style.backgroundColor = baseColor;
+  overlay.style.opacity = opacity;
+  overlay.style.display = overlayEnabled ? "block" : "none";
+}
+
+function toggleOverlay() {
+  overlayEnabled = !overlayEnabled;
+  updateOverlay();
+  saveSetting("overlayEnabled", overlayEnabled ? "true" : "false");
+}
+
+/* ============================================================
+   TEXT-TOGGLE
+============================================================ */
+
+function toggleText() {
+  textVisible = !textVisible;
+
+  const opacity = textVisible ? "1" : "0";
+
+  document.getElementById("clock").style.opacity = opacity;
+  document.getElementById("date").style.opacity = opacity;
+  document.getElementById("weather").style.opacity = opacity;
+
+  saveSetting("textVisible", textVisible ? "true" : "false");
+}
+
+/* ============================================================
+   MASTER-TOGGLE
+============================================================ */
+
+function toggleMaster() {
+  const row = document.getElementById("rowAll");
+  const master = document.getElementById("masterToggle");
+
+  const hidden = row.style.display === "none";
+
+  // Buttons ein-/ausblenden
+  row.style.display = hidden ? "flex" : "none";
+
+  // Master bleibt IMMER sichtbar
+  if (hidden) {
+    master.classList.remove("master-hidden");
+  } else {
+    master.classList.add("master-hidden");
+  }
+
+  saveSetting("masterHidden", hidden ? "false" : "true");
+
+resetMasterFadeTimer();
+
+}
+
+function resetMasterFadeTimer() {
+  const row = document.getElementById("rowAll");
+  const master = document.getElementById("masterToggle");
+
+  // Master sofort sichtbar machen
+  master.classList.remove("master-hidden");
+
+  clearTimeout(masterFadeTimer);
+
+masterFadeTimer = setTimeout(() => {
+  if (!settingsOpen) {
+    row.style.display = "none";
+    master.classList.add("master-hidden");
+  }
+}, 30000);
+}
+
+
+/* ============================================================
+   VOLLbild
+============================================================ */
+
+function enterFullscreen() {
+  const elem = document.documentElement;
+  if (elem.requestFullscreen) elem.requestFullscreen();
+}
+
+function exitFullscreen() {
+  if (document.exitFullscreen) document.exitFullscreen();
+}
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    fullscreenLockActive = true;
+    enterFullscreen();
+  } else {
+    if (storedPinHash) {
+      pendingExitFullscreen = true;
+      showPinDialog();
+    } else {
+      fullscreenLockActive = false;
+      exitFullscreen();
+    }
+  }
+}
+
+/* ============================================================
+   GOOGLE-FONTS + LIVE-VORSCHAU
+============================================================ */
+
+const availableFonts = [
+  "Cinzel","Cormorant Garamond","UnifrakturCook","Roboto","Playfair Display",
+  "Raleway","Lobster","Indie Flower","Orbitron","Press Start 2P","Montserrat",
+  "Oswald","Merriweather","Lato","Poppins","Nunito","Bebas Neue","Dancing Script",
+  "Fira Sans","Josefin Sans","Kanit","Quicksand","Rubik","Saira","Teko",
+  "Titillium Web","Arimo","Cabin","Exo","Karla","Manrope","Mukta","Noto Sans",
+  "Open Sans","PT Sans","Source Sans 3","Ubuntu","Varela Round","Zilla Slab"
+];
+
+const loadedFonts = new Set();
+
+function loadGoogleFont(font) {
+  if (loadedFonts.has(font)) return;
+  loadedFonts.add(font);
+
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = `https://fonts.googleapis.com/css2?family=${font.replace(/ /g, '+')}&display=swap`;
+  document.head.appendChild(link);
+}
+
+function populateFontSelectors() {
+  const selects = [
+    document.getElementById("fontClock"),
+    document.getElementById("fontDate"),
+    document.getElementById("fontWeather")
+  ];
+
+  availableFonts.forEach(font => {
+    loadGoogleFont(font);
+
+    const optionTemplate = document.createElement("option");
+    optionTemplate.value = font;
+    optionTemplate.textContent = font;
+    optionTemplate.style.fontFamily = font;
+
+    selects.forEach(sel => {
+      sel.appendChild(optionTemplate.cloneNode(true));
+    });
+  });
+
+  ["fontClock","fontDate","fontWeather"].forEach(id => {
+    const saved = loadSetting(id);
+    if (saved) {
+      const el = document.getElementById(id);
+      el.value = saved;
+      el.style.fontFamily = saved;
+    }
+  });
+}
+/* ============================================================
+   SCHRIFT-STYLES + SYNC-FARBEN
+============================================================ */
+
+function applyTextStyles() {
+  const clockFont = loadSetting("fontClock") || "Cinzel";
+  const clockSize = loadSetting("sizeClock") || 80;
+  const clockColor = loadSetting("colorClock") || "#ffffff";
+
+  const dateFont = loadSetting("fontDate") || "Cinzel";
+  const dateSize = loadSetting("sizeDate") || 32;
+  const dateColor = loadSetting("colorDate") || "#ffffff";
+
+  const weatherFont = loadSetting("fontWeather") || "Cinzel";
+  const weatherSize = loadSetting("sizeWeather") || 24;
+  const weatherColor = loadSetting("colorWeather") || "#ffffff";
+
+  loadGoogleFont(clockFont);
+  loadGoogleFont(dateFont);
+  loadGoogleFont(weatherFont);
+
+  document.documentElement.style.setProperty("--clock-font", clockFont);
+  document.documentElement.style.setProperty("--clock-size", clockSize + "px");
+  document.documentElement.style.setProperty("--clock-color", clockColor);
+
+  document.documentElement.style.setProperty("--date-font", dateFont);
+  document.documentElement.style.setProperty("--date-size", dateSize + "px");
+  document.documentElement.style.setProperty("--date-color", dateColor);
+
+  document.documentElement.style.setProperty("--weather-font", weatherFont);
+  document.documentElement.style.setProperty("--weather-size", weatherSize + "px");
+  document.documentElement.style.setProperty("--weather-color", weatherColor);
+}
+
+/* ============================================================
+   EVENTS FÜR SCHRIFTÄNDERUNGEN
+============================================================ */
+
+function setupTextStyleEvents() {
+  const map = [
+    ["fontClock", "fontClock"],
+    ["sizeClock", "sizeClock"],
+    ["colorClock", "colorClock"],
+
+    ["fontDate", "fontDate"],
+    ["sizeDate", "sizeDate"],
+    ["colorDate", "colorDate"],
+
+    ["fontWeather", "fontWeather"],
+    ["sizeWeather", "sizeWeather"],
+    ["colorWeather", "colorWeather"]
+  ];
+
+  map.forEach(([id, key]) => {
+    const el = document.getElementById(id);
+
+    el.oninput = e => {
+      const value = e.target.value;
+
+      if (syncColors && key.includes("color")) {
+        if (id !== "colorClock") return;
+
+        saveSetting("colorClock", value);
+        saveSetting("colorDate", value);
+        saveSetting("colorWeather", value);
+
+        document.getElementById("colorClock").value = value;
+        document.getElementById("colorDate").value = value;
+        document.getElementById("colorWeather").value = value;
+      } else {
+        saveSetting(key, value);
+      }
+
+      if (key.includes("font")) {
+        loadGoogleFont(value);
+        e.target.style.fontFamily = value;
+      }
+
+      applyTextStyles();
+    };
+  });
+}
+
+/*============================================================
+ Box definieren für Info Center
+============================================================
+*/
+function showInfoBox() {
+  const box = document.getElementById("infoBox");
+  const container = document.getElementById("textContainer");
+
+  const rect = container.getBoundingClientRect();
+// Wenn die Box dauerhaft sichtbar sein soll → sofort anzeigen und Funktion verlassen
+const alwaysVisible = loadSetting("infoBoxAlwaysVisible") === "true";
+if (alwaysVisible) {
+  box.style.opacity = 1;
+  box.style.display = "block"; // falls du display nutzt
+}
+  box.style.left = rect.left + "px";
+  box.style.top = rect.top + "px";
+  box.style.width = rect.width + "px";
+  box.style.height = rect.height + "px";
+
+  box.style.willChange = "opacity, box-shadow, backdrop-filter";
+
+  // Farbe + Transparenz laden
+  const baseColor = loadSetting("infoBoxColor") || "#000000";
+  const opacityValue = parseFloat(loadSetting("infoBoxOpacity") || 0.4);
+
+  // HEX → RGB
+  function hexToRgb(hex) {
+    const bigint = parseInt(hex.replace("#", ""), 16);
+    return {
+      r: (bigint >> 16) & 255,
+      g: (bigint >> 8) & 255,
+      b: bigint & 255
+    };
+  }
+
+  const rgb = hexToRgb(baseColor);
+
+  // RGBA anwenden
+  box.style.background = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacityValue})`;
+
+  // --- GLOW ---
+  const glowEnabled = loadSetting("infoBoxGlowEnable") === "true";
+  const glowStrength = parseInt(loadSetting("infoBoxGlowStrength") || 20);
+
+  if (glowEnabled) {
+    // Glow in der Farbe der Box
+    box.style.boxShadow = `0 0 ${glowStrength}px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.6)`;
+  } else {
+    box.style.boxShadow = "none";
+  }
+
+  // --- BLUR ---
+  const blurEnabled = loadSetting("infoBoxBlurEnable") === "true";
+  const blurStrength = parseInt(loadSetting("infoBoxBlurStrength") || 6);
+
+  if (blurEnabled) {
+    box.style.backdropFilter = `blur(${blurStrength}px)`;
+    box.style.webkitBackdropFilter = `blur(${blurStrength}px)`; // Safari
+  } else {
+    box.style.backdropFilter = "none";
+    box.style.webkitBackdropFilter = "none";
+  }
+
+  // Box einblenden
+  box.style.opacity = 1;
+
+  // Dauer
+  const duration = loadSetting("infoBoxDuration") || 3000;
+
+// Nur ausblenden, wenn nicht dauerhaft sichtbar
+if (!alwaysVisible) {
+  clearTimeout(window.infoBoxTimeout);
+  window.infoBoxTimeout = setTimeout(() => {
+    box.style.opacity = 0;
+  }, duration);
+}
+}
+
+function updateInfoBoxStyles() {
+  const box = document.getElementById("infoBox");
+  if (!box) return;
+
+  // Position & Größe aktualisieren
+  const container = document.getElementById("textContainer");
+  const rect = container.getBoundingClientRect();
+  box.style.left = rect.left + "px";
+  box.style.top = rect.top + "px";
+  box.style.width = rect.width + "px";
+  box.style.height = rect.height + "px";
+
+  // Farbe + Transparenz
+  const baseColor = loadSetting("infoBoxColor") || "#000000";
+  const opacityValue = parseFloat(loadSetting("infoBoxOpacity") || 0.4);
+
+  function hexToRgb(hex) {
+    const bigint = parseInt(hex.replace("#", ""), 16);
+    return {
+      r: (bigint >> 16) & 255,
+      g: (bigint >> 8) & 255,
+      b: bigint & 255
+    };
+  }
+
+  const rgb = hexToRgb(baseColor);
+  box.style.background = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacityValue})`;
+
+  // Glow
+  const glowEnabled = loadSetting("infoBoxGlowEnable") === "true";
+  const glowStrength = parseInt(loadSetting("infoBoxGlowStrength") || 20);
+
+  if (glowEnabled) {
+    box.style.boxShadow = `0 0 ${glowStrength}px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.6)`;
+  } else {
+    box.style.boxShadow = "none";
+  }
+
+  // Blur
+  const blurEnabled = loadSetting("infoBoxBlurEnable") === "true";
+  const blurStrength = parseInt(loadSetting("infoBoxBlurStrength") || 6);
+
+  if (blurEnabled) {
+    box.style.backdropFilter = `blur(${blurStrength}px)`;
+    box.style.webkitBackdropFilter = `blur(${blurStrength}px)`;
+  } else {
+    box.style.backdropFilter = "none";
+    box.style.webkitBackdropFilter = "none";
+  }
+
+  // Wenn Box dauerhaft sichtbar → sofort anzeigen
+  if (loadSetting("infoBoxAlwaysVisible") === "true") {
+    box.style.opacity = 1;
+    box.style.display = "block";
+  }
+}
+
+
+
+/* ============================================================
+   UHR & DATUM
+============================================================ */
+
+function updateClock() {
+  const now = new Date();
+
+  const format = showSeconds
+    ? { hour: '2-digit', minute: '2-digit', second: '2-digit' }
+    : { hour: '2-digit', minute: '2-digit' };
+
+  document.getElementById('clock').textContent =
+    now.toLocaleTimeString('de-DE', format);
+
+  document.getElementById('date').textContent =
+    now.toLocaleDateString('de-DE', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+}
+
+/* ============================================================
+   WETTER
+============================================================ */
+
+async function fetchWeather() {
+  try {
+    const response = await fetch(
+      'https://api.open-meteo.com/v1/forecast?latitude=51.916&longitude=7.466&current_weather=true'
+    );
+    const data = await response.json();
+
+    if (!data.current_weather) {
+      document.getElementById('weather').textContent = 'Wetterdaten nicht verfügbar';
+      return;
+    }
+
+    const temp = data.current_weather.temperature;
+    const wind = data.current_weather.windspeed;
+
+    document.getElementById('weather').textContent =
+      `Havixbeck: ${temp}°C, Wind ${wind} km/h`;
+  } catch {
+    document.getElementById('weather').textContent = 'Wetterdaten nicht verfügbar';
+  }
+}
+
+/* ============================================================
+   TIMER
+============================================================ */
+
+function startBgTimer() {
+  clearInterval(bgTimer);
+  bgTimer = setInterval(changeBackground, bgInterval * 60000);
+}
+
+/* ============================================================
+   PIN – HASHING & DIALOG
+============================================================ */
+
+async function sha256(str) {
+  const enc = new TextEncoder().encode(str);
+  const buf = await crypto.subtle.digest("SHA-256", enc);
+  const arr = Array.from(new Uint8Array(buf));
+  return arr.map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+function showPinDialog() {
+  document.getElementById("pinOverlay").style.display = "flex";
+  document.getElementById("pinInput").value = "";
+  document.getElementById("pinError").textContent = "";
+  document.getElementById("pinInput").focus();
+}
+
+function hidePinDialog() {
+  document.getElementById("pinOverlay").style.display = "none";
+  pendingExitFullscreen = false;
+}
+
+async function checkPinAndMaybeExit() {
+  const pin = document.getElementById("pinInput").value || "";
+  const hash = await sha256(pin);
+
+  if (hash === storedPinHash) {
+    fullscreenLockActive = false;
+    hidePinDialog();
+    if (document.fullscreenElement) {
+      exitFullscreen();
+    }
+  } else {
+    document.getElementById("pinError").textContent = "Falsche PIN.";
+    fullscreenLockActive = true;
+    hidePinDialog();
+    if (!document.fullscreenElement) {
+      enterFullscreen();
+    }
+  }
+}
+
+/* ============================================================
+   PIN-SCHUTZ FÜR GOOGLE-FOTOS-URLS
+============================================================ */
+
+async function ensureGoogleEditAccess() {
+  if (!storedPinHash) return true;
+  if (googleEditUnlocked) return true;
+
+  const pin = prompt("PIN eingeben, um Google-Fotos-Links zu bearbeiten:");
+  if (pin === null) return false;
+
+  const hash = await sha256(pin);
+  if (hash === storedPinHash) {
+    googleEditUnlocked = true;
+    return true;
+  } else {
+    alert("Falsche PIN.");
+    return false;
+  }
+}
+
+/* ============================================================
+   EVENT-LISTENER
+============================================================ */
+
+/* Settings */
+document.getElementById('settings').onclick = () => {
+  const panel = document.getElementById('settingsPanel');
+  const isOpen = panel.style.display === 'block';
+
+  if (isOpen) {
+    panel.style.display = 'none';
+    settingsOpen = false;
+    resetMasterFadeTimer(); // Timer wieder aktivieren
+  } else {
+    panel.style.display = 'block';
+    settingsOpen = true;
+  }
+};
+
+document.querySelectorAll(".settingsTab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    // Tabs umschalten
+    document.querySelectorAll(".settingsTab").forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+
+    // Inhalte umschalten
+    const target = tab.getAttribute("data-target");
+    document.querySelectorAll(".settingsContent").forEach(c => c.classList.remove("active"));
+    document.getElementById(target).classList.add("active");
+
+    // Kachel-Seite neu rendern
+    if (target === "tileSettings") {
+      renderTileSettingsPage();
+    }
+  });
+});
+
+
+/* Pause */
+document.getElementById('pause').onclick = () => {
+  bgPaused = !bgPaused;
+  document.getElementById('pause').textContent = bgPaused ? '▶️' : '⏸️';
+};
+
+/* Favoriten */
+document.getElementById('fav').onclick = toggleFavorite;
+document.getElementById('openFavGallery').onclick = openFavoritesGallery;
+
+/* Overlay-Farbe */
+document.getElementById('overlayColor').oninput = () => {
+  updateOverlay();
+  saveSetting('overlayColor', document.getElementById('overlayColor').value);
+};
+
+/* Overlay-Transparenz */
+document.getElementById('overlayOpacity').oninput = () => {
+  updateOverlay();
+  saveSetting('overlayOpacity', document.getElementById('overlayOpacity').value);
+};
+
+/* Intervall */
+document.getElementById('bgInterval').oninput = () => {
+  const val = parseInt(document.getElementById('bgInterval').value, 10);
+  if (!isNaN(val) && val > 0) {
+    bgInterval = val;
+    saveSetting('bgInterval', String(val));
+    startBgTimer();
+  }
+};
+
+/* Transition */
+document.getElementById('transitionEffect').onchange = () => {
+  const val = document.getElementById('transitionEffect').value;
+  saveSetting('transitionEffect', val);
+  applyTransitionEffect();
+};
+
+/* Kategorien */
+document.querySelectorAll('.bgCat').forEach(cb => {
+  cb.onchange = () => {
+    const selected = getSelectedCategories();
+    saveSetting('bgCategories', JSON.stringify(selected));
+    changeBackground();
+  };
+});
+
+/* Favoritenmodus */
+document.getElementById('favMode').onchange = () => {
+  favMode = document.getElementById('favMode').checked;
+  saveSetting('favMode', favMode ? 'true' : 'false');
+  changeBackground();
+};
+
+/* Sekunden anzeigen */
+document.getElementById('showSeconds').onchange = () => {
+  showSeconds = document.getElementById('showSeconds').checked;
+  saveSetting('showSeconds', showSeconds ? 'true' : 'false');
+  updateClock();
+};
+
+/* Schriftfarbe gemeinsam ändern */
+document.getElementById('syncColors').onchange = () => {
+  syncColors = document.getElementById('syncColors').checked;
+  saveSetting('syncColors', syncColors ? 'true' : 'false');
+
+  const disableOthers = syncColors;
+
+  document.getElementById('colorClock').disabled = false;
+  document.getElementById('colorDate').disabled = disableOthers;
+  document.getElementById('colorWeather').disabled = disableOthers;
+};
+
+/* Textposition */
+document.getElementById("textPosition").onchange = () => {
+  const pos = document.getElementById("textPosition").value;
+  const tc = document.getElementById("textContainer");
+
+  tc.className = pos;
+  saveSetting("textPosition", pos);
+
+  updateInfoBoxStyles();
+};
+
+
+/* Theme-Auswahl */
+document.getElementById('themeSelect').onchange = () => {
+  const val = document.getElementById('themeSelect').value;
+  setTheme(val);
+};
+
+/* Bildquellen – Unsplash / Google-Alben */
+document.getElementById('useUnsplash').onchange = () => {
+  useUnsplash = document.getElementById('useUnsplash').checked;
+  saveSetting('useUnsplash', useUnsplash ? 'true' : 'false');
+};
+
+document.getElementById('useGAlbum1').onchange = () => {
+  useGAlbum1 = document.getElementById('useGAlbum1').checked;
+  saveSetting('useGAlbum1', useGAlbum1 ? 'true' : 'false');
+};
+
+document.getElementById('useGAlbum2').onchange = () => {
+  useGAlbum2 = document.getElementById('useGAlbum2').checked;
+  saveSetting('useGAlbum2', useGAlbum2 ? 'true' : 'false');
+};
+
+document.getElementById('gAlbum1Url').onchange = async () => {
+  const url = document.getElementById('gAlbum1Url').value.trim();
+  saveSetting('gAlbum1Url', url);
+  gAlbum1Images = await loadGoogleAlbumImages(url);
+};
+
+document.getElementById('gAlbum2Url').onchange = async () => {
+  const url = document.getElementById('gAlbum2Url').value.trim();
+  saveSetting('gAlbum2Url', url);
+  gAlbum2Images = await loadGoogleAlbumImages(url);
+};
+
+/* Google-URLs: PIN-Schutz beim Fokussieren */
+['gAlbum1Url','gAlbum2Url'].forEach(id => {
+  const input = document.getElementById(id);
+  input.addEventListener('focus', async (e) => {
+    const ok = await ensureGoogleEditAccess();
+    if (!ok) {
+      e.target.blur();
+    }
+  });
+});
+
+/* PIN speichern */
+document.getElementById('savePinBtn').onclick = async () => {
+  const p1 = document.getElementById('pinNew').value || "";
+  const p2 = document.getElementById('pinConfirm').value || "";
+  if (!p1 || p1 !== p2) {
+    alert("PINs stimmen nicht überein oder sind leer.");
+    return;
+  }
+  const hash = await sha256(p1);
+  storedPinHash = hash;
+  saveSetting("pinHash", hash);
+  document.getElementById('pinNew').value = "";
+  document.getElementById('pinConfirm').value = "";
+  alert("PIN gespeichert.");
+};
+
+/* PIN-Dialog Buttons */
+document.getElementById('pinOkBtn').onclick = () => {
+  checkPinAndMaybeExit();
+};
+
+document.getElementById('pinCancelBtn').onclick = () => {
+  fullscreenLockActive = true;
+  hidePinDialog();
+  if (!document.fullscreenElement) {
+    enterFullscreen();
+  }
+};
+
+/* ============================================================
+   NAVIGATION – 4 PFEILE
+============================================================ */
+
+/* History (⟸ / ⟹) */
+document.getElementById('histPrev').onclick = histPrevImage;
+document.getElementById('histNext').onclick = histNextImage;
+
+/* Kategorie (◁ / ▷) */
+document.getElementById('catPrev').onclick = catPrevImage;
+document.getElementById('catNext').onclick = catNextImage;
+
+/* ============================================================
+   NEUE BUTTONS
+============================================================ */
+
+/* Texte ein/aus (👁️) */
+document.getElementById('toggleText').onclick = toggleText;
+
+/* Overlay ein/aus (🌓) */
+document.getElementById('toggleOverlay').onclick = toggleOverlay;
+
+/* Vollbild (⛶) */
+document.getElementById('toggleFullscreen').onclick = toggleFullscreen;
+
+/* Master-Toggle (🎛️) */
+document.getElementById('masterToggle').onclick = toggleMaster;
+
+/* ============================================================
+   FULLSCREEN-EVENTS – PIN-LOCK
+============================================================ */
+
+document.addEventListener("fullscreenchange", () => {
+  if (!document.fullscreenElement && fullscreenLockActive && storedPinHash) {
+    pendingExitFullscreen = true;
+    showPinDialog();
+  }
+});
+
+
+
+function renderTileSettingsPage() {
+  const container = document.getElementById("tileSettingsContent");
+  container.innerHTML = "";
+
+  categories.forEach(cat => {
+    const block = document.createElement("div");
+    block.style.marginBottom = "20px";
+    block.style.padding = "10px";
+    block.style.border = "1px solid rgba(255,255,255,0.2)";
+    block.style.borderRadius = "8px";
+
+    // Titel
+    const title = document.createElement("h3");
+    title.textContent = cat.name;
+    block.appendChild(title);
+
+    // Name ändern
+    const nameLabel = document.createElement("label");
+    nameLabel.textContent = "Name: ";
+    const nameInput = document.createElement("input");
+    nameInput.type = "text";
+    nameInput.value = cat.name;
+    nameInput.oninput = () => {
+      cat.name = nameInput.value;
+      saveCategories();
+      renderTiles();
+    };
+    block.appendChild(nameLabel);
+    block.appendChild(nameInput);
+
+    block.appendChild(document.createElement("br"));
+
+    // Farbe ändern
+    const colorLabel = document.createElement("label");
+    colorLabel.textContent = "Farbe: ";
+    const colorInput = document.createElement("input");
+    colorInput.type = "color";
+    colorInput.value = cat.color;
+    colorInput.oninput = () => {
+      cat.color = colorInput.value;
+      saveCategories();
+      renderTiles();
+    };
+    block.appendChild(colorLabel);
+    block.appendChild(colorInput);
+
+    container.appendChild(block);
+  });
+}
+
+/* ============================================================
+   INITIALISIERUNG
+============================================================ */
+
+window.onload = async () => {
+  loadFavorites();
+  loadCategories();          // ← GENAU HIER HIN
+  renderTileSettingsPage();  // ← kommt direkt danach
+  renderTiles();             // ← und das danach
+
+  const savedFavMode = loadSetting('favMode');
+  if (savedFavMode === 'true') {
+    favMode = true;
+    document.getElementById('favMode').checked = true;
+  }
+
+  const savedSeconds = loadSetting('showSeconds');
+  if (savedSeconds === 'true') {
+    showSeconds = true;
+    document.getElementById('showSeconds').checked = true;
+  }
+
+  const savedSync = loadSetting('syncColors');
+  if (savedSync === 'true') {
+    syncColors = true;
+    document.getElementById('syncColors').checked = true;
+
+    document.getElementById('colorClock').disabled = false;
+    document.getElementById('colorDate').disabled = true;
+    document.getElementById('colorWeather').disabled = true;
+  }
+
+  const savedText = loadSetting('textVisible');
+  if (savedText === 'false') {
+    textVisible = false;
+    document.getElementById('clock').style.opacity = "0";
+    document.getElementById('date').style.opacity = "0";
+    document.getElementById('weather').style.opacity = "0";
+  }
+
+  const savedOverlay = loadSetting('overlayEnabled');
+  if (savedOverlay === 'false') {
+    overlayEnabled = false;
+    document.getElementById('overlay').style.display = "none";
+  }
+
+const savedMaster = loadSetting('masterHidden');
+if (savedMaster === 'true') {
+  document.getElementById('rowAll').style.display = "none";
+  document.getElementById('masterToggle').classList.add("master-hidden");
+}
+
+  const savedInterval = loadSetting('bgInterval');
+  if (savedInterval) {
+    const parsed = parseInt(savedInterval, 10);
+    if (!isNaN(parsed) && parsed > 0) {
+      bgInterval = parsed;
+      document.getElementById('bgInterval').value = savedInterval;
+    }
+  }
+
+  const savedCatsRaw = loadSetting('bgCategories');
+  if (savedCatsRaw) {
+    try {
+      const savedCats = JSON.parse(savedCatsRaw);
+      if (Array.isArray(savedCats)) {
+        document.querySelectorAll('.bgCat').forEach(cb => {
+          cb.checked = savedCats.includes(cb.value);
+        });
+      }
+    } catch {}
+  }
+
+  const oc = loadSetting('overlayColor');
+  if (oc) document.getElementById('overlayColor').value = oc;
+
+  const oo = loadSetting('overlayOpacity');
+  if (oo) document.getElementById('overlayOpacity').value = oo;
+
+  const te = loadSetting('transitionEffect');
+  if (te) document.getElementById('transitionEffect').value = te;
+
+  const savedTheme = loadSetting('theme') || "darkfantasy";
+  setTheme(savedTheme);
+  document.getElementById('themeSelect').value = savedTheme;
+
+  const savedUseUnsplash = loadSetting('useUnsplash');
+  if (savedUseUnsplash !== null) {
+    useUnsplash = savedUseUnsplash === 'true';
+    document.getElementById('useUnsplash').checked = useUnsplash;
+  }
+
+  const savedUseGAlbum1 = loadSetting('useGAlbum1');
+  if (savedUseGAlbum1 !== null) {
+    useGAlbum1 = savedUseGAlbum1 === 'true';
+    document.getElementById('useGAlbum1').checked = useGAlbum1;
+  }
+
+  const savedUseGAlbum2 = loadSetting('useGAlbum2');
+  if (savedUseGAlbum2 !== null) {
+    useGAlbum2 = savedUseGAlbum2 === 'true';
+    document.getElementById('useGAlbum2').checked = useGAlbum2;
+  }
+
+  const savedGAlbum1Url = loadSetting('gAlbum1Url');
+  if (savedGAlbum1Url) {
+    document.getElementById('gAlbum1Url').value = savedGAlbum1Url;
+    gAlbum1Images = await loadGoogleAlbumImages(savedGAlbum1Url);
+  }
+
+  const savedGAlbum2Url = loadSetting('gAlbum2Url');
+  if (savedGAlbum2Url) {
+    document.getElementById('gAlbum2Url').value = savedGAlbum2Url;
+    gAlbum2Images = await loadGoogleAlbumImages(savedGAlbum2Url);
+  }
+
+  const savedPinHash = loadSetting("pinHash");
+  if (savedPinHash) {
+    storedPinHash = savedPinHash;
+  }
+
+const savedPos = loadSetting("textPosition");
+if (savedPos) {
+  document.getElementById("textPosition").value = savedPos;
+  applyTextPosition(savedPos);
+}
+
+resetMasterFadeTimer();
+
+  populateFontSelectors();
+  setupTextStyleEvents();
+  applyTextStyles();
+
+  updateOverlay();
+  applyTransitionEffect();
+  changeBackground();
+
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  fetchWeather();
+  setInterval(fetchWeather, 10 * 60000);
+
+  startBgTimer();
+};
+
+document.getElementById("textPosition").addEventListener("change", function () {
+  localStorage.setItem("savedTextPosition", this.value);
+  applyTextPosition(this.value);
+});
+
+function applyTextPosition(position) {
+  const container = document.getElementById("textContainer");
+
+  // Alle Positionsklassen entfernen
+  container.classList.remove(
+    "text-center",
+    "text-top-left",
+    "text-top-center",
+    "text-top-right",
+    "text-middle-left",
+    "text-middle-right",
+    "text-bottom-left",
+    "text-bottom-center",
+    "text-bottom-right"
+  );
+
+  // Ausrichtung entfernen
+  container.classList.remove("align-left", "align-center", "align-right");
+
+  // Neue Position setzen
+  container.classList.add(position);
+
+  // Automatische Ausrichtung
+  if (position.includes("left")) {
+    container.classList.add("align-left");
+  } else if (position.includes("right")) {
+    container.classList.add("align-right");
+  } else {
+    container.classList.add("align-center");
+  }
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+
+  // -----------------------------
+  // TEXT POSITION SETTINGS
+  // -----------------------------
+  const select = document.getElementById("textPosition");
+  const saved = localStorage.getItem("savedTextPosition");
+
+  if (saved) {
+    select.value = saved;
+    applyTextPosition(saved);
+  } else {
+    applyTextPosition(select.value);
+  }
+
+  // -----------------------------
+  // INFOBOX SETTINGS
+  // -----------------------------
+  const savedColor = loadSetting("infoBoxColor");
+  const savedDuration = loadSetting("infoBoxDuration");
+
+  document.getElementById("infoBoxColor").value = savedColor || "#000000";
+  document.getElementById("infoBoxDuration").value = savedDuration || 3000;
+
+  // Transparenz
+  const opacityInput = document.getElementById("infoBoxOpacity");
+  if (opacityInput) {
+    opacityInput.value = loadSetting("infoBoxOpacity") || 0.4;
+    opacityInput.addEventListener("input", e => {
+      saveSetting("infoBoxOpacity", e.target.value);
+    });
+  }
+
+  // Glow
+  document.getElementById("infoBoxGlowEnable").checked =
+    loadSetting("infoBoxGlowEnable") === "true";
+  document.getElementById("infoBoxGlowStrength").value =
+    loadSetting("infoBoxGlowStrength") || 20;
+
+  // Blur
+  document.getElementById("infoBoxBlurEnable").checked =
+    loadSetting("infoBoxBlurEnable") === "true";
+  document.getElementById("infoBoxBlurStrength").value =
+    loadSetting("infoBoxBlurStrength") || 6;
+
+  // Glow Events
+  document.getElementById("infoBoxGlowEnable").addEventListener("change", e => {
+    saveSetting("infoBoxGlowEnable", e.target.checked);
+  });
+  document.getElementById("infoBoxGlowStrength").addEventListener("input", e => {
+    saveSetting("infoBoxGlowStrength", e.target.value);
+  });
+
+  // Blur Events
+  document.getElementById("infoBoxBlurEnable").addEventListener("change", e => {
+    saveSetting("infoBoxBlurEnable", e.target.checked);
+  });
+  document.getElementById("infoBoxBlurStrength").addEventListener("input", e => {
+    saveSetting("infoBoxBlurStrength", e.target.value);
+  });
+
+  // Immer sichtbar
+  document.getElementById("infoBoxAlwaysVisible").checked =
+    loadSetting("infoBoxAlwaysVisible") === "true";
+  document.getElementById("infoBoxAlwaysVisible").addEventListener("change", e => {
+    saveSetting("infoBoxAlwaysVisible", e.target.checked);
+  });
+
+  // -----------------------------
+  // KLICK-EVENTS FÜR UHR / DATUM / WETTER
+  // -----------------------------
+  const clockEl = document.getElementById("clock");
+  const dateEl = document.getElementById("date");
+  const weatherEl = document.getElementById("weather");
+
+  if (clockEl) clockEl.addEventListener("click", showInfoBox);
+  if (dateEl)  dateEl.addEventListener("click", showInfoBox);
+  if (weatherEl) weatherEl.addEventListener("click", showInfoBox);
+
+  // -----------------------------
+  // DIE LÖSUNG: ResizeObserver
+  // -----------------------------
+  if (loadSetting("infoBoxAlwaysVisible") === "true") {
+    const box = document.getElementById("infoBox");
+    const container = document.getElementById("textContainer");
+
+    box.style.opacity = 1;
+
+    const ro = new ResizeObserver(() => {
+      updateInfoBoxStyles();
+    });
+
+    // Beobachte echte Layout-Änderungen
+    ro.observe(container);
+
+    // Nach 500ms ist Layout garantiert stabil → Observer stoppen
+    setTimeout(() => ro.disconnect(), 500);
+  }
+
+}); // Ende DOMContentLoaded
+
+
+// -----------------------------
+// FENSTERGRÖSSE → INFOBOX LIVE MITBEWEGEN
+// -----------------------------
+window.addEventListener("resize", () => {
+  updateInfoBoxStyles();
+});
+
+/* ============================================================
+   KACHELBAND – LAUNCHER-LEISTE UNTEN
+============================================================ */
+
+function openCategoryPanel(cat) {
+  const panel = document.getElementById("categoryPanel");
+  const title = document.getElementById("panelTitle");
+  const content = document.getElementById("panelContent");
+
+  // Titel setzen
+  title.textContent = cat.name;
+
+  // Inhalt leeren
+  content.innerHTML = "";
+
+  // Platzhalter-Inhalt je nach Kategorie
+  switch (cat.type) {
+
+case "apps":
+  content.innerHTML = `
+    <div class="app-grid">
+<div class="app-item" onclick="window.location.href='market://details?id=com.netflix.mediaclient'">
+  Netflix
+</div>
+    </div>
+  `;
+  break;
+
+    case "smart_home":
+      content.innerHTML = "<p>Smart-Home-Geräte werden hier angezeigt…</p>";
+      break;
+
+    case "alarm_system":
+      content.innerHTML = "<p>Alarm-System-Elemente werden hier angezeigt…</p>";
+      break;
+  }
+
+  // Panel öffnen
+  panel.classList.add("open");
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const closeBtn = document.getElementById("panelCloseBtn");
+  if (closeBtn) {
+    closeBtn.addEventListener("click", closeCategoryPanel);
+  }
+});
+
+
+function closeCategoryPanel() {
+  const panel = document.getElementById("categoryPanel");
+  panel.classList.remove("open");
+}
+
+document.addEventListener("click", (event) => {
+  const panel = document.getElementById("categoryPanel");
+
+  // Wenn Panel nicht offen → nichts tun
+  if (!panel.classList.contains("open")) return;
+
+  // Wenn Klick IN dem Panel war → nichts tun
+  if (panel.contains(event.target)) return;
+
+  // Wenn Klick auf eine Kachel war → nichts tun (Panel soll sich ja öffnen)
+  if (event.target.classList.contains("tile")) return;
+
+  // Ansonsten Panel schließen
+  closeCategoryPanel();
+});
+
+function launchApp(packageName) {
+  try {
+    Android.launchApp(packageName);
+  } catch (e) {
+    alert("App konnte nicht gestartet werden.");
+  }
+}
+
+function renderTiles() {
+  const bar = document.getElementById("tilebar");
+  if (!bar) return;
+
+  bar.innerHTML = "";
+
+  categories.forEach(cat => {
+    const tile = document.createElement("div");
+tile.className = "tile";
+tile.innerText = cat.name;
+
+// individuelle Farbe
+tile.dataset.color = cat.color;
+
+let swipeDetected = false;
+let resetTimeout = null;
+
+// Touchstart → Farben an + Hover für diese Kachel
+tile.addEventListener("touchstart", () => {
+  swipeDetected = false; // zurücksetzen
+
+  document.querySelectorAll(".tile").forEach(t => {
+    if (t.dataset.color) {
+      t.style.backgroundColor = t.dataset.color;
+    }
+  });
+
+  tile.classList.add("hovered");
+});
+
+// Touchmove → Swipe erkannt
+tile.addEventListener("touchmove", () => {
+  swipeDetected = true;
+});
+
+// Touchend → Rücksetzung abhängig vom Verhalten
+tile.addEventListener("touchend", () => {
+  if (resetTimeout) {
+    clearTimeout(resetTimeout);
+  }
+
+  if (swipeDetected) {
+    // Verzögerte Rücksetzung nach 5 Sekunden
+    resetTimeout = setTimeout(() => {
+      document.querySelectorAll(".tile").forEach(t => {
+        t.style.backgroundColor = "";
+        t.classList.remove("hovered");
+      });
+    }, 5000);
+  } else {
+    // Sofortige Rücksetzung (Tap)
+    document.querySelectorAll(".tile").forEach(t => {
+      t.style.backgroundColor = "";
+      t.classList.remove("hovered");
+    });
+  }
+});
+
+tile.onclick = () => openCategoryPanel(cat);
+
+    tile.oncontextmenu = (e) => {
+      e.preventDefault();
+      renameCategory(cat.id);
+    };
+
+    bar.appendChild(tile);
+  });
+
+  const addTile = document.createElement("div");
+  addTile.className = "tile tile-add";
+  addTile.innerText = "+";
+  addTile.onclick = () => addCategory();
+  bar.appendChild(addTile);
+}
+
+
+
+function addCategory() {
+  const name = prompt("Name der neuen Kategorie:");
+  if (!name) return;
+
+  const type = prompt("Typ (apps, smart_home, alarm_system):", "apps");
+  if (!["apps","smart_home","alarm_system"].includes(type)) {
+    alert("Ungültiger Typ.");
+    return;
+  }
+
+  const id = name.toLowerCase().replace(/\s+/g, "_");
+  categories.push({ id, name, type });
+  renderTiles();
+}
+
+function renameCategory(id) {
+  const cat = categories.find(c => c.id === id);
+  if (!cat) return;
+
+  const newName = prompt("Neuer Name:", cat.name);
+  if (!newName) return;
+
+  cat.name = newName;
+  renderTiles();
+}
+
+const tilebarElement = document.getElementById("tilebar");
+
+
+document.addEventListener("DOMContentLoaded", renderTiles);
+
+</script>
+
+</body>
+</html>
