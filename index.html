@@ -571,7 +571,41 @@ opacity: 1; /* inaktiver Zustand */
   display: block;
 }
 
+.app-entry {
+    padding: 12px;
+    border-bottom: 1px solid #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+}
 
+.app-entry.disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.tag-added {
+    background: #444;
+    color: #aaa;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+.tag-add {
+    background: #2ecc71;
+    color: black;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+.panel.apps {
+    display: block !important;
+}
+
+    
   </style>
 </head>
 <body class="theme-darkfantasy">
@@ -1092,7 +1126,28 @@ opacity: 1; /* inaktiver Zustand */
   <button id="panelCloseBtn">Schließen</button>
 </div>
 
+<!-- Apps-Panel -->
+<div class="panel apps" id="appsPanel">
+  <div class="panel-header">
+    <h2>Apps</h2>
+    <button class="add-app-btn" onclick="openAppPicker()">+</button>
+  </div>
+  <div id="appsPanelContent"></div>
+</div>
+
+<!-- App-Picker Modal -->
+<div id="appPicker" class="modal" style="display:none;">
+  <div class="modal-content">
+    <h3>App hinzufügen</h3>
+    <div id="appList"></div>
+  </div>
+</div>
+
+
+  
 <script>
+let appsInPanel = [];
+
 /* ============================================================
    KONSTANTEN & GRUNDSTRUKTUR
 ============================================================ */
@@ -2889,6 +2944,65 @@ const tilebarElement = document.getElementById("tilebar");
 
 document.addEventListener("DOMContentLoaded", renderTiles);
 
+
+
+  
+function openAppPicker() {
+    const json = AndroidBridge.getInstalledApps();
+    const apps = JSON.parse(json);
+
+    let html = "";
+
+    apps.forEach(app => {
+        const alreadyAdded = appsInPanel.includes(app.package);
+
+        html += `
+            <div class="app-entry ${alreadyAdded ? 'disabled' : ''}"
+                 onclick="${alreadyAdded ? '' : `addAppToPanel('${app.package}')`}">
+                 
+                <span class="app-label">${app.label}</span>
+
+                ${alreadyAdded 
+                    ? '<span class="tag-added">Bereits hinzugefügt</span>' 
+                    : '<span class="tag-add">Hinzufügen</span>'}
+            </div>
+        `;
+    });
+
+    document.getElementById("appList").innerHTML = html;
+    document.getElementById("appPicker").style.display = "block";
+}
+
+function addAppToPanel(packageName) {
+    // 1. Icon laden
+    const iconBase64 = AndroidBridge.getAppIcon(packageName);
+
+    // 2. App-Name laden
+    const json = AndroidBridge.getInstalledApps();
+    const apps = JSON.parse(json);
+    const app = apps.find(a => a.package === packageName);
+
+    // 3. HTML erzeugen
+    const html = `
+        <div class="app-icon" onclick="AndroidBridge.startApp('${packageName}')">
+            <img src="data:image/png;base64,${iconBase64}">
+            <span>${app.label}</span>
+        </div>
+    `;
+
+    // 4. In das Apps-Panel einfügen
+    document.getElementById("appsPanelContent").innerHTML += html;
+
+    // 5. App in die Liste der Panel-Apps aufnehmen
+    appsInPanel.push(packageName);
+
+    // 6. Modal schließen
+    document.getElementById("appPicker").style.display = "none";
+}
+
+
+  
+  
 </script>
 
 
