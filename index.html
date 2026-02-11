@@ -815,6 +815,12 @@ opacity: 1; /* inaktiver Zustand */
     <div class="tilebar" id="tilebar"></div>
   </div>
 
+<button style="margin:20px; padding:20px; font-size:20px;"
+        onclick="AndroidBridge.startApp('com.netflix.mediaclient')">
+    Netflix starten (Test)
+</button>
+
+  
   <div id="navCategory">
     <div id="catPrev" class="navBtn">◁</div>
     <div id="catNext" class="navBtn">▷</div>
@@ -2872,9 +2878,7 @@ const tilebarElement = document.getElementById("tilebar");
 document.addEventListener("DOMContentLoaded", renderTiles);
 
 </script>
-<button onclick="AndroidBridge.startApp('com.netflix.mediaclient')">
-    Netflix starten (Test)
-</button>
+
 
 </body>
 </html>
