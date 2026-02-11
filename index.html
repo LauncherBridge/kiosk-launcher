@@ -815,11 +815,23 @@ opacity: 1; /* inaktiver Zustand */
     <div class="tilebar" id="tilebar"></div>
   </div>
 
+
+
+
+  
 <button style="margin:20px; padding:20px; font-size:20px;"
         onclick="AndroidBridge.startApp('com.netflix.mediaclient')">
     Netflix starten (Test)
 </button>
-<button onclick="alert(typeof AndroidBridge)"> Test: Bridge vorhanden? </button>
+  <div id="bridgeStatus" style="color:white; font-size:20px; margin-top:20px;"></div>
+<button onclick="document.getElementById('bridgeStatus').innerText = typeof AndroidBridge">
+    Test: Bridge vorhanden?
+</button>
+
+
+
+
+  
   
   <div id="navCategory">
     <div id="catPrev" class="navBtn">◁</div>
