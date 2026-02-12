@@ -1217,6 +1217,8 @@ opacity: 1; /* inaktiver Zustand */
   
 <script>
 
+let appsPerCategory = {};
+let currentTargetCategory = null;
 
 let appsInPanel = [];
 
@@ -1238,7 +1240,12 @@ const allEffects = [
   "cut"
 ];
 
+let appsPerTile = {};
+let sortModePerTile = {};
+let currentTileName = null;
+let currentTileCategory = null;
 
+  
 let settingsOpen = false;
 
 let currentImageList = [];
@@ -1286,7 +1293,11 @@ let categories = [
   { id: "home",   name: "Smart Home",  type: "smart_home",   color: "#444444" },
   { id: "alarm",  name: "Alarm System", type: "alarm_system", color: "#444444" }
 ];
-function saveCategories() {
+
+  
+  
+  
+  function saveCategories() {
   localStorage.setItem("categories", JSON.stringify(categories));
 }
 
@@ -2873,6 +2884,19 @@ window.addEventListener("resize", () => {
 ============================================================ */
 
 function openCategoryPanel(cat) {
+
+  currentTileName = cat.name;
+  currentTileCategory = cat.type;
+
+  // NEU HINZUFÜGEN: 
+  if (!appsPerTile[currentTileName]) { 
+    appsPerTile[currentTileName] = [];
+  } 
+  if (!sortModePerTile[currentTileName]) {
+    sortModePerTile[currentTileName] = "alphabet";
+  }
+
+  
   const panel = document.getElementById("categoryPanel");
   const title = document.getElementById("panelTitle");
   const content = document.getElementById("panelContent");
