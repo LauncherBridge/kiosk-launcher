@@ -11,6 +11,36 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel&display=swap" rel="stylesheet">
 
   <style>
+#appPicker,
+#appsPanel {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 999999;
+}
+
+   body {
+  overflow: hidden;
+}
+ 
+    #appPickerSearch {
+  width: 100%;
+  padding: 12px 14px;
+  margin-bottom: 15px;
+  border-radius: 10px;
+  border: none;
+  font-size: 16px;
+  background: rgba(255,255,255,0.12);
+  color: white;
+  outline: none;
+}
+
+#appPickerSearch::placeholder {
+  color: rgba(255,255,255,0.55);
+}
+
     :root {
       --accent: #b38cff;
       --text-color: #e0e0e0;
@@ -980,7 +1010,108 @@ opacity: 1; /* inaktiver Zustand */
   color: white;
 }
 
-    
+
+/* --- MODERNES KACHEL-PANEL --- */
+
+#appsPanel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 92%;
+  max-width: 620px;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(14px);
+  border-radius: 20px;
+  padding: 22px;
+  box-shadow: 0 14px 45px rgba(0,0,0,0.55);
+  color: white;
+  z-index: 9999;
+  display: none;
+  animation: panelFadeIn 0.25s ease-out;
+}
+
+@keyframes panelFadeIn {
+  from { opacity: 0; transform: translate(-50%, -48%); }
+  to   { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+#appsPanel h2 {
+  margin: 0 0 18px 0;
+  font-size: 24px;
+  font-weight: 600;
+  text-align: center;
+  letter-spacing: 0.4px;
+}
+
+  /* --- FINGERFREUNDLICHE BUTTONS --- */
+
+#appsPanel .add-app-btn,
+#appsPanel .close-panel-btn {
+  width: 100%;
+  padding: 14px 18px;
+  font-size: 18px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  margin-bottom: 16px;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+#appsPanel .add-app-btn {
+  background: var(--accent);
+  color: black;
+}
+
+#appsPanel .add-app-btn:active,
+#appsPanel .close-panel-btn:active {
+  transform: scale(0.97);
+}
+
+#appsPanel .close-panel-btn {
+  background: rgba(255,255,255,0.15);
+  color: white;
+}
+
+#appsPanel .close-panel-btn:hover {
+  background: rgba(255,255,255,0.25);
+}
+
+#appsPanelContent {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 20px;
+  padding: 10px 5px;
+}
+
+ #appsPanelContent .app-entry {
+  background: rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 14px 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+#appsPanelContent .app-entry:hover {
+  transform: translateY(-4px);
+  background: rgba(255,255,255,0.18);
+}
+
+#appsPanelContent .app-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  margin-bottom: 10px;
+}
+
+#appsPanelContent .app-label {
+  font-size: 14px;
+  margin-top: 4px;
+  color: white;
+  opacity: 0.9;
+}
+   
   </style>
 <div id="controls">
 
@@ -1017,6 +1148,16 @@ opacity: 1; /* inaktiver Zustand */
     <div id="catNext" class="navBtn">▷</div>
   </div>
 
+</div>
+
+  <div id="appsPanel">
+  <h2>Apps in dieser Kachel</h2>
+
+  <button class="close-panel-btn" onclick="closeAppsPanel()">Schließen</button>
+
+  <button class="add-app-btn" onclick="openAppPicker()">+ App hinzufügen</button>
+
+  <div id="appsPanelContent"></div>
 </div>
 
 
@@ -1287,6 +1428,13 @@ opacity: 1; /* inaktiver Zustand */
     <h2 id="appPickerTitle"></h2>
 
     <div id="appPickerSort">
+      <input 
+  type="text" 
+  id="appPickerSearch" 
+  placeholder="App suchen…" 
+  oninput="filterAppPicker()" 
+/>
+
       <button onclick="setAppPickerSort('alphabet')">A–Z</button>
       <button onclick="setAppPickerSort('installed')">Neueste</button>
     </div>
@@ -1463,6 +1611,16 @@ function saveSetting(key, value) {
 
 function loadSetting(key) {
   return localStorage.getItem(key);
+}
+
+  function filterAppPicker() {
+  const query = document.getElementById("appPickerSearch").value.toLowerCase();
+  const entries = document.querySelectorAll("#appList .app-entry");
+
+  entries.forEach(entry => {
+    const label = entry.querySelector(".app-label").textContent.toLowerCase();
+    entry.style.display = label.includes(query) ? "flex" : "none";
+  });
 }
 
 
@@ -1725,6 +1883,9 @@ function pushToHistory(url) {
 
   history.push(url);
   historyIndex = history.length - 1;
+}
+function closeAppsPanel() {
+  document.getElementById("appsPanel").style.display = "none";
 }
 
 /* ============================================================
@@ -3237,6 +3398,11 @@ document.addEventListener("DOMContentLoaded", renderTiles);
 
   
 function openAppPicker() {
+  document.getElementById("appPickerTitle").textContent =
+  "Apps zu Kachel ›" + currentTileName + "‹ hinzufügen";
+  document.getElementById("appPickerSearch").value = "";
+
+
   // Dynamischer Titel
   document.getElementById("appPickerTitle").textContent =
     "Apps zu Kachel ›" + currentTileName + "‹ hinzufügen";
