@@ -669,6 +669,78 @@ opacity: 1; /* inaktiver Zustand */
   opacity: 0.9;
 }
 
+/* --- APP PICKER STYLES --- */
+
+#appPickerSort {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0 15px 0;
+}
+
+#appPickerSort button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  background: #ddd;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+#appPickerSort button.active {
+  background: #4a90e2;
+  color: white;
+}
+
+/* App-Einträge im Picker */
+#appPicker .app-entry {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255,255,255,0.08);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+#appPicker .app-entry.disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+#appPicker .app-label {
+  font-size: 15px;
+  color: white;
+}
+
+#appPicker .tag-add {
+  background: #4caf50;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+#appPicker .tag-added {
+  background: #777;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+#appPickerTitle {
+  margin-bottom: 10px;
+}
+
+#appList {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+
+    
   </style>
 </head>
 <body class="theme-darkfantasy">
@@ -884,6 +956,25 @@ opacity: 1; /* inaktiver Zustand */
       min-height: 1.2em;
     }
 
+#appPickerSort {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0 15px 0;
+}
+
+#appPickerSort button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  background: #ddd;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+#appPickerSort button.active {
+  background: #4a90e2;
+  color: white;
+}
 
     
   </style>
@@ -1205,20 +1296,30 @@ opacity: 1; /* inaktiver Zustand */
 <!-- App-Picker Modal -->
 <div id="appPicker" class="modal" style="display:none;">
   <div class="modal-content">
-    <h3>App hinzufügen</h3>
-    <div id="appList"></div>
+    <h2 id="appPickerTitle"></h2>
+
+    <div id="appPickerSort">
+      <button onclick="setAppPickerSort('alphabet')">A–Z</button>
+      <button onclick="setAppPickerSort('installed')">Neueste</button>
+    </div>
+
     <button class="pickerDoneBtn" onclick="closeAppPicker()">Fertig</button>
 
+    <div id="appList"></div>
   </div>
 </div>
-
-
 
   
 <script>
 
 let appsPerCategory = {};
 let currentTargetCategory = null;
+let appPickerSortMode = "alphabet";
+
+function setAppPickerSort(mode) {
+  appPickerSortMode = mode;
+  openAppPicker(); // neu rendern
+}
 
 let appsInPanel = [];
 
@@ -1294,7 +1395,25 @@ let categories = [
   { id: "alarm",  name: "Alarm System", type: "alarm_system", color: "#444444" }
 ];
 
-  
+  function loadTileData() {
+  const savedApps = localStorage.getItem("appsPerTile");
+  const savedSort = localStorage.getItem("sortModePerTile");
+
+  if (savedApps) {
+    appsPerTile = JSON.parse(savedApps);
+  }
+
+  if (savedSort) {
+    sortModePerTile = JSON.parse(savedSort);
+  }
+}
+
+function saveTileData() {
+  localStorage.setItem("appsPerTile", JSON.stringify(appsPerTile));
+  localStorage.setItem("sortModePerTile", JSON.stringify(sortModePerTile));
+}
+
+
   
   
   function saveCategories() {
@@ -1421,7 +1540,7 @@ function renderAppsPanel(tileName) {
 
       // Speichern (kommt später in Schritt 6H)
       // saveApps();
-
+      saveTileData(); // ← NEU
       // Neu sortieren
       renderAppsPanel(tileName);
     };
@@ -2634,6 +2753,8 @@ function renderTileSettingsPage() {
 ============================================================ */
 
 window.onload = async () => {
+  loadTileData();
+
   loadFavorites();
   loadCategories();          // ← GENAU HIER HIN
   renderTileSettingsPage();  // ← kommt direkt danach
@@ -3128,62 +3249,72 @@ document.addEventListener("DOMContentLoaded", renderTiles);
 
   
 function openAppPicker() {
-    const json = AndroidBridge.getInstalledApps();
-    const apps = JSON.parse(json);
+  // Dynamischer Titel
+  document.getElementById("appPickerTitle").textContent =
+    "Apps zu Kachel ›" + currentTileName + "‹ hinzufügen";
+// Sortierbuttons visuell aktualisieren
+document.querySelectorAll("#appPickerSort button").forEach(btn => {
+  btn.classList.toggle("active", btn.getAttribute("onclick").includes(appPickerSortMode));
+});
 
-    let html = "";
+  // Installierte Apps laden
+  const json = AndroidBridge.getInstalledApps();
+  const apps = JSON.parse(json);
 
-    apps.forEach(app => {
-        // Prüfen, ob App in der aktuellen Kachel bereits existiert
-        const alreadyAdded = appsPerTile[currentTileName].some(a => a.package === app.package);
+  // Sortierung anwenden
+  if (appPickerSortMode === "alphabet") {
+    apps.sort((a, b) => a.label.localeCompare(b.label));
+  } else if (appPickerSortMode === "installed") {
+    apps.sort((a, b) => b.installed - a.installed);
+  }
 
-        html += `
-            <div class="app-entry ${alreadyAdded ? 'disabled' : ''}"
-                 onclick="${alreadyAdded ? '' : `addAppToPanel(${JSON.stringify(app).replace(/"/g, '&quot;')})`}">
-                 
-                <span class="app-label">${app.label}</span>
+  let html = "";
 
-                ${alreadyAdded 
-                    ? '<span class="tag-added">Bereits hinzugefügt</span>' 
-                    : '<span class="tag-add">Hinzufügen</span>'}
-            </div>
-        `;
-    });
+  apps.forEach(app => {
+    const alreadyAdded = appsPerTile[currentTileName].some(a => a.package === app.package);
 
-    document.getElementById("appList").innerHTML = html;
-    document.getElementById("appPicker").style.display = "block";
-}
+    html += `
+      <div class="app-entry ${alreadyAdded ? 'disabled' : ''}"
+           onclick="${alreadyAdded ? '' : `addAppToPanel(${JSON.stringify(app).replace(/"/g, '&quot;')})`}">
+           
+          <span class="app-label">${app.label}</span>
 
-
-function addAppToPanel(packageName) {
-    // 1. Icon laden
-    const iconBase64 = AndroidBridge.getAppIcon(packageName);
-
-    // 2. App-Name laden
-    const json = AndroidBridge.getInstalledApps();
-    const apps = JSON.parse(json);
-    const app = apps.find(a => a.package === packageName);
-
-    // 3. HTML erzeugen
-    const html = `
-        <div class="app-icon" onclick="AndroidBridge.startApp('${packageName}')">
-            <img src="data:image/png;base64,${iconBase64}">
-            <span>${app.label}</span>
-        </div>
+          ${alreadyAdded 
+            ? '<span class="tag-added">Bereits hinzugefügt</span>' 
+            : '<span class="tag-add">Hinzufügen</span>'}
+      </div>
     `;
+  });
 
-    // 4. In das Apps-Panel einfügen
-    document.getElementById("appsPanelContent").innerHTML += html;
-
-    // 5. App in die Liste der Panel-Apps aufnehmen
-    appsInPanel.push(packageName);
-
-    // 6. Modal schließen
-    // document.getElementById("appPicker").style.display = "none";
+  document.getElementById("appList").innerHTML = html;
+  document.getElementById("appPicker").style.display = "block";
 }
+
+
+
+
+function addAppToPanel(app) {
+  if (!appsPerTile[currentTileName]) {
+    appsPerTile[currentTileName] = [];
+  }
+
+  if (!appsPerTile[currentTileName].some(a => a.package === app.package)) {
+    appsPerTile[currentTileName].push(app);
+    saveTileData(); // wichtig
+  }
+
+  renderAppsPanel(currentTileName);
+}
+
 
 
   console.log("AppsPanel:", document.getElementById("appsPanel"));
+
+  function setSortMode(mode) {
+  sortModePerTile[currentTileName] = mode;
+  saveTileData();
+  renderAppsPanel(currentTileName);
+}
 
   
 </script>
