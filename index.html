@@ -739,6 +739,62 @@ opacity: 1; /* inaktiver Zustand */
   padding-right: 5px;
 }
 
+<head>
+  <style>
+    /* ... dein bestehendes CSS ... */
+
+    /* ============================
+       APP PICKER MODAL (NEU)
+    ============================ */
+    #appPicker.modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(6px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    #appPicker .modal-content {
+      width: 90%;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+      background: rgba(20,20,20,0.9);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+
+    #appList {
+      margin-top: 15px;
+    }
+
+    .app-entry {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      cursor: pointer;
+    }
+
+    .app-entry.disabled {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    .close-btn {
+      margin-top: 20px;
+      width: 100%;
+      padding: 10px;
+    }
+  </style>
+</head>
 
     
   </style>
@@ -1146,6 +1202,27 @@ opacity: 1; /* inaktiver Zustand */
   <button class="add-app-btn" onclick="openAppPicker()">+ App hinzufügen</button>
 
   <div id="appsPanelContent"></div>
+</div>
+
+<!-- ============================
+     APP PICKER MODAL
+============================= -->
+<div id="appPicker" class="modal">
+  <div class="modal-content">
+    <h2 id="appPickerTitle"></h2>
+
+    <input id="appPickerSearch" type="text" placeholder="Suchen…">
+
+    <div id="appPickerSort">
+      <button data-sort="alphabet" onclick="setAppPickerSort('alphabet')">A–Z</button>
+      <button data-sort="installed" onclick="setAppPickerSort('installed')">Installiert</button>
+      <button data-sort="usage" onclick="setAppPickerSort('usage')">Nutzung</button>
+    </div>
+
+    <div id="appList"></div>
+
+    <button class="close-btn" onclick="closeAppPicker()">Schließen</button>
+  </div>
 </div>
 
 
@@ -3284,27 +3361,34 @@ function openTile(tileName, tileType) {
 
   
 function openAppsPanel(tileName) {
-  // Falls der Name übergeben wurde → setzen
+  // Falls ein Name übergeben wurde → setzen
   if (tileName) {
     currentTileName = tileName;
   }
 
-  // Falls die Kachel noch keine App-Liste hat → anlegen
+  // Sicherheitsnetz: Falls keine Kachel aktiv ist → abbrechen
+  if (!currentTileName) {
+    console.warn("openAppsPanel() ohne gültigen Kachelnamen aufgerufen.");
+    return;
+  }
+
+  // Datenstrukturen sicherstellen
   if (!appsPerTile[currentTileName]) {
     appsPerTile[currentTileName] = [];
   }
 
-  // Falls die Kachel noch keinen Sortiermodus hat → Standard setzen
   if (!sortModePerTile[currentTileName]) {
     sortModePerTile[currentTileName] = "alphabet";
   }
 
   // Panel öffnen
-  document.getElementById("appsPanel").classList.add("open");
+  const panel = document.getElementById("appsPanel");
+  panel.classList.add("open");
 
-  // Apps der Kachel rendern
+  // Apps rendern
   renderAppsPanel(currentTileName);
 }
+
 
 
 function closeAppsPanel() {
@@ -3312,12 +3396,22 @@ function closeAppsPanel() {
 }
 
 function removeAppFromTile(tileName, packageName) {
-  if (!appsPerTile[tileName]) return;
+  // Sicherheitsnetz: Kachel existiert nicht
+  if (!appsPerTile[tileName]) {
+    console.warn("removeAppFromTile(): Kachel nicht gefunden:", tileName);
+    return;
+  }
 
-  appsPerTile[tileName] = appsPerTile[tileName].filter(a => a.package !== packageName);
+  // App entfernen
+  appsPerTile[tileName] = appsPerTile[tileName].filter(app => app.package !== packageName);
+
+  // Speichern
   saveTileData();
+
+  // Panel neu rendern
   renderAppsPanel(tileName);
 }
+
   
 
 function closeCategoryPanel() {
