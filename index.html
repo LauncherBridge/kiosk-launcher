@@ -11,19 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel&display=swap" rel="stylesheet">
 
   <style>
-#appPicker,
-#appsPanel {
-  position: fixed !important;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 999999;
-}
 
-   body {
-  overflow: hidden;
-}
  
     #appPickerSearch {
   width: 100%;
@@ -622,18 +610,7 @@ opacity: 1; /* inaktiver Zustand */
     display: block !important;
 }
 
-/* Apps-Panel – identisch zum Category-Panel */
-#appsPanel {
-  background: rgba(20,20,20,0.92);
-  backdrop-filter: blur(12px);
-  color: white;
-  padding: 20px;
-  height: 300px;
-  overflow-y: auto;
-  box-shadow: 0 -5px 20px rgba(0,0,0,0.4);
-  border-top: 1px solid rgba(255,255,255,0.1);
-  z-index: 1500;
-}
+
 
 /* App-Picker (Modal) */ 
   #appPicker {
@@ -1607,19 +1584,18 @@ function loadSetting(key) {
 
 
 function addAppToPanel(app) {
-  // Sicherheitscheck: Kachel muss initialisiert sein
   if (!appsPerTile[currentTileName]) {
     appsPerTile[currentTileName] = [];
   }
 
-  // Prüfen, ob App bereits in dieser Kachel existiert
   if (!appsPerTile[currentTileName].some(a => a.package === app.package)) {
     appsPerTile[currentTileName].push(app);
+    saveTileData();
   }
 
-  // Panel neu rendern (für diese Kachel)
   renderAppsPanel(currentTileName);
 }
+
 
 
 function renderAppsPanel(tileName) {
@@ -1866,9 +1842,7 @@ function pushToHistory(url) {
   history.push(url);
   historyIndex = history.length - 1;
 }
-function closeAppsPanel() {
-  document.getElementById("appsPanel").style.display = "none";
-}
+
 
 /* ============================================================
    HINTERGRUND & TRANSITION
@@ -3231,6 +3205,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function openAppsPanel() {
   document.getElementById("appsPanel").classList.add("open");
+  renderAppsPanel(currentTileName);
+
 }
 
 function closeAppsPanel() {
