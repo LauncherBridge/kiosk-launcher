@@ -1642,25 +1642,27 @@ function renderAppsPanelContent(tileName) {
 
 
 function renderAppsPanel(tileName) {
-  const content = document.getElementById("panelContent");
-  content.innerHTML = "";
+  const container = document.getElementById("appsPanelContent");
+  if (!container) return;
 
-  // Sicherheitscheck: Kachel muss existieren
+  // Falls Kachel noch keine App-Liste hat → anlegen
   if (!appsPerTile[tileName]) {
     appsPerTile[tileName] = [];
   }
 
-  // Kopie der App-Liste holen
+  // Apps kopieren (nicht direkt mutieren)
   let apps = [...appsPerTile[tileName]];
 
-  // Sortierung anwenden
-  switch (sortModePerTile[tileName]) {
+  // Sortiermodus holen
+  const mode = sortModePerTile[tileName] || "alphabet";
+
+  switch (mode) {
     case "alphabet":
       apps.sort((a, b) => a.label.localeCompare(b.label));
       break;
 
     case "installed":
-      apps.sort((a, b) => b.installed - a.installed);
+      apps.sort((a, b) => (b.installed || 0) - (a.installed || 0));
       break;
 
     case "usage":
@@ -1668,33 +1670,43 @@ function renderAppsPanel(tileName) {
       break;
   }
 
-  // Apps anzeigen
-  apps.forEach(app => {
-    const div = document.createElement("div");
-    div.className = "appItem";
+  // Panel leeren
+  container.innerHTML = "";
 
-    div.innerHTML = `
-      <img src="data:image/png;base64,${app.icon}" class="appIcon">
-      <span class="appLabel">${app.label}</span>
+  // Apps rendern
+  apps.forEach(app => {
+    const entry = document.createElement("div");
+    entry.className = "app-entry";
+
+    entry.innerHTML = `
+      <img src="data:image/png;base64,${app.icon}" class="app-icon">
+      <span class="app-label">${app.label}</span>
     `;
 
     // App starten
-    div.onclick = () => {
-      AndroidBridge.launchApp(app.package);
+    entry.onclick = () => {
+      try {
+        AndroidBridge.launchApp(app.package);
+      } catch (e) {
+        console.warn("App konnte nicht gestartet werden:", e);
+      }
 
       // Nutzung erhöhen
       app.usage = (app.usage || 0) + 1;
 
-      // Speichern (kommt später in Schritt 6H)
-      // saveApps();
-      saveTileData(); // ← NEU
-      // Neu sortieren
-      renderAppsPanel(tileName);
+      // Speichern
+      saveTileData();
+
+      // Neu sortieren, falls Sortiermodus usage ist
+      if (mode === "usage") {
+        renderAppsPanel(tileName);
+      }
     };
 
-    content.appendChild(div);
+    container.appendChild(entry);
   });
 }
+
 
 
 
