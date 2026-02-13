@@ -1433,8 +1433,9 @@ let appPickerSortMode = "alphabet";
 function setAppPickerSort(mode) {
   appPickerSortMode = mode;
   updateAppPickerSortButtons();
-  openAppPicker(); // Picker neu rendern
+  renderAppPickerList(); // nur Liste neu rendern, nicht das ganze Modal
 }
+
 
 
 let appsInPanel = [];
@@ -1539,6 +1540,7 @@ function saveTileData() {
 function closeAppPicker() {
   document.getElementById("appPicker").style.display = "none";
 }
+
 
   
   function loadCategories() {
@@ -3269,11 +3271,29 @@ function openTile(tileName, tileType) {
 
 
   
-function openAppsPanel() {
-  document.getElementById("appsPanel").classList.add("open");
-  renderAppsPanel(currentTileName);
+function openAppsPanel(tileName) {
+  // Falls der Name übergeben wurde → setzen
+  if (tileName) {
+    currentTileName = tileName;
+  }
 
+  // Falls die Kachel noch keine App-Liste hat → anlegen
+  if (!appsPerTile[currentTileName]) {
+    appsPerTile[currentTileName] = [];
+  }
+
+  // Falls die Kachel noch keinen Sortiermodus hat → Standard setzen
+  if (!sortModePerTile[currentTileName]) {
+    sortModePerTile[currentTileName] = "alphabet";
+  }
+
+  // Panel öffnen
+  document.getElementById("appsPanel").classList.add("open");
+
+  // Apps der Kachel rendern
+  renderAppsPanel(currentTileName);
 }
+
 
 function closeAppsPanel() {
   document.getElementById("appsPanel").classList.remove("open");
@@ -3424,58 +3444,61 @@ document.addEventListener("DOMContentLoaded", renderTiles);
 
   
 function openAppPicker() {
-  document.getElementById("appPickerTitle").textContent =
-  "Apps zu Kachel ›" + currentTileName + "‹ hinzufügen";
-  document.getElementById("appPickerSearch").value = "";
+  if (!currentTileName) return;
 
-
-  // Dynamischer Titel
   document.getElementById("appPickerTitle").textContent =
     "Apps zu Kachel ›" + currentTileName + "‹ hinzufügen";
-// Sortierbuttons visuell aktualisieren
-function updateAppPickerSortButtons() {
-  document.querySelectorAll("#appPickerSort button").forEach(btn => {
-    btn.classList.remove("active");
-    if (btn.dataset.sort === appPickerSortMode) {
-      btn.classList.add("active");
-    }
-  });
+
+  document.getElementById("appPickerSearch").value = "";
+
+  updateAppPickerSortButtons();
+  renderAppPickerList();
+
+  document.getElementById("appPicker").style.display = "block";
 }
 
 
-  // Installierte Apps laden
-  const json = AndroidBridge.getInstalledApps();
-  const apps = JSON.parse(json);
+function renderAppPickerList() {
+  const list = document.getElementById("appList");
+  list.innerHTML = "";
 
-  // Sortierung anwenden
+  const json = AndroidBridge.getInstalledApps();
+  let apps = JSON.parse(json);
+
+  // Sortierung
   if (appPickerSortMode === "alphabet") {
     apps.sort((a, b) => a.label.localeCompare(b.label));
   } else if (appPickerSortMode === "installed") {
     apps.sort((a, b) => b.installed - a.installed);
   }
 
-  let html = "";
+  const search = document.getElementById("appPickerSearch").value.toLowerCase();
 
   apps.forEach(app => {
-    const alreadyAdded = appsPerTile[currentTileName].some(a => a.package === app.package);
+    const alreadyAdded = appsPerTile[currentTileName]?.some(a => a.package === app.package);
 
-    html += `
-      <div class="app-entry ${alreadyAdded ? 'disabled' : ''}"
-           onclick="${alreadyAdded ? '' : `addAppToPanel(${JSON.stringify(app).replace(/"/g, '&quot;')})`}">
-           
-          <span class="app-label">${app.label}</span>
+    if (search && !app.label.toLowerCase().includes(search)) return;
 
-          ${alreadyAdded 
-            ? '<span class="tag-added">Bereits hinzugefügt</span>' 
-            : '<span class="tag-add">Hinzufügen</span>'}
-      </div>
+    const entry = document.createElement("div");
+    entry.className = "app-entry" + (alreadyAdded ? " disabled" : "");
+
+    entry.innerHTML = `
+      <span class="app-label">${app.label}</span>
+      ${alreadyAdded 
+        ? '<span class="tag-added">Bereits hinzugefügt</span>'
+        : '<span class="tag-add">Hinzufügen</span>'}
     `;
+
+    if (!alreadyAdded) {
+      entry.onclick = () => {
+        addAppToPanel(app);
+        renderAppPickerList(); // Liste aktualisieren
+      };
+    }
+
+    list.appendChild(entry);
   });
-
-  document.getElementById("appList").innerHTML = html;
-  document.getElementById("appPicker").style.display = "block";
 }
-
 
 
 
@@ -3486,11 +3509,12 @@ function addAppToPanel(app) {
 
   if (!appsPerTile[currentTileName].some(a => a.package === app.package)) {
     appsPerTile[currentTileName].push(app);
-    saveTileData(); // wichtig
+    saveTileData();
   }
 
   renderAppsPanel(currentTileName);
 }
+
 
 
 
