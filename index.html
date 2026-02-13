@@ -363,6 +363,46 @@
   color: white;
 }
 
+/* ============================================================
+   GLOBALE APP-EINTRÄGE (Variante 1 – moderner Glasstil)
+============================================================ */
+
+.app-entry {
+  padding: 10px;
+  margin-bottom: 8px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: 0.2s;
+}
+
+.app-entry:hover {
+  background: rgba(255,255,255,0.15);
+}
+
+.app-entry.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Tags */
+.tag-add {
+  background: var(--accent);
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: #000;
+  font-size: 12px;
+}
+
+.tag-added {
+  background: rgba(255,255,255,0.3);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
 
 /* --- MODERNES KACHEL-PANEL --- */
 
@@ -906,7 +946,7 @@ function saveTileData() {
 }
 
 function closeAppPicker() {
-  document.getElementById("appPicker").style.display = "none";
+document.getElementById("appPicker").classList.remove("open");
 }
 
 
@@ -2851,7 +2891,7 @@ function openAppPicker() {
   updateAppPickerSortButtons();
   renderAppPickerList();
 
-  document.getElementById("appPicker").style.display = "block";
+document.getElementById("appPicker").classList.add("open");
 }
 
 
