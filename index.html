@@ -3244,26 +3244,29 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-function openTile(tileName) {
-  const category = tileCategories[tileName];
+function openTile(tileName, tileType) {
+  currentTileName = tileName;
+  currentTileCategory = tileType;
 
-  switch (category) {
+  switch (tileType) {
     case "apps":
       openAppsPanel(tileName);
       break;
 
-    case "smarthome":
+    case "smart_home":
       openSmartHomePanel(tileName);
       break;
 
-    case "alarm":
+    case "alarm_system":
       openAlarmPanel(tileName);
       break;
 
     default:
-      console.warn("Unbekannte Kategorie:", category);
+      console.warn("Unbekannter Kacheltyp:", tileType);
   }
 }
+
+
 
   
 function openAppsPanel() {
@@ -3322,57 +3325,51 @@ function renderTiles() {
 
   categories.forEach(cat => {
     const tile = document.createElement("div");
-tile.className = "tile";
-tile.innerText = cat.name;
+    tile.className = "tile";
+    tile.innerText = cat.name;
 
-// individuelle Farbe
-tile.dataset.color = cat.color;
+    // Farbe
+    tile.dataset.color = cat.color;
 
-let swipeDetected = false;
-let resetTimeout = null;
+    let swipeDetected = false;
+    let resetTimeout = null;
 
-// Touchstart → Farben an + Hover für diese Kachel
-tile.addEventListener("touchstart", () => {
-  swipeDetected = false; // zurücksetzen
+    tile.addEventListener("touchstart", () => {
+      swipeDetected = false;
 
-  document.querySelectorAll(".tile").forEach(t => {
-    if (t.dataset.color) {
-      t.style.backgroundColor = t.dataset.color;
-    }
-  });
-
-  tile.classList.add("hovered");
-});
-
-// Touchmove → Swipe erkannt
-tile.addEventListener("touchmove", () => {
-  swipeDetected = true;
-});
-
-// Touchend → Rücksetzung abhängig vom Verhalten
-tile.addEventListener("touchend", () => {
-  if (resetTimeout) {
-    clearTimeout(resetTimeout);
-  }
-
-  if (swipeDetected) {
-    // Verzögerte Rücksetzung nach 5 Sekunden
-    resetTimeout = setTimeout(() => {
       document.querySelectorAll(".tile").forEach(t => {
-        t.style.backgroundColor = "";
-        t.classList.remove("hovered");
+        if (t.dataset.color) {
+          t.style.backgroundColor = t.dataset.color;
+        }
       });
-    }, 5000);
-  } else {
-    // Sofortige Rücksetzung (Tap)
-    document.querySelectorAll(".tile").forEach(t => {
-      t.style.backgroundColor = "";
-      t.classList.remove("hovered");
-    });
-  }
-});
 
-tile.onclick = () => openTile(tileName);
+      tile.classList.add("hovered");
+    });
+
+    tile.addEventListener("touchmove", () => {
+      swipeDetected = true;
+    });
+
+    tile.addEventListener("touchend", () => {
+      if (resetTimeout) clearTimeout(resetTimeout);
+
+      if (swipeDetected) {
+        resetTimeout = setTimeout(() => {
+          document.querySelectorAll(".tile").forEach(t => {
+            t.style.backgroundColor = "";
+            t.classList.remove("hovered");
+          });
+        }, 5000);
+      } else {
+        document.querySelectorAll(".tile").forEach(t => {
+          t.style.backgroundColor = "";
+          t.classList.remove("hovered");
+        });
+      }
+    });
+
+    // ⭐ WICHTIG: Name + Typ übergeben
+    tile.onclick = () => openTile(cat.name, cat.type);
 
     tile.oncontextmenu = (e) => {
       e.preventDefault();
@@ -3388,6 +3385,7 @@ tile.onclick = () => openTile(tileName);
   addTile.onclick = () => addCategory();
   bar.appendChild(addTile);
 }
+
 
 
 
