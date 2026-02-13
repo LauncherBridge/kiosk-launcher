@@ -992,10 +992,32 @@ opacity: 1; /* inaktiver Zustand */
   padding: 22px;
   box-shadow: 0 14px 45px rgba(0,0,0,0.55);
   color: white;
-  z-index: 9999;
+  z-index: 1500;
   display: none;
   animation: panelFadeIn 0.25s ease-out;
 }
+
+#appsPanel.open {
+  display: block;
+}
+
+.app-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.remove-app-btn {
+  background: rgba(255,255,255,0.15);
+  border: none;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
 
 @keyframes panelFadeIn {
   from { opacity: 0; transform: translate(-50%, -48%); }
@@ -1372,11 +1394,7 @@ opacity: 1; /* inaktiver Zustand */
 
   </div>
 
-<div id="categoryPanel" class="panel">
-  <div id="panelTitle"></div>
-  <div id="panelContent"></div>
-  <button id="panelCloseBtn">Schließen</button>
-</div>
+
 
 <!-- Apps-Panel -->
 
@@ -1394,8 +1412,9 @@ opacity: 1; /* inaktiver Zustand */
   oninput="filterAppPicker()" 
 />
 
-      <button onclick="setAppPickerSort('alphabet')">A–Z</button>
-      <button onclick="setAppPickerSort('installed')">Neueste</button>
+<button data-sort="alphabet" onclick="setAppPickerSort('alphabet')">A–Z</button>
+<button data-sort="installed" onclick="setAppPickerSort('installed')">Neueste</button>
+
     </div>
 
     <button class="pickerDoneBtn" onclick="closeAppPicker()">Fertig</button>
@@ -1413,8 +1432,10 @@ let appPickerSortMode = "alphabet";
 
 function setAppPickerSort(mode) {
   appPickerSortMode = mode;
-  openAppPicker(); // neu rendern
+  updateAppPickerSortButtons();
+  openAppPicker(); // Picker neu rendern
 }
+
 
 let appsInPanel = [];
 
@@ -1596,6 +1617,26 @@ function addAppToPanel(app) {
   renderAppsPanel(currentTileName);
 }
 
+
+
+function renderAppsPanelContent(tileName) {
+  const container = document.getElementById("appsPanelContent");
+  container.innerHTML = "";
+
+  const apps = appsPerTile[tileName] || [];
+
+  apps.forEach(app => {
+    const row = document.createElement("div");
+    row.className = "app-row";
+
+    row.innerHTML = `
+      <span class="app-label">${app.label}</span>
+      <button class="remove-app-btn" onclick="removeAppFromTile('${tileName}', '${app.package}')">✕</button>
+    `;
+
+    container.appendChild(row);
+  });
+}
 
 
 function renderAppsPanel(tileName) {
@@ -3203,6 +3244,28 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+function openTile(tileName) {
+  const category = tileCategories[tileName];
+
+  switch (category) {
+    case "apps":
+      openAppsPanel(tileName);
+      break;
+
+    case "smarthome":
+      openSmartHomePanel(tileName);
+      break;
+
+    case "alarm":
+      openAlarmPanel(tileName);
+      break;
+
+    default:
+      console.warn("Unbekannte Kategorie:", category);
+  }
+}
+
+  
 function openAppsPanel() {
   document.getElementById("appsPanel").classList.add("open");
   renderAppsPanel(currentTileName);
@@ -3213,6 +3276,13 @@ function closeAppsPanel() {
   document.getElementById("appsPanel").classList.remove("open");
 }
 
+function removeAppFromTile(tileName, packageName) {
+  if (!appsPerTile[tileName]) return;
+
+  appsPerTile[tileName] = appsPerTile[tileName].filter(a => a.package !== packageName);
+  saveTileData();
+  renderAppsPanel(tileName);
+}
   
 
 function closeCategoryPanel() {
@@ -3302,7 +3372,7 @@ tile.addEventListener("touchend", () => {
   }
 });
 
-tile.onclick = () => openCategoryPanel(cat);
+tile.onclick = () => openTile(tileName);
 
     tile.oncontextmenu = (e) => {
       e.preventDefault();
@@ -3365,9 +3435,15 @@ function openAppPicker() {
   document.getElementById("appPickerTitle").textContent =
     "Apps zu Kachel ›" + currentTileName + "‹ hinzufügen";
 // Sortierbuttons visuell aktualisieren
-document.querySelectorAll("#appPickerSort button").forEach(btn => {
-  btn.classList.toggle("active", btn.getAttribute("onclick").includes(appPickerSortMode));
-});
+function updateAppPickerSortButtons() {
+  document.querySelectorAll("#appPickerSort button").forEach(btn => {
+    btn.classList.remove("active");
+    if (btn.dataset.sort === appPickerSortMode) {
+      btn.classList.add("active");
+    }
+  });
+}
+
 
   // Installierte Apps laden
   const json = AndroidBridge.getInstalledApps();
