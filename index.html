@@ -48,6 +48,8 @@
       --weather-font: 'Cinzel';
       --weather-size: 24px;
       --weather-color: #ffffff;
+
+      --panel-blur: 12px;
     }
 
     /* THEME: Dark Fantasy */
@@ -793,6 +795,218 @@ opacity: 1; /* inaktiver Zustand */
       width: 100%;
       padding: 10px;
     }
+
+/* Panel Grundstruktur */
+.panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+ backdrop-filter: blur(var(--panel-blur));
+
+  background: rgba(0, 0, 0, 0.35);
+  display: none;
+  flex-direction: column;
+}
+
+/* Header oben */
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 24px;
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(10px);
+  font-size: 28px;
+  font-weight: 600;
+}
+
+/* Titel links */
+#appsPanelTitle {
+  color: white;
+}
+
+/* Plus rechts */
+.panel-add {
+  font-size: 32px;
+  padding: 6px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.15);
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.panel-add:active {
+  transform: scale(0.9);
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Inhalt */
+.panel-content {
+  padding: 20px;
+  overflow-y: auto;
+ backdrop-filter: blur(var(--panel-blur));
+ 
+}
+
+/* Grid für App-Picker */
+.app-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 22px;
+  padding: 10px;
+}
+
+/* Einzelne App-Kachel */
+.app-picker-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+/* Tap-Animation */
+.app-picker-item:active {
+  transform: scale(0.92);
+  background: rgba(255, 255, 255, 0.18);
+}
+
+/* App-Icon */
+.app-picker-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  background-size: cover;
+  background-position: center;
+  margin-bottom: 10px;
+}
+
+/* App-Name */
+.app-picker-label {
+  color: white;
+  font-size: 15px;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Panel → Picker Animationen */
+.panel-anim-out {
+  animation: panelFadeOut 0.3s ease forwards;
+  backdrop-filter: blur(var(--panel-blur));
+
+}
+
+.panel-anim-in {
+  animation: panelFadeIn 0.3s ease forwards;
+  backdrop-filter: blur(var(--panel-blur));
+
+}
+
+@keyframes panelFadeOut {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+    --panel-blur: 12px;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.92);
+   --panel-blur: 4px;
+  }
+}
+
+@keyframes panelFadeIn {
+  0% {
+    opacity: 0;
+    transform: scale(1.06);
+    --panel-blur: 12px;
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    --panel-blur: 4px;
+  }
+}
+
+/* Picker → Panel Animationen */
+.picker-anim-out {
+  animation: pickerFadeOut 0.3s ease forwards;
+  backdrop-filter: blur(var(--panel-blur));
+
+}
+
+.picker-anim-in {
+  animation: pickerFadeIn 0.3s ease forwards;
+  backdrop-filter: blur(var(--panel-blur));
+
+}
+
+@keyframes pickerFadeOut {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+    --panel-blur: 12px;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.92);
+    --panel-blur: 4px;
+  }
+}
+
+@keyframes pickerFadeIn {
+  0% {
+    opacity: 0;
+    transform: scale(1.06);
+   --panel-blur: 12px;
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    --panel-blur: 4px;
+  }
+}
+
+  /* Grid-Item Pop-In Animation */
+@keyframes gridItemPopIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.grid-item-animate {
+  animation: gridItemPopIn 0.25s ease forwards;
+}
+
+/* Close-Button Pop-In Animation */
+@keyframes closeButtonPopIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.6) rotate(-10deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.close-button-animate {
+  animation: closeButtonPopIn 0.25s ease forwards;
+}
+
+
+    
   </style>
 </head>
 
@@ -1500,9 +1714,240 @@ opacity: 1; /* inaktiver Zustand */
   </div>
 </div>
 
+<div id="appsPanel" class="panel hidden">
 
+  <div class="panel-header">
+    <span id="appsPanelTitle"></span>
+    <span id="appsPanelAdd" class="panel-add">+</span>
+  </div>
+
+  <div class="panel-content" id="appsList"></div>
+
+</div>
+
+<div id="smartHomePanel" class="panel hidden">
+
+  <div class="panel-header">
+    <span id="smartHomePanelTitle"></span>
+    <span id="smartHomePanelAdd" class="panel-add">+</span>
+  </div>
+
+  <div class="panel-content" id="smartHomeDeviceList"></div>
+
+</div>
+
+<div id="alarmPanel" class="panel hidden">
+
+  <div class="panel-header">
+    <span id="alarmPanelTitle"></span>
+    <span id="alarmPanelAdd" class="panel-add">+</span>
+  </div>
+
+  <div class="panel-content" id="alarmZoneList"></div>
+
+</div>
+
+<div id="appPicker" class="panel hidden">
+
+  <div class="panel-header">
+    <span id="appPickerTitle">App auswählen</span>
+    <span id="appPickerClose" class="panel-add">×</span>
+  </div>
+
+  <div class="panel-content">
+    <div id="appPickerGrid" class="app-picker-grid"></div>
+  </div>
+
+</div>
+
+<div id="devicePicker" class="panel hidden">
+
+  <div class="panel-header">
+    <span id="devicePickerTitle">Gerät auswählen</span>
+    <span id="devicePickerClose" class="panel-add">×</span>
+  </div>
+
+  <div class="panel-content">
+    <div id="devicePickerGrid" class="app-picker-grid"></div>
+  </div>
+
+</div>
+  
+<div id="zonePicker" class="panel hidden">
+
+  <div class="panel-header">
+    <span id="zonePickerTitle">Zone auswählen</span>
+    <span id="zonePickerClose" class="panel-add">×</span>
+  </div>
+
+  <div class="panel-content">
+    <div id="zonePickerGrid" class="app-picker-grid"></div>
+  </div>
+
+</div>
+
+
+  
+  
 <script>
 
+/* ============================================================
+   TILE SYSTEM – Neue Architektur
+============================================================ */
+
+let tiles = [];  // wird später geladen oder initialisiert
+ let isTransitioning = false;
+ 
+
+const tileTypes = {
+  apps:        { label: "Apps",        icon: "📱" },
+  smart_home:  { label: "Smart Home",  icon: "🏠" },
+  alarm_system:{ label: "Alarm",       icon: "🚨" }
+};
+/* ============================================================
+   Default-Kacheln erzeugen (nur beim ersten Start)
+============================================================ */
+
+function initializeDefaultTiles() {
+  tiles = [
+    {
+      id: "tile_media",
+      name: "Media",
+      type: "apps",
+      color: "#444444",
+      apps: [],
+      links: [],
+      devices: [],
+      alarms: []
+    },
+    {
+      id: "tile_games",
+      name: "Games",
+      type: "apps",
+      color: "#444444",
+      apps: [],
+      links: [],
+      devices: [],
+      alarms: []
+    },
+    {
+      id: "tile_home",
+      name: "Smart Home",
+      type: "smart_home",
+      color: "#444444",
+      apps: [],
+      links: [],
+      devices: [],
+      alarms: []
+    },
+    {
+      id: "tile_alarm",
+      name: "Alarm System",
+      type: "alarm_system",
+      color: "#444444",
+      apps: [],
+      links: [],
+      devices: [],
+      alarms: []
+    }
+  ];
+}
+
+
+
+  
+/* ============================================================
+   Tiles speichern & laden
+============================================================ */
+
+function saveTiles() {
+  localStorage.setItem("tiles", JSON.stringify(tiles));
+}
+
+function loadTiles() {
+  const saved = localStorage.getItem("tiles");
+
+  if (saved) {
+    tiles = JSON.parse(saved);
+  } else {
+    initializeDefaultTiles();
+    saveTiles();
+  }
+}
+
+function renderTiles() {
+  const bar = document.getElementById("tilebar");
+  if (!bar) return;
+
+  bar.innerHTML = "";
+
+  tiles.forEach(tileData => {
+    const tile = document.createElement("div");
+    tile.className = "tile";
+    tile.innerText = tileData.name;
+
+    // Farbe speichern
+    tile.dataset.color = tileData.color;
+
+    let swipeDetected = false;
+    let resetTimeout = null;
+
+    tile.addEventListener("touchstart", () => {
+      swipeDetected = false;
+
+      document.querySelectorAll(".tile").forEach(t => {
+        if (t.dataset.color) {
+          t.style.backgroundColor = t.dataset.color;
+        }
+      });
+
+      tile.classList.add("hovered");
+    });
+
+    tile.addEventListener("touchmove", () => {
+      swipeDetected = true;
+    });
+
+    tile.addEventListener("touchend", () => {
+      if (resetTimeout) clearTimeout(resetTimeout);
+
+      if (swipeDetected) {
+        resetTimeout = setTimeout(() => {
+          document.querySelectorAll(".tile").forEach(t => {
+            t.style.backgroundColor = "";
+            t.classList.remove("hovered");
+          });
+        }, 5000);
+      } else {
+        document.querySelectorAll(".tile").forEach(t => {
+          t.style.backgroundColor = "";
+          t.classList.remove("hovered");
+        });
+      }
+    });
+
+    // ⭐ WICHTIG: Name + Typ übergeben
+    tile.onclick = () => openTile(tileData.id);
+
+    // Rechtsklick (wird später ersetzt)
+    tile.oncontextmenu = (e) => {
+      e.preventDefault();
+      // renameTile(tileData.id);  // kommt später
+    };
+
+    bar.appendChild(tile);
+  });
+
+  // + Kachel hinzufügen
+  const addTile = document.createElement("div");
+  addTile.className = "tile tile-add";
+  addTile.innerText = "+";
+  addTile.onclick = () => {
+    // createNewTile(); // kommt später
+  };
+  bar.appendChild(addTile);
+}
+  
 let appsPerCategory = {};
 let currentTargetCategory = null;
 let appPickerSortMode = "alphabet";
@@ -1582,12 +2027,7 @@ let pendingExitFullscreen = false;
 let googleEditUnlocked = false;
 
 
-let categories = [
-  { id: "media",  name: "Media",       type: "apps",         color: "#444444" },
-  { id: "games",  name: "Games",       type: "apps",         color: "#444444" },
-  { id: "home",   name: "Smart Home",  type: "smart_home",   color: "#444444" },
-  { id: "alarm",  name: "Alarm System", type: "alarm_system", color: "#444444" }
-];
+
 
   function loadTileData() {
   const savedApps = localStorage.getItem("appsPerTile");
@@ -1609,21 +2049,12 @@ function saveTileData() {
 
 
 
-
-  function saveCategories() {
-  localStorage.setItem("categories", JSON.stringify(categories));
-}
-
 function closeAppPicker() {
   document.getElementById("appPicker").style.display = "none";
 }
 
 
 
-  function loadCategories() {
-  const saved = localStorage.getItem("categories");
-  if (saved) categories = JSON.parse(saved);
-}
 const imageCache = {};
 const cacheTimestamp = {};
 const CACHE_REFRESH_INTERVAL = 60 * 60 * 1000;
@@ -2935,55 +3366,6 @@ document.addEventListener("fullscreenchange", () => {
 
 
 
-function renderTileSettingsPage() {
-  const container = document.getElementById("tileSettingsContent");
-  container.innerHTML = "";
-
-  categories.forEach(cat => {
-    const block = document.createElement("div");
-    block.style.marginBottom = "20px";
-    block.style.padding = "10px";
-    block.style.border = "1px solid rgba(255,255,255,0.2)";
-    block.style.borderRadius = "8px";
-
-    // Titel
-    const title = document.createElement("h3");
-    title.textContent = cat.name;
-    block.appendChild(title);
-
-    // Name ändern
-    const nameLabel = document.createElement("label");
-    nameLabel.textContent = "Name: ";
-    const nameInput = document.createElement("input");
-    nameInput.type = "text";
-    nameInput.value = cat.name;
-    nameInput.oninput = () => {
-      cat.name = nameInput.value;
-      saveCategories();
-      renderTiles();
-    };
-    block.appendChild(nameLabel);
-    block.appendChild(nameInput);
-
-    block.appendChild(document.createElement("br"));
-
-    // Farbe ändern
-    const colorLabel = document.createElement("label");
-    colorLabel.textContent = "Farbe: ";
-    const colorInput = document.createElement("input");
-    colorInput.type = "color";
-    colorInput.value = cat.color;
-    colorInput.oninput = () => {
-      cat.color = colorInput.value;
-      saveCategories();
-      renderTiles();
-    };
-    block.appendChild(colorLabel);
-    block.appendChild(colorInput);
-
-    container.appendChild(block);
-  });
-}
 
 /* ============================================================
    INITIALISIERUNG
@@ -3329,73 +3711,396 @@ case "apps":
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  loadTiles();
+renderTiles();
+
   const closeBtn = document.getElementById("panelCloseBtn");
   if (closeBtn) {
     closeBtn.addEventListener("click", closeCategoryPanel);
   }
 });
 
-function openTile(tileName, tileType) {
-  currentTileName = tileName;
-  currentTileCategory = tileType;
+function openTile(tileId) {
+  const tile = tiles.find(t => t.id === tileId);
+  if (!tile) return;
 
-  switch (tileType) {
+  switch (tile.type) {
     case "apps":
-      openAppsPanel(tileName);
+      openAppsPanel(tile);
       break;
 
     case "smart_home":
-      openSmartHomePanel(tileName);
+      openSmartHomePanel(tile);
       break;
 
     case "alarm_system":
-      openAlarmPanel(tileName);
+      openAlarmPanel(tile);
       break;
 
     default:
-      console.warn("Unbekannter Kacheltyp:", tileType);
+      console.warn("Unbekannter Tile-Typ:", tile.type);
   }
 }
 
 
 
 
-function openAppsPanel(tileName) {
-  // Falls der Name übergeben wurde → setzen
-  // Falls ein Name übergeben wurde → setzen
-  if (tileName) {
-    currentTileName = tileName;
-  }
 
-  // Falls die Kachel noch keine App-Liste hat → anlegen
-  // Sicherheitsnetz: Falls keine Kachel aktiv ist → abbrechen
-  if (!currentTileName) {
-    console.warn("openAppsPanel() ohne gültigen Kachelnamen aufgerufen.");
-    return;
-  }
+function openAppsPanel(tile) {
+  if (!tile) return;
 
-  // Datenstrukturen sicherstellen
-  if (!appsPerTile[currentTileName]) {
-    appsPerTile[currentTileName] = [];
-  }
-
-  // Falls die Kachel noch keinen Sortiermodus hat → Standard setzen
-  if (!sortModePerTile[currentTileName]) {
-    sortModePerTile[currentTileName] = "alphabet";
-  }
-
-  // Panel öffnen
-  document.getElementById("appsPanel").classList.add("open");
   const panel = document.getElementById("appsPanel");
-  panel.classList.add("open");
+  const title = document.getElementById("appsPanelTitle");
+  const list = document.getElementById("appsList");
+  const addBtn = document.getElementById("appsPanelAdd");
 
-  // Apps der Kachel rendern
+  // Titel setzen (Name der Kachel)
+  title.textContent = tile.name;
+
+  // Liste leeren
+  list.innerHTML = "";
+
   // Apps rendern
-  renderAppsPanel(currentTileName);
+  tile.apps.forEach(app => {
+    const btn = document.createElement("button");
+    btn.className = "app-button";
+    btn.textContent = app.label;
+
+    btn.onclick = () => {
+      window.location.href = app.url;
+    };
+
+    list.appendChild(btn);
+  });
+
+  // Plus-Symbol → später App-Picker
+  addBtn.onclick = () => {
+    // Hier kommt später: animiertes Morph + App-Picker
+    console.log("App hinzufügen für Tile:", tile.id);
+  };
+
+  // Panel anzeigen
+  panel.style.display = "flex";
 }
 
+function openSmartHomePanel(tile) {
+  if (!tile) return;
+
+  const panel = document.getElementById("smartHomePanel");
+  const title = document.getElementById("smartHomePanelTitle");
+  const list = document.getElementById("smartHomeDeviceList");
+  const addBtn = document.getElementById("smartHomePanelAdd");
+
+  // Titel setzen (Name der Kachel)
+  title.textContent = tile.name;
+
+  // Liste leeren
+  list.innerHTML = "";
+
+  // Geräte rendern
+  tile.devices.forEach(device => {
+    const btn = document.createElement("button");
+    btn.className = "app-button"; // wir nutzen das gleiche Button-Design
+    btn.textContent = device.label;
+
+    btn.onclick = () => {
+      // später: Gerät steuern
+      console.log("Gerät öffnen:", device.id);
+    };
+
+    list.appendChild(btn);
+  });
+
+  // Plus-Symbol → später Geräte-Picker
+  addBtn.onclick = () => {
+    // später: animiertes Morph + Geräte-Auswahl
+    console.log("Gerät hinzufügen für Tile:", tile.id);
+  };
+
+  // Panel anzeigen
+  panel.style.display = "flex";
+}
+
+function openAlarmPanel(tile) {
+  if (!tile) return;
+
+  const panel = document.getElementById("alarmPanel");
+  const title = document.getElementById("alarmPanelTitle");
+  const list = document.getElementById("alarmZoneList");
+  const addBtn = document.getElementById("alarmPanelAdd");
+
+  // Titel setzen (Name der Kachel)
+  title.textContent = tile.name;
+
+  // Liste leeren
+  list.innerHTML = "";
+
+  // Alarm-Zonen rendern
+  tile.zones.forEach(zone => {
+    const btn = document.createElement("button");
+    btn.className = "app-button"; // wir nutzen das gleiche Button-Design
+    btn.textContent = zone.label;
+
+    btn.onclick = () => {
+      // später: Zone scharf/unscharf schalten
+      console.log("Alarmzone öffnen:", zone.id);
+    };
+
+    list.appendChild(btn);
+  });
+
+  // Plus-Symbol → später Zonen-Picker
+  addBtn.onclick = () => {
+    // später: animiertes Morph + Zonen-Auswahl
+    console.log("Alarmzone hinzufügen für Tile:", tile.id);
+  };
+
+  // Panel anzeigen
+  panel.style.display = "flex";
+}
+  
+function openAppPicker(tile) {
+  if (!tile) return;
+
+  const picker = document.getElementById("appPicker");
+  const grid = document.getElementById("appPickerGrid");
+  const closeBtn = document.getElementById("appPickerClose");
+  // Close-Button Pop-In Animation
+closeBtn.classList.remove("close-button-animate");
+void closeBtn.offsetWidth; // Reflow trick, damit Animation jedes Mal neu startet
+closeBtn.classList.add("close-button-animate");
 
 
+  // Grid leeren
+  grid.innerHTML = "";
+
+  // Titel setzen (optional dynamisch)
+  document.getElementById("appPickerTitle").textContent =
+    "App zu »" + tile.name + "« hinzufügen";
+
+  // Schließen-Button
+closeBtn.onclick = () => {
+  animatePanelTransition("appPicker", "appsPanel");
+};
+
+  
+  renderAppPickerGrid(tile);
+
+  // Panel anzeigen
+  animatePanelTransition("appsPanel", "appPicker");
+
+}
+
+function renderAppPickerGrid(tile) {
+  const grid = document.getElementById("appPickerGrid");
+
+  // Beispiel-Daten: später ersetzen wir das durch echte installierte Apps
+  const installedApps = [
+    { label: "Netflix", icon: "icons/netflix.png", url: "https://www.netflix.com" },
+    { label: "YouTube", icon: "icons/youtube.png", url: "https://www.youtube.com" },
+    { label: "Prime Video", icon: "icons/prime.png", url: "https://www.primevideo.com" },
+    { label: "Disney+", icon: "icons/disney.png", url: "https://www.disneyplus.com" }
+  ];
+
+  installedApps.forEach(app => {
+    const item = document.createElement("div");
+    item.className = "app-picker-item";
+
+    // Icon
+    const icon = document.createElement("div");
+    icon.className = "app-picker-icon";
+    // Pop-In Animation
+item.classList.add("grid-item-animate");
+item.style.animationDelay = (Math.random() * 120) + "ms";
+
+    icon.style.backgroundImage = `url('${app.icon}')`;
+
+    // Label
+    const label = document.createElement("div");
+    label.className = "app-picker-label";
+    label.textContent = app.label;
+
+    // Zusammenbauen
+    item.appendChild(icon);
+    item.appendChild(label);
+
+    // Klick → App zur Kachel hinzufügen
+    item.onclick = () => {
+      tile.apps.push({
+        label: app.label,
+        url: app.url
+      });
+
+      saveTiles();
+      openAppsPanel(tile);
+
+      document.getElementById("appPicker").style.display = "none";
+    };
+
+    grid.appendChild(item);
+  });
+}
+
+function openDevicePicker(tile) {
+  if (!tile) return;
+
+  const picker = document.getElementById("devicePicker");
+  const grid = document.getElementById("devicePickerGrid");
+  const closeBtn = document.getElementById("devicePickerClose");
+  // Close-Button Pop-In Animation
+closeBtn.classList.remove("close-button-animate");
+void closeBtn.offsetWidth; // Reflow trick, damit Animation jedes Mal neu startet
+closeBtn.classList.add("close-button-animate");
+
+
+  // Grid leeren
+  grid.innerHTML = "";
+
+  // Titel setzen
+  document.getElementById("devicePickerTitle").textContent =
+    "Gerät zu »" + tile.name + "« hinzufügen";
+
+  // Schließen-Button
+closeBtn.onclick = () => {
+  animatePanelTransition("devicePicker", "smartHomePanel");
+};
+
+renderDevicePickerGrid(tile);
+  // Panel anzeigen
+animatePanelTransition("smartHomePanel", "devicePicker");
+}
+
+function renderDevicePickerGrid(tile) {
+  const grid = document.getElementById("devicePickerGrid");
+
+  // Beispiel-Daten: später ersetzen wir das durch echte Smart-Home-Geräte
+  const availableDevices = [
+    { label: "Wohnzimmer Licht", icon: "icons/light.png", id: "light_livingroom" },
+    { label: "Schlafzimmer Licht", icon: "icons/light.png", id: "light_bedroom" },
+    { label: "Heizung", icon: "icons/heating.png", id: "heating_main" },
+    { label: "Steckdose", icon: "icons/socket.png", id: "socket_1" }
+  ];
+
+  availableDevices.forEach(device => {
+    const item = document.createElement("div");
+    item.className = "app-picker-item";
+
+    // Icon
+    const icon = document.createElement("div");
+    icon.className = "app-picker-icon";
+// Pop-In Animation
+item.classList.add("grid-item-animate");
+item.style.animationDelay = (Math.random() * 120) + "ms";
+    icon.style.backgroundImage = `url('${device.icon}')`;
+
+    // Label
+    const label = document.createElement("div");
+    label.className = "app-picker-label";
+    label.textContent = device.label;
+
+    // Zusammenbauen
+    item.appendChild(icon);
+    item.appendChild(label);
+
+    // Klick → Gerät zur Kachel hinzufügen
+    item.onclick = () => {
+      tile.devices.push({
+        label: device.label,
+        id: device.id
+      });
+
+      saveTiles();
+      openSmartHomePanel(tile);
+
+      document.getElementById("devicePicker").style.display = "none";
+    };
+
+    grid.appendChild(item);
+  });
+}
+
+function openZonePicker(tile) {
+  if (!tile) return;
+
+  const picker = document.getElementById("zonePicker");
+  const grid = document.getElementById("zonePickerGrid");
+  const closeBtn = document.getElementById("zonePickerClose");
+  // Close-Button Pop-In Animation
+closeBtn.classList.remove("close-button-animate");
+void closeBtn.offsetWidth; // Reflow trick, damit Animation jedes Mal neu startet
+closeBtn.classList.add("close-button-animate");
+
+
+  // Grid leeren
+  grid.innerHTML = "";
+
+  // Titel setzen
+  document.getElementById("zonePickerTitle").textContent =
+    "Zone zu »" + tile.name + "« hinzufügen";
+
+  // Schließen-Button
+closeBtn.onclick = () => {
+  animatePanelTransition("zonePicker", "alarmPanel");
+};
+
+renderZonePickerGrid(tile);
+  // Panel anzeigen
+  animatePanelTransition("alarmPanel", "zonePicker");
+
+}
+
+ function renderZonePickerGrid(tile) {
+  const grid = document.getElementById("zonePickerGrid");
+
+  // Beispiel-Daten: später ersetzen wir das durch echte Alarm-Zonen
+  const availableZones = [
+    { label: "Eingang", icon: "icons/alarm.png", id: "zone_entry" },
+    { label: "Wohnzimmer", icon: "icons/alarm.png", id: "zone_livingroom" },
+    { label: "Schlafzimmer", icon: "icons/alarm.png", id: "zone_bedroom" },
+    { label: "Garage", icon: "icons/alarm.png", id: "zone_garage" }
+  ];
+
+  availableZones.forEach(zone => {
+    const item = document.createElement("div");
+    item.className = "app-picker-item";
+
+    // Icon
+    const icon = document.createElement("div");
+    icon.className = "app-picker-icon";
+    // Pop-In Animation
+item.classList.add("grid-item-animate");
+item.style.animationDelay = (Math.random() * 120) + "ms";
+
+    icon.style.backgroundImage = `url('${zone.icon}')`;
+
+    // Label
+    const label = document.createElement("div");
+    label.className = "app-picker-label";
+    label.textContent = zone.label;
+
+    // Zusammenbauen
+    item.appendChild(icon);
+    item.appendChild(label);
+
+    // Klick → Zone zur Kachel hinzufügen
+    item.onclick = () => {
+      tile.zones.push({
+        label: zone.label,
+        id: zone.id
+      });
+
+      saveTiles();
+      openAlarmPanel(tile);
+
+      document.getElementById("zonePicker").style.display = "none";
+    };
+
+    grid.appendChild(item);
+  });
+}
+ 
+
+  
 function closeAppsPanel() {
   document.getElementById("appsPanel").classList.remove("open");
 }
@@ -3450,103 +4155,10 @@ function launchApp(packageName) {
   }
 }
 
-function renderTiles() {
-  const bar = document.getElementById("tilebar");
-  if (!bar) return;
-
-  bar.innerHTML = "";
-
-  categories.forEach(cat => {
-    const tile = document.createElement("div");
-    tile.className = "tile";
-    tile.innerText = cat.name;
-
-    // Farbe
-    tile.dataset.color = cat.color;
-
-    let swipeDetected = false;
-    let resetTimeout = null;
-
-    tile.addEventListener("touchstart", () => {
-      swipeDetected = false;
-
-      document.querySelectorAll(".tile").forEach(t => {
-        if (t.dataset.color) {
-          t.style.backgroundColor = t.dataset.color;
-        }
-      });
-
-      tile.classList.add("hovered");
-    });
-
-    tile.addEventListener("touchmove", () => {
-      swipeDetected = true;
-    });
-
-    tile.addEventListener("touchend", () => {
-      if (resetTimeout) clearTimeout(resetTimeout);
-
-      if (swipeDetected) {
-        resetTimeout = setTimeout(() => {
-          document.querySelectorAll(".tile").forEach(t => {
-            t.style.backgroundColor = "";
-            t.classList.remove("hovered");
-          });
-        }, 5000);
-      } else {
-        document.querySelectorAll(".tile").forEach(t => {
-          t.style.backgroundColor = "";
-          t.classList.remove("hovered");
-        });
-      }
-    });
-
-    // ⭐ WICHTIG: Name + Typ übergeben
-    tile.onclick = () => openTile(cat.name, cat.type);
-
-    tile.oncontextmenu = (e) => {
-      e.preventDefault();
-      renameCategory(cat.id);
-    };
-
-    bar.appendChild(tile);
-  });
-
-  const addTile = document.createElement("div");
-  addTile.className = "tile tile-add";
-  addTile.innerText = "+";
-  addTile.onclick = () => addCategory();
-  bar.appendChild(addTile);
-}
 
 
 
 
-function addCategory() {
-  const name = prompt("Name der neuen Kategorie:");
-  if (!name) return;
-
-  const type = prompt("Typ (apps, smart_home, alarm_system):", "apps");
-  if (!["apps","smart_home","alarm_system"].includes(type)) {
-    alert("Ungültiger Typ.");
-    return;
-  }
-
-  const id = name.toLowerCase().replace(/\s+/g, "_");
-  categories.push({ id, name, type });
-  renderTiles();
-}
-
-function renameCategory(id) {
-  const cat = categories.find(c => c.id === id);
-  if (!cat) return;
-
-  const newName = prompt("Neuer Name:", cat.name);
-  if (!newName) return;
-
-  cat.name = newName;
-  renderTiles();
-}
 
 const tilebarElement = document.getElementById("tilebar");
 
@@ -3639,7 +4251,40 @@ function addAppToPanel(app) {
   renderAppsPanel(currentTileName);
 }
 
+function animatePanelTransition(fromId, toId) {
+  if (isTransitioning) return; // verhindert doppelte Animationen
+  isTransitioning = true;
 
+  const from = document.getElementById(fromId);
+  const to = document.getElementById(toId);
+
+  if (!from || !to) {
+    isTransitioning = false;
+    return;
+  }
+
+  // Panels vorbereiten
+  from.classList.add("panel-anim-out");
+  to.classList.add("panel-anim-in");
+  to.style.display = "flex";
+
+  // Klicks blockieren
+  document.body.classList.add("no-click");
+
+  // Nach der Animation aufräumen
+  setTimeout(() => {
+    from.style.display = "none";
+    from.classList.remove("panel-anim-out");
+    to.classList.remove("panel-anim-in");
+
+    document.body.classList.remove("no-click");
+    isTransitioning = false; // Animation wieder freigeben
+  }, 300);
+}
+
+
+
+  
 </script>
 
 
