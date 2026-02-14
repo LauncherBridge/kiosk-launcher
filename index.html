@@ -4129,11 +4129,13 @@ function removeAppFromTile(tileName, packageName) {
 
 function closeCategoryPanel() {
   const panel = document.getElementById("categoryPanel");
-  panel.classList.remove("open");
+if (!panel) return; // <– NEU 
+panel.classList.remove("open");
 }
 
 document.addEventListener("click", (event) => {
   const panel = document.getElementById("categoryPanel");
+  if (!panel) return; // <– NEU: wenn es kein Panel gibt, gar nichts tun
 
   // Wenn Panel nicht offen → nichts tun
   if (!panel.classList.contains("open")) return;
@@ -4147,6 +4149,7 @@ document.addEventListener("click", (event) => {
   // Ansonsten Panel schließen
   closeCategoryPanel();
 });
+
 
 function launchApp(packageName) {
   try {
