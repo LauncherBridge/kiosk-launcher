@@ -3710,7 +3710,7 @@ case "apps":
   panel.classList.add("open");
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+/*document.addEventListener("DOMContentLoaded", () => {
   loadTiles();
 renderTiles();
 
@@ -3719,7 +3719,8 @@ renderTiles();
     closeBtn.addEventListener("click", closeCategoryPanel);
   }
 });
-
+*/
+  
 function openTile(tileId) {
   const tile = tiles.find(t => t.id === tileId);
   if (!tile) return;
