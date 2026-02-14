@@ -3663,7 +3663,7 @@ window.addEventListener("resize", () => {
 
 /* ============================================================
    KACHELBAND – LAUNCHER-LEISTE UNTEN
-============================================================ */
+============================================================ 
 
 function openCategoryPanel(cat) {
 
@@ -3709,7 +3709,9 @@ case "apps":
   // Panel öffnen
   panel.classList.add("open");
 }
+*/
 
+  
 document.addEventListener("DOMContentLoaded", () => {
   loadTiles();
 renderTiles();
@@ -4133,6 +4135,7 @@ if (!panel) return; // <– NEU
 panel.classList.remove("open");
 }
 
+/*  
 document.addEventListener("click", (event) => {
   const panel = document.getElementById("categoryPanel");
   if (!panel) return; // <– NEU: wenn es kein Panel gibt, gar nichts tun
@@ -4149,7 +4152,7 @@ document.addEventListener("click", (event) => {
   // Ansonsten Panel schließen
   closeCategoryPanel();
 });
-
+*/
 
 function launchApp(packageName) {
   try {
