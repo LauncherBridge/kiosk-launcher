@@ -3950,7 +3950,7 @@ function openTile(tileId) {
   
   switch (tile.type) {
     case "apps":
-      openAppsPanel(tile);
+      ;
       break;
 
     case "smart_home":
@@ -3971,6 +3971,7 @@ function openTile(tileId) {
 
 
 function openAppsPanel(tile) {
+  currentTile = tile;
   if (!tile) return;
 document.getElementById("appsPanelDynamicTitle").textContent =
   "Apps in " + tile.name;
@@ -4140,6 +4141,11 @@ if (closeBtn) {
 
   panel.style.display = "flex";
 }
+
+  
+document.getElementById("appsPanelAddButton").onclick = function () {
+    openAppPicker(currentTile);
+};
 
   
 function renderApps(apps) {
