@@ -1063,117 +1063,39 @@ opacity: 1; /* inaktiver Zustand */
   height: 2px;
 }
 
+/* Kopfzeile als dunkler Panel-Bereich */
 .apps-panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: center; /* zentriert Titel + Plus als Gruppe */
-  gap: 10px;
-  margin-bottom: 12px;
-}
-
-.apps-panel-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: white;
-}
-
-.apps-panel-header {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr; /* links – mitte – rechts */
-  align-items: center;
-  margin-bottom: 12px;
-  padding: 0 6px;
-}
-
-.apps-panel-left {
-  text-align: left;
-}
-
-.apps-panel-center {
-  text-align: center;
-}
-
-.apps-panel-right {
-  text-align: right;
-}
-/* Kopfzeile des Panels */
-.apps-panel-header {
+  width: 100%;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
 
-  background: rgba(0, 0, 0, 0.35); /* dunkler Balken */
+  background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(6px);
 
-  height: 56px; /* fingerbreit */
-  padding: 0 12px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  height: 64px;
+  padding: 0 16px;
+
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
 /* Titel links */
 .apps-panel-title {
-  font-size: 20px;
-  font-weight: 600;
-  color: white;
-}
-
-/* Plus-Symbol größer */
-.plus-icon {
-  width: 32px;
-  height: 32px;
-  position: relative;
-  cursor: pointer;
-}
-
-.plus-icon::before,
-.plus-icon::after {
-  content: "";
-  position: absolute;
-  background: #0b4f0b;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  border-radius: 2px;
-}
-
-.plus-icon::before {
-  width: 3px;
-  height: 24px;
-}
-
-.plus-icon::after {
-  width: 24px;
-  height: 3px;
-}
-
-.plus-icon:active {
-  transform: scale(0.9);
-  opacity: 0.8;
-}
-
-   /* Kopfzeile als dunkler Panel-Bereich */
-.apps-panel-header {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-
-  background: rgba(0, 0, 0, 0.45); /* dunkler als das Panel */
-  backdrop-filter: blur(6px);
-
-  height: 64px; /* fingerbreit */
-  padding: 0 16px;
-
-  border-top-left-radius: 18px;   /* gleiche Rundung wie Panel */
-  border-top-right-radius: 18px;  /* gleiche Rundung wie Panel */
-  border-bottom-left-radius: 0;   /* unten gerade */
-  border-bottom-right-radius: 0;  /* unten gerade */
-}
- .apps-panel-title {
   font-size: 22px;
   font-weight: 600;
   color: white;
+  text-align: left;
 }
 
+/* Zentrierte Spalte */
+.apps-panel-center {
+  text-align: center;
+}
+
+/* Plus-Symbol */
 .plus-icon {
   width: 34px;
   height: 34px;
@@ -1206,44 +1128,7 @@ opacity: 1; /* inaktiver Zustand */
   transform: scale(0.9);
   opacity: 0.8;
 }
-.apps-panel-title {
-  font-size: 22px;
-  font-weight: 600;
-  color: white;
-}
 
-.plus-icon {
-  width: 34px;
-  height: 34px;
-  position: relative;
-  cursor: pointer;
-}
-
-.plus-icon::before,
-.plus-icon::after {
-  content: "";
-  position: absolute;
-  background: #0b4f0b;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  border-radius: 2px;
-}
-
-.plus-icon::before {
-  width: 3px;
-  height: 26px;
-}
-
-.plus-icon::after {
-  width: 26px;
-  height: 3px;
-}
-
-.plus-icon:active {
-  transform: scale(0.9);
-  opacity: 0.8;
-}
 
   </style>
 </head>
