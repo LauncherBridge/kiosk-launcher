@@ -1719,6 +1719,7 @@ opacity: 1; /* inaktiver Zustand */
   <div class="panel-header">
     <span id="appsPanelTitle"></span>
     <span id="appsPanelAdd" class="panel-add">+</span>
+    <span id="appsPanelClose" class="panel-add">×</span>
   </div>
 
   <div class="panel-content" id="appsList"></div>
@@ -3785,8 +3786,16 @@ function openAppsPanel(tile) {
   // App hinzufügen → AppPicker öffnen
   addBtn.onclick = () => {
     currentTileName = tile.name;
-    openAppPicker();
+    openAppPicker(tile);
   };
+  
+// Schließen-Button
+const closeBtn = document.getElementById("appsPanelClose");
+if (closeBtn) {
+  closeBtn.onclick = () => {
+    document.getElementById("appsPanel").style.display = "none";
+  };
+}
 
   panel.style.display = "flex";
 }
