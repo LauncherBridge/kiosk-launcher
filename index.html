@@ -1421,7 +1421,7 @@ opacity: 1; /* inaktiver Zustand */
   -->
 
 <!-- ============================
-     APP PICKER MODAL
+     APP PICKER MODAL - Das Alte (auskommentiert)
 ============================= 
 <div id="appPicker" class="modal">
   <div class="modal-content">
@@ -1441,7 +1441,38 @@ opacity: 1; /* inaktiver Zustand */
   </div>
 </div>
 -->
+<!-- ============================================
+     APP PICKER PANEL (NEUES SYSTEM)
+=============================================== -->
+<div id="appPicker" class="panel" style="display:none;">
 
+  <div class="panel-header">
+    <span id="appPickerTitle">App hinzufügen</span>
+    <span id="appPickerClose" class="panel-add">×</span>
+  </div>
+
+  <div class="panel-content">
+    <input id="appPickerSearch" type="text" placeholder="Suchen..." class="search-input">
+
+    <div class="sort-buttons">
+      <button id="sortAlpha">A‑Z</button>
+      <button id="sortInstalled">Installiert</button>
+      <button id="sortUsage">Nutzung</button>
+    </div>
+    
+    <!-- NEU: Grid für die App-Icons --> 
+    <div id="appPickerGrid"></div>
+    
+    <div id="appList"></div>
+  </div>
+
+</div>
+
+
+
+
+
+  
   <div id="settingsPanel" class="settings Panel">
 
   <!-- Tabs oben -->
