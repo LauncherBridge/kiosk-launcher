@@ -1096,6 +1096,60 @@ opacity: 1; /* inaktiver Zustand */
 .apps-panel-right {
   text-align: right;
 }
+/* Kopfzeile des Panels */
+.apps-panel-header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+
+  background: rgba(0, 0, 0, 0.35); /* dunkler Balken */
+  backdrop-filter: blur(6px);
+
+  height: 56px; /* fingerbreit */
+  padding: 0 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+/* Titel links */
+.apps-panel-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: white;
+}
+
+/* Plus-Symbol größer */
+.plus-icon {
+  width: 32px;
+  height: 32px;
+  position: relative;
+  cursor: pointer;
+}
+
+.plus-icon::before,
+.plus-icon::after {
+  content: "";
+  position: absolute;
+  background: #0b4f0b;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 2px;
+}
+
+.plus-icon::before {
+  width: 3px;
+  height: 24px;
+}
+
+.plus-icon::after {
+  width: 24px;
+  height: 3px;
+}
+
+.plus-icon:active {
+  transform: scale(0.9);
+  opacity: 0.8;
+}
 
     
   </style>
