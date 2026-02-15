@@ -3757,34 +3757,40 @@ function openAppsPanel(tile) {
   const list = document.getElementById("appsList");
   const addBtn = document.getElementById("appsPanelAdd");
 
-  // Titel setzen (Name der Kachel)
+  // Titel setzen
   title.textContent = tile.name;
 
   // Liste leeren
   list.innerHTML = "";
 
-  // Apps rendern
-  tile.apps.forEach(app => {
+  // Apps aus dem neuen System holen
+  const apps = appsPerTile[tile.name] || [];
+
+  apps.forEach(app => {
     const btn = document.createElement("button");
     btn.className = "app-button";
     btn.textContent = app.label;
 
     btn.onclick = () => {
-      window.location.href = app.url;
+      try {
+        AndroidBridge.launchApp(app.package);
+      } catch (e) {
+        console.warn("App konnte nicht gestartet werden:", e);
+      }
     };
 
     list.appendChild(btn);
   });
 
-  // Plus-Symbol → später App-Picker
+  // App hinzufügen → AppPicker öffnen
   addBtn.onclick = () => {
-    // Hier kommt später: animiertes Morph + App-Picker
-    console.log("App hinzufügen für Tile:", tile.id);
+    currentTileName = tile.name;
+    openAppPicker();
   };
 
-  // Panel anzeigen
   panel.style.display = "flex";
 }
+
 
 function openSmartHomePanel(tile) {
   if (!tile) return;
