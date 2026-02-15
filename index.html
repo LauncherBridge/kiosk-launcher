@@ -4236,17 +4236,18 @@ label.style.fontWeight = "500";
    // };
     item.onclick = () => {
   // Sicherstellen, dass die Tile-Liste existiert
-  if (!appsPerTile[tile.name]) {
+  if (!tile.name]) {
     appsPerTile[tile.name] = [];
   }
 
   // App hinzufügen (mit Icon!)
-  appsPerTile[tile.name].push({
-    label: app.label,
-    icon: app.icon,
-    url: app.url,
-    package: app.packageName
-  });
+appsPerTile[tile.name].push({
+  label: app.label,
+  icon: app.icon,
+  url: "appstarterplus://start?app=" + app.packageName,
+  package: app.packageName
+});
+
 
   saveTileData(); // deine neue Speicherfunktion
 
