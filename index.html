@@ -4234,11 +4234,12 @@ label.style.fontWeight = "500";
 
      // document.getElementById("appPicker").style.display = "none";
    // };
-    item.onclick = () => {
+item.onclick = () => {
   // Sicherstellen, dass die Tile-Liste existiert
-  if (!tile.name]) {
+  if (!appsPerTile[tile.name]) {
     appsPerTile[tile.name] = [];
   }
+
 
   // App hinzufügen (mit Icon!)
 appsPerTile[tile.name].push({
