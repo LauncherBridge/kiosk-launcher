@@ -1005,6 +1005,36 @@ opacity: 1; /* inaktiver Zustand */
   animation: closeButtonPopIn 0.25s ease forwards;
 }
 
+.apps-panel-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  background: #ffffff;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.apps-panel-item:hover {
+  background: #f0f0f0;
+  transform: translateY(-2px);
+}
+
+.apps-panel-icon {
+  width: 48px;
+  height: 48px;
+  background-size: cover;
+  background-position: center;
+  border-radius: 10px;
+}
+
+.apps-panel-label {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #222;
+}
 
     
   </style>
@@ -1468,6 +1498,7 @@ opacity: 1; /* inaktiver Zustand */
 
 </div>
 
+<div id="appsPanel" class="panel" style="display:none;">
 
 
 
@@ -3800,21 +3831,41 @@ function openAppsPanel(tile) {
   // Apps aus dem neuen System holen
   const apps = appsPerTile[tile.name] || [];
 
-  apps.forEach(app => {
-    const btn = document.createElement("button");
-    btn.className = "app-button";
-    btn.textContent = app.label;
+apps.forEach(app => {
+  const item = document.createElement("div");
+  item.className = "apps-panel-item";
 
-    btn.onclick = () => {
-      try {
+  // Icon
+  const icon = document.createElement("div");
+  icon.className = "apps-panel-icon";
+  icon.style.backgroundImage = `url('${app.icon}')`;
+
+  // Label
+  const label = document.createElement("div");
+  label.className = "apps-panel-label";
+  label.textContent = app.label;
+
+  // Klick → App starten
+  item.onclick = () => {
+    try {
+      // Falls später echte Android-Pakete kommen
+      if (app.package) {
         AndroidBridge.launchApp(app.package);
-      } catch (e) {
-        console.warn("App konnte nicht gestartet werden:", e);
+      } else {
+        // Fallback: URL öffnen
+        window.location.href = app.url;
       }
-    };
+    } catch (e) {
+      console.warn("App konnte nicht gestartet werden:", e);
+      window.location.href = app.url;
+    }
+  };
 
-    list.appendChild(btn);
-  });
+  item.appendChild(icon);
+  item.appendChild(label);
+  list.appendChild(item);
+});
+
 
   // App hinzufügen → AppPicker öffnen
   addBtn.onclick = () => {
@@ -3981,17 +4032,39 @@ item.style.animationDelay = (Math.random() * 120) + "ms";
     item.appendChild(label);
 
     // Klick → App zur Kachel hinzufügen
+  //  item.onclick = () => {
+  //    tile.apps.push({
+  //      label: app.label,
+   //     url: app.url
+    //  });
+
+  //    saveTiles();
+//      openAppsPanel(tile);
+
+     // document.getElementById("appPicker").style.display = "none";
+   // };
     item.onclick = () => {
-      tile.apps.push({
-        label: app.label,
-        url: app.url
-      });
+  // Sicherstellen, dass die Tile-Liste existiert
+  if (!appsPerTile[tile.name]) {
+    appsPerTile[tile.name] = [];
+  }
 
-      saveTiles();
-      openAppsPanel(tile);
+  // App hinzufügen (mit Icon!)
+  appsPerTile[tile.name].push({
+    label: app.label,
+    icon: app.icon,
+    url: app.url
+  });
 
-      document.getElementById("appPicker").style.display = "none";
-    };
+  saveTileData(); // deine neue Speicherfunktion
+
+  // AppsPanel neu öffnen
+  openAppsPanel(tile);
+
+  // Picker schließen
+  animatePanelTransition("appPicker", "appsPanel");
+};
+
 
     grid.appendChild(item);
   });
