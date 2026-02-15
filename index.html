@@ -1151,7 +1151,62 @@ opacity: 1; /* inaktiver Zustand */
   opacity: 0.8;
 }
 
-    
+   /* Kopfzeile als dunkler Panel-Bereich */
+.apps-panel-header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+
+  background: rgba(0, 0, 0, 0.45); /* dunkler als das Panel */
+  backdrop-filter: blur(6px);
+
+  height: 64px; /* fingerbreit */
+  padding: 0 16px;
+
+  border-top-left-radius: 18px;   /* gleiche Rundung wie Panel */
+  border-top-right-radius: 18px;  /* gleiche Rundung wie Panel */
+  border-bottom-left-radius: 0;   /* unten gerade */
+  border-bottom-right-radius: 0;  /* unten gerade */
+}
+ .apps-panel-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: white;
+}
+
+.plus-icon {
+  width: 34px;
+  height: 34px;
+  position: relative;
+  cursor: pointer;
+}
+
+.plus-icon::before,
+.plus-icon::after {
+  content: "";
+  position: absolute;
+  background: #0b4f0b;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 2px;
+}
+
+.plus-icon::before {
+  width: 3px;
+  height: 26px;
+}
+
+.plus-icon::after {
+  width: 26px;
+  height: 3px;
+}
+
+.plus-icon:active {
+  transform: scale(0.9);
+  opacity: 0.8;
+}
+
   </style>
 </head>
 
