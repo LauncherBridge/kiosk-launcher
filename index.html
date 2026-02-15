@@ -1501,11 +1501,16 @@ opacity: 1; /* inaktiver Zustand */
 </div>
 
 <div id="appsPanel" class="panel" style="display:none;">
-<div class="panel-header">
+<div class="apps-panel-header">
+  <div class="apps-panel-title">Apps dieser Kachel</div>
+  <div id="appsPanelAddButton" class="plus-icon"></div>
+</div>
+<!--
+  <div class="panel-header">
     <span id="appsPanelTitle">Apps</span>
     <span id="appsPanelClose" class="panel-add">×</span>
 </div>
-
+-->
 <div class="panel-content">
     <div id="appsList"></div>
     <button id="appsPanelAdd" class="panel-add">App hinzufügen</button>
