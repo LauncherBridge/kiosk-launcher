@@ -1036,7 +1036,33 @@ opacity: 1; /* inaktiver Zustand */
   color: #222;
 }
 
-    
+   .plus-icon {
+  width: 22px;
+  height: 22px;
+  position: relative;
+  cursor: pointer;
+}
+
+.plus-icon::before,
+.plus-icon::after {
+  content: "";
+  position: absolute;
+  background: #0b4f0b; /* dunkelgrün */
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.plus-icon::before {
+  width: 2px;
+  height: 18px;
+}
+
+.plus-icon::after {
+  width: 18px;
+  height: 2px;
+}
+ 
   </style>
 </head>
 
