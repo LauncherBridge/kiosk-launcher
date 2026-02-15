@@ -1439,7 +1439,7 @@ opacity: 1; /* inaktiver Zustand */
 </div>
 
   <!--
-  <div id="appsPanel">
+  >
   <h2>Apps in dieser Kachel</h2>
 
   <button class="close-panel-btn" onclick="closeAppsPanel()">Schließen</button>
@@ -1876,6 +1876,12 @@ opacity: 1; /* inaktiver Zustand */
   
 <script>
 
+const apps = [
+    { name: "Netflix", packageName: "com.netflix.mediaclient", icon: "icons/netflix.png" },
+    { name: "YouTube", packageName: "com.google.android.youtube", icon: "icons/youtube.png" }
+];
+
+  
 /* ============================================================
    TILE SYSTEM – Neue Architektur
 ============================================================ */
@@ -3902,6 +3908,26 @@ if (closeBtn) {
 }
 
   panel.style.display = "flex";
+}
+
+  
+function renderApps(apps) {
+    const list = document.getElementById("appsList");
+    list.innerHTML = "";
+
+    apps.forEach(app => {
+        const item = document.createElement("div");
+        item.className = "app-entry";
+
+        item.innerHTML = `
+            <a href="appstarterplus://start?app=${app.packageName}" class="app-link">
+                <img src="${app.icon}" class="app-icon">
+                <span class="app-name">${app.name}</span>
+            </a>
+        `;
+
+        list.appendChild(item);
+    });
 }
 
 
