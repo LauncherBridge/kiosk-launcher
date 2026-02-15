@@ -1438,40 +1438,6 @@ opacity: 1; /* inaktiver Zustand */
 
 </div>
 
-  <!--
-  >
-  <h2>Apps in dieser Kachel</h2>
-
-  <button class="close-panel-btn" onclick="closeAppsPanel()">Schließen</button>
-
-  <button class="add-app-btn" onclick="openAppPicker()">+ App hinzufügen</button>
-
-  <div id="appsPanelContent"></div>
-</div>
-  -->
-
-<!-- 
-============================
-     APP PICKER MODAL - Das Alte (auskommentiert)
-============================= 
-<div id="appPicker" class="modal">
-  <div class="modal-content">
-    <h2 id="appPickerTitle"></h2>
-
-    <input id="appPickerSearch" type="text" placeholder="Suchen…">
-
-    <div id="appPickerSort">
-      <button data-sort="alphabet" onclick="setAppPickerSort('alphabet')">A–Z</button>
-      <button data-sort="installed" onclick="setAppPickerSort('installed')">Installiert</button>
-      <button data-sort="usage" onclick="setAppPickerSort('usage')">Nutzung</button>
-    </div>
-
-    <div id="appList"></div>
-
-    <button class="close-btn" onclick="closeAppPicker()">Schließen</button>
-  </div>
-</div>
--->
 <!-- ============================================
      APP PICKER PANEL (NEUES SYSTEM)
 =============================================== -->
@@ -1501,11 +1467,16 @@ opacity: 1; /* inaktiver Zustand */
 </div>
 
 <div id="appsPanel" class="panel" style="display:none;">
+  <div class="apps-panel-header">
+  <div class="apps-panel-title">Apps dieser Kachel</div>
+  <div id="appsPanelAddButton" class="plus-icon"></div>
+</div>
+<!--
 <div class="panel-header">
     <span id="appsPanelTitle">Apps</span>
     <span id="appsPanelClose" class="panel-add">×</span>
 </div>
-
+  -->
 <div class="panel-content">
     <div id="appsList"></div>
     <button id="appsPanelAdd" class="panel-add">App hinzufügen</button>
@@ -1792,18 +1763,7 @@ opacity: 1; /* inaktiver Zustand */
 -->
 
  <!-- 
-<div id="appsPanel" class="panel hidden">
 
-  <div class="panel-header">
-    <span id="appsPanelTitle"></span>
-    <span id="appsPanelAdd" class="panel-add">+</span>
-    <span id="appsPanelClose" class="panel-add">×</span>
-  </div>
-
-  <div class="panel-content" id="appsList"></div>
-
-</div>
--->
 
   
 <div id="smartHomePanel" class="panel hidden">
