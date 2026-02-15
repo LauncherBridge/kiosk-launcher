@@ -1062,7 +1062,23 @@ opacity: 1; /* inaktiver Zustand */
   width: 18px;
   height: 2px;
 }
- 
+
+.apps-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* zentriert Titel + Plus als Gruppe */
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.apps-panel-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
+}
+
+
+    
   </style>
 </head>
 
@@ -1528,7 +1544,7 @@ opacity: 1; /* inaktiver Zustand */
 
 <div id="appsPanel" class="panel" style="display:none;">
 <div class="apps-panel-header">
-  <div class="apps-panel-title">Apps dieser Kachel</div>
+<div class="apps-panel-title" id="appsPanelDynamicTitle"></div>
   <div id="appsPanelAddButton" class="plus-icon"></div>
 </div>
 <!--
@@ -3890,6 +3906,8 @@ function openTile(tileId) {
 
 function openAppsPanel(tile) {
   if (!tile) return;
+document.getElementById("appsPanelDynamicTitle").textContent =
+  "Apps in " + tile.name;
 
   const panel = document.getElementById("appsPanel");
   panel.style.display = "flex";
