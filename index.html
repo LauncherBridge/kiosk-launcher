@@ -1088,7 +1088,7 @@ opacity: 1; /* inaktiver Zustand */
   </style>
 </head>
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID: 12 …</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID: 13 …</div>
  
 <div id="overlay"></div>
 
@@ -1330,74 +1330,127 @@ opacity: 1; /* inaktiver Zustand */
 
 
 /* ============================
-   FINAL: Apps Panel Layout
+   FINAL: Apps Panel
    ============================ */
 
 #appsPanel {
-  position: absolute;
-  left: 0;
-  right: 0;
-
-  /* Abstand zur oberen Button-Leiste */
-  top: 80px;
-
-  /* Abstand zum unteren Kachelband */
-  bottom: 140px;
-
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(12px);
-
-  display: none; /* Wird per JS auf flex gesetzt */
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 90px; /* unter der Top-Bar */
+  bottom: 150px; /* über der Kachelreihe */
+  width: 90%;
+  max-width: 900px;
+  background: rgba(20,20,20,0.55);
+  backdrop-filter: blur(18px);
+  border-radius: 22px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+  display: none;
   flex-direction: column;
-
-  padding: 20px;
-  box-sizing: border-box;
-
-  overflow-y: auto;
-  border-radius: 20px;
-  z-index: 50;
+  overflow: hidden;
+  z-index: 999;
 }
 
-/* Panel Header */
+/* Header */
 #appsPanelHeader {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
+  position: relative;
+  padding: 18px 22px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-
-  padding-bottom: 12px;
-  margin-bottom: 12px;
-
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  box-sizing: border-box;
+  background: rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
-/* App List Items */
+
+#appsPanelDynamicTitle {
+  font-size: 22px;
+  font-weight: 600;
+  color: white;
+}
+
+/* Floating Close Button */
+.panel-close-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.2s ease;
+  z-index: 999;
+}
+
+.header-add-btn {
+  font-size: 28px;
+  color: white;
+  cursor: pointer;
+  justify-self: center;
+  padding: 6px 10px;
+  border-radius: 10px;
+  transition: transform 0.15s ease, background 0.2s ease;
+}
+
+.header-add-btn:hover {
+  background: rgba(255,255,255,0.15);
+  transform: scale(1.1);
+}
+
+.header-add-btn:active {
+  transform: scale(0.92);
+}
+
+    
+.panel-close-btn:hover {
+  background: rgba(255,255,255,0.18);
+  transform: scale(1.08);
+}
+
+.panel-close-btn:active {
+  transform: scale(0.92);
+}
+
+/* Inhalt */
+.panel-content {
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* App-Items */
 .apps-panel-item {
   display: flex;
   align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 14px 10px;
+  border-radius: 12px;
+  transition: background 0.2s ease;
 }
 
-/* App Icon */
+.apps-panel-item:hover {
+  background: rgba(255,255,255,0.08);
+}
+
 .apps-panel-icon {
   width: 42px;
   height: 42px;
   border-radius: 8px;
   background-size: cover;
   background-position: center;
-  flex-shrink: 0;
 }
 
-/* App Label */
 .apps-panel-label {
-  margin-left: 12px;
-  font-size: 1.2rem;
+  margin-left: 14px;
+  font-size: 18px;
   color: white;
 }
 
- 
 
 
   </style>
@@ -1461,24 +1514,17 @@ opacity: 1; /* inaktiver Zustand */
 
 <div id="appsPanel" class="panel" style="display:none;">
 
-<div class="apps-panel-header">
-  <div class="apps-panel-left">
-    <div id="appsPanelDynamicTitle" class="apps-panel-title"></div>
-  </div>
+<div id="appsPanelHeader">
+    <div id="appsPanelDynamicTitle"></div>
 
-  <div class="apps-panel-center">
-    <div id="appsPanelAddButton" class="plus-icon"></div>
-  </div>
+    <!-- Plus-Symbol im Header -->
+    <div id="appsPanelAddButton" class="header-add-btn">+</div>
 
-  <div class="apps-panel-right"></div>
+    <!-- Floating Close Button -->
+    <div id="appsPanelClose" class="panel-close-btn">×</div>
 </div>
 
-<!--
-  <div class="panel-header">
-    <span id="appsPanelTitle">Apps</span>
-    <span id="appsPanelClose" class="panel-add">×</span>
-</div>
--->
+
 <div class="panel-content">
     <div id="appsList"></div>
     
