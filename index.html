@@ -1096,7 +1096,7 @@ opacity: 1; /* inaktiver Zustand */
   </style>
 </head>
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID: 15 …</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID: 16 …</div>
  
 <div id="overlay"></div>
 
@@ -1345,19 +1345,26 @@ opacity: 1; /* inaktiver Zustand */
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
-  top: 90px; /* unter der Top-Bar */
-  bottom: 150px; /* über der Kachelreihe */
+  top: 90px;
+
+  /* Feste Höhe */
+  height: calc(100vh - 90px - 180px);
+
+  /* Abstand nach unten */
+  bottom: auto;
+
   width: 90%;
   max-width: 900px;
+
   background: rgba(20,20,20,0.55);
   backdrop-filter: blur(18px);
   border-radius: 22px;
   box-shadow: 0 8px 28px rgba(0,0,0,0.35);
   display: none;
-  flex-direction: column;
   overflow: hidden;
   z-index: 999;
 }
+
 
 /* Header */
 #appsPanelHeader {
@@ -1487,12 +1494,12 @@ opacity: 1; /* inaktiver Zustand */
 
 /* Inhalt */
 .panel-content {
-  padding: 20px;
   overflow-y: auto;
-
-  /* Hintergrund entfernen */
-  background: transparent;
+  height: calc(100% - 70px); /* Headerhöhe abziehen */
+  padding: 20px;
+  background: transparent !important;
 }
+
 
 
 /* App-Items */
