@@ -1135,6 +1135,19 @@ opacity: 1; /* inaktiver Zustand */
   opacity: 0.8;
 }
 
+.cache-status {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  padding: 6px 10px;
+  background: rgba(0,0,0,0.45);
+  color: white;
+  font-size: 13px;
+  border-radius: 8px;
+  z-index: 99999;
+  pointer-events: none;
+  backdrop-filter: blur(4px);
+}
 
   </style>
 </head>
@@ -1143,6 +1156,8 @@ opacity: 1; /* inaktiver Zustand */
   </style>
 </head>
 <body class="theme-darkfantasy">
+ <div id="cacheStatus" class="cache-status">Cache: 1 …</div>
+ 
 <div id="overlay"></div>
 
 <!-- Hintergrund-Engine -->
