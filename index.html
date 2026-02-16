@@ -3719,9 +3719,13 @@ function openAppsPanel(tile) {
     item.className = "apps-panel-item";
 
     const link = document.createElement("a");
-    link.href = app.package
-      ? `appstarterplus://start?app=${app.package}`
-      : (app.url || "#");
+link.href = `appstarterplus://start?app=${app.package}`;
+link.style.display = "flex";
+link.style.alignItems = "center";
+link.style.gap = "12px";
+link.style.textDecoration = "none";
+link.style.color = "inherit";
+
     link.style.textDecoration = "none";
     link.style.color = "inherit";
     link.style.display = "flex";
