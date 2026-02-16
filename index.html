@@ -19,22 +19,6 @@
 
 
 
-    #appPickerSearch {
-  width: 100%;
-  padding: 12px 14px;
-  margin-bottom: 15px;
-  border-radius: 10px;
-  border: none;
-  font-size: 16px;
-  background: rgba(255,255,255,0.12);
-  color: white;
-  outline: none;
-}
-
-#appPickerSearch::placeholder {
-  color: rgba(255,255,255,0.55);
-}
-
     :root {
       --accent: #b38cff;
       --text-color: #e0e0e0;
@@ -642,11 +626,8 @@ opacity: 1; /* inaktiver Zustand */
   font-size: 20px;
   cursor: pointer;
 }
-#appsPanelContent {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-  gap: 15px;
-}
+
+    
 
 .app-entry {
   background: rgba(255,255,255,0.05);
@@ -677,27 +658,7 @@ opacity: 1; /* inaktiver Zustand */
   opacity: 0.9;
 }
 
-/* --- APP PICKER STYLES --- */
 
-#appPickerSort {
-  display: flex;
-  gap: 10px;
-  margin: 10px 0 15px 0;
-}
-
-#appPickerSort button {
-  padding: 6px 12px;
-  border-radius: 6px;
-  border: none;
-  background: #ddd;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-#appPickerSort button.active {
-  background: #4a90e2;
-  color: white;
-}
 
 /* App-Einträge im Picker */
 #appPicker .app-entry {
@@ -741,11 +702,7 @@ opacity: 1; /* inaktiver Zustand */
   margin-bottom: 10px;
 }
 
-#appList {
-  max-height: 60vh;
-  overflow-y: auto;
-  padding-right: 5px;
-}
+
 
 <head>
   <style>
@@ -779,9 +736,7 @@ opacity: 1; /* inaktiver Zustand */
       box-shadow: 0 0 20px rgba(0,0,0,0.5);
     }
 
-    #appList {
-      margin-top: 15px;
-    }
+
 
     .app-entry {
       display: flex;
@@ -1156,7 +1111,7 @@ opacity: 1; /* inaktiver Zustand */
   </style>
 </head>
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano Cache: 2 …</div>
+ <div id="cacheStatus" class="cache-status">Tano Cache: 3 …</div>
  
 <div id="overlay"></div>
 
@@ -1370,25 +1325,7 @@ opacity: 1; /* inaktiver Zustand */
       min-height: 1.2em;
     }
 
-#appPickerSort {
-  display: flex;
-  gap: 10px;
-  margin: 10px 0 15px 0;
-}
 
-#appPickerSort button {
-  padding: 6px 12px;
-  border-radius: 6px;
-  border: none;
-  background: #ddd;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-#appPickerSort button.active {
-  background: #4a90e2;
-  color: white;
-}
 
 
 /* --- MODERNES KACHEL-PANEL --- */
@@ -1479,40 +1416,6 @@ opacity: 1; /* inaktiver Zustand */
   background: rgba(255,255,255,0.25);
 }
 
-#appsPanelContent {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-  gap: 20px;
-  padding: 10px 5px;
-}
-
- #appsPanelContent .app-entry {
-  background: rgba(255,255,255,0.08);
-  border-radius: 16px;
-  padding: 14px 8px;
-  text-align: center;
-  cursor: pointer;
-  transition: transform 0.15s ease, background 0.15s ease;
-}
-
-#appsPanelContent .app-entry:hover {
-  transform: translateY(-4px);
-  background: rgba(255,255,255,0.18);
-}
-
-#appsPanelContent .app-icon {
-  width: 54px;
-  height: 54px;
-  border-radius: 14px;
-  margin-bottom: 10px;
-}
-
-#appsPanelContent .app-label {
-  font-size: 14px;
-  margin-top: 4px;
-  color: white;
-  opacity: 0.9;
-}
 
   </style>
 <div id="controls">
@@ -1552,40 +1455,9 @@ opacity: 1; /* inaktiver Zustand */
 
 </div>
 
-  <!--
-  >
-  <h2>Apps in dieser Kachel</h2>
 
-  <button class="close-panel-btn" onclick="closeAppsPanel()">Schließen</button>
 
-  <button class="add-app-btn" onclick="openAppPicker()">+ App hinzufügen</button>
 
-  <div id="appsPanelContent"></div>
-</div>
-  -->
-
-<!-- 
-============================
-     APP PICKER MODAL - Das Alte (auskommentiert)
-============================= 
-<div id="appPicker" class="modal">
-  <div class="modal-content">
-    <h2 id="appPickerTitle"></h2>
-
-    <input id="appPickerSearch" type="text" placeholder="Suchen…">
-
-    <div id="appPickerSort">
-      <button data-sort="alphabet" onclick="setAppPickerSort('alphabet')">A–Z</button>
-      <button data-sort="installed" onclick="setAppPickerSort('installed')">Installiert</button>
-      <button data-sort="usage" onclick="setAppPickerSort('usage')">Nutzung</button>
-    </div>
-
-    <div id="appList"></div>
-
-    <button class="close-btn" onclick="closeAppPicker()">Schließen</button>
-  </div>
-</div>
--->
 <!-- ============================================
      APP PICKER PANEL (NEUES SYSTEM)
 =============================================== -->
@@ -1593,26 +1465,16 @@ opacity: 1; /* inaktiver Zustand */
 
   <div class="panel-header">
     <span id="appPickerTitle">App hinzufügen</span>
-    <span id="appPickerClose" class="panel-add" onclick="closeAppPicker()"> × </span>
-
+    <span id="appPickerClose" class="panel-add">×</span>
   </div>
 
   <div class="panel-content">
-    <input id="appPickerSearch" type="text" placeholder="Suchen..." class="search-input">
-
-    <div class="sort-buttons">
-      <button id="sortAlpha">A‑Z</button>
-      <button id="sortInstalled">Installiert</button>
-      <button id="sortUsage">Nutzung</button>
-    </div>
-    
-    <!-- NEU: Grid für die App-Icons --> 
+    <!-- Nur das neue Grid bleibt -->
     <div id="appPickerGrid"></div>
-    
-    <div id="appList"></div>
   </div>
 
 </div>
+
 
 <div id="appsPanel" class="panel" style="display:none;">
 
@@ -1891,47 +1753,7 @@ opacity: 1; /* inaktiver Zustand */
 
 
 
-<!-- Apps-Panel -->
 
-
-<!-- App-Picker Modal 
-<div id="appPicker" class="modal" style="display:none;">
-  <div class="modal-content">
-    <h2 id="appPickerTitle"></h2>
-
-    <div id="appPickerSort">
-      <input 
-  type="text" 
-  id="appPickerSearch" 
-  placeholder="App suchen…" 
-  oninput="filterAppPicker()" 
-/>
-
-<button data-sort="alphabet" onclick="setAppPickerSort('alphabet')">A–Z</button>
-<button data-sort="installed" onclick="setAppPickerSort('installed')">Neueste</button>
-
-    </div>
-
-    <button class="pickerDoneBtn" onclick="closeAppPicker()">Fertig</button>
-
-    <div id="appList"></div>
-  </div>
-</div>
--->
-
- <!-- 
-<div id="appsPanel" class="panel hidden">
-
-  <div class="panel-header">
-    <span id="appsPanelTitle"></span>
-    <span id="appsPanelAdd" class="panel-add">+</span>
-    <span id="appsPanelClose" class="panel-add">×</span>
-  </div>
-
-  <div class="panel-content" id="appsList"></div>
-
-</div>
--->
 
   
 <div id="smartHomePanel" class="panel hidden">
@@ -2184,13 +2006,8 @@ function renderTiles() {
   
 let appsPerCategory = {};
 let currentTargetCategory = null;
-let appPickerSortMode = "alphabet";
 
-function setAppPickerSort(mode) {
-  appPickerSortMode = mode;
-  updateAppPickerSortButtons();
-  renderAppPickerList(); // nur Liste neu rendern, nicht das ganze Modal
-}
+
 
 
 
@@ -2337,60 +2154,10 @@ function loadSetting(key) {
   return localStorage.getItem(key);
 }
 
-  function filterAppPicker() {
-  const query = document.getElementById("appPickerSearch").value.toLowerCase();
-  const entries = document.querySelectorAll("#appList .app-entry");
-
-  entries.forEach(entry => {
-    const label = entry.querySelector(".app-label").textContent.toLowerCase();
-    entry.style.display = label.includes(query) ? "flex" : "none";
-  });
-}
-
-
-function addAppToPanel(app) {
-  if (!appsPerTile[currentTileName]) {
-    appsPerTile[currentTileName] = [];
-  }
-
-  if (!appsPerTile[currentTileName].some(a => a.package === app.package)) {
-    appsPerTile[currentTileName].push(app);
-    saveTileData();
-  }
-
-  renderAppsPanel(currentTileName);
-}
 
 
 
-function renderAppsPanelContent(tileName) {
-  const container = document.getElementById("appsPanelContent");
-  container.innerHTML = "";
 
-  const apps = appsPerTile[tileName] || [];
-
-  apps.forEach(app => {
-    const row = document.createElement("div");
-    row.className = "app-row";
-
-    row.innerHTML = `
-      <span class="app-label">${app.label}</span>
-      <button class="remove-app-btn" onclick="removeAppFromTile('${tileName}', '${app.package}')">✕</button>
-    `;
-
-    container.appendChild(row);
-  });
-}
-
-
-function renderAppsPanel(tileName) {
-  const container = document.getElementById("appsPanelContent");
-  if (!container) return;
-
-  // Falls Kachel noch keine App-Liste hat → anlegen
-  if (!appsPerTile[tileName]) {
-    appsPerTile[tileName] = [];
-  }
 
   // Apps kopieren (nicht direkt mutieren)
   let apps = [...appsPerTile[tileName]];
@@ -2439,11 +2206,7 @@ function renderAppsPanel(tileName) {
       // Speichern
       saveTileData();
 
-      // Neu sortieren, falls Sortiermodus usage ist
-      if (mode === "usage") {
-        renderAppsPanel(tileName);
-      }
-    };
+
 
     container.appendChild(entry);
   });
@@ -4215,107 +3978,65 @@ closeBtn.onclick = () => {
 
 function renderAppPickerGrid(tile) {
   const grid = document.getElementById("appPickerGrid");
+  grid.innerHTML = "";
 
-  // Beispiel-Daten: später ersetzen wir das durch echte installierte Apps
-  const installedApps = [
-    { label: "Netflix", icon: "icons/netflix.png", url: "https://www.netflix.com" },
-    { label: "YouTube", icon: "icons/youtube.png", url: "https://www.youtube.com" },
-    { label: "Prime Video", icon: "icons/prime.png", url: "https://www.primevideo.com" },
-    { label: "Disney+", icon: "icons/disney.png", url: "https://www.disneyplus.com" }
-  ];
+  // 1) Echte Apps vom Gerät holen
+  let apps = [];
+  try {
+    const json = AndroidBridge.getInstalledApps();
+    apps = JSON.parse(json);
+  } catch (e) {
+    console.error("Fehler beim Laden der Apps:", e);
+    return;
+  }
 
-  installedApps.forEach(app => {
+  // 2) Alphabetisch sortieren
+  apps.sort((a, b) => a.label.localeCompare(b.label));
+
+  // 3) Für Touch optimierte Grid-Items erzeugen
+  apps.forEach(app => {
     const item = document.createElement("div");
     item.className = "app-picker-item";
 
-item.style.display = "flex";
-item.style.flexDirection = "column";
-item.style.alignItems = "center";
-item.style.justifyContent = "center";
-item.style.padding = "12px";
-item.style.borderRadius = "12px";
-item.style.background = "rgba(255,255,255,0.05)";
-item.style.backdropFilter = "blur(4px)";
-item.style.cursor = "pointer";
-item.style.transition = "transform 0.15s ease, background 0.15s ease";
+    // Touch-optimierte Animation
+    item.classList.add("grid-item-animate");
+    item.style.animationDelay = (Math.random() * 120) + "ms";
 
-item.ontouchstart = () => {
-  item.style.transform = "scale(1.05)";
-  item.style.background = "rgba(255,255,255,0.12)";
-};
-
-item.ontouchend = () => {
-  item.style.transform = "scale(1)";
-  item.style.background = "rgba(255,255,255,0.05)";
-};
-
-
-    
     // Icon
     const icon = document.createElement("div");
     icon.className = "app-picker-icon";
-    // Pop-In Animation
-item.classList.add("grid-item-animate");
-item.style.animationDelay = (Math.random() * 120) + "ms";
-
     icon.style.backgroundImage = `url('${app.icon}')`;
 
     // Label
     const label = document.createElement("div");
     label.className = "app-picker-label";
-label.style.marginTop = "8px";
-label.style.fontSize = "14px";
-label.style.textAlign = "center";
-label.style.color = "white";
-label.style.fontWeight = "500";
-
     label.textContent = app.label;
 
-    // Zusammenbauen
     item.appendChild(icon);
     item.appendChild(label);
 
-    // Klick → App zur Kachel hinzufügen
-  //  item.onclick = () => {
-  //    tile.apps.push({
-  //      label: app.label,
-   //     url: app.url
-    //  });
+    // 4) Touch-Klick → App zur Kachel hinzufügen
+    item.onclick = () => {
+      if (!appsPerTile[tile.name]) {
+        appsPerTile[tile.name] = [];
+      }
 
-  //    saveTiles();
-//      openAppsPanel(tile);
+      appsPerTile[tile.name].push({
+        label: app.label,
+        icon: app.icon,
+        package: app.package,
+        url: "appstarterplus://start?app=" + app.package
+      });
 
-     // document.getElementById("appPicker").style.display = "none";
-   // };
-item.onclick = () => {
-  // Sicherstellen, dass die Tile-Liste existiert
-  if (!appsPerTile[tile.name]) {
-    appsPerTile[tile.name] = [];
-  }
-
-
-  // App hinzufügen (mit Icon!)
-appsPerTile[tile.name].push({
-  label: app.label,
-  icon: app.icon,
-  url: "appstarterplus://start?app=" + app.packageName,
-  package: app.packageName
-});
-
-
-  saveTileData(); // deine neue Speicherfunktion
-
-  // AppsPanel neu öffnen
-  openAppsPanel(tile);
-
-  // Picker schließen
-  animatePanelTransition("appPicker", "appsPanel");
-};
-
+      saveTileData();
+      openAppsPanel(tile);
+      animatePanelTransition("appPicker", "appsPanel");
+    };
 
     grid.appendChild(item);
   });
 }
+
 
 function openDevicePicker(tile) {
   if (!tile) return;
@@ -4496,9 +4217,6 @@ function removeAppFromTile(tileName, packageName) {
   // Speichern
   saveTileData();
 
-  // Panel neu rendern
-  renderAppsPanel(tileName);
-}
 
 
 
@@ -4544,84 +4262,6 @@ const tilebarElement = document.getElementById("tilebar");
 
 
 document.addEventListener("DOMContentLoaded", renderTiles);
-
-
-
-
-function openAppPicker() {
-  if (!currentTileName) return;
-
-  document.getElementById("appPickerTitle").textContent =
-    "Apps zu Kachel ›" + currentTileName + "‹ hinzufügen";
-
-  document.getElementById("appPickerSearch").value = "";
-
-  updateAppPickerSortButtons();
-  renderAppPickerList();
-
-  document.getElementById("appPicker").style.display = "block";
-}
-
-
-function renderAppPickerList() {
-  const list = document.getElementById("appList");
-  list.innerHTML = "";
-
-  const json = AndroidBridge.getInstalledApps();
-  let apps = JSON.parse(json);
-
-  // Sortierung
-  if (appPickerSortMode === "alphabet") {
-    apps.sort((a, b) => a.label.localeCompare(b.label));
-  } else if (appPickerSortMode === "installed") {
-    apps.sort((a, b) => b.installed - a.installed);
-  }
-
-  const search = document.getElementById("appPickerSearch").value.toLowerCase();
-
-  apps.forEach(app => {
-    const alreadyAdded = appsPerTile[currentTileName]?.some(a => a.package === app.package);
-
-    if (search && !app.label.toLowerCase().includes(search)) return;
-
-    const entry = document.createElement("div");
-    entry.className = "app-entry" + (alreadyAdded ? " disabled" : "");
-
-    entry.innerHTML = `
-      <span class="app-label">${app.label}</span>
-      ${alreadyAdded 
-        ? '<span class="tag-added">Bereits hinzugefügt</span>'
-        : '<span class="tag-add">Hinzufügen</span>'}
-    `;
-
-    if (!alreadyAdded) {
-      entry.onclick = () => {
-        addAppToPanel(app);
-        renderAppPickerList(); // Liste aktualisieren
-      };
-    }
-
-    list.appendChild(entry);
-  });
-}
-
-
-
-function addAppToPanel(app) {
-  if (!appsPerTile[currentTileName]) {
-    appsPerTile[currentTileName] = [];
-  }
-
-  if (!appsPerTile[currentTileName].some(a => a.package === app.package)) {
-    appsPerTile[currentTileName].push(app);
-    saveTileData();
-  }
-
-  renderAppsPanel(currentTileName);
-}
-
-
-
 
   console.log("AppsPanel:", document.getElementById("appsPanel"));
 
