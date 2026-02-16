@@ -3971,6 +3971,8 @@ function openTile(tileId) {
 
 
 function openAppsPanel(tile) {
+  console.log("openAppsPanel läuft", tile);
+
   currentTile = tile;
   if (!tile) return;
 document.getElementById("appsPanelDynamicTitle").textContent =
