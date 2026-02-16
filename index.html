@@ -11,11 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel&display=swap" rel="stylesheet">
 
   <style>
-#appsPanel {
-  padding-top: 0 !important;
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-}
+
 
 
 
@@ -609,23 +605,7 @@ opacity: 1; /* inaktiver Zustand */
     z-index: 2000;
   }
 
-#appsPanel .panel-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-  font-size: 22px;
-}
 
-#appsPanel .add-app-btn {
-  background: var(--accent);
-  color: black;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 20px;
-  cursor: pointer;
-}
 
     
 
@@ -783,10 +763,7 @@ opacity: 1; /* inaktiver Zustand */
   font-weight: 600;
 }
 
-/* Titel links */
-#appsPanelTitle {
-  color: white;
-}
+
 
 /* Plus rechts */
 .panel-add {
@@ -1328,30 +1305,6 @@ opacity: 1; /* inaktiver Zustand */
 
 
 
-/* --- MODERNES KACHEL-PANEL --- */
-
-#appsPanel {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 92%;
-  max-width: 620px;
-  background: rgba(0,0,0,0.55);
-  backdrop-filter: blur(14px);
-  border-radius: 20px;
-  padding: 22px;
-  box-shadow: 0 14px 45px rgba(0,0,0,0.55);
-  color: white;
-  z-index: 1500;
-  display: none;
-  animation: panelFadeIn 0.25s ease-out;
-}
-
-#appsPanel.open {
-  display: block;
-}
-
 .app-row {
   display: flex;
   justify-content: space-between;
@@ -1375,46 +1328,76 @@ opacity: 1; /* inaktiver Zustand */
   to   { opacity: 1; transform: translate(-50%, -50%); }
 }
 
-#appsPanel h2 {
-  margin: 0 0 18px 0;
-  font-size: 24px;
-  font-weight: 600;
-  text-align: center;
-  letter-spacing: 0.4px;
+
+/* ============================
+   FINAL: Apps Panel Layout
+   ============================ */
+
+#appsPanel {
+  position: absolute;
+  left: 0;
+  right: 0;
+
+  /* Abstand zur oberen Button-Leiste */
+  top: 80px;
+
+  /* Abstand zum unteren Kachelband */
+  bottom: 140px;
+
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(12px);
+
+  display: none; /* Wird per JS auf flex gesetzt */
+  flex-direction: column;
+
+  padding: 20px;
+  box-sizing: border-box;
+
+  overflow-y: auto;
+  border-radius: 20px;
+  z-index: 50;
 }
 
-  /* --- FINGERFREUNDLICHE BUTTONS --- */
-
-#appsPanel .add-app-btn,
-#appsPanel .close-panel-btn {
+/* Panel Header */
+#appsPanelHeader {
   width: 100%;
-  padding: 14px 18px;
-  font-size: 18px;
-  border-radius: 12px;
-  border: none;
-  cursor: pointer;
-  margin-bottom: 16px;
-  transition: background 0.2s ease, transform 0.1s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  box-sizing: border-box;
 }
 
-#appsPanel .add-app-btn {
-  background: var(--accent);
-  color: black;
+/* App List Items */
+.apps-panel-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-#appsPanel .add-app-btn:active,
-#appsPanel .close-panel-btn:active {
-  transform: scale(0.97);
+/* App Icon */
+.apps-panel-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  background-size: cover;
+  background-position: center;
+  flex-shrink: 0;
 }
 
-#appsPanel .close-panel-btn {
-  background: rgba(255,255,255,0.15);
+/* App Label */
+.apps-panel-label {
+  margin-left: 12px;
+  font-size: 1.2rem;
   color: white;
 }
 
-#appsPanel .close-panel-btn:hover {
-  background: rgba(255,255,255,0.25);
-}
+ 
 
 
   </style>
@@ -3701,7 +3684,7 @@ function openAppsPanel(tile) {
   const list    = document.getElementById("appsList");
   const addBtn  = document.getElementById("appsPanelAdd");
   const headerAddBtn = document.getElementById("appsPanelAddButton");
-  const closeBtn = document.getElementById("appsPanelClose"); // optional, falls du später einen Close-Button einbaust
+  const closeBtn = document.getElementById("appsPanelClose");
 
   if (!panel || !titleEl || !list || !addBtn) {
     console.warn("AppsPanel: benötigte Elemente nicht gefunden");
@@ -3714,21 +3697,16 @@ function openAppsPanel(tile) {
   // Liste leeren
   list.innerHTML = "";
 
-  // Apps aus dem neuen System holen
+  // Apps aus dem Speicher holen
   const apps = appsPerTile[tile.name] || [];
 
   apps.forEach(app => {
     const item = document.createElement("div");
     item.className = "apps-panel-item";
 
+    // WICHTIG: echter <a>-Link, damit Browser das Schema öffnet
     const link = document.createElement("a");
-link.href = `appstarterplus://start?app=${app.package}`;
-link.style.display = "flex";
-link.style.alignItems = "center";
-link.style.gap = "12px";
-link.style.textDecoration = "none";
-link.style.color = "inherit";
-
+    link.href = `appstarterplus://start?app=${app.package}`;
     link.style.textDecoration = "none";
     link.style.color = "inherit";
     link.style.display = "flex";
@@ -3763,14 +3741,14 @@ link.style.color = "inherit";
     openAppPicker(tile);
   };
 
-  // Plus-Icon im Header (falls du es nutzen willst)
+  // Plus-Icon im Header
   if (headerAddBtn) {
     headerAddBtn.onclick = () => {
       openAppPicker(tile);
     };
   }
 
-  // Optionaler Close-Button, falls du später einen einfügst
+  // Close-Button
   if (closeBtn) {
     closeBtn.onclick = () => {
       panel.style.display = "none";
@@ -3779,6 +3757,7 @@ link.style.color = "inherit";
 
   panel.style.display = "flex";
 }
+
 
 
   
