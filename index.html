@@ -784,9 +784,10 @@ opacity: 1; /* inaktiver Zustand */
 .panel-content {
   padding: 20px;
   overflow-y: auto;
- backdrop-filter: blur(var(--panel-blur));
- 
+  backdrop-filter: blur(var(--panel-blur));
+  background: transparent !important;
 }
+
 
 /* Grid für App-Picker */
 .app-picker-grid {
@@ -796,6 +797,13 @@ opacity: 1; /* inaktiver Zustand */
   padding: 10px;
 }
 
+    
+#appsList {
+  background: transparent !important;
+}
+
+
+    
 /* Einzelne App-Kachel */
 .app-picker-item {
   display: flex;
@@ -1088,7 +1096,7 @@ opacity: 1; /* inaktiver Zustand */
   </style>
 </head>
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID: 14 …</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID: 15 …</div>
  
 <div id="overlay"></div>
 
@@ -1430,24 +1438,52 @@ opacity: 1; /* inaktiver Zustand */
 }
 
 
-.header-add-btn:hover {
-  background: rgba(255,255,255,0.15);
-  transform: scale(1.1);
+.panel-close-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  z-index: 999;
 }
 
-.header-add-btn:active {
-  transform: scale(0.92);
+/* Die beiden Linien */
+.panel-close-btn::before,
+.panel-close-btn::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 26px;
+  height: 2px;
+  background: rgba(255,255,255,0.85);
+  border-radius: 2px;
+  transform-origin: center;
+  transition: transform 0.2s ease, background 0.2s ease;
 }
 
-    
-.panel-close-btn:hover {
-  background: rgba(255,255,255,0.18);
-  transform: scale(1.08);
+/* Linie 1 */
+.panel-close-btn::before {
+  transform: translate(-50%, -50%) rotate(45deg);
 }
 
-.panel-close-btn:active {
-  transform: scale(0.92);
+/* Linie 2 */
+.panel-close-btn::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
 }
+
+/* Hover-Effekt */
+.panel-close-btn:hover::before,
+.panel-close-btn:hover::after {
+  background: #ff6666;
+  transform: translate(-50%, -50%) scale(1.1) rotate(45deg);
+}
+
+.panel-close-btn:hover::after {
+  transform: translate(-50%, -50%) scale(1.1) rotate(-45deg);
+}
+
 
 /* Inhalt */
 .panel-content {
@@ -1553,7 +1589,7 @@ opacity: 1; /* inaktiver Zustand */
     <div id="appsPanelDynamicTitle"></div>
 
     <!-- Plus-Symbol im Header -->
-    <div id="appsPanelAddButton" class="header-add-btn">+</div>
+    <div id="appsPanelAddButton" class="header-add-btn"></div>
 
     <!-- Floating Close Button -->
     <div id="appsPanelClose" class="panel-close-btn">×</div>
