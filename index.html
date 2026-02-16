@@ -1111,7 +1111,7 @@ opacity: 1; /* inaktiver Zustand */
   </style>
 </head>
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano Cache: 6 …</div>
+ <div id="cacheStatus" class="cache-status">Tano Cache: 7 …</div>
  
 <div id="overlay"></div>
 
@@ -4239,6 +4239,36 @@ function animatePanelTransition(fromId, toId) {
   }, 300);
 }
 
+// ============================================================
+// UNIVERSALER APPSTART-PATCH
+// Fängt ALLE appstarterplus:// Links ab und startet Apps korrekt
+// ============================================================
+
+document.addEventListener("click", function (e) {
+  const target = e.target.closest("a");
+
+  if (!target) return;
+
+  const url = target.getAttribute("href");
+  if (!url) return;
+
+  // Nur unser Schema abfangen
+  if (url.startsWith("appstarterplus://start?app=")) {
+    e.preventDefault();
+
+    const pkg = url.split("app=")[1];
+
+    try {
+      if (window.AndroidBridge && AndroidBridge.launchApp) {
+        AndroidBridge.launchApp(pkg);
+      } else {
+        console.warn("AndroidBridge nicht verfügbar – Browser-Modus");
+      }
+    } catch (err) {
+      console.error("Fehler beim Starten der App:", err);
+    }
+  }
+});
 
 
   
