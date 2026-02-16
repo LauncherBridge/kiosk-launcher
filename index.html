@@ -3957,15 +3957,17 @@ renderTiles();
 });
 
   
+let currentTile = null; // falls noch nicht global vorhanden
+
 function openTile(tileId) {
   const tile = tiles.find(t => t.id === tileId);
   if (!tile) return;
 
   currentTile = tile;
-  
+
   switch (tile.type) {
     case "apps":
-      ;
+      openAppsPanel(tile);
       break;
 
     case "smart_home":
@@ -3985,73 +3987,26 @@ function openTile(tileId) {
 
 
 
+
 function openAppsPanel(tile) {
-  console.log("openAppsPanel läuft", tile);
+  if (!tile) return;
 
   currentTile = tile;
-  if (!tile) return;
-document.getElementById("appsPanelDynamicTitle").textContent =
-  "Apps in " + tile.name;
 
-  const panel = document.getElementById("appsPanel");
-  panel.style.display = "flex";
-panel.style.flexDirection = "column";
-panel.style.padding = "20px";
-panel.style.borderRadius = "18px";
-panel.style.background = "rgba(0,0,0,0.45)";
-panel.style.backdropFilter = "blur(12px)";
-panel.style.maxHeight = "80vh";
-panel.style.overflowY = "auto";
-panel.style.boxShadow = "0 8px 30px rgba(0,0,0,0.4)";
+  const panel   = document.getElementById("appsPanel");
+  const titleEl = document.getElementById("appsPanelDynamicTitle");
+  const list    = document.getElementById("appsList");
+  const addBtn  = document.getElementById("appsPanelAdd");
+  const headerAddBtn = document.getElementById("appsPanelAddButton");
+  const closeBtn = document.getElementById("appsPanelClose"); // optional, falls du später einen Close-Button einbaust
 
-  const title = document.getElementById("appsPanelTitle");
-  title.style.fontSize = "22px";
-title.style.fontWeight = "600";
-title.style.marginBottom = "16px";
-title.style.color = "white";
-
-  const list = document.getElementById("appsList");
-  list.style.display = "flex";
-list.style.flexDirection = "column";
-list.style.gap = "10px";
-
-  const addBtn = document.getElementById("appsPanelAdd");
+  if (!panel || !titleEl || !list || !addBtn) {
+    console.warn("AppsPanel: benötigte Elemente nicht gefunden");
+    return;
+  }
 
   // Titel setzen
-title.innerHTML = `
-  <div style="
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-  ">
-    <span>${tile.name}</span>
-    <span id="appsPanelAddIcon" style="
-      font-size: 28px;
-      font-weight: 600;
-      padding: 6px 14px;
-      border-radius: 10px;
-      background: rgba(255,255,255,0.12);
-      backdrop-filter: blur(6px);
-      cursor: pointer;
-      user-select: none;
-      transition: transform 0.15s ease, background 0.15s ease;
-    ">+</span>
-  </div>
-`;
-const addIcon = document.getElementById("appsPanelAddIcon");
-
-addIcon.ontouchstart = () => {
-  addIcon.style.transform = "scale(1.15)";
-  addIcon.style.background = "rgba(255,255,255,0.2)";
-};
-
-addIcon.ontouchend = () => {
-  addIcon.style.transform = "scale(1)";
-  addIcon.style.background = "rgba(255,255,255,0.12)";
-  addBtn.onclick(); // ruft den bestehenden Add‑Button aus Schritt 10 auf
-};
-
+  titleEl.textContent = "Apps in " + tile.name;
 
   // Liste leeren
   list.innerHTML = "";
@@ -4059,105 +4014,65 @@ addIcon.ontouchend = () => {
   // Apps aus dem neuen System holen
   const apps = appsPerTile[tile.name] || [];
 
-apps.forEach(app => {
-  const item = document.createElement("div");
-  item.className = "apps-panel-item";
-item.style.display = "flex";
-item.style.alignItems = "center";
-item.style.gap = "14px";
-item.style.padding = "14px 18px";
-item.style.marginBottom = "10px";
-item.style.borderRadius = "12px";
-item.style.background = "rgba(255,255,255,0.05)";
-item.style.backdropFilter = "blur(4px)";
-item.style.transition = "transform 0.15s ease, background 0.15s ease";
-item.style.cursor = "pointer";
-item.ontouchstart = () => {
-  item.style.transform = "scale(1.03)";
-  item.style.background = "rgba(255,255,255,0.12)";
-};
+  apps.forEach(app => {
+    const item = document.createElement("div");
+    item.className = "apps-panel-item";
 
-item.ontouchend = () => {
-  item.style.transform = "scale(1)";
-  item.style.background = "rgba(255,255,255,0.05)";
-};
+    const link = document.createElement("a");
+    link.href = app.package
+      ? `appstarterplus://start?app=${app.package}`
+      : (app.url || "#");
+    link.style.textDecoration = "none";
+    link.style.color = "inherit";
+    link.style.display = "flex";
+    link.style.alignItems = "center";
+    link.style.gap = "12px";
+    link.style.width = "100%";
 
-  // Icon
-  const icon = document.createElement("div");
-  icon.className = "apps-panel-icon";
-  icon.style.width = "42px";
-icon.style.height = "42px";
-icon.style.backgroundSize = "cover";
-icon.style.backgroundPosition = "center";
-icon.style.borderRadius = "8px";
-icon.style.flexShrink = "0";
+    const icon = document.createElement("div");
+    icon.className = "apps-panel-icon";
+    icon.style.width = "42px";
+    icon.style.height = "42px";
+    icon.style.borderRadius = "8px";
+    icon.style.backgroundSize = "cover";
+    icon.style.backgroundPosition = "center";
+    if (app.icon) {
+      icon.style.backgroundImage = `url('${app.icon}')`;
+    }
 
-  icon.style.backgroundImage = `url('${app.icon}')`;
+    const label = document.createElement("div");
+    label.className = "apps-panel-label";
+    label.textContent = app.label || app.name || "(Unbenannte App)";
+    label.style.color = "white";
 
-  // Label
-  const label = document.createElement("div");
-  label.className = "apps-panel-label";
-  label.style.fontSize = "16px";
-label.style.fontWeight = "500";
-label.style.color = "white";
-label.style.flexGrow = "1";
-label.style.whiteSpace = "nowrap";
-label.style.overflow = "hidden";
-label.style.textOverflow = "ellipsis";
+    link.appendChild(icon);
+    link.appendChild(label);
+    item.appendChild(link);
+    list.appendChild(item);
+  });
 
-  label.textContent = app.label;
-
-  // Klick → App starten
-// Klick-Handler entfernen
-item.onclick = null;
-
-// Link erzeugen
-const link = document.createElement("a");
-link.href = app.package
-  ? `appstarterplus://start?app=${app.package}`
-  : app.url;
-
-link.style.textDecoration = "none";
-link.style.color = "inherit";
-link.style.display = "flex";
-link.style.alignItems = "center";
-link.style.gap = "14px";
-link.style.width = "100%";
-link.style.height = "100%";
-link.style.padding = "12px 16px";
-
-
-// Icon + Label in den Link verschieben
-link.appendChild(icon);
-link.appendChild(label);
-
-// Item leeren und Link einfügen
-item.innerHTML = "";
-item.appendChild(link);
-
-
-  item.appendChild(icon);
-  item.appendChild(label);
-  list.appendChild(item);
-});
-
-
-  // App hinzufügen → AppPicker öffnen
+  // Plus-Button unten
   addBtn.onclick = () => {
-    currentTileName = tile.name;
     openAppPicker(tile);
   };
-  
-// Schließen-Button
-const closeBtn = document.getElementById("appsPanelClose");
-if (closeBtn) {
-  closeBtn.onclick = () => {
-    document.getElementById("appsPanel").style.display = "none";
-  };
-}
+
+  // Plus-Icon im Header (falls du es nutzen willst)
+  if (headerAddBtn) {
+    headerAddBtn.onclick = () => {
+      openAppPicker(tile);
+    };
+  }
+
+  // Optionaler Close-Button, falls du später einen einfügst
+  if (closeBtn) {
+    closeBtn.onclick = () => {
+      panel.style.display = "none";
+    };
+  }
 
   panel.style.display = "flex";
 }
+
 
   
 document.getElementById("appsPanelAddButton").onclick = function () {
