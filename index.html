@@ -1088,7 +1088,7 @@ opacity: 1; /* inaktiver Zustand */
   </style>
 </head>
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID: 11 …</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID: 12 …</div>
  
 <div id="overlay"></div>
 
@@ -3682,11 +3682,11 @@ function openAppsPanel(tile) {
   const panel   = document.getElementById("appsPanel");
   const titleEl = document.getElementById("appsPanelDynamicTitle");
   const list    = document.getElementById("appsList");
-  const addBtn  = document.getElementById("appsPanelAdd");
   const headerAddBtn = document.getElementById("appsPanelAddButton");
   const closeBtn = document.getElementById("appsPanelClose");
 
-  if (!panel || !titleEl || !list || !addBtn) {
+  // addBtn entfernt → Prüfung angepasst
+  if (!panel || !titleEl || !list) {
     console.warn("AppsPanel: benötigte Elemente nicht gefunden");
     return;
   }
@@ -3704,7 +3704,6 @@ function openAppsPanel(tile) {
     const item = document.createElement("div");
     item.className = "apps-panel-item";
 
-    // WICHTIG: echter <a>-Link, damit Browser das Schema öffnet
     const link = document.createElement("a");
     link.href = `appstarterplus://start?app=${app.package}`;
     link.style.textDecoration = "none";
@@ -3736,12 +3735,7 @@ function openAppsPanel(tile) {
     list.appendChild(item);
   });
 
-  // Plus-Button unten
-  addBtn.onclick = () => {
-    openAppPicker(tile);
-  };
-
-  // Plus-Icon im Header
+  // Plus-Icon im Header (bleibt!)
   if (headerAddBtn) {
     headerAddBtn.onclick = () => {
       openAppPicker(tile);
