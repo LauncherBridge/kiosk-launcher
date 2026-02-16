@@ -1111,7 +1111,7 @@ opacity: 1; /* inaktiver Zustand */
   </style>
 </head>
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano Cache: 4 …</div>
+ <div id="cacheStatus" class="cache-status">Tano Cache: 5 …</div>
  
 <div id="overlay"></div>
 
@@ -2148,64 +2148,56 @@ function loadSetting(key) {
   return localStorage.getItem(key);
 }
 
+// Apps kopieren (nicht direkt mutieren)
+let apps = [...appsPerTile[tileName]];
 
+// Sortiermodus holen
+const mode = sortModePerTile[tileName] || "alphabet";
 
+switch (mode) {
+  case "alphabet":
+    apps.sort((a, b) => a.label.localeCompare(b.label));
+    break;
 
+  case "installed":
+    apps.sort((a, b) => (b.installed || 0) - (a.installed || 0));
+    break;
 
-
-  // Apps kopieren (nicht direkt mutieren)
-  let apps = [...appsPerTile[tileName]];
-
-  // Sortiermodus holen
-  const mode = sortModePerTile[tileName] || "alphabet";
-
-  switch (mode) {
-    case "alphabet":
-      apps.sort((a, b) => a.label.localeCompare(b.label));
-      break;
-
-    case "installed":
-      apps.sort((a, b) => (b.installed || 0) - (a.installed || 0));
-      break;
-
-    case "usage":
-      apps.sort((a, b) => (b.usage || 0) - (a.usage || 0));
-      break;
-  }
-
-  // Panel leeren
-  container.innerHTML = "";
-
-  // Apps rendern
-  apps.forEach(app => {
-    const entry = document.createElement("div");
-    entry.className = "app-entry";
-
-    entry.innerHTML = `
-      <img src="data:image/png;base64,${app.icon}" class="app-icon">
-      <span class="app-label">${app.label}</span>
-    `;
-
-    // App starten
-    entry.onclick = () => {
-      try {
-        AndroidBridge.launchApp(app.package);
-      } catch (e) {
-        console.warn("App konnte nicht gestartet werden:", e);
-      }
-
-      // Nutzung erhöhen
-      app.usage = (app.usage || 0) + 1;
-
-      // Speichern
-      saveTileData();
-
-
-
-    container.appendChild(entry);
-  });
+  case "usage":
+    apps.sort((a, b) => (b.usage || 0) - (a.usage || 0));
+    break;
 }
 
+// Panel leeren
+container.innerHTML = "";
+
+// Apps rendern
+apps.forEach(app => {
+  const entry = document.createElement("div");
+  entry.className = "app-entry";
+
+  entry.innerHTML = `
+    <img src="data:image/png;base64,${app.icon}" class="app-icon">
+    <span class="app-label">${app.label}</span>
+  `;
+
+  // App starten
+  entry.onclick = () => {
+    try {
+      AndroidBridge.launchApp(app.package);
+    } catch (e) {
+      console.warn("App konnte nicht gestartet werden:", e);
+    }
+
+    // Nutzung erhöhen
+    app.usage = (app.usage || 0) + 1;
+
+    // Speichern
+    saveTileData();
+  };
+
+  container.appendChild(entry);
+});
 
 
 
