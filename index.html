@@ -1088,7 +1088,7 @@ opacity: 1; /* inaktiver Zustand */
   </style>
 </head>
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID: 13 …</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID: 14 …</div>
  
 <div id="overlay"></div>
 
@@ -1358,9 +1358,14 @@ opacity: 1; /* inaktiver Zustand */
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  background: rgba(255,255,255,0.06);
+
+  /* Deutlich dunklerer Header */
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(22px);
+
   border-bottom: 1px solid rgba(255,255,255,0.08);
 }
+
 
 
 #appsPanelDynamicTitle {
@@ -1390,14 +1395,40 @@ opacity: 1; /* inaktiver Zustand */
 }
 
 .header-add-btn {
-  font-size: 28px;
-  color: white;
+  position: relative;
+  width: 28px;
+  height: 28px;
   cursor: pointer;
   justify-self: center;
-  padding: 6px 10px;
-  border-radius: 10px;
-  transition: transform 0.15s ease, background 0.2s ease;
 }
+
+.header-add-btn::before,
+.header-add-btn::after {
+  content: "";
+  position: absolute;
+  background: #00aa66; /* dunkles Grün */
+  border-radius: 2px;
+  transition: transform 0.25s ease;
+}
+
+/* Vertikale Linie */
+.header-add-btn::before {
+  width: 3px;
+  height: 28px;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+}
+
+/* Horizontale Linie */
+.header-add-btn::after {
+  width: 28px;
+  height: 3px;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+}
+
 
 .header-add-btn:hover {
   background: rgba(255,255,255,0.15);
@@ -1422,7 +1453,11 @@ opacity: 1; /* inaktiver Zustand */
 .panel-content {
   padding: 20px;
   overflow-y: auto;
+
+  /* Hintergrund entfernen */
+  background: transparent;
 }
+
 
 /* App-Items */
 .apps-panel-item {
