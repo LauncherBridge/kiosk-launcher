@@ -469,10 +469,16 @@ opacity: 1; /* inaktiver Zustand */
   box-shadow: 0 8px 20px rgba(0,0,0,0.5);
 }
 
-.tiles-colored .tile {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+.tile-active {
+  transform: scale(1.07);
+  box-shadow:
+      0 0 22px rgba(0,255,180,0.45),
+      0 0 12px rgba(0,255,180,0.35),
+      0 0 4px rgba(0,255,180,0.25);
+  border: 2px solid rgba(0,255,180,0.55);
+  transition: all 0.25s ease;
 }
+
 
 
 .tile.tile-add {
@@ -1099,7 +1105,7 @@ opacity: 1; /* inaktiver Zustand */
   </style>
 </head>
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID: 23 …</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID: 24 …</div>
  
 <div id="overlay"></div>
 
@@ -3816,10 +3822,12 @@ function openTile(tileId) {
 
 
 function openAppsPanel(tile) {
+  // document.querySelector("#tile-apps").classList.add("tile-active"); Tano - active tile erster versuch
+
   if (!tile) return;
 
   currentTile = tile;
-
+tile.classList.add("tile-active");
   const panel   = document.getElementById("appsPanel");
   const titleEl = document.getElementById("appsPanelDynamicTitle");
   const list    = document.getElementById("appsList");
@@ -4258,6 +4266,8 @@ item.style.animationDelay = (Math.random() * 120) + "ms";
   
 function closeAppsPanel() {
   document.getElementById("appsPanel").classList.remove("open");
+  //document.querySelector("#tile-apps").classList.remove("tile-active"); Tano active deaktiv.
+  currentTile.classList.remove("tile-active");
 }
 
 function removeAppFromTile(tileName, packageName) {
