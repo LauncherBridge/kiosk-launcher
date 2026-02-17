@@ -1105,7 +1105,7 @@ opacity: 1; /* inaktiver Zustand */
   </style>
 </head>
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID: 28 …</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID: 29 …</div>
  
 <div id="overlay"></div>
 
@@ -3847,6 +3847,8 @@ function openAppsPanel(tile) {
 //tile.classList.add("tile-active");
  // currentTile.classList.add("tile-active");
   const panel   = document.getElementById("appsPanel");
+  panel.style.display = "flex";   // ⭐ Panel sichtbar machen
+
   const titleEl = document.getElementById("appsPanelDynamicTitle");
   const list    = document.getElementById("appsList");
   const headerAddBtn = document.getElementById("appsPanelAddButton");
@@ -3916,7 +3918,6 @@ function openAppsPanel(tile) {
     };
   }
 
-  panel.style.display = "flex";
 }
 
 
