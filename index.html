@@ -3798,6 +3798,12 @@ let currentTile = null; // falls noch nicht global vorhanden
 function openTile(tileData, tileElement) {
   if (!tileData || !tileElement) return;
 
+  // ⭐ Schritt 5a: Vorherige Kachel + Panels schließen
+  if (currentTileElement) {
+    currentTileElement.classList.remove("tile-active");
+  }
+  closeAllPanels();
+
   // Speichere beide Welten getrennt
   currentTileData = tileData;     // Datenobjekt
   currentTileElement = tileElement; // DOM-Element
@@ -4413,6 +4419,14 @@ document.addEventListener("click", function (e) {
   }
 });
 
+function closeAllPanels() {
+  document.getElementById("appsPanel").style.display = "none";
+  document.getElementById("smartHomePanel").style.display = "none";
+  document.getElementById("alarmPanel").style.display = "none";
+  document.getElementById("appPicker").style.display = "none";
+  document.getElementById("devicePicker").style.display = "none";
+  document.getElementById("zonePicker").style.display = "none";
+}
 
   
 </script>
