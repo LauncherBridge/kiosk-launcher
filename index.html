@@ -1105,7 +1105,7 @@ opacity: 1; /* inaktiver Zustand */
   </style>
 </head>
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID: 27 …</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID: 28 …</div>
  
 <div id="overlay"></div>
 
@@ -3798,20 +3798,21 @@ let currentTile = null; // falls noch nicht global vorhanden
 function openTile(tileData, tileElement) {
   if (!tileData || !tileElement) return;
 
+  // ⭐ Erst neue Kachel setzen
+  const previousTileElement = currentTileElement;
+
+  currentTileData = tileData;
+  currentTileElement = tileElement;
+
   // ⭐ Schritt 5a: Vorherige Kachel + Panels schließen
-  if (currentTileElement) {
-    currentTileElement.classList.remove("tile-active");
+  if (previousTileElement) {
+    previousTileElement.classList.remove("tile-active");
   }
   closeAllPanels();
 
-  // Speichere beide Welten getrennt
-  currentTileData = tileData;     // Datenobjekt
-  currentTileElement = tileElement; // DOM-Element
-
   // Schritt 4: Aktive Kachel markieren
-document.querySelectorAll(".tile").forEach(t => t.classList.remove("tile-active"));
-currentTileElement.classList.add("tile-active");
-
+  document.querySelectorAll(".tile").forEach(t => t.classList.remove("tile-active"));
+  currentTileElement.classList.add("tile-active");
 
   // Weiter wie bisher – Panels öffnen nach Typ
   switch (tileData.type) {
@@ -3831,7 +3832,6 @@ currentTileElement.classList.add("tile-active");
       console.warn("Unbekannter Tile-Typ:", tileData.type);
   }
 }
-
 
 
 
