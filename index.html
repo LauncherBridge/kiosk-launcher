@@ -1105,7 +1105,7 @@ opacity: 1; /* inaktiver Zustand */
   </style>
 </head>
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID: 29 …</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID: 30 …</div>
  
 <div id="overlay"></div>
 
@@ -3798,40 +3798,34 @@ let currentTile = null; // falls noch nicht global vorhanden
 function openTile(tileData, tileElement) {
   if (!tileData || !tileElement) return;
 
-  // ⭐ Erst neue Kachel setzen
-  const previousTileElement = currentTileElement;
+  // ⭐ Wenn dieselbe Kachel erneut angetippt wird → Panel schließen
+  if (currentTileElement === tileElement) {
+    closeAllPanels();
+    return;
+  }
 
   currentTileData = tileData;
   currentTileElement = tileElement;
 
-  // ⭐ Schritt 5a: Vorherige Kachel + Panels schließen
-  if (previousTileElement) {
-    previousTileElement.classList.remove("tile-active");
-  }
-  closeAllPanels();
-
-  // Schritt 4: Aktive Kachel markieren
   document.querySelectorAll(".tile").forEach(t => t.classList.remove("tile-active"));
   currentTileElement.classList.add("tile-active");
 
-  // Weiter wie bisher – Panels öffnen nach Typ
   switch (tileData.type) {
     case "apps":
       openAppsPanel(tileData);
       break;
-
     case "smart_home":
       openSmartHomePanel(tileData);
       break;
-
     case "alarm_system":
       openAlarmPanel(tileData);
       break;
-
     default:
       console.warn("Unbekannter Tile-Typ:", tileData.type);
   }
 }
+
+
 
 
 
@@ -4427,9 +4421,18 @@ function closeAllPanels() {
   document.getElementById("appPicker").style.display = "none";
   document.getElementById("devicePicker").style.display = "none";
   document.getElementById("zonePicker").style.display = "none";
+  deactivateCurrentTile();
+
 }
 
-  
+  function deactivateCurrentTile() {
+  if (currentTileElement) {
+    currentTileElement.classList.remove("tile-active");
+    currentTileElement = null;
+    currentTileData = null;
+  }
+}
+
 </script>
 
 
