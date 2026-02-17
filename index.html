@@ -1096,7 +1096,7 @@ opacity: 1; /* inaktiver Zustand */
   </style>
 </head>
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID: 16 …</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID: 17 …</div>
  
 <div id="overlay"></div>
 
@@ -1142,8 +1142,8 @@ opacity: 1; /* inaktiver Zustand */
     }
 
     #masterToggle {
-      margin-top: 6px;
-      align-self: flex-end;
+      margin-top: 0px;
+      align-self: center;
     }
 
 #masterToggle.master-hidden {
@@ -1345,14 +1345,6 @@ opacity: 1; /* inaktiver Zustand */
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
-  top: 90px;
-
-  /* Feste Höhe */
-  height: calc(100vh - 90px - 180px);
-
-  /* Abstand nach unten */
-  bottom: auto;
-
   width: 90%;
   max-width: 900px;
 
@@ -1364,6 +1356,7 @@ opacity: 1; /* inaktiver Zustand */
   overflow: hidden;
   z-index: 999;
 }
+
 
 
 /* Header */
@@ -3168,6 +3161,39 @@ async function ensureGoogleEditAccess() {
   }
 }
 
+/* ============================================================
+   Abstand zwischen oberster Icon-Zeile und App-Panel messen
+============================================================ */
+
+function syncPanelSpacing() {
+  const panel = document.getElementById("appsPanel");
+  const master = document.getElementById("masterToggle");
+  const tiles = document.querySelector(".tilebar-container");
+
+  if (!panel || !master || !tiles) return;
+
+  const masterRect = master.getBoundingClientRect();
+  const panelRect = panel.getBoundingClientRect();
+  const tilesRect = tiles.getBoundingClientRect();
+
+  // Abstand oben zwischen MasterToggle-Unterkante und Panel-Oberkante
+  const gapTop = panelRect.top - masterRect.bottom;
+
+  // Abstand unten soll identisch sein
+  const gapBottom = gapTop;
+
+  // Panel soll gapBottom über den Kacheln enden
+  const bottomValue = (window.innerHeight - tilesRect.top) + gapBottom;
+
+  panel.style.bottom = bottomValue + "px";
+}
+
+window.addEventListener("load", syncPanelSpacing);
+window.addEventListener("resize", syncPanelSpacing);
+
+
+
+  
 /* ============================================================
    EVENT-LISTENER
 ============================================================ */
