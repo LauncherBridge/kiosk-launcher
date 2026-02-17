@@ -1096,7 +1096,7 @@ opacity: 1; /* inaktiver Zustand */
   </style>
 </head>
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID: 19 …</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID: 20 …</div>
  
 <div id="overlay"></div>
 
@@ -1346,8 +1346,8 @@ opacity: 1; /* inaktiver Zustand */
   left: 50%;
   transform: translateX(-50%);
 
-  top: 90px;          /* dein ursprünglicher Wert – NICHT ändern */
-  bottom: 170px;      /* Startwert, gleich justierbar */
+  top: 90px;
+  bottom: 170px;          /* hier spielst du, bis es passt */
 
   width: 90%;
   max-width: 900px;
@@ -1357,9 +1357,10 @@ opacity: 1; /* inaktiver Zustand */
   border-radius: 22px;
   box-shadow: 0 8px 28px rgba(0,0,0,0.35);
   display: none;
-  overflow: hidden;
+  overflow-y: auto;       /* statt hidden, damit Inhalt nicht „drückt“ */
   z-index: 999;
 }
+
 
 
 
