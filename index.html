@@ -1106,7 +1106,7 @@ opacity: 1; /* inaktiver Zustand */
   </style>
 </head>
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID: 31 …</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID: 32 …</div>
  
 <div id="overlay"></div>
 
@@ -3799,8 +3799,8 @@ let currentTile = null; // falls noch nicht global vorhanden
 function openTile(tileData, tileElement) {
   if (!tileData || !tileElement) return;
 
-  // ⭐ Wenn dieselbe Kachel erneut angetippt wird → Panel schließen
-  if (currentTileElement === tileElement) {
+  // ⭐ Wenn ein Panel offen ist und dieselbe Kachel erneut angetippt wird → Panel schließen
+  if (currentTileElement === tileElement && isAnyPanelOpen()) {
     closeAllPanels();
     return;
   }
@@ -4276,6 +4276,13 @@ item.style.animationDelay = (Math.random() * 120) + "ms";
   });
 }
  
+function isAnyPanelOpen() {
+  return (
+    document.getElementById("appsPanel").style.display === "flex" ||
+    document.getElementById("smartHomePanel").style.display === "flex" ||
+    document.getElementById("alarmPanel").style.display === "flex"
+  );
+}
 
   
 function closeAppsPanel() {
