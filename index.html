@@ -1105,7 +1105,7 @@ opacity: 1; /* inaktiver Zustand */
   </style>
 </head>
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID: 26 …</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID: 27 …</div>
  
 <div id="overlay"></div>
 
@@ -2060,6 +2060,8 @@ function renderTiles() {
     const tile = document.createElement("div");
     tile.className = "tile";
     tile.innerText = tileData.name;
+    tileData.element = tile;
+
 
     // Farbe speichern
     tile.dataset.color = tileData.color;
@@ -2102,7 +2104,8 @@ function renderTiles() {
     });
 
     // ⭐ WICHTIG: Name + Typ übergeben
-    tile.onclick = () => openTile(tileData.id);
+ tile.onclick = () => openTile(tileData, tile);
+
 
     // Rechtsklick (wird später ersetzt)
     tile.oncontextmenu = (e) => {
@@ -3792,29 +3795,37 @@ renderTiles();
   
 let currentTile = null; // falls noch nicht global vorhanden
 
-function openTile(tileId) {
-  const tile = tiles.find(t => t.id === tileId);
-  if (!tile) return;
+function openTile(tileData, tileElement) {
+  if (!tileData || !tileElement) return;
 
-  currentTile = tile;
+  // Speichere beide Welten getrennt
+  currentTileData = tileData;     // Datenobjekt
+  currentTileElement = tileElement; // DOM-Element
 
-  switch (tile.type) {
+  // Schritt 4: Aktive Kachel markieren
+document.querySelectorAll(".tile").forEach(t => t.classList.remove("tile-active"));
+currentTileElement.classList.add("tile-active");
+
+
+  // Weiter wie bisher – Panels öffnen nach Typ
+  switch (tileData.type) {
     case "apps":
-      openAppsPanel(tile);
+      openAppsPanel(tileData);
       break;
 
     case "smart_home":
-      openSmartHomePanel(tile);
+      openSmartHomePanel(tileData);
       break;
 
     case "alarm_system":
-      openAlarmPanel(tile);
+      openAlarmPanel(tileData);
       break;
 
     default:
-      console.warn("Unbekannter Tile-Typ:", tile.type);
+      console.warn("Unbekannter Tile-Typ:", tileData.type);
   }
 }
+
 
 
 
