@@ -1341,16 +1341,20 @@ opacity: 1; /* inaktiver Zustand */
    FINAL: Apps Panel
    ============================ */
 
+/* ============================
+   FINAL: Apps Panel
+   ============================ */
+
 #appsPanel {
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
 
-  /* Abstand nach oben wie gehabt */
+  /* Abstand nach oben – unverändert wie früher */
   top: 90px;
 
-  /* maximale Höhe: Viewport minus oben minus gewünschtem Abstand unten */
-  max-height: calc(100vh - 90px - 170px);
+  /* Abstand nach unten – garantiert, ohne bottom */
+  max-height: calc(100vh - 90px - 200px);
 
   width: 90%;
   max-width: 900px;
@@ -1359,16 +1363,11 @@ opacity: 1; /* inaktiver Zustand */
   backdrop-filter: blur(18px);
   border-radius: 22px;
   box-shadow: 0 8px 28px rgba(0,0,0,0.35);
-  display: none;
 
-  /* Inhalt scrollt, Panel bleibt begrenzt */
-  overflow-y: auto;
+  display: none;
+  overflow-y: auto;   /* Panel scrollt innen */
   z-index: 999;
 }
-
-
-
-
 
 
 
