@@ -755,7 +755,6 @@ opacity: 1; /* inaktiver Zustand */
 
   background: rgba(0, 0, 0, 0.35);
   display: none;
-  z-index: 9999;
   flex-direction: column;
 }
 
@@ -1106,7 +1105,7 @@ opacity: 1; /* inaktiver Zustand */
   </style>
 </head>
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID: 32 …</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID: 26 …</div>
  
 <div id="overlay"></div>
 
@@ -2061,8 +2060,6 @@ function renderTiles() {
     const tile = document.createElement("div");
     tile.className = "tile";
     tile.innerText = tileData.name;
-    tileData.element = tile;
-
 
     // Farbe speichern
     tile.dataset.color = tileData.color;
@@ -2105,8 +2102,7 @@ function renderTiles() {
     });
 
     // ⭐ WICHTIG: Name + Typ übergeben
- tile.onclick = () => openTile(tileData, tile);
-
+    tile.onclick = () => openTile(tileData.id);
 
     // Rechtsklick (wird später ersetzt)
     tile.oncontextmenu = (e) => {
@@ -3796,37 +3792,29 @@ renderTiles();
   
 let currentTile = null; // falls noch nicht global vorhanden
 
-function openTile(tileData, tileElement) {
-  if (!tileData || !tileElement) return;
+function openTile(tileId) {
+  const tile = tiles.find(t => t.id === tileId);
+  if (!tile) return;
 
-  // ⭐ Wenn ein Panel offen ist und dieselbe Kachel erneut angetippt wird → Panel schließen
-  if (currentTileElement === tileElement && isAnyPanelOpen()) {
-    closeAllPanels();
-    return;
-  }
+  currentTile = tile;
 
-  currentTileData = tileData;
-  currentTileElement = tileElement;
-
-  document.querySelectorAll(".tile").forEach(t => t.classList.remove("tile-active"));
-  currentTileElement.classList.add("tile-active");
-
-  switch (tileData.type) {
+  switch (tile.type) {
     case "apps":
-      openAppsPanel(tileData);
+      openAppsPanel(tile);
       break;
+
     case "smart_home":
-      openSmartHomePanel(tileData);
+      openSmartHomePanel(tile);
       break;
+
     case "alarm_system":
-      openAlarmPanel(tileData);
+      openAlarmPanel(tile);
       break;
+
     default:
-      console.warn("Unbekannter Tile-Typ:", tileData.type);
+      console.warn("Unbekannter Tile-Typ:", tile.type);
   }
 }
-
-
 
 
 
@@ -3842,8 +3830,6 @@ function openAppsPanel(tile) {
 //tile.classList.add("tile-active");
  // currentTile.classList.add("tile-active");
   const panel   = document.getElementById("appsPanel");
-  panel.style.display = "flex";   // ⭐ Panel sichtbar machen
-
   const titleEl = document.getElementById("appsPanelDynamicTitle");
   const list    = document.getElementById("appsList");
   const headerAddBtn = document.getElementById("appsPanelAddButton");
@@ -3913,6 +3899,7 @@ function openAppsPanel(tile) {
     };
   }
 
+  panel.style.display = "flex";
 }
 
 
@@ -4276,13 +4263,6 @@ item.style.animationDelay = (Math.random() * 120) + "ms";
   });
 }
  
-function isAnyPanelOpen() {
-  return (
-    document.getElementById("appsPanel").style.display === "flex" ||
-    document.getElementById("smartHomePanel").style.display === "flex" ||
-    document.getElementById("alarmPanel").style.display === "flex"
-  );
-}
 
   
 function closeAppsPanel() {
@@ -4422,25 +4402,8 @@ document.addEventListener("click", function (e) {
   }
 });
 
-function closeAllPanels() {
-  document.getElementById("appsPanel").style.display = "none";
-  document.getElementById("smartHomePanel").style.display = "none";
-  document.getElementById("alarmPanel").style.display = "none";
-  document.getElementById("appPicker").style.display = "none";
-  document.getElementById("devicePicker").style.display = "none";
-  document.getElementById("zonePicker").style.display = "none";
-  deactivateCurrentTile();
 
-}
-
-  function deactivateCurrentTile() {
-  if (currentTileElement) {
-    currentTileElement.classList.remove("tile-active");
-    currentTileElement = null;
-    currentTileData = null;
-  }
-}
-
+  
 </script>
 
 
