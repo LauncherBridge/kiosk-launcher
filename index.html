@@ -1096,7 +1096,7 @@ opacity: 1; /* inaktiver Zustand */
   </style>
 </head>
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID: 21 …</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID: 22 …</div>
  
 <div id="overlay"></div>
 
@@ -1346,8 +1346,11 @@ opacity: 1; /* inaktiver Zustand */
   left: 50%;
   transform: translateX(-50%);
 
+  /* Abstand nach oben wie gehabt */
   top: 90px;
-  bottom: 170px;          /* hier spielst du, bis es passt */
+
+  /* maximale Höhe: Viewport minus oben minus gewünschtem Abstand unten */
+  max-height: calc(100vh - 90px - 170px);
 
   width: 90%;
   max-width: 900px;
@@ -1357,9 +1360,12 @@ opacity: 1; /* inaktiver Zustand */
   border-radius: 22px;
   box-shadow: 0 8px 28px rgba(0,0,0,0.35);
   display: none;
-  overflow-y: auto;       /* statt hidden, damit Inhalt nicht „drückt“ */
+
+  /* Inhalt scrollt, Panel bleibt begrenzt */
+  overflow-y: auto;
   z-index: 999;
 }
+
 
 
 
