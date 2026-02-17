@@ -1105,7 +1105,7 @@ opacity: 1; /* inaktiver Zustand */
   </style>
 </head>
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID: 25 …</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID: 26 …</div>
  
 <div id="overlay"></div>
 
@@ -3828,6 +3828,7 @@ function openAppsPanel(tile) {
 
   currentTile = tile;
 //tile.classList.add("tile-active");
+  currentTile.classList.add("tile-active");
   const panel   = document.getElementById("appsPanel");
   const titleEl = document.getElementById("appsPanelDynamicTitle");
   const list    = document.getElementById("appsList");
@@ -4267,6 +4268,7 @@ item.style.animationDelay = (Math.random() * 120) + "ms";
 function closeAppsPanel() {
   document.getElementById("appsPanel").classList.remove("open");
   //document.querySelector("#tile-apps").classList.remove("tile-active"); Tano active deaktiv.
+  currentTile.classList.remove("tile-active");
 //  currentTile.classList.remove("tile-active");
 }
 
