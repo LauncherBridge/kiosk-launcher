@@ -1105,7 +1105,7 @@ opacity: 1; /* inaktiver Zustand */
   </style>
 </head>
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID: 31 …</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID: 26 …</div>
  
 <div id="overlay"></div>
 
@@ -3790,38 +3790,14 @@ renderTiles();
 });
 
   
-let currentTile = null;
-let currentTileElement = null;
+let currentTile = null; // falls noch nicht global vorhanden
 
 function openTile(tileId) {
   const tile = tiles.find(t => t.id === tileId);
   if (!tile) return;
 
-  const tileElement = document.querySelector(`[data-tile-id="${tileId}"]`);
-  if (!tileElement) return;
-
-  const sameTileTapped = currentTile && currentTile.id === tileId;
-  const panelOpen = isAnyPanelOpen();
-
-  // ⭐ Wenn dieselbe Kachel erneut angetippt wird → Panel schließen
-  if (sameTileTapped && panelOpen) {
-    closeAllPanels();
-    return;
-  }
-
-  // ⭐ Wenn eine andere Kachel angetippt wird → alte deaktivieren
-  if (!sameTileTapped && panelOpen) {
-    deactivateCurrentTile();
-  }
-
-  // ⭐ Neue Kachel aktivieren
   currentTile = tile;
-  currentTileElement = tileElement;
 
-  document.querySelectorAll(".tile").forEach(t => t.classList.remove("tile-active"));
-  currentTileElement.classList.add("tile-active");
-
-  // ⭐ Panel öffnen
   switch (tile.type) {
     case "apps":
       openAppsPanel(tile);
@@ -3841,33 +3817,6 @@ function openTile(tileId) {
 }
 
 
-function deactivateCurrentTile() {
-  if (currentTileElement) {
-    currentTileElement.classList.remove("tile-active");
-  }
-  currentTile = null;
-  currentTileElement = null;
-}
-
-function isAnyPanelOpen() {
-  return (
-    document.getElementById("appsPanel").style.display === "flex" ||
-    document.getElementById("smartHomePanel").style.display === "flex" ||
-    document.getElementById("alarmPanel").style.display === "flex"
-  );
-}
-
-function closeAllPanels() {
-  const appsPanel      = document.getElementById("appsPanel");
-  const smartHomePanel = document.getElementById("smartHomePanel");
-  const alarmPanel     = document.getElementById("alarmPanel");
-
-  if (appsPanel)      appsPanel.style.display      = "none";
-  if (smartHomePanel) smartHomePanel.style.display = "none";
-  if (alarmPanel)     alarmPanel.style.display     = "none";
-
-  deactivateCurrentTile();
-}
 
 
 
