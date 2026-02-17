@@ -744,6 +744,7 @@ opacity: 1; /* inaktiver Zustand */
   left: 0;
   width: 100%;
   height: 100%;
+
  backdrop-filter: blur(var(--panel-blur));
 
   background: rgba(0, 0, 0, 0.35);
@@ -782,9 +783,11 @@ opacity: 1; /* inaktiver Zustand */
 
 /* Inhalt */
 .panel-content {
-  padding: 20px;
   overflow-y: auto;
-  backdrop-filter: blur(var(--panel-blur));
+  padding: 20px;
+  background: transparent !important;
+  height: auto !important;
+  flex: 1 1 auto;
   background: transparent !important;
 }
 
@@ -1096,7 +1099,7 @@ opacity: 1; /* inaktiver Zustand */
   </style>
 </head>
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID: 22 …</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID: 23 …</div>
  
 <div id="overlay"></div>
 
@@ -1362,7 +1365,11 @@ opacity: 1; /* inaktiver Zustand */
   background: rgba(20,20,20,0.55);
   backdrop-filter: blur(18px);
   border-radius: 22px;
-  box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+box-shadow:
+    0 28px 48px rgba(0,0,0,0.55),
+    0 12px 24px rgba(0,0,0,0.40),
+    0 4px 10px rgba(0,0,0,0.30);
+
 
   display: none;
   overflow-y: auto;   /* Panel scrollt innen */
