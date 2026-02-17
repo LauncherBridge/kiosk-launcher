@@ -1096,7 +1096,7 @@ opacity: 1; /* inaktiver Zustand */
   </style>
 </head>
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID: 18 …</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID: 19 …</div>
  
 <div id="overlay"></div>
 
@@ -1345,12 +1345,12 @@ opacity: 1; /* inaktiver Zustand */
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
+
+  top: 90px;          /* dein ursprünglicher Wert – NICHT ändern */
+  bottom: 170px;      /* Startwert, gleich justierbar */
+
   width: 90%;
   max-width: 900px;
-
-  /* Startwerte, werden später überschrieben */
-  top: 120px;
-  bottom: 200px;
 
   background: rgba(20,20,20,0.55);
   backdrop-filter: blur(18px);
@@ -1360,6 +1360,7 @@ opacity: 1; /* inaktiver Zustand */
   overflow: hidden;
   z-index: 999;
 }
+
 
 
 
@@ -3166,35 +3167,7 @@ async function ensureGoogleEditAccess() {
   }
 }
 
-/* ============================================================
-   Abstand zwischen oberster Icon-Zeile und App-Panel messen
-============================================================ */
 
-function syncPanelSpacing() {
-  const panel = document.getElementById("appsPanel");
-  const master = document.getElementById("masterToggle");
-  const tiles = document.querySelector(".tilebar-container");
-
-  if (!panel || !master || !tiles) return;
-
-  const masterRect = master.getBoundingClientRect();
-  const panelRect = panel.getBoundingClientRect();
-  const tilesRect = tiles.getBoundingClientRect();
-
-  // Abstand oben zwischen MasterToggle-Unterkante und Panel-Oberkante
-  const gapTop = panelRect.top - masterRect.bottom;
-
-  // Abstand unten soll identisch sein
-  const gapBottom = gapTop;
-
-  // Panel soll gapBottom über den Kacheln enden
-  const bottomValue = (window.innerHeight - tilesRect.top) + gapBottom;
-
-  panel.style.bottom = bottomValue + "px";
-}
-
-window.addEventListener("load", syncPanelSpacing);
-window.addEventListener("resize", syncPanelSpacing);
 
 
 
