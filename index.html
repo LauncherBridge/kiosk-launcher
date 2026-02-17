@@ -1105,7 +1105,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID: 26 …</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID: 1 …</div>
  
 <div id="overlay"></div>
 
@@ -1993,7 +1993,7 @@ function initializeDefaultTiles() {
       apps: [],
       links: [],
       devices: [],
-      alarms: []
+      zones: []
     },
     {
       id: "tile_games",
@@ -2003,7 +2003,7 @@ function initializeDefaultTiles() {
       apps: [],
       links: [],
       devices: [],
-      alarms: []
+      zones: []
     },
     {
       id: "tile_home",
@@ -2013,7 +2013,7 @@ function initializeDefaultTiles() {
       apps: [],
       links: [],
       devices: [],
-      alarms: []
+      zones: []
     },
     {
       id: "tile_alarm",
@@ -2023,10 +2023,11 @@ function initializeDefaultTiles() {
       apps: [],
       links: [],
       devices: [],
-      alarms: []
+      zones: []
     }
   ];
 }
+
 
 
 
@@ -3976,33 +3977,25 @@ function openAlarmPanel(tile) {
   const list = document.getElementById("alarmZoneList");
   const addBtn = document.getElementById("alarmPanelAdd");
 
-  // Titel setzen (Name der Kachel)
   title.textContent = tile.name;
-
-  // Liste leeren
   list.innerHTML = "";
 
-  // Alarm-Zonen rendern
-  tile.zones.forEach(zone => {
+  (tile.zones || []).forEach(zone => {
     const btn = document.createElement("button");
-    btn.className = "app-button"; // wir nutzen das gleiche Button-Design
+    btn.className = "app-button";
     btn.textContent = zone.label;
 
     btn.onclick = () => {
-      // später: Zone scharf/unscharf schalten
       console.log("Alarmzone öffnen:", zone.id);
     };
 
     list.appendChild(btn);
   });
 
-  // Plus-Symbol → später Zonen-Picker
   addBtn.onclick = () => {
-    // später: animiertes Morph + Zonen-Auswahl
-    console.log("Alarmzone hinzufügen für Tile:", tile.id);
+    openZonePicker(tile);
   };
 
-  // Panel anzeigen
   panel.style.display = "flex";
 }
 
@@ -4247,17 +4240,20 @@ item.style.animationDelay = (Math.random() * 120) + "ms";
     item.appendChild(label);
 
     // Klick → Zone zur Kachel hinzufügen
-    item.onclick = () => {
-      tile.zones.push({
-        label: zone.label,
-        id: zone.id
-      });
+item.onclick = () => {
+  if (!tile.zones) tile.zones = [];
 
-      saveTiles();
-      openAlarmPanel(tile);
+  tile.zones.push({
+    label: zone.label,
+    id: zone.id
+  });
 
-      document.getElementById("zonePicker").style.display = "none";
-    };
+  saveTiles();
+  openAlarmPanel(tile);
+
+  document.getElementById("zonePicker").style.display = "none";
+};
+
 
     grid.appendChild(item);
   });
