@@ -1134,7 +1134,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID: 4 …</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID: 5 …</div>
  
 <div id="overlay"></div>
 
@@ -1456,39 +1456,62 @@ box-shadow:
   z-index: 999;
 }
 
+/* PLUS – exakt symmetrisch zum X */
 .header-add-btn {
-  position: relative;
-  width: 28px;
-  height: 28px;
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  justify-self: center;
+  transition: transform 0.15s ease, background 0.2s ease;
+  z-index: 999;
 }
 
+/* Linien */
 .header-add-btn::before,
 .header-add-btn::after {
   content: "";
   position: absolute;
-  background: #00aa66; /* dunkles Grün */
+  width: 26px;
+  height: 2px;
+  background: rgba(255,255,255,0.85);
   border-radius: 2px;
-  transition: transform 0.25s ease;
+  transform-origin: center;
+  transition: transform 0.2s ease, background 0.2s ease;
 }
 
-/* Vertikale Linie */
+/* Vertikal */
 .header-add-btn::before {
-  width: 3px;
-  height: 28px;
+  transform: translate(-50%, -50%) rotate(90deg);
+  top: 50%;
   left: 50%;
-  top: 0;
-  transform: translateX(-50%);
 }
 
-/* Horizontale Linie */
+/* Horizontal */
 .header-add-btn::after {
-  width: 28px;
-  height: 3px;
+  transform: translate(-50%, -50%) rotate(0deg);
   top: 50%;
-  left: 0;
-  transform: translateY(-50%);
+  left: 50%;
+}
+
+/* Hover */
+.header-add-btn:hover::before,
+.header-add-btn:hover::after {
+  background: #66ff99;
+  transform: translate(-50%, -50%) scale(1.1) rotate(var(--rot, 0deg));
+}
+
+/* Tap */
+.header-add-btn:active {
+  transform: scale(0.9);
+  background: rgba(255,255,255,0.25);
 }
 
 
