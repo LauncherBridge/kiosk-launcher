@@ -476,6 +476,54 @@ opacity: 1; /* inaktiver Zustand */
   transition: all 0.25s ease;
 }
 
+.panel-add-btn {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.2s ease;
+  z-index: 999;
+}
+
+/* Die beiden Linien */
+.panel-add-btn::before,
+.panel-add-btn::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 26px;
+  height: 2px;
+  background: rgba(255,255,255,0.85);
+  border-radius: 2px;
+  transform-origin: center;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+/* Horizontale Linie */
+.panel-add-btn::before {
+  transform: translate(-50%, -50%) rotate(0deg);
+}
+
+/* Vertikale Linie */
+.panel-add-btn::after {
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
+/* Hover-Effekt */
+.panel-add-btn:hover::before,
+.panel-add-btn:hover::after {
+  background: #66ff66;
+  transform: translate(-50%, -50%) scale(1.1);
+}
 
 
 .tile.tile-add {
@@ -1134,7 +1182,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID: 5 …</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID: 6 …</div>
  
 <div id="overlay"></div>
 
@@ -1459,6 +1507,14 @@ box-shadow:
   z-index: 999;
 }
 
+
+.header-btn {
+  font-size: 28px;
+  cursor: pointer;
+  user-select: none;
+}
+
+    
 .header-add-btn {
   position: relative;
   width: 28px;
@@ -1643,12 +1699,20 @@ box-shadow:
 <div id="appsPanel" class="panel" style="display:none;">
 
 <div id="appsPanelHeader">
- <!-- T    <div id="appsPanelDynamicTitle"></div>  -->
 
-    <!-- Plus-Symbol im Header -->
+
+    <!-- 
+  Altes Plus-Symbol im Header 
     <div id="appsPanelAdd" class="header-add-btn"></div>
    <div id="appsPanelAddButton" class="header-add-btn"></div>   
-    
+   <span id="appsPanelAdd" class="header-btn">+</span>
+  -->
+  
+   <!-- Neues Plus-Symbol im Header -->
+  <div id="appsPanelAdd" class="panel-add-btn"></div>
+  
+   <!-- T    <div id="appsPanelDynamicTitle"></div>  -->
+  
     <div id="appsPanelDynamicTitle"></div> 
     
     <!-- Floating Close Button -->
