@@ -1134,7 +1134,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID: 8 …</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID: 9 …</div>
  
 <div id="overlay"></div>
 
@@ -1457,13 +1457,13 @@ box-shadow:
 }
 
 /* ============================================
-   PERFEKTES PLUS – symmetrisch zum X
+   PERFEKTES PLUS – konfliktfrei & isoliert
    ============================================ */
 
 .header-add-btn {
   position: absolute;
   top: 14px;
-  left: 14px; /* Spiegelung vom X */
+  left: 14px;
   width: 38px;
   height: 38px;
   border-radius: 50%;
@@ -1475,6 +1475,10 @@ box-shadow:
   cursor: pointer;
   transition: transform 0.15s ease, background 0.2s ease;
   z-index: 999;
+
+  /* WICHTIG: verhindert Überschreiben durch alte Regeln */
+  --plus-rotate-h: 0deg;
+  --plus-rotate-v: 90deg;
 }
 
 /* Linien */
@@ -1492,19 +1496,19 @@ box-shadow:
 
 /* Horizontal */
 .header-add-btn::after {
+  transform: translate(-50%, -50%) rotate(var(--plus-rotate-h));
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%) rotate(0deg);
 }
 
 /* Vertikal */
 .header-add-btn::before {
+  transform: translate(-50%, -50%) rotate(var(--plus-rotate-v));
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%) rotate(90deg);
 }
 
-/* Hover – KEINE Rotation → Plus bleibt Plus */
+/* Hover – KEINE Rotation */
 .header-add-btn:hover::before,
 .header-add-btn:hover::after {
   background: #66ff99;
@@ -1516,6 +1520,7 @@ box-shadow:
   transform: scale(0.9);
   background: rgba(255,255,255,0.25);
 }
+
 
 
 .panel-close-btn {
