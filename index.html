@@ -1137,7 +1137,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID: 2 …</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID: 3 …</div>
  
 <div id="overlay"></div>
 
@@ -2172,7 +2172,7 @@ function renderTiles() {
   addTile.className = "tile tile-add";
   addTile.innerText = "+";
   addTile.onclick = () => {
-    // createNewTile(); // kommt später
+  createNewTile(); 
   };
   bar.appendChild(addTile);
 }
@@ -4378,7 +4378,66 @@ function openTileSettings(tile) {
   panel.style.display = "block";
 }
 
+function createNewTile() {
+  // 1. Name abfragen
+  const name = prompt("Name der neuen Kachel:");
+  if (!name || name.trim() === "") return;
 
+  // 2. Typ abfragen
+  const type = prompt(
+    "Art der Kachel wählen:\n" +
+    "apps  → App-Kachel\n" +
+    "smart → Smart-Home-Kachel\n" +
+    "alarm → Alarm-Kachel"
+  );
+
+  if (!type) return;
+
+  let tileType = null;
+
+  switch (type.toLowerCase()) {
+    case "apps":
+      tileType = "apps";
+      break;
+    case "smart":
+      tileType = "smart_home";
+      break;
+    case "alarm":
+      tileType = "alarm_system";
+      break;
+    default:
+      alert("Ungültiger Typ. Erlaubt: apps, smart, alarm");
+      return;
+  }
+
+  // 3. Neue ID erzeugen
+  const id = "tile_" + Date.now();
+
+  // 4. Neue Kachel erzeugen
+  const newTile = {
+    id: id,
+    name: name.trim(),
+    type: tileType,
+    color: "#444444",   // Standardfarbe (Hover)
+    apps: [],
+    links: [],
+    devices: [],
+    zones: []
+  };
+
+  // 5. Speichern
+  tiles.push(newTile);
+  saveTiles();
+
+  // 6. Neu rendern
+  renderTiles();
+
+  // 7. Optional: direkt Einstellungen öffnen
+  openTileSettings(newTile);
+}
+
+
+  
 function closeCategoryPanel() {
   const panel = document.getElementById("categoryPanel");
 if (!panel) return; // <– NEU 
