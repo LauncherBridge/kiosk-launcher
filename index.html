@@ -493,7 +493,7 @@ opacity: 1; /* inaktiver Zustand */
   z-index: 999;
 }
 
-/* Die beiden Linien */
+/* Linien */
 .panel-add-btn::before,
 .panel-add-btn::after {
   content: "";
@@ -508,23 +508,30 @@ opacity: 1; /* inaktiver Zustand */
   transition: transform 0.2s ease, background 0.2s ease;
 }
 
-/* Horizontale Linie */
+/* Horizontal */
 .panel-add-btn::before {
   transform: translate(-50%, -50%) rotate(0deg);
 }
 
-/* Vertikale Linie */
+/* Vertikal */
 .panel-add-btn::after {
   transform: translate(-50%, -50%) rotate(90deg);
 }
 
-/* Hover-Effekt */
+/* Hover – NICHT rotieren */
+.panel-add-btn:hover::before,
+.panel-add-btn:hover::after {
+  background: #66ff66;
+  transform: translate(-50%, -50%) scale(1.15);
+}
+
+/* Hover-Effekt - behalten, um zu sehen wie aus plus minus wird
 .panel-add-btn:hover::before,
 .panel-add-btn:hover::after {
   background: #66ff66;
   transform: translate(-50%, -50%) scale(1.1);
 }
-
+ */
 
 .tile.tile-add {
   font-size: 40px;
@@ -1185,7 +1192,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID: 6 …</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID: 7…</div>
  
 <div id="overlay"></div>
 
