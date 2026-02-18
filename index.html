@@ -1134,7 +1134,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID: 7 …</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID: 8 …</div>
  
 <div id="overlay"></div>
 
@@ -1456,11 +1456,14 @@ box-shadow:
   z-index: 999;
 }
 
-/* PLUS – exakt symmetrisch zum X */
+/* ============================================
+   PERFEKTES PLUS – symmetrisch zum X
+   ============================================ */
+
 .header-add-btn {
   position: absolute;
   top: 14px;
-  left: 14px;
+  left: 14px; /* Spiegelung vom X */
   width: 38px;
   height: 38px;
   border-radius: 50%;
@@ -1487,26 +1490,25 @@ box-shadow:
   transition: transform 0.2s ease, background 0.2s ease;
 }
 
-/* Vertikal */
-.header-add-btn::before {
- transform: translate(-50%, -50%) rotate(90deg)
-  top: 50%;
-  left: 50%;
-}
-
 /* Horizontal */
 .header-add-btn::after {
-  transform: translate(-50%, -50%) rotate(0deg);
   top: 50%;
   left: 50%;
+  transform: translate(-50%, -50%) rotate(0deg);
 }
 
-/* Hover */
+/* Vertikal */
+.header-add-btn::before {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
+/* Hover – KEINE Rotation → Plus bleibt Plus */
 .header-add-btn:hover::before,
 .header-add-btn:hover::after {
   background: #66ff99;
-/*  transform: translate(-50%, -50%) scale(1.1) rotate(var(--rot, 0deg));*/
-    transform: translate(-50%, -50%) scale(1.1) rotate(var(--rot0, 90deg));*/
+  transform: translate(-50%, -50%) scale(1.1);
 }
 
 /* Tap */
