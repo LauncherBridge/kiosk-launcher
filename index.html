@@ -1101,11 +1101,43 @@ opacity: 1; /* inaktiver Zustand */
   backdrop-filter: blur(4px);
 }
 
+
+
+.tile-settings-group {
+  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+}
+
+.tile-settings-group label {
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+.tile-settings-save {
+  width: 100%;
+  padding: 10px;
+  background: #444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+}
+
+
+.tile:hover,
+.tile.hovered {
+  background-color: var(--tile-hover-color, rgba(255,255,255,0.15));
+  transition: background-color 0.25s ease;
+}
+
+
+    
   </style>
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID: 1 …</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID: 2 …</div>
  
 <div id="overlay"></div>
 
@@ -2064,6 +2096,30 @@ function renderTiles() {
 
     // Farbe speichern
     tile.dataset.color = tileData.color;
+    tile.style.setProperty("--tile-hover-color", tileData.color);
+
+
+    // ============================================================
+    // TILE SETTINGS – LONG PRESS / RIGHT CLICK
+    // ============================================================
+
+    // Rechtsklick (Desktop)
+    tile.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      openTileSettings(tileData);
+    });
+
+    // Long‑Press (Touch)
+    let pressTimer;
+    tile.addEventListener("touchstart", () => {
+      pressTimer = setTimeout(() => openTileSettings(tileData), 500);
+    });
+    tile.addEventListener("touchend", () => clearTimeout(pressTimer));
+    tile.addEventListener("touchmove", () => clearTimeout(pressTimer));
+
+    // ============================================================
+    // DEIN VORHANDENER TOUCH-HOVER / SWIPE CODE
+    // ============================================================
 
     let swipeDetected = false;
     let resetTimeout = null;
@@ -2102,14 +2158,11 @@ function renderTiles() {
       }
     });
 
-    // ⭐ WICHTIG: Name + Typ übergeben
-    tile.onclick = () => openTile(tileData.id);
+    // ============================================================
+    // TILE CLICK → PANEL ÖFFNEN
+    // ============================================================
 
-    // Rechtsklick (wird später ersetzt)
-    tile.oncontextmenu = (e) => {
-      e.preventDefault();
-      // renameTile(tileData.id);  // kommt später
-    };
+    tile.onclick = () => openTile(tileData.id);
 
     bar.appendChild(tile);
   });
@@ -2123,6 +2176,7 @@ function renderTiles() {
   };
   bar.appendChild(addTile);
 }
+
   
 let appsPerCategory = {};
 let currentTargetCategory = null;
@@ -4283,6 +4337,46 @@ function removeAppFromTile(tileName, packageName) {
   saveTileData();
 }
 
+function openTileSettings(tile) {
+  const panel = document.getElementById("tileSettings");
+  const content = document.getElementById("tileSettingsContent");
+
+  content.innerHTML = `
+    <div class="tile-settings-group">
+      <label>Kachelname:</label>
+      <input id="tileNameInput" type="text" value="${tile.name}">
+    </div>
+
+    <div class="tile-settings-group">
+      <label>Kacheltyp:</label>
+      <select id="tileTypeInput">
+        <option value="apps" ${tile.type === "apps" ? "selected" : ""}>Apps</option>
+        <option value="smart_home" ${tile.type === "smart_home" ? "selected" : ""}>Smart Home</option>
+        <option value="alarm_system" ${tile.type === "alarm_system" ? "selected" : ""}>Alarm</option>
+      </select>
+    </div>
+
+    <div class="tile-settings-group">
+      <label>Farbe (Hover/Touch):</label>
+      <input id="tileColorInput" type="color" value="${tile.color || "#444444"}">
+    </div>
+
+    <button id="tileSaveBtn" class="tile-settings-save">Speichern</button>
+  `;
+
+  document.getElementById("tileSaveBtn").onclick = () => {
+    tile.name = document.getElementById("tileNameInput").value;
+    tile.type = document.getElementById("tileTypeInput").value;
+    tile.color = document.getElementById("tileColorInput").value;
+
+    saveTiles();
+    renderTiles();
+
+    panel.style.display = "none";
+  };
+
+  panel.style.display = "block";
+}
 
 
 function closeCategoryPanel() {
