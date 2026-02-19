@@ -1158,7 +1158,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:7…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:8…</div>
  <div class="header">
     <div class="header-progress"></div>
 
@@ -4071,12 +4071,7 @@ function openAppsPanel(tile) {
     list.appendChild(item);
   });
 
-  // Plus-Icon im Header (bleibt!)
-  if (headerAddBtn) {
-    headerAddBtn.onclick = () => {
-      openAppPicker(tile);
-    };
-  }
+
 
   // Close-Button
   if (closeBtn) {
@@ -4089,11 +4084,6 @@ function openAppsPanel(tile) {
 }
 
 
-
-  
-document.getElementById("appsPanelAddButton").onclick = function () {
-    openAppPicker(currentTile);
-};
 
   
 function renderApps(apps) {
@@ -4705,7 +4695,7 @@ plusBtn.addEventListener('pointerdown', (e) => {
   startX = e.clientX;
   startY = e.clientY;
 
-  // Nach 1 Sekunde Balken starten
+  // Nach 0,5 Sekunde Balken starten
   startTimer = setTimeout(() => {
     if (!isPointerDown) return;
 
@@ -4719,7 +4709,7 @@ plusBtn.addEventListener('pointerdown', (e) => {
       RemoveAppsPanel();
     }, 1500);
 
-  }, 1000);
+  }, 500);
 });
 
 // Bewegung → Abbruch, wenn zu weit
