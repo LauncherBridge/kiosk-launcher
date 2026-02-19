@@ -1158,7 +1158,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:3…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:4…</div>
  <div class="header">
     <div class="header-progress"></div>
 
@@ -4683,20 +4683,24 @@ document.addEventListener("click", function (e) {
 });
 
 
-let pressTimer;
+let startTimer;
 let progressTimer;
+let progressStarted = false;
 let progressDone = false;
 
 const plusBtn = document.querySelector('#appsPanelAddButton');
 const bar = document.querySelector('#appsPanelHeader .header-progress');
 
-// 1) Pointer down → WARTEN, ob der Finger 1 Sekunde bleibt
+// 1) Pointer down → prüfen, ob 1 Sekunde gehalten wird
 plusBtn.addEventListener('pointerdown', () => {
+  progressStarted = false;
   progressDone = false;
 
-  // Erst NACH 1 Sekunde starten
-  pressTimer = setTimeout(() => {
-    // Jetzt erst Balken starten
+  // Nach 1 Sekunde: Balken starten
+  startTimer = setTimeout(() => {
+    progressStarted = true;
+
+    // Balken starten
     bar.style.transition = 'width 1.5s linear';
     bar.style.width = '100%';
 
@@ -4704,30 +4708,41 @@ plusBtn.addEventListener('pointerdown', () => {
     progressTimer = setTimeout(() => {
       progressDone = true;
       console.log("Long press completed");
+      RemoteAppsPanel(); // Deine spätere Funktion
     }, 1500);
 
-  }, 1000); // 1 Sekunde Halten
+  }, 1000); // 1 Sekunde halten
 });
 
-// 2) Reset-Funktion
-function resetBar() {
-  clearTimeout(pressTimer);
+
+// 2) Pointer up / leave → Verhalten abhängig vom Status
+plusBtn.addEventListener('pointerup', handleRelease);
+plusBtn.addEventListener('pointerleave', handleRelease);
+
+function handleRelease() {
+  clearTimeout(startTimer);
   clearTimeout(progressTimer);
 
-  if (!progressDone) {
-    // Wenn der Balken noch nicht gestartet hat → width bleibt 0
+  // Fall A: Balken hat noch nicht begonnen → kurzer Tap → AppsPanel öffnen
+  if (!progressStarted) {
+    bar.style.width = '0%';
+    OpenAppsPanel(); // Deine bestehende Funktion
+    return;
+  }
+
+  // Fall B: Balken läuft, aber nicht fertig → nichts tun
+  if (progressStarted && !progressDone) {
     bar.style.transition = 'width 0.25s linear';
     bar.style.width = '0%';
-  } else {
-    // Wenn er fertig ist → bleibt voll
+    return;
+  }
+
+  // Fall C: Balken fertig → RemoteAppsPanel wurde bereits ausgelöst
+  if (progressDone) {
     bar.style.transition = 'none';
     bar.style.width = '100%';
   }
 }
-
-// 3) Pointer up / leave → abbrechen
-plusBtn.addEventListener('pointerup', resetBar);
-plusBtn.addEventListener('pointerleave', resetBar);
 
   
   
