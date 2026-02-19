@@ -1158,7 +1158,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:6…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:7…</div>
  <div class="header">
     <div class="header-progress"></div>
 
@@ -4691,7 +4691,7 @@ let isPointerDown = false;
 
 let startX = 0;
 let startY = 0;
-const MOVE_TOLERANCE = 6; // Maus + Touch Toleranz
+const MOVE_TOLERANCE = 8; // Maus braucht etwas mehr Toleranz
 
 const plusBtn = document.querySelector('#appsPanelAddButton');
 const bar = document.querySelector('#appsPanelHeader .header-progress');
@@ -4716,7 +4716,7 @@ plusBtn.addEventListener('pointerdown', (e) => {
 
     progressTimer = setTimeout(() => {
       progressDone = true;
-      RemoveAppsPanel(); // <-- jetzt korrekt
+      RemoveAppsPanel();
     }, 1500);
 
   }, 1000);
@@ -4734,9 +4734,16 @@ plusBtn.addEventListener('pointermove', (e) => {
   }
 });
 
-// Pointer up / leave → je nach Status reagieren
+// Maus verlässt den Button → sofort abbrechen
+plusBtn.addEventListener('pointerleave', () => {
+  if (isPointerDown) cancelLongPress();
+});
+
+// Pointer up → je nach Status reagieren
 plusBtn.addEventListener('pointerup', handleRelease);
-plusBtn.addEventListener('pointerleave', handleRelease);
+
+// Pointercancel → Browser bricht ab (z. B. Kontextmenü)
+plusBtn.addEventListener('pointercancel', cancelLongPress);
 
 function handleRelease() {
   isPointerDown = false;
@@ -4772,6 +4779,7 @@ function cancelLongPress() {
   progressDone = false;
   isPointerDown = false;
 }
+
 
   
   
