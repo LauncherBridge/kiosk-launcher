@@ -1153,12 +1153,27 @@ opacity: 1; /* inaktiver Zustand */
   z-index: 1000;
 }
 
+
+#appsPanelAddButton::before {
+  content: "+";
+  font-size: 32px;
+  color: white;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+/* Während des Balkenwachstums UND im Remove-Modus */
+#appsPanelAddButton.removing::before {
+  content: "−"; /* echtes Minus-Zeichen */
+  transform: scale(1.2);
+  opacity: 0.9;
+}
+
     
   </style>
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:5…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:3…</div>
  <div class="header">
     <div class="header-progress"></div>
 
@@ -4703,12 +4718,19 @@ plusBtn.addEventListener('pointerdown', (e) => {
 
     progressStarted = true;
 
+    // ➜ Plus wird zu Minus
+    plusBtn.classList.add("removing");
+
     bar.style.transition = 'width 1.5s linear';
     bar.style.width = '100%';
 
     progressTimer = setTimeout(() => {
       progressDone = true;
+
+      // ➜ Remove-Modus aktivieren
       RemoveAppsPanel();
+
+      // ➜ Minus bleibt dauerhaft
     }, 1500);
 
   }, 500);
@@ -4740,13 +4762,14 @@ function handleRelease() {
   // Kurz-Tap → AppPicker öffnen
   if (!progressStarted) {
     bar.style.width = '0%';
-    openAppPicker(currentTile); // <-- HIER ist der Fix
+    plusBtn.classList.remove("removing");
+    openAppPicker(currentTile);
     return;
   }
 
   // Balken läuft → nichts tun
   if (progressStarted && !progressDone) {
-    bar.style.width = '0%';
+    cancelLongPress();
     return;
   }
 
@@ -4754,6 +4777,7 @@ function handleRelease() {
   if (progressDone) {
     bar.style.transition = 'none';
     bar.style.width = '100%';
+    // ➜ Minus bleibt
   }
 }
 
@@ -4763,6 +4787,11 @@ function cancelLongPress() {
 
   bar.style.transition = 'width 0.25s linear';
   bar.style.width = '0%';
+
+  // ➜ Nur zurück zu Plus, wenn wir NICHT im Remove-Modus sind
+  if (!progressDone) {
+    plusBtn.classList.remove("removing");
+  }
 
   progressStarted = false;
   progressDone = false;
