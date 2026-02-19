@@ -699,6 +699,16 @@ opacity: 1; /* inaktiver Zustand */
 .header-add-btn:hover::after {
   transform: translate(-50%, -50%) scale(1.1) !important;
 }*/
+/* Hover – behält Rotation bei */
+.header-add-btn:hover::before {
+  background: #66ff99;
+  transform: translate(-50%, -50%) rotate(var(--plus-rotate-v)) scale(1.1);
+}
+
+.header-add-btn:hover::after {
+  background: #66ff99;
+  transform: translate(-50%, -50%) rotate(var(--plus-rotate-h)) scale(1.1);
+}
 
 
 <head>
@@ -1063,7 +1073,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:4…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:5…</div>
  
 <div id="overlay"></div>
 
