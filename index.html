@@ -1172,7 +1172,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:1…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:2…</div>
  <div class="header">
     <div class="header-progress"></div>
 
@@ -4714,13 +4714,14 @@ plusBtn.addEventListener('pointerdown', (e) => {
     progressStarted = true;
 
     // Plus → Minus + Rot
+    plusBtn.classList.add("jumping");
     plusBtn.classList.add("removing");
 
     bar.style.transition = 'width 1.5s linear';
     bar.style.width = '100%';
 
     progressTimer = setTimeout(() => {
-      plusBtn.classList.add("jumping");
+      
 
       progressDone = true;
 
