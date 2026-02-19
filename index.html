@@ -716,30 +716,21 @@ opacity: 1; /* inaktiver Zustand */
 
 
 
-    /* 1) Grundzustand der Linien */
-.header-add-btn::after { /* horizontal */
-  transform: translate(-50%, -50%) rotate(var(--plus-rotate-h));
-}
-
-.header-add-btn::before { /* vertikal */
-  transform: translate(-50%, -50%) rotate(var(--plus-rotate-v));
-}
-
-/* 2) Hover – beide Linien gleichzeitig (Farbe + Scale) */
+/* Neuer Plus-Button-Hover – beide Linien gleichzeitig (Farbe + Scale) */
 .header-add-btn:hover::before,
 .header-add-btn:hover::after {
   background: #66ff99;
-  transform: translate(-50%, -50%) scale(1.1);
 }
 
-/* 3) Hover – individuelle Rotationen wiederherstellen */
+/* Hover – individuelle Rotationen + Scale */
 .header-add-btn:hover::before {
-  transform: translate(-50%, -50%) rotate(var(--plus-rotate-v)) scale(1.1);
+  transform: translate(-50%, -50%) rotate(var(--plus-rotate-v)) scale(1.15);
 }
 
 .header-add-btn:hover::after {
-  transform: translate(-50%, -50%) rotate(var(--plus-rotate-h)) scale(1.1);
+  transform: translate(-50%, -50%) rotate(var(--plus-rotate-h)) scale(1.15);
 }
+
 
 
 <head>
@@ -1104,7 +1095,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:1…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:2…</div>
  
 <div id="overlay"></div>
 
