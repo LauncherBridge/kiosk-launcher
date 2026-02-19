@@ -1073,7 +1073,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:7…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:8…</div>
  
 <div id="overlay"></div>
 
@@ -1562,21 +1562,24 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 */
 
 
-/* Header immer volle Breite */
+/* Header immer volle Breite und feste Höhe */
 #appsPanelHeader {
   width: 100%;
-  position: relative; /* wichtig für absolute Kinder */
+  height: 64px; /* oder 70px, wenn du es etwas höher willst */
+  position: relative;
 }
 
 /* Titel absolut zentrieren */
 #appsPanelDynamicTitle {
   position: absolute;
   left: 50%;
-  transform: translateX(-50%);
+  top: 50%;
+  transform: translate(-50%, -50%);
   text-align: center;
   width: max-content;
   pointer-events: none;
 }
+
 
 
 
