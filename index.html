@@ -1158,7 +1158,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:1…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:2…</div>
  <div class="header">
     <div class="header-progress"></div>
 
@@ -1443,8 +1443,14 @@ box-shadow:
 /* Header */
 #appsPanelHeader {
   position: relative;
-  overflow: hidden; /* WICHTIG: damit der Balken nicht rausläuft */
+  height: 64px;
+  overflow: hidden;
+
+  /* Der dunkle Balken, der vorher da war */
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(22px);
 }
+
 
 #appsPanelHeader .header-progress {
   position: absolute;
