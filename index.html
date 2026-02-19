@@ -1073,7 +1073,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:8…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:9…</div>
  
 <div id="overlay"></div>
 
@@ -1562,11 +1562,16 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 */
 
 
-/* Header immer volle Breite und feste Höhe */
+/* Header volle Breite, aber ohne Überbreite */
 #appsPanelHeader {
   width: 100%;
-  height: 64px; /* oder 70px, wenn du es etwas höher willst */
+  height: 64px;
   position: relative;
+  padding-left: 0;
+  padding-right: 0;
+  padding-top: 18px;
+  padding-bottom: 18px;
+  box-sizing: border-box; /* verhindert Überbreite */
 }
 
 /* Titel absolut zentrieren */
@@ -1579,6 +1584,7 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
   width: max-content;
   pointer-events: none;
 }
+
 
 
 
