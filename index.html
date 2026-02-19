@@ -778,7 +778,15 @@ opacity: 1; /* inaktiver Zustand */
 .header-add-btn.removing::after {
   height: 3px;
 }
+/* Hintergrund im Remove-Modus abdunkeln */
+.header-add-btn.removing {
+  background: rgba(0,0,0,0.55) !important;
+}
 
+/* Wenn Remove-Modus endet → Hintergrund wieder normal */
+.header-add-btn:not(.removing) {
+  background: rgba(255,255,255,0.12);
+}
 
     
 
@@ -1164,7 +1172,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:5…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:6…</div>
  <div class="header">
     <div class="header-progress"></div>
 
@@ -1549,7 +1557,7 @@ box-shadow:
   background: rgba(255,255,255,0.85);
   border-radius: 2px;
   transform-origin: center;
-  transition: transform 0.2s ease, background 0.2s ease;
+  transition: transform 0.75s ease, background 0.2s ease;
 }
 
 /* Horizontal */
