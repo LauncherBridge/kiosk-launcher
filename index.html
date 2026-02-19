@@ -757,6 +757,9 @@ opacity: 1; /* inaktiver Zustand */
   transform: translate(-50%, -50%) scale(1.4) rotate(var(--plus-rotate-h));
 }
 
+.header { 
+  position: relative; /* WICHTIG */ 
+}
 
 .header-progress {
   position: absolute;
@@ -1135,8 +1138,14 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:1…</div>
- 
+ <div id="cacheStatus" class="cache-status">Tano -ID:2…</div>
+ <div class="header">
+    <div class="header-progress"></div>
+
+    <div class="header-time"></div>
+    <div class="header-add-btn"></div>
+</div>
+
 <div id="overlay"></div>
 
 <!-- Hintergrund-Engine -->
@@ -1718,13 +1727,13 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 <div id="appsPanel" class="panel" style="display:none;">
 
 <div id="appsPanelHeader">
- <!-- T    <div id="appsPanelDynamicTitle"></div>  -->
 <div class="header-progress"></div>
 
-    <!-- Plus-Symbol im Header -->
+            <!-- Plus-Symbol im Header -->
     <div id="appsPanelAddButton" class="header-add-btn"></div>
-<div id="appsPanelDynamicTitle"></div> 
-    <!-- Floating Close Button -->
+            <!-- Titel im Header -->
+  <div id="appsPanelDynamicTitle"></div> 
+            <!-- Floating Close Button -->
     <div id="appsPanelClose" class="panel-close-btn">×</div>
 </div>
 
