@@ -1147,7 +1147,7 @@ opacity: 1; /* inaktiver Zustand */
   left: 0;
   height: 4px;
   width: 0%;
-  background: red;
+  background: red !important;
   transition: width 0.25s linear;
   pointer-events: none;
   z-index: 1000;
@@ -1158,7 +1158,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:8…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:9…</div>
  <div class="header">
     <div class="header-progress"></div>
 
@@ -1443,17 +1443,29 @@ box-shadow:
 /* Header */
 #appsPanelHeader {
   position: relative;
-  padding: 18px 22px;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-
-  /* Deutlich dunklerer Header */
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(22px);
-
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  overflow: hidden; /* WICHTIG: damit der Balken nicht rausläuft */
 }
+
+#appsPanelHeader .header-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0%;              /* wird animiert */
+  height: 100%;           /* voller Balken */
+  background: rgba(255,0,0,0.35); /* halbtransparentes Rot */
+  backdrop-filter: blur(2px);     /* optional: leichter Blur */
+  transition: width 1.5s linear;
+  pointer-events: none;
+  z-index: 1;             /* unter Titel & Close-Button */
+}
+
+/* Titel und Close-Button darüber */
+#appsPanelDynamicTitle,
+#appsPanelClose {
+  position: relative;
+  z-index: 2;
+}
+
 
 
 
