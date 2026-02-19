@@ -776,6 +776,24 @@ opacity: 1; /* inaktiver Zustand */
   pointer-events: none;
 }
 
+/* REMOVE-MODUS → vertikale Linie wird horizontal */
+.header-add-btn.removing {
+  --plus-rotate-v: 0deg; /* vertikale Linie dreht sich zu horizontal */
+}
+
+/* REMOVE-MODUS → beide Linien werden rot */
+.header-add-btn.removing::before,
+.header-add-btn.removing::after {
+  background: #ff4444; /* kräftiges Rot */
+}
+
+/* OPTIONAL: horizontale Linie etwas dicker im Remove-Modus */
+.header-add-btn.removing::after {
+  height: 3px;
+}
+
+
+    
 
 #controls {
   position: absolute;
@@ -1173,7 +1191,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:3…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:5…</div>
  <div class="header">
     <div class="header-progress"></div>
 
@@ -4718,7 +4736,7 @@ plusBtn.addEventListener('pointerdown', (e) => {
 
     progressStarted = true;
 
-    // ➜ Plus wird zu Minus
+    // Plus → Minus + Rot
     plusBtn.classList.add("removing");
 
     bar.style.transition = 'width 1.5s linear';
@@ -4727,10 +4745,10 @@ plusBtn.addEventListener('pointerdown', (e) => {
     progressTimer = setTimeout(() => {
       progressDone = true;
 
-      // ➜ Remove-Modus aktivieren
+      // Remove-Modus aktivieren
       RemoveAppsPanel();
+      // Minus + Rot bleiben
 
-      // ➜ Minus bleibt dauerhaft
     }, 1500);
 
   }, 500);
@@ -4767,7 +4785,7 @@ function handleRelease() {
     return;
   }
 
-  // Balken läuft → nichts tun
+  // Balken läuft → abbrechen, zurück animieren
   if (progressStarted && !progressDone) {
     cancelLongPress();
     return;
@@ -4777,7 +4795,7 @@ function handleRelease() {
   if (progressDone) {
     bar.style.transition = 'none';
     bar.style.width = '100%';
-    // ➜ Minus bleibt
+    // Minus + Rot bleiben
   }
 }
 
@@ -4788,7 +4806,7 @@ function cancelLongPress() {
   bar.style.transition = 'width 0.25s linear';
   bar.style.width = '0%';
 
-  // ➜ Nur zurück zu Plus, wenn wir NICHT im Remove-Modus sind
+  // Nur zurück zu Plus, wenn wir NICHT im Remove-Modus sind
   if (!progressDone) {
     plusBtn.classList.remove("removing");
   }
