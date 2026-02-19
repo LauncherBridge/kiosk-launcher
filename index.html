@@ -758,7 +758,16 @@ opacity: 1; /* inaktiver Zustand */
 }
 
 
-
+.header-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 4px;
+  width: 0%;
+  background: red;
+  transition: width 0.25s linear;
+  pointer-events: none;
+}
 
 
 
@@ -1126,7 +1135,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:8…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:9…</div>
  
 <div id="overlay"></div>
 
@@ -4618,6 +4627,45 @@ document.addEventListener("click", function (e) {
 });
 
 
+let pressTimer;
+let progressDone = false;
+
+const header = document.querySelector('.header');
+const bar = document.querySelector('.header-progress');
+
+header.addEventListener('pointerdown', () => {
+  progressDone = false;
+
+  // Animation starten
+  bar.style.transition = 'width 1.5s linear';
+  bar.style.width = '100%';
+
+  // Timer für "voll durchgelaufen"
+  pressTimer = setTimeout(() => {
+    progressDone = true;
+    console.log("Long press completed");
+    // Hier kannst du deine Aktion auslösen
+  }, 1500);
+});
+
+function resetBar() {
+  clearTimeout(pressTimer);
+
+  if (!progressDone) {
+    // Nicht fertig → zurücklaufen
+    bar.style.transition = 'width 0.25s linear';
+    bar.style.width = '0%';
+  } else {
+    // Fertig → rot bleiben
+    bar.style.transition = 'none';
+    bar.style.width = '100%';
+  }
+}
+
+header.addEventListener('pointerup', resetBar);
+header.addEventListener('pointerleave', resetBar);
+
+  
   
 </script>
 
