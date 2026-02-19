@@ -1158,7 +1158,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:8…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:9…</div>
  <div class="header">
     <div class="header-progress"></div>
 
@@ -4681,12 +4681,11 @@ let isPointerDown = false;
 
 let startX = 0;
 let startY = 0;
-const MOVE_TOLERANCE = 8; // Maus braucht etwas mehr Toleranz
+const MOVE_TOLERANCE = 8;
 
 const plusBtn = document.querySelector('#appsPanelAddButton');
 const bar = document.querySelector('#appsPanelHeader .header-progress');
 
-// Pointer down → Startposition merken
 plusBtn.addEventListener('pointerdown', (e) => {
   isPointerDown = true;
   progressStarted = false;
@@ -4695,9 +4694,9 @@ plusBtn.addEventListener('pointerdown', (e) => {
   startX = e.clientX;
   startY = e.clientY;
 
-  // Nach 0,5 Sekunde Balken starten
+  // Long-Press erst NACH 1 Sekunde starten
   startTimer = setTimeout(() => {
-    if (!isPointerDown) return;
+    if (!isPointerDown) return; // WICHTIG: Abbruch wenn vorher losgelassen
 
     progressStarted = true;
 
@@ -4709,10 +4708,9 @@ plusBtn.addEventListener('pointerdown', (e) => {
       RemoveAppsPanel();
     }, 1500);
 
-  }, 500);
+  }, 1000);
 });
 
-// Bewegung → Abbruch, wenn zu weit
 plusBtn.addEventListener('pointermove', (e) => {
   if (!isPointerDown) return;
 
@@ -4724,34 +4722,30 @@ plusBtn.addEventListener('pointermove', (e) => {
   }
 });
 
-// Maus verlässt den Button → sofort abbrechen
 plusBtn.addEventListener('pointerleave', () => {
   if (isPointerDown) cancelLongPress();
 });
 
-// Pointer up → je nach Status reagieren
 plusBtn.addEventListener('pointerup', handleRelease);
-
-// Pointercancel → Browser bricht ab (z. B. Kontextmenü)
 plusBtn.addEventListener('pointercancel', cancelLongPress);
 
 function handleRelease() {
   isPointerDown = false;
 
-  // Fall A: Balken hat noch nicht begonnen → kurzer Tap
+  // Kurz-Tap → AppsPanel öffnen
   if (!progressStarted) {
     cancelLongPress();
     OpenAppsPanel();
     return;
   }
 
-  // Fall B: Balken läuft, aber nicht fertig → nichts tun
+  // Balken läuft → nichts tun
   if (progressStarted && !progressDone) {
     cancelLongPress();
     return;
   }
 
-  // Fall C: Balken fertig → RemoveAppsPanel wurde bereits ausgelöst
+  // Balken fertig → RemoveAppsPanel wurde bereits ausgeführt
   if (progressDone) {
     bar.style.transition = 'none';
     bar.style.width = '100%';
@@ -4769,6 +4763,7 @@ function cancelLongPress() {
   progressDone = false;
   isPointerDown = false;
 }
+
 
 
   
