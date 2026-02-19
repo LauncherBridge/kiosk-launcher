@@ -727,7 +727,7 @@ opacity: 1; /* inaktiver Zustand */
   height: 2px;
   background: rgba(255,255,255,0.85);
   transform-origin: center;
-  transition: transform 0.15s ease, background 0.15s ease;
+  transition: transform 0.15s ease, background 0.15s ease, height 0.15s ease;
 }
 
 /* horizontale Linie */
@@ -746,14 +746,17 @@ opacity: 1; /* inaktiver Zustand */
   background: #66ff99;
 }
 
-/* HOVER – sichtbare Skalierung + Rotation beibehalten */
-.header-add-btn:hover::before {
-  transform: translate(-50%, -50%) rotate(var(--plus-rotate-v)) scale(1.25);
+/* HOVER – sichtbare Vergrößerung (Linien werden dicker) */
+.header-add-btn:hover::before,
+.header-add-btn:hover::after {
+  height: 3px; /* vorher 2px → jetzt sichtbar */
+  transform: translate(-50%, -50%) scale(1.15) rotate(var(--plus-rotate-v));
 }
 
 .header-add-btn:hover::after {
-  transform: translate(-50%, -50%) rotate(var(--plus-rotate-h)) scale(1.25);
+  transform: translate(-50%, -50%) scale(1.15) rotate(var(--plus-rotate-h));
 }
+
 
 
 
@@ -1121,7 +1124,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:4…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:5…</div>
  
 <div id="overlay"></div>
 
