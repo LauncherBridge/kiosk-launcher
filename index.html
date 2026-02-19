@@ -1073,7 +1073,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:6…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:7…</div>
  
 <div id="overlay"></div>
 
@@ -1562,15 +1562,22 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 */
 
 
-/* Titel absolut zentrieren – unabhängig vom Grid */
+/* Header immer volle Breite */
+#appsPanelHeader {
+  width: 100%;
+  position: relative; /* wichtig für absolute Kinder */
+}
+
+/* Titel absolut zentrieren */
 #appsPanelDynamicTitle {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
   text-align: center;
   width: max-content;
-  pointer-events: none; /* optional: verhindert Klickblocker */
+  pointer-events: none;
 }
+
 
 
 
