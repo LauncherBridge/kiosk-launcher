@@ -1158,7 +1158,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:5…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:6…</div>
  <div class="header">
     <div class="header-progress"></div>
 
@@ -4687,61 +4687,90 @@ let startTimer;
 let progressTimer;
 let progressStarted = false;
 let progressDone = false;
+let isPointerDown = false;
+
+let startX = 0;
+let startY = 0;
+const MOVE_TOLERANCE = 6; // Maus + Touch Toleranz
 
 const plusBtn = document.querySelector('#appsPanelAddButton');
 const bar = document.querySelector('#appsPanelHeader .header-progress');
 
-// 1) Pointer down → prüfen, ob 1 Sekunde gehalten wird
-plusBtn.addEventListener('pointerdown', () => {
+// Pointer down → Startposition merken
+plusBtn.addEventListener('pointerdown', (e) => {
+  isPointerDown = true;
   progressStarted = false;
   progressDone = false;
 
-  // Nach 1 Sekunde: Balken starten
+  startX = e.clientX;
+  startY = e.clientY;
+
+  // Nach 1 Sekunde Balken starten
   startTimer = setTimeout(() => {
+    if (!isPointerDown) return;
+
     progressStarted = true;
 
-    // Balken starten
     bar.style.transition = 'width 1.5s linear';
     bar.style.width = '100%';
 
-    // Timer für "voll durchgelaufen"
     progressTimer = setTimeout(() => {
       progressDone = true;
-      console.log("Long press completed");
-      RemoteAppsPanel(); // Deine spätere Funktion
+      RemoveAppsPanel(); // <-- jetzt korrekt
     }, 1500);
 
-  }, 1000); // 1 Sekunde halten
+  }, 1000);
 });
 
+// Bewegung → Abbruch, wenn zu weit
+plusBtn.addEventListener('pointermove', (e) => {
+  if (!isPointerDown) return;
 
-// 2) Pointer up / leave → Verhalten abhängig vom Status
+  const dx = Math.abs(e.clientX - startX);
+  const dy = Math.abs(e.clientY - startY);
+
+  if (dx > MOVE_TOLERANCE || dy > MOVE_TOLERANCE) {
+    cancelLongPress();
+  }
+});
+
+// Pointer up / leave → je nach Status reagieren
 plusBtn.addEventListener('pointerup', handleRelease);
 plusBtn.addEventListener('pointerleave', handleRelease);
 
 function handleRelease() {
-  clearTimeout(startTimer);
-  clearTimeout(progressTimer);
+  isPointerDown = false;
 
-  // Fall A: Balken hat noch nicht begonnen → kurzer Tap → AppsPanel öffnen
+  // Fall A: Balken hat noch nicht begonnen → kurzer Tap
   if (!progressStarted) {
-    bar.style.width = '0%';
-    OpenAppsPanel(); // Deine bestehende Funktion
+    cancelLongPress();
+    OpenAppsPanel();
     return;
   }
 
   // Fall B: Balken läuft, aber nicht fertig → nichts tun
   if (progressStarted && !progressDone) {
-    bar.style.transition = 'width 0.25s linear';
-    bar.style.width = '0%';
+    cancelLongPress();
     return;
   }
 
-  // Fall C: Balken fertig → RemoteAppsPanel wurde bereits ausgelöst
+  // Fall C: Balken fertig → RemoveAppsPanel wurde bereits ausgelöst
   if (progressDone) {
     bar.style.transition = 'none';
     bar.style.width = '100%';
   }
+}
+
+function cancelLongPress() {
+  clearTimeout(startTimer);
+  clearTimeout(progressTimer);
+
+  bar.style.transition = 'width 0.25s linear';
+  bar.style.width = '0%';
+
+  progressStarted = false;
+  progressDone = false;
+  isPointerDown = false;
 }
 
   
