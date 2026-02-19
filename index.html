@@ -1158,7 +1158,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:9…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:1…</div>
  <div class="header">
     <div class="header-progress"></div>
 
@@ -1460,10 +1460,16 @@ box-shadow:
 }
 
 /* Titel und Close-Button darüber */
-#appsPanelDynamicTitle,
-#appsPanelClose {
+#appsPanelDynamicTitle {
   position: relative;
   z-index: 2;
+}
+
+#appsPanelClose {
+  position: absolute; /* WICHTIG */
+  top: 14px;
+  right: 14px;
+  z-index: 3;
 }
 
 
@@ -1760,11 +1766,14 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 
 <div id="appsPanelHeader">
     <div class="header-progress"></div>
-            <!-- Plus-Symbol im Header -->
+
+    <!-- Plus-Symbol im Header -->
     <div id="appsPanelAddButton" class="header-add-btn"></div>
-            <!-- Titel im Header -->
-  <div id="appsPanelDynamicTitle"></div> 
-            <!-- Floating Close Button -->
+
+    <!-- Titel im Header -->
+    <div id="appsPanelDynamicTitle"></div>
+
+    <!-- Floating Close Button -->
     <div id="appsPanelClose" class="panel-close-btn">×</div>
 </div>
 
