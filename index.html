@@ -1172,7 +1172,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:6…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:1…</div>
  <div class="header">
     <div class="header-progress"></div>
 
@@ -1707,6 +1707,10 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
   pointer-events: none;
 }
 
+.header-add-btn.jumping {
+  transform: translateY(-40px) scale(1.25);
+  transition: transform 0.25s ease;
+}
 
 
 
@@ -4716,6 +4720,8 @@ plusBtn.addEventListener('pointerdown', (e) => {
     bar.style.width = '100%';
 
     progressTimer = setTimeout(() => {
+      plusBtn.classList.add("jumping");
+
       progressDone = true;
 
       // Remove-Modus aktivieren
@@ -4749,6 +4755,8 @@ function handleRelease() {
   isPointerDown = false;
   clearTimeout(startTimer);
   clearTimeout(progressTimer);
+  plusBtn.classList.remove("jumping");
+
 
   // Kurz-Tap → AppPicker öffnen
   if (!progressStarted) {
@@ -4775,6 +4783,8 @@ function handleRelease() {
 function cancelLongPress() {
   clearTimeout(startTimer);
   clearTimeout(progressTimer);
+  plusBtn.classList.remove("jumping");
+
 
   bar.style.transition = 'width 0.25s linear';
   bar.style.width = '0%';
