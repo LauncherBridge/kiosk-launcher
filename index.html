@@ -716,18 +716,35 @@ opacity: 1; /* inaktiver Zustand */
 
 
 
-/* Grundzustand */
+/* PLUS BUTTON – Grundzustand */
+.header-add-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+/* Linien */
 .header-add-btn::before,
 .header-add-btn::after {
   content: "";
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 60%;
-  height: 2px;
+  width: 60%;      /* Grundlänge horizontal */
+  height: 2px;     /* Grunddicke */
   background: rgba(255,255,255,0.85);
   transform-origin: center;
-  transition: transform 0.15s ease, background 0.15s ease, height 0.15s ease;
+  transition: 
+    width 0.15s ease,
+    height 0.15s ease,
+    background 0.15s ease;
 }
 
 /* horizontale Linie */
@@ -737,6 +754,8 @@ opacity: 1; /* inaktiver Zustand */
 
 /* vertikale Linie */
 .header-add-btn::before {
+  width: 2px;      /* vertikale Linie ist schmal */
+  height: 60%;     /* Grundlänge vertikal */
   transform: translate(-50%, -50%) rotate(var(--plus-rotate-v));
 }
 
@@ -746,16 +765,17 @@ opacity: 1; /* inaktiver Zustand */
   background: #66ff99;
 }
 
-/* HOVER – sichtbare Vergrößerung (Linien werden dicker) */
-.header-add-btn:hover::before,
-.header-add-btn:hover::after {
-  height: 3px; /* vorher 2px → jetzt sichtbar */
-  transform: translate(-50%, -50%) scale(1.15) rotate(var(--plus-rotate-v));
+/* HOVER – sichtbare Verlängerung */
+.header-add-btn:hover::after {   /* horizontal */
+  width: 78%;    /* vorher 60% → deutlich länger */
+  height: 3px;   /* etwas dicker für mehr Punch */
 }
 
-.header-add-btn:hover::after {
-  transform: translate(-50%, -50%) scale(1.15) rotate(var(--plus-rotate-h));
+.header-add-btn:hover::before {  /* vertikal */
+  height: 78%;   /* vorher 60% → deutlich länger */
+  width: 3px;    /* etwas dicker */
 }
+
 
 
 
@@ -1124,7 +1144,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:5…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:6…</div>
  
 <div id="overlay"></div>
 
