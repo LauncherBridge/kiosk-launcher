@@ -40,6 +40,11 @@
   -webkit-user-select: none;
   user-select: none;
 }
+.no-callout * {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
 
 
     
@@ -1180,7 +1185,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:2…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:3…</div>
  <div class="header">
     <div class="header-progress"></div>
 
@@ -2011,11 +2016,12 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
   Wird als Hash lokal gespeichert.<br>
   Ohne korrekte PIN kann der<br>Vollbildmodus nicht verlassen werden.
 </small>
-    <h4>Bedienung</h4>
+<h4>Bedienung</h4>
 <label>
   <input type="checkbox" id="disableContextMenu">
-  Kontextmenü deaktivieren (für Long‑Press empfohlen)
+  Kontextmenü deaktivieren (Long‑Press optimiert)
 </label>
+
 
   </div>
 
@@ -2165,6 +2171,20 @@ function disableContextMenuBlock() {
 // --- Setting-Toggle anbinden ---
 const contextToggle = document.querySelector('#disableContextMenu');
 
+function enableContextMenuBlock() {
+  document.addEventListener('contextmenu', blockContextMenu);
+  document.documentElement.classList.add('no-callout');
+}
+
+function disableContextMenuBlock() {
+  document.removeEventListener('contextmenu', blockContextMenu);
+  document.documentElement.classList.remove('no-callout');
+}
+
+function blockContextMenu(e) {
+  e.preventDefault();
+}
+
 contextToggle.addEventListener('change', () => {
   const enabled = contextToggle.checked;
   localStorage.setItem('disableContextMenu', enabled);
@@ -2173,12 +2193,12 @@ contextToggle.addEventListener('change', () => {
   else disableContextMenuBlock();
 });
 
-// --- Beim Laden wiederherstellen ---
-const savedContextSetting = localStorage.getItem('disableContextMenu');
-if (savedContextSetting === "true") {
+// Beim Laden wiederherstellen
+if (localStorage.getItem('disableContextMenu') === "true") {
   contextToggle.checked = true;
   enableContextMenuBlock();
 }
+
 
 
 
