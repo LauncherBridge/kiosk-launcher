@@ -1185,7 +1185,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:2…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:3…</div>
  <div class="header">
     <div class="header-progress"></div>
 
@@ -2934,35 +2934,36 @@ function renderFavoritesGallery() {
   const container = document.getElementById("favGalleryContent");
   container.innerHTML = "";
 
-  favorites.forEach((img, index) => {
-    const item = document.createElement("div");
-    item.className = "favItem";
+favorites.forEach((img) => {
+  const item = document.createElement("div");
+  item.className = "favItem";
 
-    const image = document.createElement("img");
-    image.src = img;
+  const image = document.createElement("img");
+  image.src = img;
 
-    image.onclick = () => {
-      showImage(img);
-      pushToHistory(img);
-      updateFavButton();
-      closeFavoritesGallery();
-    };
+  image.onclick = () => {
+    showImage(img);
+    pushToHistory(img);
+    updateFavButton();
+    closeFavoritesGallery();
+  };
 
-    const del = document.createElement("div");
-    del.className = "favDelete";
-    del.textContent = "❌";
+  const del = document.createElement("div");
+  del.className = "favDelete";
+  del.textContent = "❌";
 
-    del.onclick = () => {
-      favorites.splice(index, 1);
-      saveFavorites();
-      renderFavoritesGallery();
-      updateFavButton();
-    };
+  del.onclick = () => {
+    favorites.delete(img);
+    saveFavorites();
+    renderFavoritesGallery();
+    updateFavButton();
+  };
 
-    item.appendChild(image);
-    item.appendChild(del);
-    container.appendChild(item);
-  });
+  item.appendChild(image);
+  item.appendChild(del);
+  container.appendChild(item);
+});
+
 }
 
 /* ============================================================
