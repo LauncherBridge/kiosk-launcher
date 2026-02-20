@@ -1185,7 +1185,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:3…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:4…</div>
  <div class="header">
     <div class="header-progress"></div>
 
@@ -2168,6 +2168,13 @@ function disableContextMenuBlock() {
   document.removeEventListener('touchstart', blockContextMenu);
 }
 
+function showImage(url) {
+  currentImageUrl = url;
+  const next = activeBg === "A" ? "B" : "A";
+  ...
+}
+
+  
 // --- Setting-Toggle anbinden ---
 const contextToggle = document.querySelector('#disableContextMenu');
 
@@ -2889,7 +2896,12 @@ function saveFavorites() {
 // Favoriten-Button aktualisieren
 function updateFavButton() {
   const favBtn = document.getElementById("favButton");
-  if (!favBtn) return;
+  if (!favBtn) return; // Button existiert noch nicht → einfach abbrechen
+
+  if (!currentImageUrl) {
+    favBtn.classList.remove("favorited");
+    return;
+  }
 
   if (favorites.has(currentImageUrl)) {
     favBtn.classList.add("favorited");
@@ -2897,6 +2909,7 @@ function updateFavButton() {
     favBtn.classList.remove("favorited");
   }
 }
+
 
 // Favoriten-Button Klick
 document.getElementById("favButton").addEventListener("click", () => {
