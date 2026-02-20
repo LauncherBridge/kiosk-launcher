@@ -2440,7 +2440,7 @@ let currentImageIndex = 0;
 let history = [];
 let historyIndex = -1;
 
-let favorites = new Set(JSON.parse(localStorage.getItem("favorites")) || []);
+
 let favMode = false;
 
 let bgInterval = 5;
@@ -2850,6 +2850,28 @@ function catPrevImage() {
 
 /* ============================================================
    HISTORY-NAVIGATION
+============================================================ */
+
+function histPrevImage() {
+  if (historyIndex > 0) {
+    historyIndex--;
+    const url = history[historyIndex];
+    showImage(url);
+    updateFavButton();
+  }
+}
+
+function histNextImage() {
+  if (historyIndex < history.length - 1) {
+    historyIndex++;
+    const url = history[historyIndex];
+    showImage(url);
+    updateFavButton();
+  }
+}
+
+/* ============================================================
+   FAVORITEN
 ============================================================ */
 
 // Favoriten laden (Migration von Array → Set automatisch)
