@@ -1180,7 +1180,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:1…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:2…</div>
  <div class="header">
     <div class="header-progress"></div>
 
@@ -2011,6 +2011,12 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
   Wird als Hash lokal gespeichert.<br>
   Ohne korrekte PIN kann der<br>Vollbildmodus nicht verlassen werden.
 </small>
+    <h4>Bedienung</h4>
+<label>
+  <input type="checkbox" id="disableContextMenu">
+  Kontextmenü deaktivieren (für Long‑Press empfohlen)
+</label>
+
   </div>
 
 
@@ -2133,6 +2139,51 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
   
 <script>
 
+// --- Kontextmenü-Blockierung ---
+let contextMenuBlocked = false;
+
+function blockContextMenu(e) {
+  e.preventDefault();
+}
+
+function enableContextMenuBlock() {
+  if (contextMenuBlocked) return;
+  contextMenuBlocked = true;
+
+  document.addEventListener('contextmenu', blockContextMenu);
+  document.addEventListener('touchstart', blockContextMenu, { passive: false });
+}
+
+function disableContextMenuBlock() {
+  if (!contextMenuBlocked) return;
+  contextMenuBlocked = false;
+
+  document.removeEventListener('contextmenu', blockContextMenu);
+  document.removeEventListener('touchstart', blockContextMenu);
+}
+
+// --- Setting-Toggle anbinden ---
+const contextToggle = document.querySelector('#disableContextMenu');
+
+contextToggle.addEventListener('change', () => {
+  const enabled = contextToggle.checked;
+  localStorage.setItem('disableContextMenu', enabled);
+
+  if (enabled) enableContextMenuBlock();
+  else disableContextMenuBlock();
+});
+
+// --- Beim Laden wiederherstellen ---
+const savedContextSetting = localStorage.getItem('disableContextMenu');
+if (savedContextSetting === "true") {
+  contextToggle.checked = true;
+  enableContextMenuBlock();
+}
+
+
+
+
+  
 // Jede App-Kachel bekommt ihre eigene App-Liste
 let appCollections = {};
 
