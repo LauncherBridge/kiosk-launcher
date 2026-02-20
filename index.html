@@ -2440,7 +2440,7 @@ let currentImageIndex = 0;
 let history = [];
 let historyIndex = -1;
 
-let favorites = [];
+let favorites = new Set(JSON.parse(localStorage.getItem("favorites")) || []);
 let favMode = false;
 
 let bgInterval = 5;
@@ -2852,61 +2852,44 @@ function catPrevImage() {
    HISTORY-NAVIGATION
 ============================================================ */
 
-function histPrevImage() {
-  if (historyIndex > 0) {
-    historyIndex--;
-    const url = history[historyIndex];
-    showImage(url);
-    updateFavButton();
-  }
-}
+// Favoriten laden (Migration von Array → Set automatisch)
+let favorites = new Set(JSON.parse(localStorage.getItem("favorites")) || []);
 
-function histNextImage() {
-  if (historyIndex < history.length - 1) {
-    historyIndex++;
-    const url = history[historyIndex];
-    showImage(url);
-    updateFavButton();
-  }
-}
-
-/* ============================================================
-   FAVORITEN
-============================================================ */
-
+// Favoriten speichern
 function saveFavorites() {
-  localStorage.setItem("favorites", JSON.stringify(favorites));
+  localStorage.setItem("favorites", JSON.stringify([...favorites]));
 }
 
-function loadFavorites() {
-  favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
-}
-
+// Favoriten-Button aktualisieren
 function updateFavButton() {
-  const favBtn = document.getElementById("fav");
-  const currentUrl = history[historyIndex];
+  const favBtn = document.getElementById("favButton");
+  if (!favBtn) return;
 
-  if (!currentUrl) {
-    favBtn.classList.remove("active");
-    return;
+  if (favorites.has(currentImageUrl)) {
+    favBtn.classList.add("favorited");
+  } else {
+    favBtn.classList.remove("favorited");
   }
-
-  favBtn.classList.toggle("active", favorites.includes(currentUrl));
 }
 
-function toggleFavorite() {
-  const url = history[historyIndex];
-  if (!url) return;
-
-  if (favorites.includes(url)) {
-    favorites = favorites.filter(f => f !== url);
+// Favoriten-Button Klick
+document.getElementById("favButton").addEventListener("click", () => {
+  if (favorites.has(currentImageUrl)) {
+    favorites.delete(currentImageUrl);
   } else {
-    favorites.push(url);
+    favorites.add(currentImageUrl);
   }
 
   saveFavorites();
   updateFavButton();
+});
+
+// Beim Bildwechsel aufrufen:
+function onImageChange(newUrl) {
+  currentImageUrl = newUrl;
+  updateFavButton();
 }
+
 
 /* ============================================================
    FAVORITEN-GALERIE
