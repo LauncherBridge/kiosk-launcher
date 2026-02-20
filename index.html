@@ -1185,7 +1185,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:1…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:2…</div>
  <div class="header">
     <div class="header-progress"></div>
 
@@ -2785,18 +2785,22 @@ async function changeBackground() {
 
   applyTransitionEffect();
 
-  if (favMode) {
-    if (favorites.length === 0) return;
+if (favMode) {
+    if (favorites.size === 0) return;
 
+    // Set in Array umwandeln
     currentImageList = [...favorites];
-    currentImageIndex = Math.floor(Math.random() * favorites.length);
+
+    // Zufälligen Index basierend auf der Array-Länge
+    currentImageIndex = Math.floor(Math.random() * currentImageList.length);
 
     const url = currentImageList[currentImageIndex];
     showImage(url);
     pushToHistory(url);
     updateFavButton();
     return;
-  }
+}
+
 
   const activeSources = getActiveSources();
   if (activeSources.length === 0) return;
