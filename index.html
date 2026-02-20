@@ -1172,7 +1172,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:2…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:3…</div>
  <div class="header">
     <div class="header-progress"></div>
 
@@ -4685,7 +4685,6 @@ document.addEventListener("click", function (e) {
 
 
 
-  
 let startTimer;
 let progressTimer;
 let progressStarted = false;
@@ -4700,6 +4699,10 @@ const plusBtn = document.querySelector('#appsPanelAddButton');
 const bar = document.querySelector('#appsPanelHeader .header-progress');
 
 plusBtn.addEventListener('pointerdown', (e) => {
+
+  // ❗ Nur Touch darf springen – Maus NICHT
+  if (e.pointerType !== "touch") return;
+
   isPointerDown = true;
   progressStarted = false;
   progressDone = false;
@@ -4713,22 +4716,20 @@ plusBtn.addEventListener('pointerdown', (e) => {
 
     progressStarted = true;
 
-    // Plus → Minus + Rot
+    // ⭐ Button springt unter dem Finger hervor
     plusBtn.classList.add("jumping");
+
+    // Plus → Minus + Rot (Remove-Style)
     plusBtn.classList.add("removing");
 
+    // Balken starten
     bar.style.transition = 'width 1.5s linear';
     bar.style.width = '100%';
 
+    // Remove-Modus nach 1500ms
     progressTimer = setTimeout(() => {
-      
-
       progressDone = true;
-
-      // Remove-Modus aktivieren
       RemoveAppsPanel();
-      // Minus + Rot bleiben
-
     }, 1500);
 
   }, 500);
@@ -4740,24 +4741,32 @@ plusBtn.addEventListener('pointermove', (e) => {
   const dx = Math.abs(e.clientX - startX);
   const dy = Math.abs(e.clientY - startY);
 
+  // Finger bewegt sich zu weit → abbrechen
   if (dx > MOVE_TOLERANCE || dy > MOVE_TOLERANCE) {
     cancelLongPress();
   }
 });
 
+// ❗ WICHTIG: pointerleave NICHT abbrechen, wenn der Button springt
 plusBtn.addEventListener('pointerleave', () => {
-  if (isPointerDown) cancelLongPress();
+  if (isPointerDown && !plusBtn.classList.contains("jumping")) {
+    cancelLongPress();
+  }
 });
 
 plusBtn.addEventListener('pointerup', handleRelease);
 plusBtn.addEventListener('pointercancel', cancelLongPress);
 
 function handleRelease() {
+
+  // Finger ist weg
   isPointerDown = false;
+
   clearTimeout(startTimer);
   clearTimeout(progressTimer);
-  plusBtn.classList.remove("jumping");
 
+  // ⭐ Button springt SOFORT zurück
+  plusBtn.classList.remove("jumping");
 
   // Kurz-Tap → AppPicker öffnen
   if (!progressStarted) {
@@ -4777,16 +4786,18 @@ function handleRelease() {
   if (progressDone) {
     bar.style.transition = 'none';
     bar.style.width = '100%';
-    // Minus + Rot bleiben
+    // Minus + Rot bleiben (Remove-Modus)
   }
 }
 
 function cancelLongPress() {
   clearTimeout(startTimer);
   clearTimeout(progressTimer);
+
+  // ⭐ Button springt zurück
   plusBtn.classList.remove("jumping");
 
-
+  // Balken zurück
   bar.style.transition = 'width 0.25s linear';
   bar.style.width = '0%';
 
