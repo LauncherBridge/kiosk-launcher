@@ -1172,7 +1172,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:3…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:4…</div>
  <div class="header">
     <div class="header-progress"></div>
 
@@ -4700,9 +4700,6 @@ const bar = document.querySelector('#appsPanelHeader .header-progress');
 
 plusBtn.addEventListener('pointerdown', (e) => {
 
-  // ❗ Nur Touch darf springen – Maus NICHT
-  if (e.pointerType !== "touch") return;
-
   isPointerDown = true;
   progressStarted = false;
   progressDone = false;
@@ -4716,10 +4713,12 @@ plusBtn.addEventListener('pointerdown', (e) => {
 
     progressStarted = true;
 
-    // ⭐ Button springt unter dem Finger hervor
-    plusBtn.classList.add("jumping");
+    // ⭐ Nur bei TOUCH springen lassen
+    if (e.pointerType === "touch") {
+      plusBtn.classList.add("jumping");
+    }
 
-    // Plus → Minus + Rot (Remove-Style)
+    // Plus → Minus + Rot
     plusBtn.classList.add("removing");
 
     // Balken starten
@@ -4741,13 +4740,12 @@ plusBtn.addEventListener('pointermove', (e) => {
   const dx = Math.abs(e.clientX - startX);
   const dy = Math.abs(e.clientY - startY);
 
-  // Finger bewegt sich zu weit → abbrechen
   if (dx > MOVE_TOLERANCE || dy > MOVE_TOLERANCE) {
     cancelLongPress();
   }
 });
 
-// ❗ WICHTIG: pointerleave NICHT abbrechen, wenn der Button springt
+// ❗ pointerleave NICHT abbrechen, wenn jumping aktiv ist
 plusBtn.addEventListener('pointerleave', () => {
   if (isPointerDown && !plusBtn.classList.contains("jumping")) {
     cancelLongPress();
@@ -4759,7 +4757,6 @@ plusBtn.addEventListener('pointercancel', cancelLongPress);
 
 function handleRelease() {
 
-  // Finger ist weg
   isPointerDown = false;
 
   clearTimeout(startTimer);
@@ -4776,7 +4773,7 @@ function handleRelease() {
     return;
   }
 
-  // Balken läuft → abbrechen, zurück animieren
+  // Balken läuft → abbrechen
   if (progressStarted && !progressDone) {
     cancelLongPress();
     return;
@@ -4786,7 +4783,6 @@ function handleRelease() {
   if (progressDone) {
     bar.style.transition = 'none';
     bar.style.width = '100%';
-    // Minus + Rot bleiben (Remove-Modus)
   }
 }
 
@@ -4794,14 +4790,11 @@ function cancelLongPress() {
   clearTimeout(startTimer);
   clearTimeout(progressTimer);
 
-  // ⭐ Button springt zurück
   plusBtn.classList.remove("jumping");
 
-  // Balken zurück
   bar.style.transition = 'width 0.25s linear';
   bar.style.width = '0%';
 
-  // Nur zurück zu Plus, wenn wir NICHT im Remove-Modus sind
   if (!progressDone) {
     plusBtn.classList.remove("removing");
   }
