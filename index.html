@@ -1185,7 +1185,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:4…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:5…</div>
  <div class="header">
     <div class="header-progress"></div>
 
@@ -2169,10 +2169,56 @@ function disableContextMenuBlock() {
 }
 
 function showImage(url) {
+  // WICHTIG: aktuelle URL setzen, damit Favoriten-Button funktioniert
   currentImageUrl = url;
+
   const next = activeBg === "A" ? "B" : "A";
-  ...
+  const nextLayer = document.getElementById("bg" + next);
+  const currentLayer = document.getElementById("bg" + activeBg);
+
+  // Übergangseffekt laden
+  let effect = loadSetting("transitionEffect") || "fade";
+  if (effect === "random") {
+    effect = allEffects[Math.floor(Math.random() * allEffects.length)];
+  }
+
+  // Bild vorbereiten
+  const img = new Image();
+  img.src = url;
+
+  img.onload = () => {
+    nextLayer.style.backgroundImage = `url('${url}')`;
+
+    // Effekt-Klassen zurücksetzen
+    nextLayer.classList.remove(
+      "fade","slide-left","slide-right","slide-up","slide-down",
+      "zoom-in","zoom-out","blur-fade","cut"
+    );
+
+    // Reflow erzwingen, damit Animation neu startet
+    void nextLayer.offsetWidth;
+
+    // Effekt anwenden
+    nextLayer.classList.add(effect);
+
+    // Sichtbarkeit umschalten
+    nextLayer.classList.add("visible");
+    currentLayer.classList.remove("visible");
+
+    activeBg = next;
+  };
+
+  img.onerror = () => {
+    // Fallback: Bild trotzdem setzen
+    nextLayer.style.backgroundImage = `url('${url}')`;
+
+    nextLayer.classList.add("visible");
+    currentLayer.classList.remove("visible");
+
+    activeBg = next;
+  };
 }
+
 
   
 // --- Setting-Toggle anbinden ---
