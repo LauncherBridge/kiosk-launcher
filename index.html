@@ -1185,7 +1185,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:6…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:3…</div>
  <div class="header">
     <div class="header-progress"></div>
 
@@ -2168,59 +2168,6 @@ function disableContextMenuBlock() {
   document.removeEventListener('touchstart', blockContextMenu);
 }
 
-function showImage(url) {
-  // WICHTIG: aktuelle URL setzen, damit Favoriten-Button funktioniert
-  currentImageUrl = url;
-
-  const next = activeBg === "A" ? "B" : "A";
-  const nextLayer = document.getElementById("bg" + next);
-  const currentLayer = document.getElementById("bg" + activeBg);
-
-  // Übergangseffekt laden
-  let effect = loadSetting("transitionEffect") || "fade";
-  if (effect === "random") {
-    effect = allEffects[Math.floor(Math.random() * allEffects.length)];
-  }
-
-  // Bild vorbereiten
-  const img = new Image();
-  img.src = url;
-
-  img.onload = () => {
-    nextLayer.style.backgroundImage = `url('${url}')`;
-
-    // Effekt-Klassen zurücksetzen
-    nextLayer.classList.remove(
-      "fade","slide-left","slide-right","slide-up","slide-down",
-      "zoom-in","zoom-out","blur-fade","cut"
-    );
-
-    // Reflow erzwingen, damit Animation neu startet
-    void nextLayer.offsetWidth;
-
-    // Effekt anwenden
-    nextLayer.classList.add(effect);
-
-    // Sichtbarkeit umschalten
-    nextLayer.classList.add("visible");
-    currentLayer.classList.remove("visible");
-
-    activeBg = next;
-  };
-
-  img.onerror = () => {
-    // Fallback: Bild trotzdem setzen
-    nextLayer.style.backgroundImage = `url('${url}')`;
-
-    nextLayer.classList.add("visible");
-    currentLayer.classList.remove("visible");
-
-    activeBg = next;
-  };
-}
-
-
-  
 // --- Setting-Toggle anbinden ---
 const contextToggle = document.querySelector('#disableContextMenu');
 
@@ -2493,7 +2440,7 @@ let currentImageIndex = 0;
 let history = [];
 let historyIndex = -1;
 
-
+let favorites = [];
 let favMode = false;
 
 let bgInterval = 5;
@@ -2688,8 +2635,102 @@ async function loadGoogleAlbumImages(sharedUrl) {
    HISTORY-SYSTEM
 ============================================================ */
 
+let activeBg = "A";
+
+function showImage(url) {
+  const next = activeBg === "A" ? "B" : "A";
+
+  const nextLayer = document.getElementById("bg" + next);
+  const currentLayer = document.getElementById("bg" + activeBg);
+
+let effect = loadSetting("transitionEffect") || "fade";
+
+if (effect === "random") {
+  effect = allEffects[Math.floor(Math.random() * allEffects.length)];
+}
+
+// SCHRITT 4 – Klick-Events für Uhr, Datum und Wetter
+document.getElementById("clock").addEventListener("click", showInfoBox);
+document.getElementById("date").addEventListener("click", showInfoBox);
+document.getElementById("weather").addEventListener("click", showInfoBox);
+
+/*Infobox*/
+
+document.getElementById("infoBoxDuration").addEventListener("change", e => {
+  saveSetting("infoBoxDuration", parseInt(e.target.value));
+});
+document.getElementById("infoBoxColor").addEventListener("input", e => {
+  saveSetting("infoBoxColor", e.target.value);
+  updateInfoBoxStyles();
+});
+
+document.getElementById("infoBoxDuration").addEventListener("input", e => {
+  saveSetting("infoBoxDuration", e.target.value);
+});
+
+document.getElementById("infoBoxOpacity").addEventListener("input", e => {
+  saveSetting("infoBoxOpacity", e.target.value);
+  updateInfoBoxStyles();
+});
+
+document.getElementById("infoBoxGlowEnable").addEventListener("change", e => {
+  saveSetting("infoBoxGlowEnable", e.target.checked);
+  updateInfoBoxStyles();
+});
+
+document.getElementById("infoBoxGlowStrength").addEventListener("input", e => {
+  saveSetting("infoBoxGlowStrength", e.target.value);
+  updateInfoBoxStyles();
+});
+
+document.getElementById("infoBoxBlurEnable").addEventListener("change", e => {
+  saveSetting("infoBoxBlurEnable", e.target.checked);
+  updateInfoBoxStyles();
+});
+
+document.getElementById("infoBoxBlurStrength").addEventListener("input", e => {
+  saveSetting("infoBoxBlurStrength", e.target.value);
+  updateInfoBoxStyles();
+});
+
+document.getElementById("infoBoxAlwaysVisible").addEventListener("change", e => {
+  saveSetting("infoBoxAlwaysVisible", e.target.checked);
+  updateInfoBoxStyles();
+});
 
 
+
+
+
+
+  const img = new Image();
+  img.src = url;
+
+  img.onload = () => {
+    nextLayer.style.backgroundImage = `url('${url}')`;
+
+// Animation neu starten
+nextLayer.classList.remove("slide-left","slide-right","slide-up","slide-down",
+                           "zoom-in","zoom-out","blur-fade","cut","fade");
+void nextLayer.offsetWidth; // Reflow erzwingen
+nextLayer.classList.add(effect); // Effekt neu setzen
+
+// Sichtbarkeit umschalten
+nextLayer.classList.add("visible");
+currentLayer.classList.remove("visible");
+
+    activeBg = next;
+  };
+
+  img.onerror = () => {
+    nextLayer.style.backgroundImage = `url('${url}')`;
+
+    nextLayer.classList.add("visible");
+    currentLayer.classList.remove("visible");
+
+    activeBg = next;
+  };
+}
 
 function pushToHistory(url) {
   if (historyIndex < history.length - 1) {
@@ -2744,22 +2785,18 @@ async function changeBackground() {
 
   applyTransitionEffect();
 
-if (favMode) {
-    if (favorites.size === 0) return;
+  if (favMode) {
+    if (favorites.length === 0) return;
 
-    // Set in Array umwandeln
     currentImageList = [...favorites];
-
-    // Zufälligen Index basierend auf der Array-Länge
-    currentImageIndex = Math.floor(Math.random() * currentImageList.length);
+    currentImageIndex = Math.floor(Math.random() * favorites.length);
 
     const url = currentImageList[currentImageIndex];
     showImage(url);
     pushToHistory(url);
     updateFavButton();
     return;
-}
-
+  }
 
   const activeSources = getActiveSources();
   if (activeSources.length === 0) return;
@@ -2837,50 +2874,39 @@ function histNextImage() {
    FAVORITEN
 ============================================================ */
 
-// Favoriten laden (Migration von Array → Set automatisch)
-let favorites = new Set(JSON.parse(localStorage.getItem("favorites")) || []);
-
-// Favoriten speichern
 function saveFavorites() {
-  localStorage.setItem("favorites", JSON.stringify([...favorites]));
+  localStorage.setItem("favorites", JSON.stringify(favorites));
 }
 
-// Favoriten-Button aktualisieren
-function updateFavButton() {
-  const favBtn = document.getElementById("favButton");
-  if (!favBtn) return; // Button existiert noch nicht → einfach abbrechen
+function loadFavorites() {
+  favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+}
 
-  if (!currentImageUrl) {
-    favBtn.classList.remove("favorited");
+function updateFavButton() {
+  const favBtn = document.getElementById("fav");
+  const currentUrl = history[historyIndex];
+
+  if (!currentUrl) {
+    favBtn.classList.remove("active");
     return;
   }
 
-  if (favorites.has(currentImageUrl)) {
-    favBtn.classList.add("favorited");
-  } else {
-    favBtn.classList.remove("favorited");
-  }
+  favBtn.classList.toggle("active", favorites.includes(currentUrl));
 }
 
+function toggleFavorite() {
+  const url = history[historyIndex];
+  if (!url) return;
 
-// Favoriten-Button Klick
-document.getElementById("favButton").addEventListener("click", () => {
-  if (favorites.has(currentImageUrl)) {
-    favorites.delete(currentImageUrl);
+  if (favorites.includes(url)) {
+    favorites = favorites.filter(f => f !== url);
   } else {
-    favorites.add(currentImageUrl);
+    favorites.push(url);
   }
 
   saveFavorites();
   updateFavButton();
-});
-
-// Beim Bildwechsel aufrufen:
-function onImageChange(newUrl) {
-  currentImageUrl = newUrl;
-  updateFavButton();
 }
-
 
 /* ============================================================
    FAVORITEN-GALERIE
@@ -2899,36 +2925,35 @@ function renderFavoritesGallery() {
   const container = document.getElementById("favGalleryContent");
   container.innerHTML = "";
 
-favorites.forEach((img) => {
-  const item = document.createElement("div");
-  item.className = "favItem";
+  favorites.forEach((img, index) => {
+    const item = document.createElement("div");
+    item.className = "favItem";
 
-  const image = document.createElement("img");
-  image.src = img;
+    const image = document.createElement("img");
+    image.src = img;
 
-  image.onclick = () => {
-    showImage(img);
-    pushToHistory(img);
-    updateFavButton();
-    closeFavoritesGallery();
-  };
+    image.onclick = () => {
+      showImage(img);
+      pushToHistory(img);
+      updateFavButton();
+      closeFavoritesGallery();
+    };
 
-  const del = document.createElement("div");
-  del.className = "favDelete";
-  del.textContent = "❌";
+    const del = document.createElement("div");
+    del.className = "favDelete";
+    del.textContent = "❌";
 
-  del.onclick = () => {
-    favorites.delete(img);
-    saveFavorites();
-    renderFavoritesGallery();
-    updateFavButton();
-  };
+    del.onclick = () => {
+      favorites.splice(index, 1);
+      saveFavorites();
+      renderFavoritesGallery();
+      updateFavButton();
+    };
 
-  item.appendChild(image);
-  item.appendChild(del);
-  container.appendChild(item);
-});
-
+    item.appendChild(image);
+    item.appendChild(del);
+    container.appendChild(item);
+  });
 }
 
 /* ============================================================
