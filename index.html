@@ -1172,7 +1172,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:4…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:5…</div>
  <div class="header">
     <div class="header-progress"></div>
 
@@ -4016,9 +4016,24 @@ function openTile(tileId) {
 
 
 
+function resetAppsPanelHeader() {
+  // Balken zurücksetzen
+  bar.style.transition = 'none';
+  bar.style.width = '0%';
+
+  // Button zurücksetzen
+  plusBtn.classList.remove("jumping");
+  plusBtn.classList.remove("removing");
+
+  // Statusvariablen zurücksetzen
+  progressStarted = false;
+  progressDone = false;
+  isPointerDown = false;
+}
 
 
 function openAppsPanel(tile) {
+  resetAppsPanelHeader();
   // document.querySelector("#tile-apps").classList.add("tile-active"); Tano - active tile erster versuch
 
   if (!tile) return;
