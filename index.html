@@ -1172,7 +1172,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:5…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:6…</div>
  <div class="header">
     <div class="header-progress"></div>
 
@@ -4712,6 +4712,12 @@ const MOVE_TOLERANCE = 8;
 
 const plusBtn = document.querySelector('#appsPanelAddButton');
 const bar = document.querySelector('#appsPanelHeader .header-progress');
+plusBtn.addEventListener('contextmenu', (e) => {
+  e.preventDefault();
+});
+plusBtn.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+});
 
 plusBtn.addEventListener('pointerdown', (e) => {
 
