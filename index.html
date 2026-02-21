@@ -2907,8 +2907,8 @@ const FavoritesManager = {
 
   load() {
     const saved = JSON.parse(localStorage.getItem("favorites") || "[]");
-    this.favoritesArray = saved;
     this.favoritesSet = new Set(saved);
+    this.favoritesArray = saved;
   },
 
   save() {
@@ -2916,6 +2916,7 @@ const FavoritesManager = {
   },
 
   add(url) {
+    if (!url) return;
     if (!this.favoritesSet.has(url)) {
       this.favoritesSet.add(url);
       this.favoritesArray.push(url);
@@ -2924,6 +2925,7 @@ const FavoritesManager = {
   },
 
   remove(url) {
+    if (!url) return;
     if (this.favoritesSet.has(url)) {
       this.favoritesSet.delete(url);
       this.favoritesArray = this.favoritesArray.filter(x => x !== url);
@@ -2939,6 +2941,7 @@ const FavoritesManager = {
     return this.favoritesArray;
   }
 };
+
 
 
 /* ============================================================
@@ -3004,8 +3007,8 @@ function renderFavoritesGallery() {
 
     const image = document.createElement("img");
     image.src = img;
-    image.loading = "lazy"; // Performance-Boost
     image.className = "favImage";
+    image.loading = "lazy";
 
     image.onclick = () => {
       currentImageUrl = img;
@@ -3033,6 +3036,7 @@ function renderFavoritesGallery() {
   });
 }
 
+
 function updateFavFrame() {
   const url = currentImageUrl;
   const isFav = url && FavoritesManager.has(url);
@@ -3040,8 +3044,8 @@ function updateFavFrame() {
   const bgA = document.getElementById("bgA");
   const bgB = document.getElementById("bgB");
 
-  bgA.classList.remove("favVignette");
-  bgB.classList.remove("favVignette");
+  if (bgA) bgA.classList.remove("favVignette");
+  if (bgB) bgB.classList.remove("favVignette");
 
   const activeLayer = document.querySelector(".active-bg");
   if (!activeLayer) return;
