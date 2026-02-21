@@ -1185,7 +1185,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:4…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:5…</div>
  <div class="header">
     <div class="header-progress"></div>
 
@@ -1735,6 +1735,13 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
   transition: transform 0.25s ease;
 }
 
+/* Favoriten-Rahmen um das aktive Hintergrundbild */
+.bgLayer.favFrame {
+  outline: 3px solid rgba(255, 80, 80, 0.9); /* Rot, leicht transparent */
+  outline-offset: -3px; /* sitzt perfekt am Bild */
+  box-shadow: 0 0 18px rgba(255, 80, 80, 0.7);
+  transition: outline 0.25s ease, box-shadow 0.25s ease;
+}
 
 
     
@@ -2728,6 +2735,8 @@ nextLayer.classList.add("visible");
 currentLayer.classList.remove("visible");
 
     activeBg = next;
+    updateFavFrame();
+
   };
 
   img.onerror = () => {
@@ -2805,6 +2814,8 @@ if (favMode) {
     showImage(url);
     pushToHistory(url);
     updateFavButton();
+  updateFavFrame();
+
     return;
   }
 
@@ -2846,6 +2857,8 @@ function catNextImage() {
   const url = currentImageList[currentImageIndex];
   showImage(url);
   updateFavButton();
+  updateFavFrame();
+
 }
 
 function catPrevImage() {
@@ -2856,6 +2869,8 @@ function catPrevImage() {
   const url = currentImageList[currentImageIndex];
   showImage(url);
   updateFavButton();
+  updateFavFrame();
+
 }
 
 /* ============================================================
@@ -2868,6 +2883,8 @@ function histPrevImage() {
     const url = history[historyIndex];
     showImage(url);
     updateFavButton();
+    updateFavFrame();
+
   }
 }
 
@@ -2877,6 +2894,8 @@ function histNextImage() {
     const url = history[historyIndex];
     showImage(url);
     updateFavButton();
+    updateFavFrame();
+
   }
 }
 
@@ -2953,6 +2972,8 @@ function updateFavButton() {
 function toggleFavorite() {
   const url = history[historyIndex];
   FavoritesManager.toggle(url);
+  updateFavFrame();
+
 }
 
 /* ============================================================
@@ -3006,6 +3027,24 @@ function renderFavoritesGallery() {
   });
 }
 
+function updateFavFrame() {
+  const url = history[historyIndex];
+  const isFav = url && FavoritesManager.has(url);
+
+  const bgA = document.getElementById("bgA");
+  const bgB = document.getElementById("bgB");
+
+  // Beide Layer zurücksetzen
+  bgA.classList.remove("favFrame");
+  bgB.classList.remove("favFrame");
+
+  // Welcher Layer ist gerade sichtbar?
+  const activeLayer = bgA.style.opacity === "1" ? bgA : bgB;
+
+  if (isFav) {
+    activeLayer.classList.add("favFrame");
+  }
+}
 
 /* ============================================================
    OVERLAY
