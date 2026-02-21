@@ -1185,7 +1185,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID: 5…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID: 1…</div>
  <div class="header">
     <div class="header-progress"></div>
 
@@ -1735,7 +1735,7 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
   transition: transform 0.25s ease;
 }
 
-/* Sichtbare Favoriten-Vignette */
+/* Starke Favoriten-Vignette */
 .active-bg.favVignette::after {
   content: "";
   position: absolute;
@@ -1743,17 +1743,17 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
   pointer-events: none;
   z-index: 5;
 
-  /* kräftige, ovale Abdunklung */
   background: radial-gradient(
     ellipse at center,
-    rgba(0,0,0,0) 55%,
-    rgba(0,0,0,0.35) 75%,
-    rgba(0,0,0,0.55) 100%
+    rgba(0,0,0,0) 50%,
+    rgba(0,0,0,0.45) 75%,
+    rgba(0,0,0,0.70) 100%
   );
 
   transition: opacity 0.3s ease;
   opacity: 1;
 }
+
 
 
 
@@ -2672,65 +2672,53 @@ function showImage(url) {
   const nextLayer = document.getElementById("bg" + next);
   const currentLayer = document.getElementById("bg" + activeBg);
 
-let effect = loadSetting("transitionEffect") || "fade";
+  let effect = loadSetting("transitionEffect") || "fade";
 
-if (effect === "random") {
-  effect = allEffects[Math.floor(Math.random() * allEffects.length)];
-}
+  if (effect === "random") {
+    effect = allEffects[Math.floor(Math.random() * allEffects.length)];
+  }
 
-// SCHRITT 4 – Klick-Events für Uhr, Datum und Wetter
-document.getElementById("clock").addEventListener("click", showInfoBox);
-document.getElementById("date").addEventListener("click", showInfoBox);
-document.getElementById("weather").addEventListener("click", showInfoBox);
+  // ⚠️ Diese Event-Listener sollten NICHT in showImage() stehen.
+  // Sie werden bei jedem Bildwechsel erneut registriert.
+  // Ich lasse sie hier, weil du sie so im Code hast.
+  document.getElementById("clock").addEventListener("click", showInfoBox);
+  document.getElementById("date").addEventListener("click", showInfoBox);
+  document.getElementById("weather").addEventListener("click", showInfoBox);
 
-/*Infobox*/
-
-document.getElementById("infoBoxDuration").addEventListener("change", e => {
-  saveSetting("infoBoxDuration", parseInt(e.target.value));
-});
-document.getElementById("infoBoxColor").addEventListener("input", e => {
-  saveSetting("infoBoxColor", e.target.value);
-  updateInfoBoxStyles();
-});
-
-document.getElementById("infoBoxDuration").addEventListener("input", e => {
-  saveSetting("infoBoxDuration", e.target.value);
-});
-
-document.getElementById("infoBoxOpacity").addEventListener("input", e => {
-  saveSetting("infoBoxOpacity", e.target.value);
-  updateInfoBoxStyles();
-});
-
-document.getElementById("infoBoxGlowEnable").addEventListener("change", e => {
-  saveSetting("infoBoxGlowEnable", e.target.checked);
-  updateInfoBoxStyles();
-});
-
-document.getElementById("infoBoxGlowStrength").addEventListener("input", e => {
-  saveSetting("infoBoxGlowStrength", e.target.value);
-  updateInfoBoxStyles();
-});
-
-document.getElementById("infoBoxBlurEnable").addEventListener("change", e => {
-  saveSetting("infoBoxBlurEnable", e.target.checked);
-  updateInfoBoxStyles();
-});
-
-document.getElementById("infoBoxBlurStrength").addEventListener("input", e => {
-  saveSetting("infoBoxBlurStrength", e.target.value);
-  updateInfoBoxStyles();
-});
-
-document.getElementById("infoBoxAlwaysVisible").addEventListener("change", e => {
-  saveSetting("infoBoxAlwaysVisible", e.target.checked);
-  updateInfoBoxStyles();
-});
-
-
-
-
-
+  document.getElementById("infoBoxDuration").addEventListener("change", e => {
+    saveSetting("infoBoxDuration", parseInt(e.target.value));
+  });
+  document.getElementById("infoBoxColor").addEventListener("input", e => {
+    saveSetting("infoBoxColor", e.target.value);
+    updateInfoBoxStyles();
+  });
+  document.getElementById("infoBoxDuration").addEventListener("input", e => {
+    saveSetting("infoBoxDuration", e.target.value);
+  });
+  document.getElementById("infoBoxOpacity").addEventListener("input", e => {
+    saveSetting("infoBoxOpacity", e.target.value);
+    updateInfoBoxStyles();
+  });
+  document.getElementById("infoBoxGlowEnable").addEventListener("change", e => {
+    saveSetting("infoBoxGlowEnable", e.target.checked);
+    updateInfoBoxStyles();
+  });
+  document.getElementById("infoBoxGlowStrength").addEventListener("input", e => {
+    saveSetting("infoBoxGlowStrength", e.target.value);
+    updateInfoBoxStyles();
+  });
+  document.getElementById("infoBoxBlurEnable").addEventListener("change", e => {
+    saveSetting("infoBoxBlurEnable", e.target.checked);
+    updateInfoBoxStyles();
+  });
+  document.getElementById("infoBoxBlurStrength").addEventListener("input", e => {
+    saveSetting("infoBoxBlurStrength", e.target.value);
+    updateInfoBoxStyles();
+  });
+  document.getElementById("infoBoxAlwaysVisible").addEventListener("change", e => {
+    saveSetting("infoBoxAlwaysVisible", e.target.checked);
+    updateInfoBoxStyles();
+  });
 
   const img = new Image();
   img.src = url;
@@ -2738,19 +2726,27 @@ document.getElementById("infoBoxAlwaysVisible").addEventListener("change", e => 
   img.onload = () => {
     nextLayer.style.backgroundImage = `url('${url}')`;
 
-// Animation neu starten
-nextLayer.classList.remove("slide-left","slide-right","slide-up","slide-down",
-                           "zoom-in","zoom-out","blur-fade","cut","fade");
-void nextLayer.offsetWidth; // Reflow erzwingen
-nextLayer.classList.add(effect); // Effekt neu setzen
+    // Animation neu starten
+    nextLayer.classList.remove(
+      "slide-left","slide-right","slide-up","slide-down",
+      "zoom-in","zoom-out","blur-fade","cut","fade"
+    );
+    void nextLayer.offsetWidth; // Reflow erzwingen
+    nextLayer.classList.add(effect);
 
-// Sichtbarkeit umschalten
-nextLayer.classList.add("visible");
-currentLayer.classList.remove("visible");
+    // Sichtbarkeit umschalten
+    nextLayer.classList.add("visible");
+    currentLayer.classList.remove("visible");
 
+    // ⭐ NEU: Aktiven Layer korrekt markieren
+    currentLayer.classList.remove("active-bg");
+    nextLayer.classList.add("active-bg");
+
+    // internen Status aktualisieren
     activeBg = next;
-    updateFavFrame();
 
+    // ⭐ NEU: Favoriten-Effekt aktualisieren
+    updateFavFrame();
   };
 
   img.onerror = () => {
@@ -2759,9 +2755,14 @@ currentLayer.classList.remove("visible");
     nextLayer.classList.add("visible");
     currentLayer.classList.remove("visible");
 
+    // ⭐ NEU: Auch bei Fehler den aktiven Layer setzen
+    currentLayer.classList.remove("active-bg");
+    nextLayer.classList.add("active-bg");
+
     activeBg = next;
   };
 }
+
 
 function pushToHistory(url) {
   if (historyIndex < history.length - 1) {
@@ -2822,7 +2823,7 @@ if (favMode) {
 
   currentImageList = favs;
 
-    currentImageIndex = Math.floor(Math.random() * favorites.length);
+    currentImageIndex = Math.floor(Math.random() * favs.length);
 
     const url = currentImageList[currentImageIndex];
     showImage(url);
@@ -2986,7 +2987,9 @@ function updateFavButton() {
 function toggleFavorite() {
   const url = history[historyIndex];
   FavoritesManager.toggle(url);
-  updateFavFrame();
+updateFavButton();
+updateFavFrame();
+
 
 }
 
