@@ -2650,11 +2650,12 @@ async function loadGoogleAlbumImages(sharedUrl) {
     const html = await resp.text();
 
     const urls = [];
-    const regex = /"(https:\/\/lh3\.googleusercontent\.com\/[^"]+)"/g;
+    const regex = /(https:\/\/lh3\.googleusercontent\.com\/[A-Za-z0-9\-_]+)=w\d+-h\d+/g;
+
     let match;
     while ((match = regex.exec(html)) !== null) {
-      const u = match[1];
-      if (!urls.includes(u)) urls.push(u);
+      const full = match[1] + "=w3840-h2160"; // Full-Res erzwingen
+      if (!urls.includes(full)) urls.push(full);
     }
 
     return urls;
@@ -2662,6 +2663,7 @@ async function loadGoogleAlbumImages(sharedUrl) {
     return [];
   }
 }
+
 
 /* ============================================================
    HISTORY-SYSTEM
@@ -2681,44 +2683,39 @@ function showImage(url) {
     effect = allEffects[Math.floor(Math.random() * allEffects.length)];
   }
 
-  // ⚠️ Diese Event-Listener sollten NICHT in showImage() stehen.
-  // Sie werden bei jedem Bildwechsel erneut registriert.
-  // Ich lasse sie hier, weil du sie so im Code hast.
-
-
-
-
-
-  
   const img = new Image();
   img.src = url;
 
   img.onload = () => {
     nextLayer.style.backgroundImage = `url('${url}')`;
 
-    // Animation neu starten
     nextLayer.classList.remove(
       "slide-left","slide-right","slide-up","slide-down",
       "zoom-in","zoom-out","blur-fade","cut","fade"
     );
-    void nextLayer.offsetWidth; // Reflow erzwingen
+
+    void nextLayer.offsetWidth;
     nextLayer.classList.add(effect);
 
-    // Sichtbarkeit umschalten
     nextLayer.classList.add("visible");
     currentLayer.classList.remove("visible");
 
-    // ⭐ NEU: Aktiven Layer korrekt markieren
     currentLayer.classList.remove("active-bg");
     nextLayer.classList.add("active-bg");
 
-    // internen Status aktualisieren
     activeBg = next;
 
     currentImageUrl = url;
-    
-    // ⭐ NEU: Favoriten-Effekt aktualisieren
+
+    updateFavButton();
     updateFavFrame();
+
+    // PRELOAD nächstes Bild
+    if (currentImageList.length > 1) {
+      const nextIndex = (currentImageIndex + 1) % currentImageList.length;
+      const preload = new Image();
+      preload.src = currentImageList[nextIndex];
+    }
   };
 
   img.onerror = () => {
@@ -2727,13 +2724,18 @@ function showImage(url) {
     nextLayer.classList.add("visible");
     currentLayer.classList.remove("visible");
 
-    // ⭐ NEU: Auch bei Fehler den aktiven Layer setzen
     currentLayer.classList.remove("active-bg");
     nextLayer.classList.add("active-bg");
 
     activeBg = next;
+
+    currentImageUrl = url;
+
+    updateFavButton();
+    updateFavFrame();
   };
 }
+
 
 
 function pushToHistory(url) {
@@ -2742,8 +2744,15 @@ function pushToHistory(url) {
   }
 
   history.push(url);
+
+  // Memory-Leak verhindern
+  if (history.length > 500) {
+    history = history.slice(-300);
+  }
+
   historyIndex = history.length - 1;
 }
+
 
 
 /* ============================================================
@@ -2789,20 +2798,17 @@ async function changeBackground() {
 
   applyTransitionEffect();
 
-if (favMode) {
-  const favs = FavoritesManager.list();
-  if (favs.length === 0) return;
+  // Favoritenmodus
+  if (favMode) {
+    const favs = FavoritesManager.list();
+    if (favs.length === 0) return;
 
-  currentImageList = favs;
-
+    currentImageList = favs;
     currentImageIndex = Math.floor(Math.random() * favs.length);
 
     const url = currentImageList[currentImageIndex];
     showImage(url);
     pushToHistory(url);
-    updateFavButton();
-  updateFavFrame();
-
     return;
   }
 
@@ -2830,8 +2836,8 @@ if (favMode) {
   const url = currentImageList[currentImageIndex];
   showImage(url);
   pushToHistory(url);
-  updateFavButton();
 }
+
 /* ============================================================
    KATEGORIE-NAVIGATION
 ============================================================ */
@@ -2901,8 +2907,8 @@ const FavoritesManager = {
 
   load() {
     const saved = JSON.parse(localStorage.getItem("favorites") || "[]");
+    this.favoritesArray = saved;
     this.favoritesSet = new Set(saved);
-    this.favoritesArray = saved; // direkt übernehmen
   },
 
   save() {
@@ -2926,11 +2932,11 @@ const FavoritesManager = {
   },
 
   has(url) {
-    return this.favoritesSet.has(url); // O(1) ultraschnell
+    return this.favoritesSet.has(url);
   },
 
   list() {
-    return this.favoritesArray; // kein Kopieren mehr!
+    return this.favoritesArray;
   }
 };
 
@@ -2941,16 +2947,19 @@ const FavoritesManager = {
 
 function updateFavButton() {
   const favBtn = document.getElementById("fav");
- /* const currentUrl = history[historyIndex];*/
-const currentUrl = currentImageUrl;
 
-  if (!currentUrl) {
+  if (!currentImageUrl) {
     favBtn.classList.remove("active");
     return;
   }
 
-  favBtn.classList.toggle("active", FavoritesManager.has(currentUrl));
+  if (FavoritesManager.has(currentImageUrl)) {
+    favBtn.classList.add("active");
+  } else {
+    favBtn.classList.remove("active");
+  }
 }
+
 
 /* ============================================================
    FAVORITEN TOGGLE
@@ -2959,10 +2968,16 @@ const currentUrl = currentImageUrl;
 function toggleFavorite() {
   if (!currentImageUrl) return;
 
-  FavoritesManager.toggle(currentImageUrl);
+  if (FavoritesManager.has(currentImageUrl)) {
+    FavoritesManager.remove(currentImageUrl);
+  } else {
+    FavoritesManager.add(currentImageUrl);
+  }
+
   updateFavButton();
   updateFavFrame();
 }
+
 
 /* ============================================================
    FAVORITEN-GALERIE (B – schöne UI)
@@ -2989,12 +3004,15 @@ function renderFavoritesGallery() {
 
     const image = document.createElement("img");
     image.src = img;
+    image.loading = "lazy"; // Performance-Boost
     image.className = "favImage";
 
     image.onclick = () => {
+      currentImageUrl = img;
       showImage(img);
       pushToHistory(img);
       updateFavButton();
+      updateFavFrame();
       closeFavoritesGallery();
     };
 
@@ -3003,10 +3021,10 @@ function renderFavoritesGallery() {
     del.textContent = "✕";
 
     del.onclick = () => {
-      FavoritesManager.data.delete(img);
-      FavoritesManager.save();
+      FavoritesManager.remove(img);
       renderFavoritesGallery();
       updateFavButton();
+      updateFavFrame();
     };
 
     item.appendChild(image);
@@ -3016,7 +3034,7 @@ function renderFavoritesGallery() {
 }
 
 function updateFavFrame() {
-  const url = history[historyIndex];
+  const url = currentImageUrl;
   const isFav = url && FavoritesManager.has(url);
 
   const bgA = document.getElementById("bgA");
