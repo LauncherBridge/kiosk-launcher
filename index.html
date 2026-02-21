@@ -2684,45 +2684,12 @@ function showImage(url) {
   // ⚠️ Diese Event-Listener sollten NICHT in showImage() stehen.
   // Sie werden bei jedem Bildwechsel erneut registriert.
   // Ich lasse sie hier, weil du sie so im Code hast.
-  document.getElementById("clock").addEventListener("click", showInfoBox);
-  document.getElementById("date").addEventListener("click", showInfoBox);
-  document.getElementById("weather").addEventListener("click", showInfoBox);
 
-  document.getElementById("infoBoxDuration").addEventListener("change", e => {
-    saveSetting("infoBoxDuration", parseInt(e.target.value));
-  });
-  document.getElementById("infoBoxColor").addEventListener("input", e => {
-    saveSetting("infoBoxColor", e.target.value);
-    updateInfoBoxStyles();
-  });
-  document.getElementById("infoBoxDuration").addEventListener("input", e => {
-    saveSetting("infoBoxDuration", e.target.value);
-  });
-  document.getElementById("infoBoxOpacity").addEventListener("input", e => {
-    saveSetting("infoBoxOpacity", e.target.value);
-    updateInfoBoxStyles();
-  });
-  document.getElementById("infoBoxGlowEnable").addEventListener("change", e => {
-    saveSetting("infoBoxGlowEnable", e.target.checked);
-    updateInfoBoxStyles();
-  });
-  document.getElementById("infoBoxGlowStrength").addEventListener("input", e => {
-    saveSetting("infoBoxGlowStrength", e.target.value);
-    updateInfoBoxStyles();
-  });
-  document.getElementById("infoBoxBlurEnable").addEventListener("change", e => {
-    saveSetting("infoBoxBlurEnable", e.target.checked);
-    updateInfoBoxStyles();
-  });
-  document.getElementById("infoBoxBlurStrength").addEventListener("input", e => {
-    saveSetting("infoBoxBlurStrength", e.target.value);
-    updateInfoBoxStyles();
-  });
-  document.getElementById("infoBoxAlwaysVisible").addEventListener("change", e => {
-    saveSetting("infoBoxAlwaysVisible", e.target.checked);
-    updateInfoBoxStyles();
-  });
 
+
+
+
+  
   const img = new Image();
   img.src = url;
 
@@ -5035,8 +5002,56 @@ async function updateCacheStatus() {
 }
 
 updateCacheStatus();
+function initEventListeners() {
+  document.getElementById("clock").addEventListener("click", showInfoBox);
+  document.getElementById("date").addEventListener("click", showInfoBox);
+  document.getElementById("weather").addEventListener("click", showInfoBox);
 
-  
+  document.getElementById("infoBoxDuration").addEventListener("change", e => {
+    saveSetting("infoBoxDuration", parseInt(e.target.value));
+  });
+
+  document.getElementById("infoBoxColor").addEventListener("input", e => {
+    saveSetting("infoBoxColor", e.target.value);
+    updateInfoBoxStyles();
+  });
+
+  document.getElementById("infoBoxOpacity").addEventListener("input", e => {
+    saveSetting("infoBoxOpacity", e.target.value);
+    updateInfoBoxStyles();
+  });
+
+  document.getElementById("infoBoxGlowEnable").addEventListener("change", e => {
+    saveSetting("infoBoxGlowEnable", e.target.checked);
+    updateInfoBoxStyles();
+  });
+
+  document.getElementById("infoBoxGlowStrength").addEventListener("input", e => {
+    saveSetting("infoBoxGlowStrength", e.target.value);
+    updateInfoBoxStyles();
+  });
+
+  document.getElementById("infoBoxBlurEnable").addEventListener("change", e => {
+    saveSetting("infoBoxBlurEnable", e.target.checked);
+    updateInfoBoxStyles();
+  });
+
+  document.getElementById("infoBoxBlurStrength").addEventListener("input", e => {
+    saveSetting("infoBoxBlurStrength", e.target.value);
+    updateInfoBoxStyles();
+  });
+
+  document.getElementById("infoBoxAlwaysVisible").addEventListener("change", e => {
+    saveSetting("infoBoxAlwaysVisible", e.target.checked);
+    updateInfoBoxStyles();
+  });
+
+  // ⭐ WICHTIG: Fav-Button hier registrieren
+  document.getElementById("fav").addEventListener("click", toggleFavorite);
+}
+
+ window.addEventListener("DOMContentLoaded", initEventListeners);
+ 
 </script>
 
 
