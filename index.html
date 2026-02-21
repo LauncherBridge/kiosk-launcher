@@ -1185,7 +1185,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:3…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:4…</div>
  <div class="header">
     <div class="header-progress"></div>
 
@@ -1726,6 +1726,14 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 }
 
 
+#fav.active {
+  transform: scale(1.25);
+  transition: transform 0.25s ease;
+}
+
+#fav {
+  transition: transform 0.25s ease;
+}
 
 
 
@@ -2785,10 +2793,12 @@ async function changeBackground() {
 
   applyTransitionEffect();
 
-  if (favMode) {
-    if (favorites.length === 0) return;
+if (favMode) {
+  const favs = FavoritesManager.list();
+  if (favs.length === 0) return;
 
-    currentImageList = [...favorites];
+  currentImageList = favs;
+
     currentImageIndex = Math.floor(Math.random() * favorites.length);
 
     const url = currentImageList[currentImageIndex];
@@ -2874,13 +2884,55 @@ function histNextImage() {
    FAVORITEN
 ============================================================ */
 
-function saveFavorites() {
-  localStorage.setItem("favorites", JSON.stringify(favorites));
-}
+/* ============================================================
+   FAVORITEN-MANAGER (C + B)
+   Modular, Set-basiert, UI-optimiert
+============================================================ */
 
-function loadFavorites() {
-  favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
-}
+const FavoritesManager = {
+  data: new Set(),
+
+  load() {
+    try {
+      const raw = localStorage.getItem("favorites");
+      if (raw) {
+        this.data = new Set(JSON.parse(raw));
+      }
+    } catch (e) {
+      console.warn("Favoriten konnten nicht geladen werden:", e);
+      this.data = new Set();
+    }
+  },
+
+  save() {
+    localStorage.setItem("favorites", JSON.stringify([...this.data]));
+  },
+
+  has(url) {
+    return this.data.has(url);
+  },
+
+  toggle(url) {
+    if (!url) return;
+
+    if (this.data.has(url)) {
+      this.data.delete(url);
+    } else {
+      this.data.add(url);
+    }
+
+    this.save();
+    updateFavButton();
+  },
+
+  list() {
+    return [...this.data];
+  }
+};
+
+/* ============================================================
+   FAVORITEN-BUTTON
+============================================================ */
 
 function updateFavButton() {
   const favBtn = document.getElementById("fav");
@@ -2891,25 +2943,20 @@ function updateFavButton() {
     return;
   }
 
-  favBtn.classList.toggle("active", favorites.includes(currentUrl));
-}
-
-function toggleFavorite() {
-  const url = history[historyIndex];
-  if (!url) return;
-
-  if (favorites.includes(url)) {
-    favorites = favorites.filter(f => f !== url);
-  } else {
-    favorites.push(url);
-  }
-
-  saveFavorites();
-  updateFavButton();
+  favBtn.classList.toggle("active", FavoritesManager.has(currentUrl));
 }
 
 /* ============================================================
-   FAVORITEN-GALERIE
+   FAVORITEN TOGGLE
+============================================================ */
+
+function toggleFavorite() {
+  const url = history[historyIndex];
+  FavoritesManager.toggle(url);
+}
+
+/* ============================================================
+   FAVORITEN-GALERIE (B – schöne UI)
 ============================================================ */
 
 function openFavoritesGallery() {
@@ -2925,12 +2972,15 @@ function renderFavoritesGallery() {
   const container = document.getElementById("favGalleryContent");
   container.innerHTML = "";
 
-  favorites.forEach((img, index) => {
+  const favs = FavoritesManager.list();
+
+  favs.forEach((img) => {
     const item = document.createElement("div");
     item.className = "favItem";
 
     const image = document.createElement("img");
     image.src = img;
+    image.className = "favImage";
 
     image.onclick = () => {
       showImage(img);
@@ -2941,11 +2991,11 @@ function renderFavoritesGallery() {
 
     const del = document.createElement("div");
     del.className = "favDelete";
-    del.textContent = "❌";
+    del.textContent = "✕";
 
     del.onclick = () => {
-      favorites.splice(index, 1);
-      saveFavorites();
+      FavoritesManager.data.delete(img);
+      FavoritesManager.save();
       renderFavoritesGallery();
       updateFavButton();
     };
@@ -2955,6 +3005,7 @@ function renderFavoritesGallery() {
     container.appendChild(item);
   });
 }
+
 
 /* ============================================================
    OVERLAY
@@ -3714,7 +3765,7 @@ document.addEventListener("fullscreenchange", () => {
 window.onload = async () => {
   loadTileData();
 
-  loadFavorites();
+FavoritesManager.load();
 //  loadCategories();          // ← GENAU HIER HIN
 //  renderTileSettingsPage();  // ← kommt direkt danach
  
