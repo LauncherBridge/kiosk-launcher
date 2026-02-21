@@ -1185,7 +1185,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID: 9…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID: 1…</div>
  <div class="header">
     <div class="header-progress"></div>
 
@@ -2927,45 +2927,44 @@ function histNextImage() {
 ============================================================ */
 
 const FavoritesManager = {
-  data: new Set(),
+  favoritesSet: new Set(),
+  favoritesArray: [],
 
   load() {
-    try {
-      const raw = localStorage.getItem("favorites");
-      if (raw) {
-        this.data = new Set(JSON.parse(raw));
-      }
-    } catch (e) {
-      console.warn("Favoriten konnten nicht geladen werden:", e);
-      this.data = new Set();
-    }
+    const saved = JSON.parse(localStorage.getItem("favorites") || "[]");
+    this.favoritesSet = new Set(saved);
+    this.favoritesArray = saved; // direkt übernehmen
   },
 
   save() {
-    localStorage.setItem("favorites", JSON.stringify([...this.data]));
+    localStorage.setItem("favorites", JSON.stringify(this.favoritesArray));
+  },
+
+  add(url) {
+    if (!this.favoritesSet.has(url)) {
+      this.favoritesSet.add(url);
+      this.favoritesArray.push(url);
+      this.save();
+    }
+  },
+
+  remove(url) {
+    if (this.favoritesSet.has(url)) {
+      this.favoritesSet.delete(url);
+      this.favoritesArray = this.favoritesArray.filter(x => x !== url);
+      this.save();
+    }
   },
 
   has(url) {
-    return this.data.has(url);
-  },
-
-  toggle(url) {
-    if (!url) return;
-
-    if (this.data.has(url)) {
-      this.data.delete(url);
-    } else {
-      this.data.add(url);
-    }
-
-    this.save();
-    updateFavButton();
+    return this.favoritesSet.has(url); // O(1) ultraschnell
   },
 
   list() {
-    return [...this.data];
+    return this.favoritesArray; // kein Kopieren mehr!
   }
 };
+
 
 /* ============================================================
    FAVORITEN-BUTTON
