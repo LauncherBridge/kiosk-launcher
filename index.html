@@ -1185,7 +1185,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:8…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:1…</div>
  <div class="header">
     <div class="header-progress"></div>
 
@@ -1736,11 +1736,20 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 }
 
 /* Favoriten-Rahmen um das aktive Hintergrundbild */
-.bgLayer.favHalo {
-  box-shadow:
-    0 0 40px rgba(255, 80, 80, 0.45),
-    0 0 80px rgba(255, 80, 80, 0.25);
+.bgLayer.favVignette::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0,0,0,0) 55%,
+    rgba(0,0,0,0.25) 75%,
+    rgba(0,0,0,0.45) 100%
+  );
+  z-index: 5;
 }
+
 
 
 
