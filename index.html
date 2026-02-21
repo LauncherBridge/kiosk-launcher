@@ -2988,12 +2988,11 @@ const currentUrl = currentImageUrl;
 ============================================================ */
 
 function toggleFavorite() {
-  const url = history[historyIndex];
-  FavoritesManager.toggle(url);
-updateFavButton();
-updateFavFrame();
+  if (!currentImageUrl) return;
 
-
+  FavoritesManager.toggle(currentImageUrl);
+  updateFavButton();
+  updateFavFrame();
 }
 
 /* ============================================================
