@@ -2906,9 +2906,25 @@ const FavoritesManager = {
   favoritesArray: [],
 
   load() {
-    const saved = JSON.parse(localStorage.getItem("favorites") || "[]");
+    let saved = [];
+
+    try {
+      const raw = JSON.parse(localStorage.getItem("favorites") || "[]");
+
+      // Nur wenn es wirklich ein Array ist, übernehmen
+      if (Array.isArray(raw)) {
+        saved = raw;
+      } else {
+        // Alte/kaputte Struktur → sicherheitshalber leeren
+        saved = [];
+      }
+    } catch (e) {
+      // JSON defekt → Reset
+      saved = [];
+    }
+
+    this.favoritesArray = saved;
     this.favoritesSet = new Set(saved);
-    this.favoritesArray = saved; // direkt übernehmen
   },
 
   save() {
@@ -2935,11 +2951,11 @@ const FavoritesManager = {
 
   has(url) {
     if (!url) return false;
-    return this.favoritesSet.has(url); // O(1)
+    return this.favoritesSet.has(url);
   },
 
   list() {
-    return this.favoritesArray; // kein Kopieren
+    return this.favoritesArray;
   },
 
   toggle(url) {
