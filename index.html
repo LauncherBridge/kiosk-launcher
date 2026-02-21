@@ -2908,7 +2908,7 @@ const FavoritesManager = {
   load() {
     const saved = JSON.parse(localStorage.getItem("favorites") || "[]");
     this.favoritesSet = new Set(saved);
-    this.favoritesArray = saved;
+    this.favoritesArray = saved; // direkt übernehmen
   },
 
   save() {
@@ -2934,14 +2934,23 @@ const FavoritesManager = {
   },
 
   has(url) {
-    return this.favoritesSet.has(url);
+    if (!url) return false;
+    return this.favoritesSet.has(url); // O(1)
   },
 
   list() {
-    return this.favoritesArray;
+    return this.favoritesArray; // kein Kopieren
+  },
+
+  toggle(url) {
+    if (!url) return;
+    if (this.has(url)) {
+      this.remove(url);
+    } else {
+      this.add(url);
+    }
   }
 };
-
 
 
 /* ============================================================
@@ -2950,19 +2959,17 @@ const FavoritesManager = {
 
 function updateFavButton() {
   const favBtn = document.getElementById("fav");
+  const currentUrl = currentImageUrl;
 
-  if (!currentImageUrl) {
+  if (!favBtn) return;
+
+  if (!currentUrl) {
     favBtn.classList.remove("active");
     return;
   }
 
-  if (FavoritesManager.has(currentImageUrl)) {
-    favBtn.classList.add("active");
-  } else {
-    favBtn.classList.remove("active");
-  }
+  favBtn.classList.toggle("active", FavoritesManager.has(currentUrl));
 }
-
 
 /* ============================================================
    FAVORITEN TOGGLE
@@ -2971,16 +2978,10 @@ function updateFavButton() {
 function toggleFavorite() {
   if (!currentImageUrl) return;
 
-  if (FavoritesManager.has(currentImageUrl)) {
-    FavoritesManager.remove(currentImageUrl);
-  } else {
-    FavoritesManager.add(currentImageUrl);
-  }
-
+  FavoritesManager.toggle(currentImageUrl);
   updateFavButton();
   updateFavFrame();
 }
-
 
 /* ============================================================
    FAVORITEN-GALERIE (B – schöne UI)
@@ -3008,10 +3009,8 @@ function renderFavoritesGallery() {
     const image = document.createElement("img");
     image.src = img;
     image.className = "favImage";
-    image.loading = "lazy";
 
     image.onclick = () => {
-      currentImageUrl = img;
       showImage(img);
       pushToHistory(img);
       updateFavButton();
@@ -3026,8 +3025,12 @@ function renderFavoritesGallery() {
     del.onclick = () => {
       FavoritesManager.remove(img);
       renderFavoritesGallery();
-      updateFavButton();
-      updateFavFrame();
+
+      // Falls das aktuell angezeigte Bild gelöscht wurde → UI aktualisieren
+      if (currentImageUrl === img) {
+        updateFavButton();
+        updateFavFrame();
+      }
     };
 
     item.appendChild(image);
@@ -3036,6 +3039,9 @@ function renderFavoritesGallery() {
   });
 }
 
+/* ============================================================
+   FAVORITEN-RAND / VIGNETTE
+============================================================ */
 
 function updateFavFrame() {
   const url = currentImageUrl;
