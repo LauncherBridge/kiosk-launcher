@@ -1185,7 +1185,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:1…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID: 5…</div>
  <div class="header">
     <div class="header-progress"></div>
 
@@ -1735,19 +1735,24 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
   transition: transform 0.25s ease;
 }
 
-/* Favoriten-Rahmen um das aktive Hintergrundbild */
-.bgLayer.favVignette::after {
+/* Sichtbare Favoriten-Vignette */
+.active-bg.favVignette::after {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
+  z-index: 5;
+
+  /* kräftige, ovale Abdunklung */
   background: radial-gradient(
     ellipse at center,
     rgba(0,0,0,0) 55%,
-    rgba(0,0,0,0.25) 75%,
-    rgba(0,0,0,0.45) 100%
+    rgba(0,0,0,0.35) 75%,
+    rgba(0,0,0,0.55) 100%
   );
-  z-index: 5;
+
+  transition: opacity 0.3s ease;
+  opacity: 1;
 }
 
 
@@ -3043,17 +3048,17 @@ function updateFavFrame() {
   const bgA = document.getElementById("bgA");
   const bgB = document.getElementById("bgB");
 
-  // Beide Layer zurücksetzen
-  bgA.classList.remove("favFrame");
-  bgB.classList.remove("favFrame");
+  bgA.classList.remove("favVignette");
+  bgB.classList.remove("favVignette");
 
-  // Welcher Layer ist gerade sichtbar?
-  const activeLayer = bgA.style.opacity === "1" ? bgA : bgB;
+  const activeLayer = document.querySelector(".active-bg");
+  if (!activeLayer) return;
 
   if (isFav) {
-    activeLayer.classList.add("favFrame");
+    activeLayer.classList.add("favVignette");
   }
 }
+
 
 /* ============================================================
    OVERLAY
