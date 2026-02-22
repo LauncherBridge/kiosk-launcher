@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 4 <span id="appVersion"></span>
+  Tano – Version 5 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1714,35 +1714,44 @@ box-shadow:
 }
 
     /* Aura-Ellipse */
-.header-glow {
+.header-glow-left,
+.header-glow-right {
   position: absolute;
   top: 50%;
-  left: 50%;
-  width: 180%;
-  height: 140%;
-  transform: translate(-50%, -50%);
-  background: var(--header-glow-color, rgba(255,255,255,0.25));
-  border-radius: 50% / 35%;
+  width: 60%;
+  height: 260%;
+  transform: translateY(-50%);
+  border-radius: 60% / 40%;
   filter: blur(40px);
   opacity: 0.85;
-  z-index: 1;
   pointer-events: none;
-  transition: opacity 0.3s ease;
-}
-/* Titel-Aussparung */
-.header-glow-mask {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 2;
 
-  /* Dynamische Titel-Aussparung */
   mask: radial-gradient(
     circle var(--mask-radius, 120px) at center,
     transparent calc(var(--mask-radius) - 60px),
     black calc(var(--mask-radius) - 59px)
   );
+  -webkit-mask: radial-gradient(
+    circle var(--mask-radius, 120px) at center,
+    transparent calc(var(--mask-radius) - 60px),
+    black calc(var(--mask-radius) - 59px)
+  );
 }
+.header-glow-left {
+  left: 0;
+  background: var(--header-glow-color-left, rgba(255,255,255,0.25));
+  animation:
+    driftLeft 12s ease-in-out infinite,
+    auraPulse 6s ease-in-out infinite;
+}
+.header-glow-right {
+  right: 0;
+  background: var(--header-glow-color-right, rgba(255,255,255,0.25));
+  animation:
+    driftRight 14s ease-in-out infinite,
+    auraPulse 7s ease-in-out infinite;
+}
+
 
 #appsPanelAddButton,
 #appsPanelDynamicTitle,
@@ -1752,38 +1761,22 @@ box-shadow:
 }
 /* Schritt 4: Lebendige Aura – sanftes Pulsieren */
 @keyframes auraPulse {
-  0% {
-    opacity: 0.75;
-    transform: translate(-50%, -50%) scale(1);
-  }
-  50% {
-    opacity: 0.92;
-    transform: translate(-50%, -50%) scale(1.04);
-  }
-  100% {
-    opacity: 0.75;
-    transform: translate(-50%, -50%) scale(1);
-  }
+  0%, 100% { transform: translateY(-50%) scale(1); }
+  50%      { transform: translateY(-50%) scale(1.05); }
 }
 
-.header-glow {
-  animation: auraPulse 6s ease-in-out infinite;
+@keyframes driftLeft {
+  0%   { transform: translateY(-50%) translateX(-10px); }
+  50%  { transform: translateY(-50%) translateX(10px); }
+  100% { transform: translateY(-50%) translateX(-10px); }
 }
-/* Schritt 5: Leichte Drift-Bewegung der Aura */
-@keyframes auraDrift {
-  0% {
-    transform: translate(-50%, -50%) scale(1.04);
-  }
-  33% {
-    transform: translate(-48%, -52%) scale(1.04);
-  }
-  66% {
-    transform: translate(-52%, -48%) scale(1.04);
-  }
-  100% {
-    transform: translate(-50%, -50%) scale(1.04);
-  }
+
+@keyframes driftRight {
+  0%   { transform: translateY(-50%) translateX(10px); }
+  50%  { transform: translateY(-50%) translateX(-10px); }
+  100% { transform: translateY(-50%) translateX(10px); }
 }
+
 
 .header-glow {
   animation:
@@ -2108,8 +2101,8 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 
     <div id="appsPanelHeader">
       
-      <div class="header-glow"></div>
-      <div class="header-glow-mask"></div>
+<div class="header-glow-left"></div>
+<div class="header-glow-right"></div>
 
       
       <div class="header-progress"></div>
@@ -4594,49 +4587,57 @@ function resetAppsPanelHeader() {
 
 function openAppsPanel(tile) {
   resetAppsPanelHeader();
-  // document.querySelector("#tile-apps").classList.add("tile-active"); Tano - active tile erster versuch
 
   if (!tile) return;
 
   currentTile = tile;
-  
-  // Aura-Farbe setzen
-const glow = document.querySelector(".header-glow");
-// Transparente Variante der Kachelfarbe erzeugen
-// Beispiel: "#ff6600" → "#ff660055"
-const auraColor = tile.color + "55";
-glow.style.setProperty("--header-glow-color", auraColor);
 
-//tile.classList.add("tile-active");
- // currentTile.classList.add("tile-active");
   const panel   = document.getElementById("appsPanel");
   const titleEl = document.getElementById("appsPanelDynamicTitle");
   const list    = document.getElementById("appsList");
-  const headerAddBtn = document.getElementById("appsPanelAddButton");
   const closeBtn = document.getElementById("appsPanelClose");
 
-  // addBtn entfernt → Prüfung angepasst
   if (!panel || !titleEl || !list) {
     console.warn("AppsPanel: benötigte Elemente nicht gefunden");
     return;
   }
 
-  // Titel setzen
+  // ---------------------------------------------------------
+  // 1) Titel setzen
+  // ---------------------------------------------------------
   titleEl.textContent = "Apps in " + tile.name;
-  // Schritt 6: Dynamische Titel-Aussparung
-const titleWidth = titleEl.offsetWidth;
 
-// Radius = halbe Titelbreite + etwas Puffer
-const radius = (titleWidth / 2) + 40;
+  // ---------------------------------------------------------
+  // 2) Maskenradius berechnen (für beide Auren)
+  // ---------------------------------------------------------
+  const titleWidth = titleEl.offsetWidth;
+  const radius = (titleWidth / 2) + 40;
 
-const mask = document.querySelector(".header-glow-mask");
-mask.style.setProperty("--mask-radius", radius + "px");
+  // ---------------------------------------------------------
+  // 3) Zwei Auren ansteuern
+  // ---------------------------------------------------------
+  const glowLeft  = document.querySelector(".header-glow-left");
+  const glowRight = document.querySelector(".header-glow-right");
 
+  // Farben erzeugen
+  const auraColorLeft  = tile.color + "55"; // kräftiger
+  const auraColorRight = tile.color + "33"; // transparenter
 
-  // Liste leeren
+  if (glowLeft) {
+    glowLeft.style.setProperty("--header-glow-color-left", auraColorLeft);
+    glowLeft.style.setProperty("--mask-radius", radius + "px");
+  }
+
+  if (glowRight) {
+    glowRight.style.setProperty("--header-glow-color-right", auraColorRight);
+    glowRight.style.setProperty("--mask-radius", radius + "px");
+  }
+
+  // ---------------------------------------------------------
+  // 4) Liste leeren und Apps einfügen
+  // ---------------------------------------------------------
   list.innerHTML = "";
 
-  // Apps aus dem Speicher holen
   const apps = appsPerTile[tile.name] || [];
 
   apps.forEach(app => {
@@ -4659,6 +4660,7 @@ mask.style.setProperty("--mask-radius", radius + "px");
     icon.style.borderRadius = "8px";
     icon.style.backgroundSize = "cover";
     icon.style.backgroundPosition = "center";
+
     if (app.icon) {
       icon.style.backgroundImage = `url('${app.icon}')`;
     }
@@ -4674,15 +4676,18 @@ mask.style.setProperty("--mask-radius", radius + "px");
     list.appendChild(item);
   });
 
-
-
-  // Close-Button
+  // ---------------------------------------------------------
+  // 5) Close-Button
+  // ---------------------------------------------------------
   if (closeBtn) {
     closeBtn.onclick = () => {
       panel.style.display = "none";
     };
   }
 
+  // ---------------------------------------------------------
+  // 6) Panel anzeigen
+  // ---------------------------------------------------------
   panel.style.display = "flex";
 }
 
