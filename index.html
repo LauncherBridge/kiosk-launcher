@@ -2215,6 +2215,60 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 // --- Kontextmenü-Blockierung ---
 let contextMenuBlocked = false;
 
+
+function initUIListeners() {
+
+  // Uhr / Datum / Wetter → InfoBox öffnen
+  document.getElementById("clock").addEventListener("click", showInfoBox);
+  document.getElementById("date").addEventListener("click", showInfoBox);
+  document.getElementById("weather").addEventListener("click", showInfoBox);
+
+  // InfoBox Einstellungen
+  document.getElementById("infoBoxDuration").addEventListener("change", e => {
+    saveSetting("infoBoxDuration", parseInt(e.target.value));
+  });
+
+  document.getElementById("infoBoxColor").addEventListener("input", e => {
+    saveSetting("infoBoxColor", e.target.value);
+    updateInfoBoxStyles();
+  });
+
+  document.getElementById("infoBoxDuration").addEventListener("input", e => {
+    saveSetting("infoBoxDuration", e.target.value);
+  });
+
+  document.getElementById("infoBoxOpacity").addEventListener("input", e => {
+    saveSetting("infoBoxOpacity", e.target.value);
+    updateInfoBoxStyles();
+  });
+
+  document.getElementById("infoBoxGlowEnable").addEventListener("change", e => {
+    saveSetting("infoBoxGlowEnable", e.target.checked);
+    updateInfoBoxStyles();
+  });
+
+  document.getElementById("infoBoxGlowStrength").addEventListener("input", e => {
+    saveSetting("infoBoxGlowStrength", e.target.value);
+    updateInfoBoxStyles();
+  });
+
+  document.getElementById("infoBoxBlurEnable").addEventListener("change", e => {
+    saveSetting("infoBoxBlurEnable", e.target.checked);
+    updateInfoBoxStyles();
+  });
+
+  document.getElementById("infoBoxBlurStrength").addEventListener("input", e => {
+    saveSetting("infoBoxBlurStrength", e.target.value);
+    updateInfoBoxStyles();
+  });
+
+  document.getElementById("infoBoxAlwaysVisible").addEventListener("change", e => {
+    saveSetting("infoBoxAlwaysVisible", e.target.checked);
+    updateInfoBoxStyles();
+  });
+}
+
+  
 function blockContextMenu(e) {
   e.preventDefault();
 }
@@ -2720,94 +2774,42 @@ function showImage(url) {
   const nextLayer = document.getElementById("bg" + next);
   const currentLayer = document.getElementById("bg" + activeBg);
 
-let effect = loadSetting("transitionEffect") || "fade";
+  let effect = loadSetting("transitionEffect") || "fade";
 
-if (effect === "random") {
-  effect = allEffects[Math.floor(Math.random() * allEffects.length)];
-}
+  if (effect === "random") {
+    effect = allEffects[Math.floor(Math.random() * allEffects.length)];
+  }
 
-// SCHRITT 4 – Klick-Events für Uhr, Datum und Wetter
-document.getElementById("clock").addEventListener("click", showInfoBox);
-document.getElementById("date").addEventListener("click", showInfoBox);
-document.getElementById("weather").addEventListener("click", showInfoBox);
-
-/*Infobox*/
-
-document.getElementById("infoBoxDuration").addEventListener("change", e => {
-  saveSetting("infoBoxDuration", parseInt(e.target.value));
-});
-document.getElementById("infoBoxColor").addEventListener("input", e => {
-  saveSetting("infoBoxColor", e.target.value);
-  updateInfoBoxStyles();
-});
-
-document.getElementById("infoBoxDuration").addEventListener("input", e => {
-  saveSetting("infoBoxDuration", e.target.value);
-});
-
-document.getElementById("infoBoxOpacity").addEventListener("input", e => {
-  saveSetting("infoBoxOpacity", e.target.value);
-  updateInfoBoxStyles();
-});
-
-document.getElementById("infoBoxGlowEnable").addEventListener("change", e => {
-  saveSetting("infoBoxGlowEnable", e.target.checked);
-  updateInfoBoxStyles();
-});
-
-document.getElementById("infoBoxGlowStrength").addEventListener("input", e => {
-  saveSetting("infoBoxGlowStrength", e.target.value);
-  updateInfoBoxStyles();
-});
-
-document.getElementById("infoBoxBlurEnable").addEventListener("change", e => {
-  saveSetting("infoBoxBlurEnable", e.target.checked);
-  updateInfoBoxStyles();
-});
-
-document.getElementById("infoBoxBlurStrength").addEventListener("input", e => {
-  saveSetting("infoBoxBlurStrength", e.target.value);
-  updateInfoBoxStyles();
-});
-
-document.getElementById("infoBoxAlwaysVisible").addEventListener("change", e => {
-  saveSetting("infoBoxAlwaysVisible", e.target.checked);
-  updateInfoBoxStyles();
-});
-
-
-
-
-
-
+  // Bild vorladen
   const img = new Image();
   img.src = url;
 
   img.onload = () => {
     nextLayer.style.backgroundImage = `url('${url}')`;
 
-// Animation neu starten
-nextLayer.classList.remove("slide-left","slide-right","slide-up","slide-down",
-                           "zoom-in","zoom-out","blur-fade","cut","fade");
-void nextLayer.offsetWidth; // Reflow erzwingen
-nextLayer.classList.add(effect); // Effekt neu setzen
+    // Animation neu starten
+    nextLayer.classList.remove(
+      "slide-left","slide-right","slide-up","slide-down",
+      "zoom-in","zoom-out","blur-fade","cut","fade"
+    );
+    void nextLayer.offsetWidth; // Reflow erzwingen
+    nextLayer.classList.add(effect);
 
-// Sichtbarkeit umschalten
-nextLayer.classList.add("visible");
-currentLayer.classList.remove("visible");
+    // Sichtbarkeit umschalten
+    nextLayer.classList.add("visible");
+    currentLayer.classList.remove("visible");
 
     activeBg = next;
   };
 
   img.onerror = () => {
     nextLayer.style.backgroundImage = `url('${url}')`;
-
     nextLayer.classList.add("visible");
     currentLayer.classList.remove("visible");
-
     activeBg = next;
   };
 }
+
 
 function pushToHistory(url) {
   if (historyIndex < history.length - 1) {
@@ -4993,7 +4995,7 @@ function cancelLongPress() {
   isPointerDown = false;
 }
 
-  
+ initUIListeners(); 
   
 </script>
 
