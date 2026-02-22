@@ -3011,18 +3011,40 @@ function applyTransitionEffect() {
 const transitionDropdown = document.getElementById("transitionEffect");
 const randomSelector = document.getElementById("randomEffectSelector");
 
-// Dropdown-Änderung überwachen
+// Beim Laden: Dropdown wiederherstellen
+const savedEffect = loadSetting("transitionEffect");
+if (savedEffect) {
+  transitionDropdown.value = savedEffect;
+}
+
+// Checkbox-Bereich beim Laden ein-/ausblenden
+if (transitionDropdown.value === "random") {
+  randomSelector.style.display = "block";
+} else {
+  randomSelector.style.display = "none";
+}
+
+// Beim Ändern des Dropdowns
 transitionDropdown.addEventListener("change", () => {
+  saveSetting("transitionEffect", transitionDropdown.value);
+
   if (transitionDropdown.value === "random") {
     randomSelector.style.display = "block";
   } else {
     randomSelector.style.display = "none";
   }
-
-  saveSetting("transitionEffect", transitionDropdown.value);
 });
 
-// Ausgewählte Effekte speichern
+// Checkboxen wiederherstellen
+let savedRandom = loadSetting("randomEffects");
+if (savedRandom) {
+  savedRandom = JSON.parse(savedRandom);
+  document.querySelectorAll(".random-effect").forEach(cb => {
+    cb.checked = savedRandom.includes(cb.value);
+  });
+}
+
+// Checkboxen speichern
 document.querySelectorAll(".random-effect").forEach(cb => {
   cb.addEventListener("change", () => {
     const selected = Array.from(document.querySelectorAll(".random-effect"))
@@ -3032,6 +3054,7 @@ document.querySelectorAll(".random-effect").forEach(cb => {
     saveSetting("randomEffects", JSON.stringify(selected));
   });
 });
+
 
 
 /* Quelle wählen: Unsplash / GAlbum1 / GAlbum2 */
