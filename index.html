@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 3 <span id="appVersion"></span>
+  Tano – Version 4 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1714,53 +1714,35 @@ box-shadow:
 }
 
     /* Aura-Ellipse */
-/* Wrapper: bekommt die Animation */
-.header-glow-wrapper {
-  position: absolute;
-  inset: 0;
-  overflow: visible;
-  z-index: 1;
-
-  animation:
-    auraPulse 6s ease-in-out infinite,
-    auraDrift 12s ease-in-out infinite;
-}
-
-/* Glow: bekommt die Maskierung */
 .header-glow {
   position: absolute;
   top: 50%;
   left: 50%;
-
-  /* Die magischen Werte – groß, aber scrollbar-sicher */
-  width: 140%;
-  height: 260%;
-
+  width: 180%;
+  height: 140%;
   transform: translate(-50%, -50%);
   background: var(--header-glow-color, rgba(255,255,255,0.25));
-  border-radius: 60% / 40%;
+  border-radius: 50% / 35%;
   filter: blur(40px);
   opacity: 0.85;
+  z-index: 1;
   pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+/* Titel-Aussparung */
+.header-glow-mask {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
 
-  /* Maskierung – jetzt kompatibel */
+  /* Dynamische Titel-Aussparung */
   mask: radial-gradient(
     circle var(--mask-radius, 120px) at center,
     transparent calc(var(--mask-radius) - 60px),
     black calc(var(--mask-radius) - 59px)
   );
-
-  -webkit-mask: radial-gradient(
-    circle var(--mask-radius, 120px) at center,
-    transparent calc(var(--mask-radius) - 60px),
-    black calc(var(--mask-radius) - 59px)
-  );
 }
-
-
-
-
-
 
 #appsPanelAddButton,
 #appsPanelDynamicTitle,
@@ -1784,7 +1766,9 @@ box-shadow:
   }
 }
 
-
+.header-glow {
+  animation: auraPulse 6s ease-in-out infinite;
+}
 /* Schritt 5: Leichte Drift-Bewegung der Aura */
 @keyframes auraDrift {
   0% {
@@ -1801,6 +1785,11 @@ box-shadow:
   }
 }
 
+.header-glow {
+  animation:
+    auraPulse 6s ease-in-out infinite,
+    auraDrift 12s ease-in-out infinite;
+}
 
 
 #appsPanelHeader .header-progress {
@@ -2119,10 +2108,8 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 
     <div id="appsPanelHeader">
       
-      <!-- Aura --> 
-      <div class="header-glow-wrapper">
-        <div class="header-glow"></div>
-      </div>      
+      <div class="header-glow"></div>
+      <div class="header-glow-mask"></div>
 
       
       <div class="header-progress"></div>
@@ -4642,9 +4629,8 @@ const titleWidth = titleEl.offsetWidth;
 // Radius = halbe Titelbreite + etwas Puffer
 const radius = (titleWidth / 2) + 40;
 
-if (glow) {
-    glow.style.setProperty("--mask-radius", radius + "px");
-}
+const mask = document.querySelector(".header-glow-mask");
+mask.style.setProperty("--mask-radius", radius + "px");
 
 
   // Liste leeren
