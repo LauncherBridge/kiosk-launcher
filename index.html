@@ -1180,7 +1180,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:9..</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:1..</div>
  <div class="header">
     <div class="header-progress"></div>
 
@@ -1333,29 +1333,48 @@ opacity: 1; /* inaktiver Zustand */
   width: 100%;         /* NEU: Grid nutzt die ganze Box-Breite */
 }
 
+
+/* Schwebender, goldener Close-Button */
 #favGalleryClose {
   position: absolute;
   top: 14px;
   right: 14px;
-  width: 38px;
-  height: 38px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.12);
+  background: rgba(255, 215, 0, 0.15); /* Gold-Ton */
   backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 22px;
-  color: white;
+  color: gold;
   cursor: pointer;
-  transition: transform 0.15s ease, background 0.2s ease;
   z-index: 9999;
+
+  /* Animationen */
+  animation: floatButton 3s ease-in-out infinite;
+
+  /* Hover-Effekte */
+  transition: 
+    transform 0.2s ease,
+    background 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
 #favGalleryClose:hover {
-  transform: scale(1.15);
-  background: rgba(255,255,255,0.22);
+  transform: scale(1.18);
+  background: rgba(255, 215, 0, 0.28);
+  box-shadow: 0 0 18px rgba(255, 215, 0, 0.6);
 }
+
+/* Sanftes Schweben */
+@keyframes floatButton {
+  0%   { transform: translateY(0); }
+  50%  { transform: translateY(-4px); }
+  100% { transform: translateY(0); }
+}
+
 
 
     
