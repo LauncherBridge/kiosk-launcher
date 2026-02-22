@@ -2905,27 +2905,28 @@ const FavoritesManager = {
   favoritesSet: new Set(),
   favoritesArray: [],
 
-  load() {
-    let saved = [];
+load() {
+  let saved = [];
 
-    try {
-      const raw = JSON.parse(localStorage.getItem("favorites") || "[]");
+  try {
+    const raw = JSON.parse(localStorage.getItem("favorites") || "[]");
 
-      // Nur wenn es wirklich ein Array ist, übernehmen
-      if (Array.isArray(raw)) {
-        saved = raw;
-      } else {
-        // Alte/kaputte Struktur → sicherheitshalber leeren
-        saved = [];
-      }
-    } catch (e) {
-      // JSON defekt → Reset
+    // Nur wenn es wirklich ein Array ist, übernehmen
+    if (Array.isArray(raw)) {
+      saved = raw;
+    } else {
+      // Alte/kaputte Struktur → sicherheitshalber leeren
       saved = [];
     }
+  } catch (e) {
+    // JSON defekt → Reset
+    saved = [];
+  }
 
-    this.favoritesArray = saved;
-    this.favoritesSet = new Set(saved);
-  },
+  this.favoritesArray = saved;
+  this.favoritesSet = new Set(saved);
+}
+
 
   save() {
     localStorage.setItem("favorites", JSON.stringify(this.favoritesArray));
@@ -3634,7 +3635,7 @@ document.getElementById('pause').onclick = () => {
 };
 
 /* Favoriten */
-document.getElementById('fav').onclick = toggleFavorite;
+/*document.getElementById('fav').onclick = toggleFavorite;*/
 document.getElementById('openFavGallery').onclick = openFavoritesGallery;
 
 /* Overlay-Farbe */
@@ -3978,6 +3979,8 @@ resetMasterFadeTimer();
   setInterval(fetchWeather, 10 * 60000);
 
   startBgTimer();
+
+  document.getElementById('fav').onclick = toggleFavorite;
 };
 
 document.getElementById("textPosition").addEventListener("change", function () {
