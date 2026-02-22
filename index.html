@@ -169,7 +169,7 @@
   animation: blurFade 1.2s ease forwards;
 }
 @keyframes blurFade {
-  0%   { filter: blur(10px); opacity: 0; }
+  0% { filter: blur(10px); opacity: 0.01; }
   100% { filter: blur(0); opacity: 1; }
 }
 
@@ -210,6 +210,7 @@
   background-repeat: no-repeat;
   opacity: 0;
   transition: transform 1.2s ease, filter 1.2s ease;
+  will-change: transform, opacity, filter;
 }
 .bgLayer.visible {
   opacity: 1;
@@ -225,7 +226,7 @@
 /* Alle anderen Effekte: sofort sichtbar, Animation übernimmt */
 .bgLayer:not(.fade).visible {
   opacity: 1;
-  transition: none;
+transition: opacity 0s;
 }
 
     /* Texte – jetzt absolut positioniert, zentriert, skalierbar */
@@ -1185,7 +1186,7 @@ opacity: 1; /* inaktiver Zustand */
 
 <body class="theme-darkfantasy">
 <div id="cacheStatus" class="cache-status">
-  Tano – Version <span id="appVersion"></span>
+  Tano – Version 2 <span id="appVersion"></span>
 </div>
 
   <div class="header">
