@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 3 <span id="appVersion"></span>
+  Tano – Version 4 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1705,11 +1705,90 @@ box-shadow:
   position: relative;
   height: 64px;
   min-height: 64px; /* doppelte Sicherheit */
-  overflow: hidden;
+ /* overflow: hidden;*/
+  overflow: visible;
 
   /* Der dunkle Balken, der vorher da war */
   background: rgba(0,0,0,0.45);
   backdrop-filter: blur(22px);
+}
+
+    /* Aura-Ellipse */
+.header-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 180%;
+  height: 140%;
+  transform: translate(-50%, -50%);
+  background: var(--header-glow-color, rgba(255,255,255,0.25));
+  border-radius: 50% / 35%;
+  filter: blur(40px);
+  opacity: 0.85;
+  z-index: 1;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+/* Titel-Aussparung */
+.header-glow-mask {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+
+  /* Dynamische Titel-Aussparung */
+  mask: radial-gradient(
+    circle var(--mask-radius, 120px) at center,
+    transparent calc(var(--mask-radius) - 60px),
+    black calc(var(--mask-radius) - 59px)
+  );
+}
+
+#appsPanelAddButton,
+#appsPanelDynamicTitle,
+#appsPanelClose {
+  position: relative;
+  z-index: 4;
+}
+/* Schritt 4: Lebendige Aura – sanftes Pulsieren */
+@keyframes auraPulse {
+  0% {
+    opacity: 0.75;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 0.92;
+    transform: translate(-50%, -50%) scale(1.04);
+  }
+  100% {
+    opacity: 0.75;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.header-glow {
+  animation: auraPulse 6s ease-in-out infinite;
+}
+/* Schritt 5: Leichte Drift-Bewegung der Aura */
+@keyframes auraDrift {
+  0% {
+    transform: translate(-50%, -50%) scale(1.04);
+  }
+  33% {
+    transform: translate(-48%, -52%) scale(1.04);
+  }
+  66% {
+    transform: translate(-52%, -48%) scale(1.04);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.04);
+  }
+}
+
+.header-glow {
+  animation:
+    auraPulse 6s ease-in-out infinite,
+    auraDrift 12s ease-in-out infinite;
 }
 
 
@@ -1723,20 +1802,20 @@ box-shadow:
   backdrop-filter: blur(2px);     /* optional: leichter Blur */
   transition: width 1.5s linear;
   pointer-events: none;
-  z-index: 1;             /* unter Titel & Close-Button */
+  z-index: 3;             /* unter Titel & Close-Button */
 }
 
 /* Titel und Close-Button darüber */
 #appsPanelDynamicTitle {
   position: relative;
-  z-index: 2;
+  z-index: 4;
 }
 
 #appsPanelClose {
   position: absolute; /* WICHTIG */
   top: 14px;
   right: 14px;
-  z-index: 3;
+  z-index: 4;
 }
 
 
@@ -2027,18 +2106,23 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 
 <div id="appsPanel" class="panel" style="display:none;">
 
-<div id="appsPanelHeader">
-    <div class="header-progress"></div>
+    <div id="appsPanelHeader">
+      
+      <div class="header-glow"></div>
+      <div class="header-glow-mask"></div>
 
-    <!-- Plus-Symbol im Header -->
-    <div id="appsPanelAddButton" class="header-add-btn"></div>
-
-    <!-- Titel im Header -->
-    <div id="appsPanelDynamicTitle"></div>
-
-    <!-- Floating Close Button -->
-    <div id="appsPanelClose" class="panel-close-btn">×</div>
-</div>
+      
+      <div class="header-progress"></div>
+  
+      <!-- Plus-Symbol im Header -->
+      <div id="appsPanelAddButton" class="header-add-btn"></div>
+  
+      <!-- Titel im Header -->
+      <div id="appsPanelDynamicTitle"></div>
+  
+      <!-- Floating Close Button -->
+      <div id="appsPanelClose" class="panel-close-btn">×</div>
+  </div>
 
 
 <div class="panel-content">
@@ -4515,6 +4599,14 @@ function openAppsPanel(tile) {
   if (!tile) return;
 
   currentTile = tile;
+  
+  // Aura-Farbe setzen
+const glow = document.querySelector(".header-glow");
+// Transparente Variante der Kachelfarbe erzeugen
+// Beispiel: "#ff6600" → "#ff660055"
+const auraColor = tile.color + "55";
+glow.style.setProperty("--header-glow-color", auraColor);
+
 //tile.classList.add("tile-active");
  // currentTile.classList.add("tile-active");
   const panel   = document.getElementById("appsPanel");
@@ -4531,6 +4623,15 @@ function openAppsPanel(tile) {
 
   // Titel setzen
   titleEl.textContent = "Apps in " + tile.name;
+  // Schritt 6: Dynamische Titel-Aussparung
+const titleWidth = titleEl.offsetWidth;
+
+// Radius = halbe Titelbreite + etwas Puffer
+const radius = (titleWidth / 2) + 40;
+
+const mask = document.querySelector(".header-glow-mask");
+mask.style.setProperty("--mask-radius", radius + "px");
+
 
   // Liste leeren
   list.innerHTML = "";
