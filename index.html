@@ -1180,8 +1180,11 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
-<div id="cacheStatus" class="cache-status">Tano – Version <span id="appVersion"></span></div>
- <div class="header">
+<div id="cacheStatus" class="cache-status">
+  Tano – Version <span id="appVersion"></span>
+</div>
+
+  <div class="header">
     <div class="header-progress"></div>
 
     <div class="header-time"></div>
@@ -2233,21 +2236,27 @@ function disableContextMenuBlock() {
 }
 
 // Version laden oder initialisieren
-let appVersion = parseInt(localStorage.getItem("appVersion") || "1");
+  
+// 1. Build-Version (erhöhst DU bei jedem GitHub-Update)
+const buildVersion = 27;
 
-// Version anzeigen
+// 2. Lokale Version laden
+let appVersion = parseInt(localStorage.getItem("appVersion") || buildVersion);
+
+// 3. Version anzeigen
 function updateVersionDisplay() {
   const el = document.getElementById("appVersion");
   if (el) el.textContent = appVersion;
 }
 updateVersionDisplay();
 
-// Version erhöhen NUR beim Speichern
-function bumpVersionOnSave() {
-  appVersion++;
+// 4. Wenn Build-Version höher ist → lokale Version aktualisieren
+if (buildVersion > appVersion) {
+  appVersion = buildVersion;
   localStorage.setItem("appVersion", appVersion);
   updateVersionDisplay();
 }
+
   
 
 // --- Setting-Toggle anbinden ---
