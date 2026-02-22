@@ -1557,6 +1557,16 @@ body {
   transition: transform 0.2s, opacity 0.2s, background-color 0.2s, box-shadow 0.2s;
 }
 
+#randomEffectSelector {
+  padding: 10px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 8px;
+  font-size: 0.9em;
+}
+#randomEffectSelector label {
+  display: block;
+  margin-bottom: 4px;
+}
 
 
 
@@ -2090,6 +2100,17 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
       <option value="cut">Sofortiger Wechsel</option>
       <option value="random">Zufällig</option>
     </select>
+<div id="randomEffectSelector" style="display:none; margin-top:10px;">
+  <label><input type="checkbox" class="random-effect" value="fade"> Fade</label><br>
+  <label><input type="checkbox" class="random-effect" value="slide-left"> Slide Left</label><br>
+  <label><input type="checkbox" class="random-effect" value="slide-right"> Slide Right</label><br>
+  <label><input type="checkbox" class="random-effect" value="slide-up"> Slide Up</label><br>
+  <label><input type="checkbox" class="random-effect" value="slide-down"> Slide Down</label><br>
+  <label><input type="checkbox" class="random-effect" value="zoom-in"> Zoom In</label><br>
+  <label><input type="checkbox" class="random-effect" value="zoom-out"> Zoom Out</label><br>
+  <label><input type="checkbox" class="random-effect" value="blur-fade"> Blur + Fade</label><br>
+  <label><input type="checkbox" class="random-effect" value="cut"> Cut</label>
+</div>
 
     <label>Hintergrundwechsel alle (Minuten):
       <input type="number" id="bgInterval" value="5">
@@ -2918,9 +2939,20 @@ function showImage(url) {
 
   let effect = loadSetting("transitionEffect") || "fade";
 
-  if (effect === "random") {
-    effect = allEffects[Math.floor(Math.random() * allEffects.length)];
+if (effect === "random") {
+  let selected = loadSetting("randomEffects");
+  if (selected) {
+    selected = JSON.parse(selected);
   }
+
+  // Falls nichts ausgewählt wurde → alle Effekte verwenden
+  if (!selected || selected.length === 0) {
+    selected = allEffects;
+  }
+
+  effect = selected[Math.floor(Math.random() * selected.length)];
+}
+
 
   // Bild vorladen
   const img = new Image();
@@ -2976,6 +3008,30 @@ function applyTransitionEffect() {
   // Diese Funktion bleibt nur bestehen, weil andere Stellen sie aufrufen.
   // Sie muss nichts mehr tun.
 }
+const transitionDropdown = document.getElementById("transitionEffect");
+const randomSelector = document.getElementById("randomEffectSelector");
+
+// Dropdown-Änderung überwachen
+transitionDropdown.addEventListener("change", () => {
+  if (transitionDropdown.value === "random") {
+    randomSelector.style.display = "block";
+  } else {
+    randomSelector.style.display = "none";
+  }
+
+  saveSetting("transitionEffect", transitionDropdown.value);
+});
+
+// Ausgewählte Effekte speichern
+document.querySelectorAll(".random-effect").forEach(cb => {
+  cb.addEventListener("change", () => {
+    const selected = Array.from(document.querySelectorAll(".random-effect"))
+      .filter(c => c.checked)
+      .map(c => c.value);
+
+    saveSetting("randomEffects", JSON.stringify(selected));
+  });
+});
 
 
 /* Quelle wählen: Unsplash / GAlbum1 / GAlbum2 */
