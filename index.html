@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 6 <span id="appVersion"></span>
+  Tano – Version 7 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1714,6 +1714,19 @@ box-shadow:
 }
 
     /* Aura-Ellipse */
+/* Wrapper: bekommt die Animation */
+.header-glow-wrapper {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  z-index: 1;
+
+  animation:
+    auraPulse 6s ease-in-out infinite,
+    auraDrift 12s ease-in-out infinite;
+}
+
+/* Glow: bekommt die Maskierung */
 .header-glow {
   position: absolute;
   top: 50%;
@@ -1725,17 +1738,15 @@ box-shadow:
   border-radius: 60% / 40%;
   filter: blur(40px);
   opacity: 0.85;
-  z-index: 1;
   pointer-events: none;
-  transition: opacity 0.3s ease;
 
-  /* Dynamische Titel-Aussparung direkt hier */
   mask: radial-gradient(
     circle var(--mask-radius, 120px) at center,
     transparent calc(var(--mask-radius) - 60px),
     black calc(var(--mask-radius) - 59px)
   );
 }
+
 
 
 #appsPanelAddButton,
@@ -1760,9 +1771,7 @@ box-shadow:
   }
 }
 
-.header-glow {
-  animation: auraPulse 6s ease-in-out infinite;
-}
+
 /* Schritt 5: Leichte Drift-Bewegung der Aura */
 @keyframes auraDrift {
   0% {
@@ -1779,11 +1788,6 @@ box-shadow:
   }
 }
 
-.header-glow {
-  animation:
-    auraPulse 6s ease-in-out infinite,
-    auraDrift 12s ease-in-out infinite;
-}
 
 
 #appsPanelHeader .header-progress {
@@ -2102,8 +2106,10 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 
     <div id="appsPanelHeader">
       
-      <div class="header-glow"></div>
-      
+      <!-- Aura --> 
+      <div class="header-glow-wrapper">
+        <div class="header-glow"></div>
+      </div>      
 
       
       <div class="header-progress"></div>
