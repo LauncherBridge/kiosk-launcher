@@ -1180,7 +1180,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:1..</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:2..</div>
  <div class="header">
     <div class="header-progress"></div>
 
@@ -1398,12 +1398,36 @@ opacity: 1; /* inaktiver Zustand */
       cursor: pointer;
     }
 
-    #fav.active {
-      color: gold;
-      transform: scale(1.2);
-    }
+  /* Favoriten-Button: goldener Glow wie masterToggle */
+#fav.active {
+  position: relative;
+  color: gold;
+}
 
+#fav.active::after {
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  right: -6px;
+  bottom: -6px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 215, 0, 0.7);
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
+  pointer-events: none;
+  animation: favGlow 0.35s ease-out;
+}
 
+@keyframes favGlow {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
 
 
     
