@@ -1180,7 +1180,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:2..</div>
+<div id="cacheStatus" class="cache-status">Tano – Version <span id="appVersion"></span></div>
  <div class="header">
     <div class="header-progress"></div>
 
@@ -1407,20 +1407,22 @@ opacity: 1; /* inaktiver Zustand */
 #fav.active::after {
   content: "";
   position: absolute;
-  top: -6px;
-  left: -6px;
-  right: -6px;
-  bottom: -6px;
-  border-radius: 50%;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+
+  border-radius: 8px; /* wie masterToggle */
   border: 2px solid rgba(255, 215, 0, 0.7);
   box-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
+
   pointer-events: none;
   animation: favGlow 0.35s ease-out;
 }
 
 @keyframes favGlow {
   0% {
-    transform: scale(0.6);
+    transform: scale(0.85);
     opacity: 0;
   }
   100% {
@@ -1428,6 +1430,7 @@ opacity: 1; /* inaktiver Zustand */
     opacity: 1;
   }
 }
+
 
 
     
@@ -2246,6 +2249,24 @@ function disableContextMenuBlock() {
   document.removeEventListener('contextmenu', blockContextMenu);
   document.removeEventListener('touchstart', blockContextMenu);
 }
+
+// Version laden oder initialisieren
+let appVersion = parseInt(localStorage.getItem("appVersion") || "1");
+
+// Version anzeigen
+function updateVersionDisplay() {
+  const el = document.getElementById("appVersion");
+  if (el) el.textContent = appVersion;
+}
+updateVersionDisplay();
+
+// Version erhöhen NUR beim Speichern
+function bumpVersionOnSave() {
+  appVersion++;
+  localStorage.setItem("appVersion", appVersion);
+  updateVersionDisplay();
+}
+  
 
 // --- Setting-Toggle anbinden ---
 const contextToggle = document.querySelector('#disableContextMenu');
