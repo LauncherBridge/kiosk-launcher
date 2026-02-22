@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 6 <span id="appVersion"></span>
+  Tano – Version 7 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1713,91 +1713,66 @@ box-shadow:
   backdrop-filter: blur(22px);
 }
 
-    /* Aura-Ellipse */
-.header-glow-left,
-.header-glow-right {
+ .header-nexus {
   position: absolute;
-  top: 50%;
-  width: 60%;
-  height: 260%;
-  transform: translateY(-50%);
-  border-radius: 60% / 40%;
-  filter: blur(60px); /* stärkerer Blur für weiche Aura */
-  opacity: 1; /* volle Intensität, Fade kommt vom Gradient */
+  inset: 0;
   pointer-events: none;
+  z-index: 1;
 
-  /* Maskierung */
-  mask: radial-gradient(
-    circle var(--mask-radius, 120px) at center,
-    transparent calc(var(--mask-radius) - 60px),
-    black calc(var(--mask-radius) - 59px)
-  );
-  -webkit-mask: radial-gradient(
-    circle var(--mask-radius, 120px) at center,
-    transparent calc(var(--mask-radius) - 60px),
-    black calc(var(--mask-radius) - 59px)
-  );
-}
-    
-.header-glow-left {
-  left: 0;
+  /* Noise + Farbe + Fade */
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255,255,255,0.15) 0px,
+      rgba(255,255,255,0.15) 2px,
+      rgba(255,255,255,0.05) 4px
+    ),
+    linear-gradient(
+      90deg,
+      var(--nexus-color-left),
+      var(--nexus-color-right)
+    );
 
-  background: radial-gradient(
-    circle at center,
-    var(--header-glow-color-left) 0%,
-    transparent 70%
-  );
+  /* Vertikaler Fade + Titel-Aussparung */
+  mask:
+    radial-gradient(
+      circle var(--mask-radius) at 50% 50%,
+      transparent calc(var(--mask-radius) - 40px),
+      black calc(var(--mask-radius) - 39px)
+    ),
+    linear-gradient(to bottom,
+      transparent 0%,
+      black 30%,
+      black 70%,
+      transparent 100%
+    );
 
-  animation:
-    driftLeft 12s ease-in-out infinite,
-    auraPulse 6s ease-in-out infinite;
-}
-.header-glow-right {
-  right: 0;
+  -webkit-mask:
+    radial-gradient(
+      circle var(--mask-radius) at 50% 50%,
+      transparent calc(var(--mask-radius) - 40px),
+      black calc(var(--mask-radius) - 39px)
+    ),
+    linear-gradient(to bottom,
+      transparent 0%,
+      black 30%,
+      black 70%,
+      transparent 100%
+    );
 
-  background: radial-gradient(
-    circle at center,
-    var(--header-glow-color-right) 0%,
-    transparent 70%
-  );
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
 
-  animation:
-    driftRight 14s ease-in-out infinite,
-    auraPulse 7s ease-in-out infinite;
-}
+  filter: blur(40px);
 
-
-
-#appsPanelAddButton,
-#appsPanelDynamicTitle,
-#appsPanelClose {
-  position: relative;
-  z-index: 4;
-}
-/* Schritt 4: Lebendige Aura – sanftes Pulsieren */
-@keyframes auraPulse {
-  0%, 100% { transform: translateY(-50%) scale(1); }
-  50%      { transform: translateY(-50%) scale(1.05); }
+  animation: nexusDrift 20s linear infinite;
 }
 
-@keyframes driftLeft {
-  0%   { transform: translateY(-50%) translateX(-10px); }
-  50%  { transform: translateY(-50%) translateX(10px); }
-  100% { transform: translateY(-50%) translateX(-10px); }
+@keyframes nexusDrift {
+  0%   { background-position: 0 0; }
+  100% { background-position: 200% 0; }
 }
 
-@keyframes driftRight {
-  0%   { transform: translateY(-50%) translateX(10px); }
-  50%  { transform: translateY(-50%) translateX(-10px); }
-  100% { transform: translateY(-50%) translateX(10px); }
-}
-
-
-.header-glow {
-  animation:
-    auraPulse 6s ease-in-out infinite,
-    auraDrift 12s ease-in-out infinite;
-}
 
 
 #appsPanelHeader .header-progress {
@@ -2116,10 +2091,8 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 
     <div id="appsPanelHeader">
       
-<div class="header-glow-left"></div>
-<div class="header-glow-right"></div>
+      <div class="header-nexus"></div>
 
-      
       <div class="header-progress"></div>
   
       <!-- Plus-Symbol im Header -->
@@ -4623,29 +4596,20 @@ function openAppsPanel(tile) {
   titleEl.textContent = "Apps in " + tile.name;
 
   // ---------------------------------------------------------
-  // 2) Maskenradius berechnen (für beide Auren)
+  // 2) Maskenradius für das Nexus-Band berechnen
   // ---------------------------------------------------------
   const titleWidth = titleEl.offsetWidth;
   const radius = (titleWidth / 2) + 40;
 
   // ---------------------------------------------------------
-  // 3) Zwei Auren ansteuern
+  // 3) Nexus-Band ansteuern
   // ---------------------------------------------------------
-  const glowLeft  = document.querySelector(".header-glow-left");
-  const glowRight = document.querySelector(".header-glow-right");
+  const nexus = document.querySelector(".header-nexus");
 
-  // Farben erzeugen
-  const auraColorLeft  = tile.color + "55"; // kräftiger
-  const auraColorRight = tile.color + "33"; // transparenter
-
-  if (glowLeft) {
-    glowLeft.style.setProperty("--header-glow-color-left", auraColorLeft);
-    glowLeft.style.setProperty("--mask-radius", radius + "px");
-  }
-
-  if (glowRight) {
-    glowRight.style.setProperty("--header-glow-color-right", auraColorRight);
-    glowRight.style.setProperty("--mask-radius", radius + "px");
+  if (nexus) {
+    nexus.style.setProperty("--mask-radius", radius + "px");
+    nexus.style.setProperty("--nexus-color-left",  tile.color + "33");
+    nexus.style.setProperty("--nexus-color-right", tile.color + "11");
   }
 
   // ---------------------------------------------------------
