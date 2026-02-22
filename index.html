@@ -1180,7 +1180,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:4…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:5…</div>
  <div class="header">
     <div class="header-progress"></div>
 
@@ -1324,11 +1324,12 @@ opacity: 1; /* inaktiver Zustand */
       color: white;
     }
 
-    #favGalleryContent {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, 150px);
-      gap: 15px;
-    }
+#favGalleryContent {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
 
     .favItem { position: relative; }
     .favItem img {
