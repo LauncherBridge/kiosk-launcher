@@ -1332,7 +1332,32 @@ opacity: 1; /* inaktiver Zustand */
   width: 100%;         /* NEU: Grid nutzt die ganze Box-Breite */
 }
 
+#favGalleryClose {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.2s ease;
+  z-index: 9999;
+}
 
+#favGalleryClose:hover {
+  transform: scale(1.15);
+  background: rgba(255,255,255,0.22);
+}
+
+
+    
 
     .favItem { position: relative; }
     .favItem img {
@@ -1358,6 +1383,10 @@ opacity: 1; /* inaktiver Zustand */
       transform: scale(1.2);
     }
 
+
+
+
+    
     /* PIN-Dialog */
     #pinOverlay {
       position: fixed;
@@ -2052,13 +2081,14 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 <div id="infoBox"></div>
 
 
-  <div id="favGallery">
-    <div id="favGalleryBox">
-      <h3>Deine Favoriten</h3>
-      <div id="favGalleryContent"></div>
-      <button onclick="closeFavoritesGallery()">Schließen</button>
-    </div>
+<div id="favGallery">
+  <div id="favGalleryBox">
+    <div id="favGalleryClose" onclick="closeFavoritesGallery()">✕</div>
+    <h3>Deine Favoriten</h3>
+    <div id="favGalleryContent"></div>
   </div>
+</div>
+
 
   <div id="pinOverlay">
     <div id="pinBox">
