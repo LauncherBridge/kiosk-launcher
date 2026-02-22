@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 1 <span id="appVersion"></span>
+  Tano – Version 2 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1731,8 +1731,8 @@ box-shadow:
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 150%;     /* breit, aber scrollbar-sicher */
-  height: 220%;    /* hoch genug für weiche Aura */
+  width: 150%;
+  height: 220%;
   transform: translate(-50%, -50%);
   background: var(--header-glow-color, rgba(255,255,255,0.25));
   border-radius: 60% / 40%;
@@ -1740,12 +1740,20 @@ box-shadow:
   opacity: 0.85;
   pointer-events: none;
 
+  /* Maskierung – jetzt kompatibel */
   mask: radial-gradient(
     circle var(--mask-radius, 120px) at center,
     transparent calc(var(--mask-radius) - 60px),
     black calc(var(--mask-radius) - 59px)
   );
+
+  -webkit-mask: radial-gradient(
+    circle var(--mask-radius, 120px) at center,
+    transparent calc(var(--mask-radius) - 60px),
+    black calc(var(--mask-radius) - 59px)
+  );
 }
+
 
 
 
