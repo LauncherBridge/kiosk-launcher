@@ -1402,34 +1402,16 @@ opacity: 1; /* inaktiver Zustand */
 #fav.active {
   position: relative;
   color: gold;
+
+  /* exakt wie masterToggle */
+  background: var(--button-bg);
+  border-radius: 10px;
+  box-shadow: var(--glow);
+  border: 2px solid gold;
+
+  transition: transform 0.2s, opacity 0.2s, background-color 0.2s, box-shadow 0.2s;
 }
 
-#fav.active::after {
-  content: "";
-  position: absolute;
-  top: -4px;
-  left: -4px;
-  right: -4px;
-  bottom: -4px;
-
-  border-radius: 8px; /* wie masterToggle */
-  border: 2px solid rgba(255, 215, 0, 0.7);
-  box-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
-
-  pointer-events: none;
-  animation: favGlow 0.35s ease-out;
-}
-
-@keyframes favGlow {
-  0% {
-    transform: scale(0.85);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
 
 
 
