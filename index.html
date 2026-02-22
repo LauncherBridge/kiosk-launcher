@@ -1180,7 +1180,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:2…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:3…</div>
  <div class="header">
     <div class="header-progress"></div>
 
@@ -1243,6 +1243,12 @@ opacity: 1; /* inaktiver Zustand */
 }
 
 
+.masterToggle-fav {
+  border: 2px solid gold;
+  border-radius: 6px;
+}
+
+    
     .navBtn {
       cursor: pointer;
       user-select: none;
@@ -2871,7 +2877,15 @@ function updateFavButton() {
     return;
   }
 
-  favBtn.classList.toggle("active", favorites.includes(currentUrl));
+  const isFav = favorites.includes(currentUrl);
+  favBtn.classList.toggle("active", isFav);
+
+  // ⭐ NEU: masterToggle hervorheben, wenn obere Zeile ausgeblendet UND Bild Favorit
+  const master = document.getElementById("masterToggle");
+  const topRow = document.getElementById("rowAll"); // <- DEINE obere Zeile
+
+  const topHidden = topRow && topRow.style.display === "none";
+  master.classList.toggle("masterToggle-fav", isFav && topHidden);
 }
 
 function toggleFavorite() {
@@ -2996,6 +3010,7 @@ function toggleMaster() {
   saveSetting("masterHidden", hidden ? "false" : "true");
 
 resetMasterFadeTimer();
+  updateFavButton();
 
 }
 
@@ -3012,6 +3027,8 @@ masterFadeTimer = setTimeout(() => {
   if (!settingsOpen) {
     row.style.display = "none";
     master.classList.add("master-hidden");
+    updateFavButton();
+
   }
 }, 30000);
 }
