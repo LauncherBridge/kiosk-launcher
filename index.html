@@ -1180,7 +1180,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:5…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:6..</div>
  <div class="header">
     <div class="header-progress"></div>
 
@@ -2920,6 +2920,7 @@ function closeFavoritesGallery() {
 function renderFavoritesGallery() {
   const container = document.getElementById("favGalleryContent");
   container.innerHTML = "";
+
 
   favorites.forEach((img, index) => {
     const item = document.createElement("div");
