@@ -114,64 +114,43 @@
 .bgLayer.slide-left {
   animation: slideLeft 1s ease forwards;
 }
-@keyframes slideLeft {
-  from { transform: translateX(100%); }
-  to   { transform: translateX(0); }
-}
+
 
 /* SLIDE RIGHT */
 .bgLayer.slide-right {
   animation: slideRight 1s ease forwards;
 }
-@keyframes slideRight {
-  from { transform: translateX(-100%); }
-  to   { transform: translateX(0); }
-}
+
 
 /* SLIDE UP */
 .bgLayer.slide-up {
   animation: slideUp 1s ease forwards;
 }
-@keyframes slideUp {
-  from { transform: translateY(100%); }
-  to   { transform: translateY(0); }
-}
+
 
 /* SLIDE DOWN */
 .bgLayer.slide-down {
   animation: slideDown 1s ease forwards;
 }
-@keyframes slideDown {
-  from { transform: translateY(-100%); }
-  to   { transform: translateY(0); }
-}
+
 
 /* ZOOM IN */
 .bgLayer.zoom-in {
   animation: zoomIn 1.2s ease forwards;
 }
-@keyframes zoomIn {
-  from { transform: scale(1.2); }
-  to   { transform: scale(1); }
-}
+
 
 /* ZOOM OUT */
 .bgLayer.zoom-out {
   animation: zoomOut 1.2s ease forwards;
 }
-@keyframes zoomOut {
-  from { transform: scale(0.8); }
-  to   { transform: scale(1); }
-}
+
 
 /* BLUR FADE */
 .bgLayer.blur-fade {
   animation: blurFade 1.2s ease forwards;
 }
-@keyframes blurFade {
-  0% { filter: blur(10px); opacity: 0.01; }
-  100% { filter: blur(0); opacity: 1; }
-}
+
 
 /* CUT */
 .bgLayer.cut {
@@ -1185,8 +1164,17 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
+
+  <!-- Hintergrund-Layer für Bildwechsel -->
+<div id="bgA" class="bgLayer visible"></div>
+<div id="bgB" class="bgLayer"></div>
+
+<!-- Overlay (wird von updateOverlay() gesteuert) -->
+<div id="overlay"></div>
+
+  
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 2 <span id="appVersion"></span>
+  Tano – Version 3 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1196,15 +1184,164 @@ opacity: 1; /* inaktiver Zustand */
    
 </div>
 
-<div id="overlay"></div>
 
-<!-- Hintergrund-Engine -->
-<div id="bgEngine">
-  <div class="bgLayer" id="bgA"></div>
-  <div class="bgLayer" id="bgB"></div>
-</div>
 
   <style>
+
+/* ============================================
+   HINTERGRUND-LAYER + TRANSITION-EFFEKTE
+============================================ */
+
+/* Fallback-Hintergrund */
+body {
+  background: #000;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Zwei Ebenen für den Hintergrundwechsel */
+.bgLayer {
+  position: fixed;
+  inset: 0;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+
+  opacity: 0;
+  transition: opacity 0.8s ease-out;
+
+  z-index: -2; /* Hinter allem */
+}
+
+/* Die aktive Ebene */
+.bgLayer.visible {
+  opacity: 1;
+}
+
+/* Overlay über den Bildern */
+#overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* ============================================
+   EFFEKT: FADE
+============================================ */
+.bgLayer.fade.visible {
+  animation: bgFadeIn 0.8s ease-out;
+}
+
+@keyframes bgFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ============================================
+   EFFEKT: SLIDE LEFT (Bild kommt von rechts)
+============================================ */
+.bgLayer.slide-left.visible {
+  animation: bgSlideLeftIn 0.8s ease-out;
+}
+
+@keyframes bgSlideLeftIn {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+/* ============================================
+   EFFEKT: SLIDE RIGHT (Bild kommt von links)
+============================================ */
+.bgLayer.slide-right.visible {
+  animation: bgSlideRightIn 0.8s ease-out;
+}
+
+@keyframes bgSlideRightIn {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0); }
+}
+
+/* ============================================
+   EFFEKT: SLIDE UP (Bild kommt von unten)
+============================================ */
+.bgLayer.slide-up.visible {
+  animation: bgSlideUpIn 0.8s ease-out;
+}
+
+@keyframes bgSlideUpIn {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+/* ============================================
+   EFFEKT: SLIDE DOWN (Bild kommt von oben)
+============================================ */
+.bgLayer.slide-down.visible {
+  animation: bgSlideDownIn 0.8s ease-out;
+}
+
+@keyframes bgSlideDownIn {
+  from { transform: translateY(-100%); }
+  to   { transform: translateY(0); }
+}
+
+/* ============================================
+   EFFEKT: ZOOM IN
+============================================ */
+.bgLayer.zoom-in.visible {
+  animation: bgZoomIn 0.8s ease-out;
+}
+
+@keyframes bgZoomIn {
+  from { transform: scale(1.2); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+/* ============================================
+   EFFEKT: ZOOM OUT
+============================================ */
+.bgLayer.zoom-out.visible {
+  animation: bgZoomOut 0.8s ease-out;
+}
+
+@keyframes bgZoomOut {
+  from { transform: scale(0.8); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+/* ============================================
+   EFFEKT: BLUR + FADE
+============================================ */
+.bgLayer.blur-fade.visible {
+  animation: bgBlurFadeIn 0.8s ease-out;
+}
+
+@keyframes bgBlurFadeIn {
+  from {
+    filter: blur(12px);
+    opacity: 0;
+    transform: scale(1.05);
+  }
+  to {
+    filter: blur(0);
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ============================================
+   EFFEKT: CUT (sofortiger Wechsel)
+============================================ */
+.bgLayer.cut.visible {
+  animation: none;
+  transition: opacity 0s linear;
+}
+
+
+
+    
 #controls {
   position: absolute;
   top: 10px;
@@ -2835,21 +2972,11 @@ function getSelectedCategories() {
 }
 
 function applyTransitionEffect() {
-  let effect = loadSetting("transitionEffect") || "fade";
-
-  // Wenn "random" gewählt ist, hier einmalig einen Effekt ziehen
-  if (effect === "random") {
-    effect = allEffects[Math.floor(Math.random() * allEffects.length)];
-  }
-
-  document.querySelectorAll(".bgLayer").forEach(layer => {
-    layer.classList.remove(
-      "fade","slide-left","slide-right","slide-up","slide-down",
-      "zoom-in","zoom-out","blur-fade","cut"
-    );
-    layer.classList.add(effect);
-  });
+  // Die eigentliche Animation wird jetzt vollständig in showImage() gesteuert.
+  // Diese Funktion bleibt nur bestehen, weil andere Stellen sie aufrufen.
+  // Sie muss nichts mehr tun.
 }
+
 
 /* Quelle wählen: Unsplash / GAlbum1 / GAlbum2 */
 function getActiveSources() {
