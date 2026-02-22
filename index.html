@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 5 <span id="appVersion"></span>
+  Tano – Version 6 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1718,31 +1718,25 @@ box-shadow:
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 100%;
-  height: 80%;
+  width: 120%;
+  height: 100%;
   transform: translate(-50%, -50%);
   background: var(--header-glow-color, rgba(255,255,255,0.25));
-  border-radius: 60% / 60%;
+  border-radius: 60% / 40%;
   filter: blur(40px);
   opacity: 0.85;
   z-index: 1;
   pointer-events: none;
   transition: opacity 0.3s ease;
-}
-/* Titel-Aussparung */
-.header-glow-mask {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 2;
 
-  /* Dynamische Titel-Aussparung */
+  /* Dynamische Titel-Aussparung direkt hier */
   mask: radial-gradient(
     circle var(--mask-radius, 120px) at center,
     transparent calc(var(--mask-radius) - 60px),
     black calc(var(--mask-radius) - 59px)
   );
 }
+
 
 #appsPanelAddButton,
 #appsPanelDynamicTitle,
@@ -2109,7 +2103,7 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
     <div id="appsPanelHeader">
       
       <div class="header-glow"></div>
-      <div class="header-glow-mask"></div>
+      
 
       
       <div class="header-progress"></div>
