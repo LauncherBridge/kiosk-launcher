@@ -40,11 +40,6 @@
   -webkit-user-select: none;
   user-select: none;
 }
-.no-callout * {
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  user-select: none;
-}
 
 
     
@@ -1185,7 +1180,7 @@ opacity: 1; /* inaktiver Zustand */
 </head>
 
 <body class="theme-darkfantasy">
- <div id="cacheStatus" class="cache-status">Tano -ID:4…</div>
+ <div id="cacheStatus" class="cache-status">Tano -ID:2…</div>
  <div class="header">
     <div class="header-progress"></div>
 
@@ -2016,12 +2011,11 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
   Wird als Hash lokal gespeichert.<br>
   Ohne korrekte PIN kann der<br>Vollbildmodus nicht verlassen werden.
 </small>
-<h4>Bedienung</h4>
+    <h4>Bedienung</h4>
 <label>
   <input type="checkbox" id="disableContextMenu">
-  Kontextmenü deaktivieren (Long‑Press optimiert)
+  Kontextmenü deaktivieren (für Long‑Press empfohlen)
 </label>
-
 
   </div>
 
@@ -2171,20 +2165,6 @@ function disableContextMenuBlock() {
 // --- Setting-Toggle anbinden ---
 const contextToggle = document.querySelector('#disableContextMenu');
 
-function enableContextMenuBlock() {
-  document.addEventListener('contextmenu', blockContextMenu);
-  document.documentElement.classList.add('no-callout');
-}
-
-function disableContextMenuBlock() {
-  document.removeEventListener('contextmenu', blockContextMenu);
-  document.documentElement.classList.remove('no-callout');
-}
-
-function blockContextMenu(e) {
-  e.preventDefault();
-}
-
 contextToggle.addEventListener('change', () => {
   const enabled = contextToggle.checked;
   localStorage.setItem('disableContextMenu', enabled);
@@ -2193,12 +2173,12 @@ contextToggle.addEventListener('change', () => {
   else disableContextMenuBlock();
 });
 
-// Beim Laden wiederherstellen
-if (localStorage.getItem('disableContextMenu') === "true") {
+// --- Beim Laden wiederherstellen ---
+const savedContextSetting = localStorage.getItem('disableContextMenu');
+if (savedContextSetting === "true") {
   contextToggle.checked = true;
   enableContextMenuBlock();
 }
-
 
 
 
@@ -2440,7 +2420,7 @@ let currentImageIndex = 0;
 let history = [];
 let historyIndex = -1;
 
-let favorites = new Set(JSON.parse(localStorage.getItem("favorites")) || []);
+let favorites = [];
 let favMode = false;
 
 let bgInterval = 5;
@@ -2852,44 +2832,61 @@ function catPrevImage() {
    HISTORY-NAVIGATION
 ============================================================ */
 
-// Favoriten laden (Migration von Array → Set automatisch)
-let favorites = new Set(JSON.parse(localStorage.getItem("favorites")) || []);
-
-// Favoriten speichern
-function saveFavorites() {
-  localStorage.setItem("favorites", JSON.stringify([...favorites]));
-}
-
-// Favoriten-Button aktualisieren
-function updateFavButton() {
-  const favBtn = document.getElementById("favButton");
-  if (!favBtn) return;
-
-  if (favorites.has(currentImageUrl)) {
-    favBtn.classList.add("favorited");
-  } else {
-    favBtn.classList.remove("favorited");
+function histPrevImage() {
+  if (historyIndex > 0) {
+    historyIndex--;
+    const url = history[historyIndex];
+    showImage(url);
+    updateFavButton();
   }
 }
 
-// Favoriten-Button Klick
-document.getElementById("favButton").addEventListener("click", () => {
-  if (favorites.has(currentImageUrl)) {
-    favorites.delete(currentImageUrl);
+function histNextImage() {
+  if (historyIndex < history.length - 1) {
+    historyIndex++;
+    const url = history[historyIndex];
+    showImage(url);
+    updateFavButton();
+  }
+}
+
+/* ============================================================
+   FAVORITEN
+============================================================ */
+
+function saveFavorites() {
+  localStorage.setItem("favorites", JSON.stringify(favorites));
+}
+
+function loadFavorites() {
+  favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+}
+
+function updateFavButton() {
+  const favBtn = document.getElementById("fav");
+  const currentUrl = history[historyIndex];
+
+  if (!currentUrl) {
+    favBtn.classList.remove("active");
+    return;
+  }
+
+  favBtn.classList.toggle("active", favorites.includes(currentUrl));
+}
+
+function toggleFavorite() {
+  const url = history[historyIndex];
+  if (!url) return;
+
+  if (favorites.includes(url)) {
+    favorites = favorites.filter(f => f !== url);
   } else {
-    favorites.add(currentImageUrl);
+    favorites.push(url);
   }
 
   saveFavorites();
   updateFavButton();
-});
-
-// Beim Bildwechsel aufrufen:
-function onImageChange(newUrl) {
-  currentImageUrl = newUrl;
-  updateFavButton();
 }
-
 
 /* ============================================================
    FAVORITEN-GALERIE
