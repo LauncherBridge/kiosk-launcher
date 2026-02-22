@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 5 <span id="appVersion"></span>
+  Tano – Version 6 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1722,10 +1722,11 @@ box-shadow:
   height: 260%;
   transform: translateY(-50%);
   border-radius: 60% / 40%;
-  filter: blur(40px);
-  opacity: 0.85;
+  filter: blur(60px); /* stärkerer Blur für weiche Aura */
+  opacity: 1; /* volle Intensität, Fade kommt vom Gradient */
   pointer-events: none;
 
+  /* Maskierung */
   mask: radial-gradient(
     circle var(--mask-radius, 120px) at center,
     transparent calc(var(--mask-radius) - 60px),
@@ -1737,20 +1738,34 @@ box-shadow:
     black calc(var(--mask-radius) - 59px)
   );
 }
+    
 .header-glow-left {
   left: 0;
-  background: var(--header-glow-color-left, rgba(255,255,255,0.25));
+
+  background: radial-gradient(
+    circle at center,
+    var(--header-glow-color-left) 0%,
+    transparent 70%
+  );
+
   animation:
     driftLeft 12s ease-in-out infinite,
     auraPulse 6s ease-in-out infinite;
 }
 .header-glow-right {
   right: 0;
-  background: var(--header-glow-color-right, rgba(255,255,255,0.25));
+
+  background: radial-gradient(
+    circle at center,
+    var(--header-glow-color-right) 0%,
+    transparent 70%
+  );
+
   animation:
     driftRight 14s ease-in-out infinite,
     auraPulse 7s ease-in-out infinite;
 }
+
 
 
 #appsPanelAddButton,
