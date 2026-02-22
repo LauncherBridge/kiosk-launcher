@@ -1624,6 +1624,20 @@ body {
       min-height: 1.2em;
     }
 
+#backupSection button {
+  margin-right: 10px;
+  margin-bottom: 10px;
+}
+
+#backupOverlay {
+  animation: fadeOutOverlay 2s ease-out forwards;
+}
+
+@keyframes fadeOutOverlay {
+  0% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}
 
 
 
@@ -2252,6 +2266,30 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
   Kontextmenü deaktivieren (für Long‑Press empfohlen)
 </label>
 
+<div id="backupSection" style="margin-top:20px;">
+  <button id="exportBtn">Einstellungen exportieren</button>
+  <button id="importBtn">Einstellungen importieren</button>
+  <input type="file" id="importFile" accept="application/json" style="display:none;">
+</div>
+
+<div id="backupOverlay" style="
+  display:none;
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  background:rgba(0,0,0,0.7);
+  color:white;
+  padding:12px 18px;
+  border-radius:8px;
+  font-size:0.9em;
+  z-index:9999;
+">
+  Backup erfolgreich gespeichert
+</div>
+
+
+
+    
   </div>
 
 
@@ -4306,6 +4344,63 @@ window.addEventListener("resize", () => {
   updateInfoBoxStyles();
 });
 
+
+function exportSettings(filename = "kiosk-settings.json") {
+  const all = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    all[key] = localStorage.getItem(key);
+  }
+
+
+  // -----------------------------
+  // Export-Funktion
+  // -----------------------------
+  const blob = new Blob([JSON.stringify(all, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+
+  URL.revokeObjectURL(url);
+
+  showBackupOverlay();
+}
+
+
+  // -----------------------------
+  // Import-Funktion
+  // -----------------------------
+function importSettings(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    const data = JSON.parse(reader.result);
+
+    Object.keys(data).forEach(key => {
+      localStorage.setItem(key, data[key]);
+    });
+
+    location.reload();
+  };
+  reader.readAsText(file);
+}
+
+  // -----------------------------
+  // Overlay "Ex/Import erledigt"
+  // -----------------------------
+function showBackupOverlay() {
+  const overlay = document.getElementById("backupOverlay");
+  overlay.style.display = "block";
+
+  setTimeout(() => {
+    overlay.style.display = "none";
+  }, 2000);
+}
+
+  
+  
 /* ============================================================
    KACHELBAND – LAUNCHER-LEISTE UNTEN
 ============================================================ 
@@ -5206,7 +5301,41 @@ function cancelLongPress() {
   isPointerDown = false;
 }
 
+
+
+  
+function autoDailyBackup() {
+  const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+  const lastBackup = loadSetting("lastBackupDate");
+
+  if (lastBackup !== today) {
+    exportSettings(`kiosk-settings-${today}.json`);
+    saveSetting("lastBackupDate", today);
+  }
+}
+
+// Beim Laden der Seite automatisch prüfen
+autoDailyBackup();
+
+  
  initUIListeners(); 
+
+  
+document.getElementById("exportBtn").addEventListener("click", () => {
+  exportSettings();
+});
+
+document.getElementById("importBtn").addEventListener("click", () => {
+  document.getElementById("importFile").click();
+});
+
+document.getElementById("importFile").addEventListener("change", (e) => {
+  if (e.target.files.length > 0) {
+    importSettings(e.target.files[0]);
+  }
+});
+
+
   
 </script>
 
