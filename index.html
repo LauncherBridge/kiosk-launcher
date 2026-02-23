@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 8 <span id="appVersion"></span>
+  Tano – Version 9 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1755,10 +1755,25 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
 
   animation: nexusPulse 6s ease-in-out infinite;
 
-  /* EINZIGE Maske – echtes Rounded-Rect */
-  mask-image: linear-gradient(black, black);
-  -webkit-mask-image: linear-gradient(black, black);
+  /* ---------------------------------------------------------
+     INVERTIERTE MASKE (Box = Loch, außen = sichtbar)
+     --------------------------------------------------------- */
 
+  /* Wir erzeugen ein Loch: Mitte transparent, außen schwarz */
+  mask-image:
+    radial-gradient(
+      circle,
+      transparent calc(var(--mask-width) / 2),
+      black calc(var(--mask-width) / 2 + 1px)
+    );
+  -webkit-mask-image:
+    radial-gradient(
+      circle,
+      transparent calc(var(--mask-width) / 2),
+      black calc(var(--mask-width) / 2 + 1px)
+    );
+
+  /* Größe der Maske */
   mask-size: var(--mask-width) var(--mask-height);
   -webkit-mask-size: var(--mask-width) var(--mask-height);
 
@@ -1777,15 +1792,16 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
   mask-border-radius: var(--mask-corner-radius);
   -webkit-mask-border-radius: var(--mask-corner-radius);
 
-  /* Invertieren → wir wollen alles AUSSER der Box */
- /* mask-composite: exclude;*/
-/*  -webkit-mask-composite: xor;*/
+  /* KEIN composite! (würde wieder invertieren) */
 
   filter: blur(40px);
   opacity: 1;
   transition: opacity 0.3s ease;
 }
-    
+
+/* ---------------------------------------------------------
+   Pulsierende Maskenform
+--------------------------------------------------------- */
 @keyframes nexusPulse {
   0% {
     --mask-width: calc(var(--mask-width-base) * 1.00);
@@ -1803,8 +1819,6 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
     --mask-corner-radius: calc(var(--mask-corner-base) * 1.00);
   }
 }
-
-
 
 /* -----------------------------------------------------------
    VARIANTE 1 – SOFT FOG (Ultra-Weich)
