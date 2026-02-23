@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 1 <span id="appVersion"></span>
+  Tano – Version 2 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1441,7 +1441,7 @@ body {
       color: #fff;
       max-height: 80vh;
       overflow-y: auto;
-      z-index: 60;
+      z-index: 6000;
       min-width: 280px;
       font-size: 0.9em;
     }
@@ -4743,27 +4743,26 @@ function openAppsPanel(tile) {
 const nexus = document.querySelector(".header-nexus");
 
 if (nexus) {
-  // 1) Titel-Maske (Rounded-Rect)
-  const titleWidth  = titleEl.offsetWidth;
-  const titleHeight = titleEl.offsetHeight;
+  requestAnimationFrame(() => {
 
-  nexus.style.setProperty("--mask-width",  (titleWidth + 80) + "px");
-  nexus.style.setProperty("--mask-height", (titleHeight + 40) + "px");
-  nexus.style.setProperty("--mask-corner-radius", "20px");
+    const titleWidth  = titleEl.offsetWidth;
+    const titleHeight = titleEl.offsetHeight;
 
-  // 2) Farb-Basis aus Tile-Farbe
-  nexus.style.setProperty("--nexus-color-left",  tile.color + "33");
-  nexus.style.setProperty("--nexus-color-right", tile.color + "11");
+    nexus.style.setProperty("--mask-width",  (titleWidth + 80) + "px");
+    nexus.style.setProperty("--mask-height", (titleHeight + 40) + "px");
+    nexus.style.setProperty("--mask-corner-radius", "20px");
 
-  // 3) Intensität aus LocalStorage
-  const intensity = parseFloat(loadSetting("nexusIntensity") || "0.7");
-  nexus.style.setProperty("--nexus-intensity", intensity);
+    nexus.style.setProperty("--nexus-color-left",  tile.color + "33");
+    nexus.style.setProperty("--nexus-color-right", tile.color + "11");
 
-  // 4) Style-Variante aus LocalStorage
-  const styleKey = loadSetting("nexusStyle") || "soft";
-  nexus.className = "header-nexus nexus-" + styleKey;
+    const intensity = parseFloat(loadSetting("nexusIntensity") || "0.7");
+    nexus.style.setProperty("--nexus-intensity", intensity);
+
+    const styleKey = loadSetting("nexusStyle") || "soft";
+    nexus.className = "header-nexus nexus-" + styleKey;
+
+  });
 }
-
 
 
   // ---------------------------------------------------------
