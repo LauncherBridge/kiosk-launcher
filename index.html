@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 1 <span id="appVersion"></span>
+  Tano – Version 2 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1752,41 +1752,48 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
   /* Abstand zwischen Plus (links) und Close (rechts) */
   --mask-left-limit: 46px;
   --mask-right-limit: 46px;
-  /* Invertieren → wir wollen alles AUSSER der Box */
-  mask-composite: exclude;
-  -webkit-mask-composite: xor;
 
   animation: nexusPulse 6s ease-in-out infinite;
 
   /* ---------------------------------------------------------
-     INVERTIERTE MASKE (Box = Loch, außen = sichtbar)
+     INVERTIERTE ROUNDED-RECT MASKE (Box = Loch)
      --------------------------------------------------------- */
 
-  /* Wir erzeugen ein Loch: Mitte transparent, außen schwarz */
   mask-image:
-    radial-gradient(
-      circle,
-      transparent calc(var(--mask-width) / 2),
-      black calc(var(--mask-width) / 2 + 1px)
-    );
+    linear-gradient(black, black),
+    linear-gradient(black, black),
+    linear-gradient(black, black),
+    linear-gradient(black, black);
+
   -webkit-mask-image:
-    radial-gradient(
-      circle,
-      transparent calc(var(--mask-width) / 2),
-      black calc(var(--mask-width) / 2 + 1px)
-    );
+    linear-gradient(black, black),
+    linear-gradient(black, black),
+    linear-gradient(black, black),
+    linear-gradient(black, black);
 
-  /* Größe der Maske */
-  mask-size: var(--mask-width) var(--mask-height);
-  -webkit-mask-size: var(--mask-width) var(--mask-height);
+  mask-size:
+    var(--mask-width) var(--mask-height),
+    var(--mask-width) var(--mask-height),
+    var(--mask-width) var(--mask-height),
+    var(--mask-width) var(--mask-height);
 
-  /* Position exakt zwischen Plus & Close */
+  -webkit-mask-size:
+    var(--mask-width) var(--mask-height),
+    var(--mask-width) var(--mask-height),
+    var(--mask-width) var(--mask-height),
+    var(--mask-width) var(--mask-height);
+
   mask-position:
-    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2)
-    center;
+    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center,
+    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center,
+    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center,
+    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
+
   -webkit-mask-position:
-    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2)
-    center;
+    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center,
+    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center,
+    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center,
+    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
 
   mask-repeat: no-repeat;
   -webkit-mask-repeat: no-repeat;
@@ -1795,7 +1802,9 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
   mask-border-radius: var(--mask-corner-radius);
   -webkit-mask-border-radius: var(--mask-corner-radius);
 
-  /* KEIN composite! (würde wieder invertieren) */
+  /* Invertieren → Box wird ausgeschnitten */
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
 
   filter: blur(40px);
   opacity: 1;
