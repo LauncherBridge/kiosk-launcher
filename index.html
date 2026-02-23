@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 4 <span id="appVersion"></span>
+  Tano – Version 5 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1742,24 +1742,47 @@ box-shadow:
 
   animation: nexusPulse 6s ease-in-out infinite;
 
+  /* Abgerundete Box mit weichen Kanten */
   mask:
-    radial-gradient(
-      20px 20px at center,
-      transparent calc(var(--mask-width) / 2),
-      black calc(var(--mask-width) / 2 + 1px)
+    /* Links */
+    linear-gradient(
+      to right,
+      transparent calc(50% - var(--mask-width)/2),
+      black calc(50% - var(--mask-width)/2 + var(--mask-corner-radius)),
+      black calc(50% + var(--mask-width)/2 - var(--mask-corner-radius)),
+      transparent calc(50% + var(--mask-width)/2)
+    ),
+    /* Oben */
+    linear-gradient(
+      to bottom,
+      transparent calc(50% - var(--mask-height)/2),
+      black calc(50% - var(--mask-height)/2 + var(--mask-corner-radius)),
+      black calc(50% + var(--mask-height)/2 - var(--mask-corner-radius)),
+      transparent calc(50% + var(--mask-height)/2)
     );
 
   -webkit-mask:
-    radial-gradient(
-      20px 20px at center,
-      transparent calc(var(--mask-width) / 2),
-      black calc(var(--mask-width) / 2 + 1px)
+    linear-gradient(
+      to right,
+      transparent calc(50% - var(--mask-width)/2),
+      black calc(50% - var(--mask-width)/2 + var(--mask-corner-radius)),
+      black calc(50% + var(--mask-width)/2 - var(--mask-corner-radius)),
+      transparent calc(50% + var(--mask-width)/2)
+    ),
+    linear-gradient(
+      to bottom,
+      transparent calc(50% - var(--mask-height)/2),
+      black calc(50% - var(--mask-height)/2 + var(--mask-corner-radius)),
+      black calc(50% + var(--mask-height)/2 - var(--mask-corner-radius)),
+      transparent calc(50% + var(--mask-height)/2)
     );
 
   mask-composite: exclude;
   -webkit-mask-composite: xor;
 
   filter: blur(40px);
+  opacity: 1;
+  transition: opacity 0.3s ease;
 }
 
 
