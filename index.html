@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 5 <span id="appVersion"></span>
+  Tano – Version 6 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1713,6 +1713,10 @@ box-shadow:
   backdrop-filter: blur(22px);
 }
 
+const tileAlpha = "D9"; // 85% Deckkraft
+
+nexus.style.setProperty("--nexus-color-left",  tile.color + tileAlpha);
+nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
 
 /* -----------------------------------------------------------
    NEXUS-BAND – BASISVARIABLEN
@@ -1736,47 +1740,44 @@ box-shadow:
   pointer-events: none;
   z-index: 1;
 
+  /* Dynamische Maskenwerte */
   --mask-width-base: 300px;
   --mask-height-base: 120px;
   --mask-corner-base: 22px;
 
+  --mask-width: var(--mask-width-base);
+  --mask-height: var(--mask-height-base);
+  --mask-corner-radius: var(--mask-corner-base);
+
+  /* Abstand zwischen Plus und Close */
+  --mask-left-limit: 46px;
+  --mask-right-limit: 46px;
+
   animation: nexusPulse 6s ease-in-out infinite;
 
-  /* Abgerundete Box mit weichen Kanten */
-  mask:
-    /* Links */
-    linear-gradient(
-      to right,
-      transparent calc(50% - var(--mask-width)/2),
-      black calc(50% - var(--mask-width)/2 + var(--mask-corner-radius)),
-      black calc(50% + var(--mask-width)/2 - var(--mask-corner-radius)),
-      transparent calc(50% + var(--mask-width)/2)
-    ),
-    /* Oben */
-    linear-gradient(
-      to bottom,
-      transparent calc(50% - var(--mask-height)/2),
-      black calc(50% - var(--mask-height)/2 + var(--mask-corner-radius)),
-      black calc(50% + var(--mask-height)/2 - var(--mask-corner-radius)),
-      transparent calc(50% + var(--mask-height)/2)
-    );
+  /* EINZIGE Maske – echtes Rounded-Rect */
+  mask-image: linear-gradient(black, black);
+  -webkit-mask-image: linear-gradient(black, black);
 
-  -webkit-mask:
-    linear-gradient(
-      to right,
-      transparent calc(50% - var(--mask-width)/2),
-      black calc(50% - var(--mask-width)/2 + var(--mask-corner-radius)),
-      black calc(50% + var(--mask-width)/2 - var(--mask-corner-radius)),
-      transparent calc(50% + var(--mask-width)/2)
-    ),
-    linear-gradient(
-      to bottom,
-      transparent calc(50% - var(--mask-height)/2),
-      black calc(50% - var(--mask-height)/2 + var(--mask-corner-radius)),
-      black calc(50% + var(--mask-height)/2 - var(--mask-corner-radius)),
-      transparent calc(50% + var(--mask-height)/2)
-    );
+  mask-size: var(--mask-width) var(--mask-height);
+  -webkit-mask-size: var(--mask-width) var(--mask-height);
 
+  /* Position exakt zwischen Plus und Close */
+  mask-position:
+    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2)
+    center;
+  -webkit-mask-position:
+    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2)
+    center;
+
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+
+  /* Rundungen */
+  mask-border-radius: var(--mask-corner-radius);
+  -webkit-mask-border-radius: var(--mask-corner-radius);
+
+  /* Invertieren → wir wollen alles AUSSER der Box */
   mask-composite: exclude;
   -webkit-mask-composite: xor;
 
@@ -1963,7 +1964,6 @@ box-shadow:
   100% { background-position: 0% 50%; }
 }
 
-
 @keyframes nexusPulse {
   0% {
     --mask-width: calc(var(--mask-width-base) * 1.00);
@@ -1981,6 +1981,8 @@ box-shadow:
     --mask-corner-radius: calc(var(--mask-corner-base) * 1.00);
   }
 }
+
+
 
 
 
