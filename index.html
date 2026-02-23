@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 3 <span id="appVersion"></span>
+  Tano – Version 4 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1736,27 +1736,32 @@ box-shadow:
   pointer-events: none;
   z-index: 1;
 
-  /* Wir schneiden die Titelbox AUS, nicht ein */
+  --mask-width-base: 300px;
+  --mask-height-base: 120px;
+  --mask-corner-base: 22px;
+
+  animation: nexusPulse 6s ease-in-out infinite;
+
   mask:
-    radial-gradient(circle at center,
+    radial-gradient(
+      20px 20px at center,
       transparent calc(var(--mask-width) / 2),
       black calc(var(--mask-width) / 2 + 1px)
     );
 
   -webkit-mask:
-    radial-gradient(circle at center,
+    radial-gradient(
+      20px 20px at center,
       transparent calc(var(--mask-width) / 2),
       black calc(var(--mask-width) / 2 + 1px)
     );
 
-  /* Wichtig: Wir wollen ALLES außer der Box */
   mask-composite: exclude;
   -webkit-mask-composite: xor;
 
   filter: blur(40px);
-  opacity: 1;
-  transition: opacity 0.3s ease;
 }
+
 
 
 /* -----------------------------------------------------------
@@ -1888,6 +1893,47 @@ box-shadow:
 }
 
 
+/* -----------------------------------------------------------
+   VARIANTE 5– Nebula
+----------------------------------------------------------- */
+.header-nexus.nexus-nebula {
+  background:
+    /* Tile-Farbe */
+    linear-gradient(
+      90deg,
+      var(--nexus-color-left),
+      var(--nexus-color-right)
+    ),
+    /* Nebelwolken */
+    radial-gradient(
+      circle at 30% 40%,
+      rgba(255, 0, 180, calc(0.4 * var(--nexus-intensity))) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      circle at 70% 60%,
+      rgba(0, 200, 255, calc(0.4 * var(--nexus-intensity))) 0%,
+      transparent 60%
+    ),
+    /* weicher Farbverlauf */
+    linear-gradient(
+      120deg,
+      rgba(255, 100, 200, calc(0.3 * var(--nexus-intensity))),
+      rgba(0, 150, 255, calc(0.3 * var(--nexus-intensity)))
+    );
+  filter: blur(50px);
+  animation: nebulaFlow 18s ease-in-out infinite;
+}
+
+@keyframes nebulaFlow {
+  0%   { background-position: 0% 0%; }
+  50%  { background-position: 120% 80%; }
+  100% { background-position: 0% 0%; }
+}
+
+
+    
+
 @keyframes plasmaFlow {
   0%   { background-position: 0% 50%; }
   50%  { background-position: 120% 50%; }
@@ -1895,6 +1941,23 @@ box-shadow:
 }
 
 
+@keyframes nexusPulse {
+  0% {
+    --mask-width: calc(var(--mask-width-base) * 1.00);
+    --mask-height: calc(var(--mask-height-base) * 1.00);
+    --mask-corner-radius: calc(var(--mask-corner-base) * 1.00);
+  }
+  50% {
+    --mask-width: calc(var(--mask-width-base) * 1.03);
+    --mask-height: calc(var(--mask-height-base) * 1.03);
+    --mask-corner-radius: calc(var(--mask-corner-base) * 1.08);
+  }
+  100% {
+    --mask-width: calc(var(--mask-width-base) * 1.00);
+    --mask-height: calc(var(--mask-height-base) * 1.00);
+    --mask-corner-radius: calc(var(--mask-corner-base) * 1.00);
+  }
+}
 
 
 
@@ -2431,6 +2494,8 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
   <option value="aurora">Aurora</option>
   <option value="hologram">Hologramm</option>
   <option value="plasma">Plasma</option>
+  <option value="nebula">Nebula</option>
+
 </select>
 
 <label for="nexusIntensitySetting">Intensität:</label>
@@ -4780,7 +4845,13 @@ if (nexus) {
     // 4) Style neu setzen (mit Reflow)
     const styleKey = loadSetting("nexusStyle") || "soft";
 
-    nexus.classList.remove("nexus-soft", "nexus-aurora", "nexus-hologram", "nexus-plasma");
+nexus.classList.remove(
+  "nexus-soft",
+  "nexus-aurora",
+  "nexus-hologram",
+  "nexus-plasma",
+  "nexus-nebula"
+);
     void nexus.offsetWidth; // Reflow erzwingen
     nexus.classList.add("nexus-" + styleKey);
   });
