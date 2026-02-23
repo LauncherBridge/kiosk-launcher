@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 7 <span id="appVersion"></span>
+  Tano – Version 8 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1778,8 +1778,8 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
   -webkit-mask-border-radius: var(--mask-corner-radius);
 
   /* Invertieren → wir wollen alles AUSSER der Box */
-  mask-composite: exclude;
-  -webkit-mask-composite: xor;
+ /* mask-composite: exclude;*/
+/*  -webkit-mask-composite: xor;*/
 
   filter: blur(40px);
   opacity: 1;
