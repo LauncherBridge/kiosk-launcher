@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 9 <span id="appVersion"></span>
+  Tano – Version 1 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1752,6 +1752,9 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
   /* Abstand zwischen Plus (links) und Close (rechts) */
   --mask-left-limit: 46px;
   --mask-right-limit: 46px;
+  /* Invertieren → wir wollen alles AUSSER der Box */
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
 
   animation: nexusPulse 6s ease-in-out infinite;
 
