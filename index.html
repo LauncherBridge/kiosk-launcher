@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 2 <span id="appVersion"></span>
+  Tano – Version 3 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1756,53 +1756,32 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
   animation: nexusPulse 6s ease-in-out infinite;
 
   /* ---------------------------------------------------------
-     INVERTIERTE ROUNDED-RECT MASKE (Box = Loch)
+     ECHTES ROUNDED-RECT ALS MASKE
+     (nicht invertiert)
      --------------------------------------------------------- */
+  mask-image: linear-gradient(black, black);
+  -webkit-mask-image: linear-gradient(black, black);
 
-  mask-image:
-    linear-gradient(black, black),
-    linear-gradient(black, black),
-    linear-gradient(black, black),
-    linear-gradient(black, black);
-
-  -webkit-mask-image:
-    linear-gradient(black, black),
-    linear-gradient(black, black),
-    linear-gradient(black, black),
-    linear-gradient(black, black);
-
-  mask-size:
-    var(--mask-width) var(--mask-height),
-    var(--mask-width) var(--mask-height),
-    var(--mask-width) var(--mask-height),
-    var(--mask-width) var(--mask-height);
-
-  -webkit-mask-size:
-    var(--mask-width) var(--mask-height),
-    var(--mask-width) var(--mask-height),
-    var(--mask-width) var(--mask-height),
-    var(--mask-width) var(--mask-height);
+  mask-size: var(--mask-width) var(--mask-height);
+  -webkit-mask-size: var(--mask-width) var(--mask-height);
 
   mask-position:
-    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center,
-    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center,
-    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center,
-    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
-
+    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2)
+    center;
   -webkit-mask-position:
-    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center,
-    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center,
-    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center,
-    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
+    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2)
+    center;
 
   mask-repeat: no-repeat;
   -webkit-mask-repeat: no-repeat;
 
-  /* Rundungen */
   mask-border-radius: var(--mask-corner-radius);
   -webkit-mask-border-radius: var(--mask-corner-radius);
 
-  /* Invertieren → Box wird ausgeschnitten */
+  /* ---------------------------------------------------------
+     INVERTIEREN → Box wird ausgeschnitten
+     (DAS ist der entscheidende Teil)
+     --------------------------------------------------------- */
   mask-composite: exclude;
   -webkit-mask-composite: xor;
 
@@ -1831,6 +1810,7 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
     --mask-corner-radius: calc(var(--mask-corner-base) * 1.00);
   }
 }
+
 
 /* -----------------------------------------------------------
    VARIANTE 1 – SOFT FOG (Ultra-Weich)
