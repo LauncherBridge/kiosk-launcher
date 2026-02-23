@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 7 <span id="appVersion"></span>
+  Tano – Version 8 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1713,58 +1713,70 @@ box-shadow:
   backdrop-filter: blur(22px);
 }
 
- .header-nexus {
+.header-nexus {
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 1;
 
-  /* Noise + Farbe + Fade */
+  /* Farbband + Noise */
   background:
-    repeating-linear-gradient(
-      90deg,
-      rgba(255,255,255,0.15) 0px,
-      rgba(255,255,255,0.15) 2px,
-      rgba(255,255,255,0.05) 4px
-    ),
     linear-gradient(
       90deg,
       var(--nexus-color-left),
       var(--nexus-color-right)
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(255,255,255,0.12) 0px,
+      rgba(255,255,255,0.12) 2px,
+      rgba(255,255,255,0.03) 4px
     );
 
-  /* Vertikaler Fade + Titel-Aussparung */
+  /* Titel-Aussparung als abgerundetes Rechteck */
   mask:
+    /* Rounded-Rect-Loch */
     radial-gradient(
-      circle var(--mask-radius) at 50% 50%,
-      transparent calc(var(--mask-radius) - 40px),
-      black calc(var(--mask-radius) - 39px)
-    ),
-    linear-gradient(to bottom,
+      circle var(--mask-corner-radius) at calc(50% - var(--mask-width)/2) calc(50% - var(--mask-height)/2),
       transparent 0%,
-      black 30%,
-      black 70%,
       transparent 100%
+    ),
+    radial-gradient(
+      circle var(--mask-corner-radius) at calc(50% + var(--mask-width)/2) calc(50% - var(--mask-height)/2),
+      transparent 0%,
+      transparent 100%
+    ),
+    radial-gradient(
+      circle var(--mask-corner-radius) at calc(50% - var(--mask-width)/2) calc(50% + var(--mask-height)/2),
+      transparent 0%,
+      transparent 100%
+    ),
+    radial-gradient(
+      circle var(--mask-corner-radius) at calc(50% + var(--mask-width)/2) calc(50% + var(--mask-height)/2),
+      transparent 0%,
+      transparent 100%
+    ),
+    linear-gradient(
+      to right,
+      transparent calc(50% - var(--mask-width)/2),
+      black calc(50% - var(--mask-width)/2 + var(--mask-corner-radius)),
+      black calc(50% + var(--mask-width)/2 - var(--mask-corner-radius)),
+      transparent calc(50% + var(--mask-width)/2)
+    ),
+    linear-gradient(
+      to bottom,
+      transparent calc(50% - var(--mask-height)/2),
+      black calc(50% - var(--mask-height)/2 + var(--mask-corner-radius)),
+      black calc(50% + var(--mask-height)/2 - var(--mask-corner-radius)),
+      transparent calc(50% + var(--mask-height)/2)
     );
 
-  -webkit-mask:
-    radial-gradient(
-      circle var(--mask-radius) at 50% 50%,
-      transparent calc(var(--mask-radius) - 40px),
-      black calc(var(--mask-radius) - 39px)
-    ),
-    linear-gradient(to bottom,
-      transparent 0%,
-      black 30%,
-      black 70%,
-      transparent 100%
-    );
+  -webkit-mask: inherit;
 
   mask-composite: exclude;
   -webkit-mask-composite: xor;
 
   filter: blur(40px);
-
   animation: nexusDrift 20s linear infinite;
 }
 
@@ -1772,6 +1784,7 @@ box-shadow:
   0%   { background-position: 0 0; }
   100% { background-position: 200% 0; }
 }
+
 
 
 
@@ -4605,12 +4618,17 @@ function openAppsPanel(tile) {
   // 3) Nexus-Band ansteuern
   // ---------------------------------------------------------
   const nexus = document.querySelector(".header-nexus");
+  
+  const titleWidth = titleEl.offsetWidth;
+  const titleHeight = titleEl.offsetHeight;
+  
+  nexus.style.setProperty("--mask-width",  (titleWidth + 80) + "px");
+  nexus.style.setProperty("--mask-height", (titleHeight + 40) + "px");
+  nexus.style.setProperty("--mask-corner-radius", "20px");
+  
+  nexus.style.setProperty("--nexus-color-left",  tile.color + "33");
+  nexus.style.setProperty("--nexus-color-right", tile.color + "11");
 
-  if (nexus) {
-    nexus.style.setProperty("--mask-radius", radius + "px");
-    nexus.style.setProperty("--nexus-color-left",  tile.color + "33");
-    nexus.style.setProperty("--nexus-color-right", tile.color + "11");
-  }
 
   // ---------------------------------------------------------
   // 4) Liste leeren und Apps einfügen
