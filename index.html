@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 3 <span id="appVersion"></span>
+  Tano – Version 4 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1756,8 +1756,7 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
   animation: nexusPulse 6s ease-in-out infinite;
 
   /* ---------------------------------------------------------
-     ECHTES ROUNDED-RECT ALS MASKE
-     (nicht invertiert)
+     ROUNDED-RECT MASKE (normal)
      --------------------------------------------------------- */
   mask-image: linear-gradient(black, black);
   -webkit-mask-image: linear-gradient(black, black);
@@ -1780,7 +1779,6 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
 
   /* ---------------------------------------------------------
      INVERTIEREN → Box wird ausgeschnitten
-     (DAS ist der entscheidende Teil)
      --------------------------------------------------------- */
   mask-composite: exclude;
   -webkit-mask-composite: xor;
@@ -1810,6 +1808,7 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
     --mask-corner-radius: calc(var(--mask-corner-base) * 1.00);
   }
 }
+
 
 
 /* -----------------------------------------------------------
