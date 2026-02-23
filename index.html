@@ -4612,15 +4612,11 @@ function openAppsPanel(tile) {
   // 2) Maskenradius für das Nexus-Band berechnen
   // ---------------------------------------------------------
   const titleWidth = titleEl.offsetWidth;
-  const radius = (titleWidth / 2) + 40;
-
+  const titleHeight = titleEl.offsetHeight;
   // ---------------------------------------------------------
   // 3) Nexus-Band ansteuern
   // ---------------------------------------------------------
   const nexus = document.querySelector(".header-nexus");
-  
-  const titleWidth = titleEl.offsetWidth;
-  const titleHeight = titleEl.offsetHeight;
   
   nexus.style.setProperty("--mask-width",  (titleWidth + 80) + "px");
   nexus.style.setProperty("--mask-height", (titleHeight + 40) + "px");
