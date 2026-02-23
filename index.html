@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 5 <span id="appVersion"></span>
+  Tano – Version 1 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -4853,9 +4853,14 @@ if (nexus) {
     const titleWidth  = titleEl.offsetWidth;
     const titleHeight = titleEl.offsetHeight;
 
-    nexus.style.setProperty("--mask-width",  (titleWidth + 80) + "px");
-    nexus.style.setProperty("--mask-height", (titleHeight + 40) + "px");
-    nexus.style.setProperty("--mask-corner-radius", "20px");
+    nexus.style.setProperty("--mask-width",  (titleWidth + 40) + "px");
+    nexus.style.setProperty("--mask-height", (titleHeight + 20) + "px");
+    nexus.style.setProperty("--mask-corner-radius", "22px");
+    // 1) Puls-Animation
+    nexus.style.setProperty("--mask-width-base",  (titleWidth + 40) + "px");
+    nexus.style.setProperty("--mask-height-base", (titleHeight + 20) + "px");
+    nexus.style.setProperty("--mask-corner-base", "22px");
+
 
     // 2) Farbe der Kachel setzen
     nexus.style.setProperty("--nexus-color-left",  tile.color + "33");
