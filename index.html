@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 2 <span id="appVersion"></span>
+  Tano – Version 3 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1736,52 +1736,41 @@ box-shadow:
   pointer-events: none;
   z-index: 1;
 
-  /* Masken-Logik: Abgerundetes Rechteck + vertikaler Fade */
+  /* Wir schneiden die Titelbox AUS, nicht ein */
   mask:
-    linear-gradient(
-      to right,
-      transparent calc(50% - var(--mask-width)/2),
-      black calc(50% - var(--mask-width)/2 + var(--mask-corner-radius)),
-      black calc(50% + var(--mask-width)/2 - var(--mask-corner-radius)),
-      transparent calc(50% + var(--mask-width)/2)
-    ),
-    linear-gradient(
-      to bottom,
-      transparent calc(50% - var(--mask-height)/2),
-      black calc(50% - var(--mask-height)/2 + var(--mask-corner-radius)),
-      black calc(50% + var(--mask-height)/2 - var(--mask-corner-radius)),
-      transparent calc(50% + var(--mask-height)/2)
+    radial-gradient(circle at center,
+      transparent calc(var(--mask-width) / 2),
+      black calc(var(--mask-width) / 2 + 1px)
     );
 
   -webkit-mask:
-    linear-gradient(
-      to right,
-      transparent calc(50% - var(--mask-width)/2),
-      black calc(50% - var(--mask-width)/2 + var(--mask-corner-radius)),
-      black calc(50% + var(--mask-width)/2 - var(--mask-corner-radius)),
-      transparent calc(50% + var(--mask-width)/2)
-    ),
-    linear-gradient(
-      to bottom,
-      transparent calc(50% - var(--mask-height)/2),
-      black calc(50% - var(--mask-height)/2 + var(--mask-corner-radius)),
-      black calc(50% + var(--mask-height)/2 - var(--mask-corner-radius)),
-      transparent calc(50% + var(--mask-height)/2)
+    radial-gradient(circle at center,
+      transparent calc(var(--mask-width) / 2),
+      black calc(var(--mask-width) / 2 + 1px)
     );
 
-  mask-composite: intersect;
-  -webkit-mask-composite: source-in;
+  /* Wichtig: Wir wollen ALLES außer der Box */
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
 
   filter: blur(40px);
   opacity: 1;
   transition: opacity 0.3s ease;
 }
 
+
 /* -----------------------------------------------------------
    VARIANTE 1 – SOFT FOG (Ultra-Weich)
 ----------------------------------------------------------- */
 .header-nexus.nexus-soft {
   background:
+    /* Tile-Farbe */
+    linear-gradient(
+      90deg,
+      var(--nexus-color-left),
+      var(--nexus-color-right)
+    ),
+    /* Soft Fog */
     linear-gradient(
       90deg,
       color-mix(in srgb, var(--nexus-color-left) calc(60% * var(--nexus-intensity)), transparent),
@@ -1790,6 +1779,7 @@ box-shadow:
   filter: blur(55px);
   animation: softDrift 30s linear infinite;
 }
+
 
 @keyframes softDrift {
   0%   { background-position: 0 0; }
@@ -1801,6 +1791,13 @@ box-shadow:
 ----------------------------------------------------------- */
 .header-nexus.nexus-aurora {
   background:
+    /* Tile-Farbe */
+    linear-gradient(
+      90deg,
+      var(--nexus-color-left),
+      var(--nexus-color-right)
+    ),
+    /* Aurora-Farben */
     linear-gradient(
       120deg,
       rgba(0, 255, 200, calc(0.5 * var(--nexus-intensity))) 0%,
@@ -1817,6 +1814,7 @@ box-shadow:
   animation: auroraWave 22s ease-in-out infinite;
 }
 
+
 @keyframes auroraWave {
   0%   { background-position: 0% 0%; }
   50%  { background-position: 120% 20%; }
@@ -1828,12 +1826,20 @@ box-shadow:
 ----------------------------------------------------------- */
 .header-nexus.nexus-hologram {
   background:
+    /* Tile-Farbe */
+    linear-gradient(
+      90deg,
+      var(--nexus-color-left),
+      var(--nexus-color-right)
+    ),
+    /* Scanlines */
     repeating-linear-gradient(
       to bottom,
       rgba(0, 255, 255, calc(0.35 * var(--nexus-intensity))) 0px,
       rgba(0, 255, 255, calc(0.35 * var(--nexus-intensity))) 1px,
       rgba(0, 255, 255, 0) 2px
     ),
+    /* Hologramm-Farbverlauf */
     linear-gradient(
       90deg,
       rgba(0, 180, 255, calc(0.4 * var(--nexus-intensity))),
@@ -1842,6 +1848,7 @@ box-shadow:
   filter: blur(30px);
   animation: holoScan 12s linear infinite;
 }
+
 
 @keyframes holoScan {
   0%   { background-position: 0 0; }
@@ -1853,6 +1860,13 @@ box-shadow:
 ----------------------------------------------------------- */
 .header-nexus.nexus-plasma {
   background:
+    /* Tile-Farbe */
+    linear-gradient(
+      90deg,
+      var(--nexus-color-left),
+      var(--nexus-color-right)
+    ),
+    /* Plasma-Kerne */
     radial-gradient(
       circle at 20% 50%,
       rgba(255, 200, 0, calc(0.6 * var(--nexus-intensity))) 0%,
@@ -1863,6 +1877,7 @@ box-shadow:
       rgba(255, 0, 120, calc(0.6 * var(--nexus-intensity))) 0%,
       transparent 60%
     ),
+    /* Plasma-Farbverlauf */
     linear-gradient(
       90deg,
       rgba(255, 80, 0, calc(0.4 * var(--nexus-intensity))),
@@ -1871,6 +1886,7 @@ box-shadow:
   filter: blur(40px);
   animation: plasmaFlow 16s ease-in-out infinite;
 }
+
 
 @keyframes plasmaFlow {
   0%   { background-position: 0% 50%; }
@@ -4745,6 +4761,7 @@ const nexus = document.querySelector(".header-nexus");
 if (nexus) {
   requestAnimationFrame(() => {
 
+    // 1) Titelgröße korrekt messen
     const titleWidth  = titleEl.offsetWidth;
     const titleHeight = titleEl.offsetHeight;
 
@@ -4752,17 +4769,23 @@ if (nexus) {
     nexus.style.setProperty("--mask-height", (titleHeight + 40) + "px");
     nexus.style.setProperty("--mask-corner-radius", "20px");
 
+    // 2) Farbe der Kachel setzen
     nexus.style.setProperty("--nexus-color-left",  tile.color + "33");
     nexus.style.setProperty("--nexus-color-right", tile.color + "11");
 
+    // 3) Intensität
     const intensity = parseFloat(loadSetting("nexusIntensity") || "0.7");
     nexus.style.setProperty("--nexus-intensity", intensity);
 
+    // 4) Style neu setzen (mit Reflow)
     const styleKey = loadSetting("nexusStyle") || "soft";
-    nexus.className = "header-nexus nexus-" + styleKey;
 
+    nexus.classList.remove("nexus-soft", "nexus-aurora", "nexus-hologram", "nexus-plasma");
+    void nexus.offsetWidth; // Reflow erzwingen
+    nexus.classList.add("nexus-" + styleKey);
   });
 }
+
 
 
   // ---------------------------------------------------------
