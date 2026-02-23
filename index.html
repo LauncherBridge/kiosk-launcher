@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 9 <span id="appVersion"></span>
+  Tano – Version 1 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1713,49 +1713,31 @@ box-shadow:
   backdrop-filter: blur(22px);
 }
 
+
+/* -----------------------------------------------------------
+   NEXUS-BAND – BASISVARIABLEN
+----------------------------------------------------------- */
+:root {
+  --nexus-intensity: 0.7;
+  --mask-width: 300px;
+  --mask-height: 120px;
+  --mask-corner-radius: 20px;
+
+  --nexus-color-left: rgba(255,255,255,0.3);
+  --nexus-color-right: rgba(255,255,255,0.1);
+}
+
+/* -----------------------------------------------------------
+   NEXUS-BAND – GRUNDSTRUKTUR + MASKE
+----------------------------------------------------------- */
 .header-nexus {
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 1;
 
-  /* Farbband + Noise */
-  background:
-    linear-gradient(
-      90deg,
-      var(--nexus-color-left),
-      var(--nexus-color-right)
-    ),
-    repeating-linear-gradient(
-      90deg,
-      rgba(255,255,255,0.12) 0px,
-      rgba(255,255,255,0.12) 2px,
-      rgba(255,255,255,0.03) 4px
-    );
-
-  /* Titel-Aussparung als abgerundetes Rechteck */
+  /* Masken-Logik: Abgerundetes Rechteck + vertikaler Fade */
   mask:
-    /* Rounded-Rect-Loch */
-    radial-gradient(
-      circle var(--mask-corner-radius) at calc(50% - var(--mask-width)/2) calc(50% - var(--mask-height)/2),
-      transparent 0%,
-      transparent 100%
-    ),
-    radial-gradient(
-      circle var(--mask-corner-radius) at calc(50% + var(--mask-width)/2) calc(50% - var(--mask-height)/2),
-      transparent 0%,
-      transparent 100%
-    ),
-    radial-gradient(
-      circle var(--mask-corner-radius) at calc(50% - var(--mask-width)/2) calc(50% + var(--mask-height)/2),
-      transparent 0%,
-      transparent 100%
-    ),
-    radial-gradient(
-      circle var(--mask-corner-radius) at calc(50% + var(--mask-width)/2) calc(50% + var(--mask-height)/2),
-      transparent 0%,
-      transparent 100%
-    ),
     linear-gradient(
       to right,
       transparent calc(50% - var(--mask-width)/2),
@@ -1771,22 +1753,140 @@ box-shadow:
       transparent calc(50% + var(--mask-height)/2)
     );
 
-  -webkit-mask: inherit;
+  -webkit-mask:
+    linear-gradient(
+      to right,
+      transparent calc(50% - var(--mask-width)/2),
+      black calc(50% - var(--mask-width)/2 + var(--mask-corner-radius)),
+      black calc(50% + var(--mask-width)/2 - var(--mask-corner-radius)),
+      transparent calc(50% + var(--mask-width)/2)
+    ),
+    linear-gradient(
+      to bottom,
+      transparent calc(50% - var(--mask-height)/2),
+      black calc(50% - var(--mask-height)/2 + var(--mask-corner-radius)),
+      black calc(50% + var(--mask-height)/2 - var(--mask-corner-radius)),
+      transparent calc(50% + var(--mask-height)/2)
+    );
 
-  mask-composite: exclude;
-  -webkit-mask-composite: xor;
+  mask-composite: intersect;
+  -webkit-mask-composite: source-in;
 
   filter: blur(40px);
-  animation: nexusDrift 20s linear infinite;
+  opacity: 1;
+  transition: opacity 0.3s ease;
 }
 
-@keyframes nexusDrift {
+/* -----------------------------------------------------------
+   VARIANTE 1 – SOFT FOG (Ultra-Weich)
+----------------------------------------------------------- */
+.header-nexus.nexus-soft {
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--nexus-color-left) calc(60% * var(--nexus-intensity)), transparent),
+      color-mix(in srgb, var(--nexus-color-right) calc(60% * var(--nexus-intensity)), transparent)
+    );
+  filter: blur(55px);
+  animation: softDrift 30s linear infinite;
+}
+
+@keyframes softDrift {
   0%   { background-position: 0 0; }
-  100% { background-position: 200% 0; }
+  100% { background-position: 150% 0; }
+}
+
+/* -----------------------------------------------------------
+   VARIANTE 2 – AURORA (Mehrfarbig, Nordlicht)
+----------------------------------------------------------- */
+.header-nexus.nexus-aurora {
+  background:
+    linear-gradient(
+      120deg,
+      rgba(0, 255, 200, calc(0.5 * var(--nexus-intensity))) 0%,
+      rgba(120, 80, 255, calc(0.5 * var(--nexus-intensity))) 40%,
+      rgba(255, 80, 180, calc(0.5 * var(--nexus-intensity))) 80%
+    ),
+    repeating-linear-gradient(
+      120deg,
+      rgba(255,255,255,0.10) 0px,
+      rgba(255,255,255,0.10) 3px,
+      rgba(255,255,255,0.02) 6px
+    );
+  filter: blur(45px);
+  animation: auroraWave 22s ease-in-out infinite;
+}
+
+@keyframes auroraWave {
+  0%   { background-position: 0% 0%; }
+  50%  { background-position: 120% 20%; }
+  100% { background-position: 0% 0%; }
+}
+
+/* -----------------------------------------------------------
+   VARIANTE 3 – HOLOGRAMM (Sci-Fi HUD)
+----------------------------------------------------------- */
+.header-nexus.nexus-hologram {
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(0, 255, 255, calc(0.35 * var(--nexus-intensity))) 0px,
+      rgba(0, 255, 255, calc(0.35 * var(--nexus-intensity))) 1px,
+      rgba(0, 255, 255, 0) 2px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(0, 180, 255, calc(0.4 * var(--nexus-intensity))),
+      rgba(0, 80, 160, calc(0.4 * var(--nexus-intensity)))
+    );
+  filter: blur(30px);
+  animation: holoScan 12s linear infinite;
+}
+
+@keyframes holoScan {
+  0%   { background-position: 0 0; }
+  100% { background-position: 0 100%; }
+}
+
+/* -----------------------------------------------------------
+   VARIANTE 4 – PLASMA (Energieband)
+----------------------------------------------------------- */
+.header-nexus.nexus-plasma {
+  background:
+    radial-gradient(
+      circle at 20% 50%,
+      rgba(255, 200, 0, calc(0.6 * var(--nexus-intensity))) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      circle at 80% 50%,
+      rgba(255, 0, 120, calc(0.6 * var(--nexus-intensity))) 0%,
+      transparent 60%
+    ),
+    linear-gradient(
+      90deg,
+      rgba(255, 80, 0, calc(0.4 * var(--nexus-intensity))),
+      rgba(255, 0, 150, calc(0.4 * var(--nexus-intensity)))
+    );
+  filter: blur(40px);
+  animation: plasmaFlow 16s ease-in-out infinite;
+}
+
+@keyframes plasmaFlow {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 120% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 
 
+
+
+
+
+
+
+    
 
 #appsPanelHeader .header-progress {
   position: absolute;
@@ -2307,6 +2407,24 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
       <option value="glass">Glass Morphism</option>
     </select>
 
+<h4>Nexus‑Band</h4>
+
+<label for="nexusStyleSetting">Stil:</label>
+<select id="nexusStyleSetting">
+  <option value="soft">Soft Fog</option>
+  <option value="aurora">Aurora</option>
+  <option value="hologram">Hologramm</option>
+  <option value="plasma">Plasma</option>
+</select>
+
+<label for="nexusIntensitySetting">Intensität:</label>
+<input id="nexusIntensitySetting" type="range" min="0" max="1" step="0.01">
+
+
+
+
+
+    
     <h3>Bildquellen</h3>
     <label><input type="checkbox" id="useUnsplash" checked> Unsplash verwenden</label>
 
@@ -2545,6 +2663,17 @@ function initUIListeners() {
     saveSetting("infoBoxAlwaysVisible", e.target.checked);
     updateInfoBoxStyles();
   });
+
+  document.getElementById("nexusStyleSetting").addEventListener("change", (e) => {
+    saveSetting("nexusStyle", e.target.value);
+  });
+  
+  document.getElementById("nexusIntensitySetting").addEventListener("input", (e) => {
+    saveSetting("nexusIntensity", e.target.value);
+  });
+
+
+  
 }
 
   
@@ -4609,22 +4738,32 @@ function openAppsPanel(tile) {
   titleEl.textContent = "Apps in " + tile.name;
 
   // ---------------------------------------------------------
-  // 2) Maskenradius für das Nexus-Band berechnen
+  // 2) Animation im Header
   // ---------------------------------------------------------
-  // const titleWidth = titleEl.offsetWidth;
-  //const titleHeight = titleEl.offsetHeight;
-  // ---------------------------------------------------------
-  // 3) Nexus-Band ansteuern
-  // ---------------------------------------------------------
-  const nexus = document.querySelector(".header-nexus");
-  const titleWidth = titleEl.offsetWidth;
+const nexus = document.querySelector(".header-nexus");
+
+if (nexus) {
+  // 1) Titel-Maske (Rounded-Rect)
+  const titleWidth  = titleEl.offsetWidth;
   const titleHeight = titleEl.offsetHeight;
+
   nexus.style.setProperty("--mask-width",  (titleWidth + 80) + "px");
   nexus.style.setProperty("--mask-height", (titleHeight + 40) + "px");
   nexus.style.setProperty("--mask-corner-radius", "20px");
-  
+
+  // 2) Farb-Basis aus Tile-Farbe
   nexus.style.setProperty("--nexus-color-left",  tile.color + "33");
   nexus.style.setProperty("--nexus-color-right", tile.color + "11");
+
+  // 3) Intensität aus LocalStorage
+  const intensity = parseFloat(loadSetting("nexusIntensity") || "0.7");
+  nexus.style.setProperty("--nexus-intensity", intensity);
+
+  // 4) Style-Variante aus LocalStorage
+  const styleKey = loadSetting("nexusStyle") || "soft";
+  nexus.className = "header-nexus nexus-" + styleKey;
+}
+
 
 
   // ---------------------------------------------------------
