@@ -4864,8 +4864,9 @@ if (nexus) {
 
 
     // 2) Farbe der Kachel setzen
-    nexus.style.setProperty("--nexus-color-left",  tile.color + "33");
-    nexus.style.setProperty("--nexus-color-right", tile.color + "11");
+nexus.style.setProperty("--nexus-color-left",  tile.color + "AA"); // 66% Deckkraft
+nexus.style.setProperty("--nexus-color-right", tile.color + "55"); // 33% Deckkraft
+
 
     // 3) Intensität
     const intensity = parseFloat(loadSetting("nexusIntensity") || "0.7");
