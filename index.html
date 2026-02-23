@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 6 <span id="appVersion"></span>
+  Tano – Version 7 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1731,16 +1731,16 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
   --nexus-color-right: rgba(255,255,255,0.3);
 }
 
-/* -----------------------------------------------------------
-   NEXUS-BAND – GRUNDSTRUKTUR + MASKE
------------------------------------------------------------ */
+/* ---------------------------------------------------------
+   NEXUS-BAND: Maskenlogik + Position + Puls-Animation
+--------------------------------------------------------- */
 .header-nexus {
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 1;
 
-  /* Dynamische Maskenwerte */
+  /* Dynamische Maskenwerte (werden per JS gesetzt) */
   --mask-width-base: 300px;
   --mask-height-base: 120px;
   --mask-corner-base: 22px;
@@ -1749,7 +1749,7 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
   --mask-height: var(--mask-height-base);
   --mask-corner-radius: var(--mask-corner-base);
 
-  /* Abstand zwischen Plus und Close */
+  /* Abstand zwischen Plus (links) und Close (rechts) */
   --mask-left-limit: 46px;
   --mask-right-limit: 46px;
 
@@ -1762,7 +1762,7 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
   mask-size: var(--mask-width) var(--mask-height);
   -webkit-mask-size: var(--mask-width) var(--mask-height);
 
-  /* Position exakt zwischen Plus und Close */
+  /* Position exakt zwischen Plus & Close */
   mask-position:
     calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2)
     center;
@@ -1785,185 +1785,7 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
   opacity: 1;
   transition: opacity 0.3s ease;
 }
-
-
-
-/* -----------------------------------------------------------
-   VARIANTE 1 – SOFT FOG (Ultra-Weich)
------------------------------------------------------------ */
-.header-nexus.nexus-soft {
-  background:
-    /* Tile-Farbe */
-    linear-gradient(
-      90deg,
-      var(--nexus-color-left),
-      var(--nexus-color-right)
-    ),
-    /* Soft Fog */
-    linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--nexus-color-left) calc(60% * var(--nexus-intensity)), transparent),
-      color-mix(in srgb, var(--nexus-color-right) calc(60% * var(--nexus-intensity)), transparent)
-    );
-  filter: blur(55px);
-  animation: softDrift 30s linear infinite;
-}
-
-
-@keyframes softDrift {
-  0%   { background-position: 0 0; }
-  100% { background-position: 150% 0; }
-}
-
-/* -----------------------------------------------------------
-   VARIANTE 2 – AURORA (Mehrfarbig, Nordlicht)
------------------------------------------------------------ */
-.header-nexus.nexus-aurora {
-  background:
-    /* Tile-Farbe */
-    linear-gradient(
-      90deg,
-      var(--nexus-color-left),
-      var(--nexus-color-right)
-    ),
-    /* Aurora-Farben */
-    linear-gradient(
-      120deg,
-      rgba(0, 255, 200, calc(0.5 * var(--nexus-intensity))) 0%,
-      rgba(120, 80, 255, calc(0.5 * var(--nexus-intensity))) 40%,
-      rgba(255, 80, 180, calc(0.5 * var(--nexus-intensity))) 80%
-    ),
-    repeating-linear-gradient(
-      120deg,
-      rgba(255,255,255,0.10) 0px,
-      rgba(255,255,255,0.10) 3px,
-      rgba(255,255,255,0.02) 6px
-    );
-  filter: blur(45px);
-  animation: auroraWave 22s ease-in-out infinite;
-}
-
-
-@keyframes auroraWave {
-  0%   { background-position: 0% 0%; }
-  50%  { background-position: 120% 20%; }
-  100% { background-position: 0% 0%; }
-}
-
-/* -----------------------------------------------------------
-   VARIANTE 3 – HOLOGRAMM (Sci-Fi HUD)
------------------------------------------------------------ */
-.header-nexus.nexus-hologram {
-  background:
-    /* Tile-Farbe */
-    linear-gradient(
-      90deg,
-      var(--nexus-color-left),
-      var(--nexus-color-right)
-    ),
-    /* Scanlines */
-    repeating-linear-gradient(
-      to bottom,
-      rgba(0, 255, 255, calc(0.35 * var(--nexus-intensity))) 0px,
-      rgba(0, 255, 255, calc(0.35 * var(--nexus-intensity))) 1px,
-      rgba(0, 255, 255, 0) 2px
-    ),
-    /* Hologramm-Farbverlauf */
-    linear-gradient(
-      90deg,
-      rgba(0, 180, 255, calc(0.4 * var(--nexus-intensity))),
-      rgba(0, 80, 160, calc(0.4 * var(--nexus-intensity)))
-    );
-  filter: blur(30px);
-  animation: holoScan 12s linear infinite;
-}
-
-
-@keyframes holoScan {
-  0%   { background-position: 0 0; }
-  100% { background-position: 0 100%; }
-}
-
-/* -----------------------------------------------------------
-   VARIANTE 4 – PLASMA (Energieband)
------------------------------------------------------------ */
-.header-nexus.nexus-plasma {
-  background:
-    /* Tile-Farbe */
-    linear-gradient(
-      90deg,
-      var(--nexus-color-left),
-      var(--nexus-color-right)
-    ),
-    /* Plasma-Kerne */
-    radial-gradient(
-      circle at 20% 50%,
-      rgba(255, 200, 0, calc(0.6 * var(--nexus-intensity))) 0%,
-      transparent 60%
-    ),
-    radial-gradient(
-      circle at 80% 50%,
-      rgba(255, 0, 120, calc(0.6 * var(--nexus-intensity))) 0%,
-      transparent 60%
-    ),
-    /* Plasma-Farbverlauf */
-    linear-gradient(
-      90deg,
-      rgba(255, 80, 0, calc(0.4 * var(--nexus-intensity))),
-      rgba(255, 0, 150, calc(0.4 * var(--nexus-intensity)))
-    );
-  filter: blur(40px);
-  animation: plasmaFlow 16s ease-in-out infinite;
-}
-
-
-/* -----------------------------------------------------------
-   VARIANTE 5– Nebula
------------------------------------------------------------ */
-.header-nexus.nexus-nebula {
-  background:
-    /* Tile-Farbe */
-    linear-gradient(
-      90deg,
-      var(--nexus-color-left),
-      var(--nexus-color-right)
-    ),
-    /* Nebelwolken */
-    radial-gradient(
-      circle at 30% 40%,
-      rgba(255, 0, 180, calc(0.4 * var(--nexus-intensity))) 0%,
-      transparent 60%
-    ),
-    radial-gradient(
-      circle at 70% 60%,
-      rgba(0, 200, 255, calc(0.4 * var(--nexus-intensity))) 0%,
-      transparent 60%
-    ),
-    /* weicher Farbverlauf */
-    linear-gradient(
-      120deg,
-      rgba(255, 100, 200, calc(0.3 * var(--nexus-intensity))),
-      rgba(0, 150, 255, calc(0.3 * var(--nexus-intensity)))
-    );
-  filter: blur(50px);
-  animation: nebulaFlow 18s ease-in-out infinite;
-}
-
-@keyframes nebulaFlow {
-  0%   { background-position: 0% 0%; }
-  50%  { background-position: 120% 80%; }
-  100% { background-position: 0% 0%; }
-}
-
-
     
-
-@keyframes plasmaFlow {
-  0%   { background-position: 0% 50%; }
-  50%  { background-position: 120% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
 @keyframes nexusPulse {
   0% {
     --mask-width: calc(var(--mask-width-base) * 1.00);
@@ -1984,6 +1806,121 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
 
 
 
+/* -----------------------------------------------------------
+   VARIANTE 1 – SOFT FOG (Ultra-Weich)
+----------------------------------------------------------- */
+.header-nexus.nexus-soft {
+  background:
+    linear-gradient(90deg, var(--nexus-color-left), var(--nexus-color-right)),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--nexus-color-left) 60%, transparent),
+      color-mix(in srgb, var(--nexus-color-right) 60%, transparent)
+    );
+  filter: blur(55px);
+  animation: softDrift 30s linear infinite;
+}
+
+@keyframes softDrift {
+  0%   { background-position: 0 0; }
+  100% { background-position: 150% 0; }
+}
+
+
+/* -----------------------------------------------------------
+   VARIANTE 2 – AURORA (Mehrfarbig, Nordlicht)
+----------------------------------------------------------- */
+.header-nexus.nexus-aurora {
+  background:
+    linear-gradient(90deg, var(--nexus-color-left), var(--nexus-color-right)),
+    linear-gradient(
+      120deg,
+      rgba(0, 255, 200, 0.5),
+      rgba(120, 80, 255, 0.5),
+      rgba(255, 80, 180, 0.5)
+    ),
+    repeating-linear-gradient(
+      120deg,
+      rgba(255,255,255,0.10) 0px,
+      rgba(255,255,255,0.10) 3px,
+      rgba(255,255,255,0.02) 6px
+    );
+  filter: blur(45px);
+  animation: auroraWave 22s ease-in-out infinite;
+}
+
+@keyframes auroraWave {
+  0%   { background-position: 0% 0%; }
+  50%  { background-position: 120% 80%; }
+  100% { background-position: 0% 0%; }
+}
+
+/* -----------------------------------------------------------
+   VARIANTE 3 – HOLOGRAMM (Sci-Fi HUD)
+----------------------------------------------------------- */
+.header-nexus.nexus-hologram {
+  background:
+    linear-gradient(90deg, var(--nexus-color-left), var(--nexus-color-right)),
+    repeating-linear-gradient(
+      to bottom,
+      rgba(0, 255, 255, 0.35) 0px,
+      rgba(0, 255, 255, 0.35) 1px,
+      rgba(0, 255, 255, 0) 2px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(0, 180, 255, 0.4),
+      rgba(0, 80, 160, 0.4)
+    );
+  filter: blur(30px);
+  animation: holoScan 12s linear infinite;
+}
+
+@keyframes holoScan {
+  0%   { background-position: 0 0; }
+  100% { background-position: 0 200%; }
+}
+
+
+/* -----------------------------------------------------------
+   VARIANTE 4 – PLASMA (Energieband)
+----------------------------------------------------------- */
+.header-nexus.nexus-plasma {
+  background:
+    linear-gradient(90deg, var(--nexus-color-left), var(--nexus-color-right)),
+    radial-gradient(circle at 20% 50%, rgba(255, 200, 0, 0.6), transparent 60%),
+    radial-gradient(circle at 80% 50%, rgba(255, 0, 120, 0.6), transparent 60%),
+    linear-gradient(90deg, rgba(255, 80, 0, 0.4), rgba(255, 0, 150, 0.4));
+  filter: blur(40px);
+  animation: plasmaFlow 16s ease-in-out infinite;
+}
+
+@keyframes plasmaFlow {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+
+
+/* -----------------------------------------------------------
+   VARIANTE 5– Nebula
+----------------------------------------------------------- */
+.header-nexus.nexus-nebula {
+  background:
+    linear-gradient(90deg, var(--nexus-color-left), var(--nexus-color-right)),
+    radial-gradient(circle at 30% 40%, rgba(255, 0, 180, 0.4), transparent 60%),
+    radial-gradient(circle at 70% 60%, rgba(0, 200, 255, 0.4), transparent 60%),
+    linear-gradient(120deg, rgba(255, 100, 200, 0.3), rgba(0, 150, 255, 0.3));
+  filter: blur(50px);
+  animation: nebulaFlow 18s ease-in-out infinite;
+}
+
+@keyframes nebulaFlow {
+  0%   { background-position: 0% 0%; }
+  50%  { background-position: 120% 80%; }
+  100% { background-position: 0% 0%; }
+}
 
 
 
@@ -4825,13 +4762,13 @@ function openAppsPanel(tile) {
   resetAppsPanelHeader();
 
   if (!tile) return;
-
   currentTile = tile;
 
-  const panel   = document.getElementById("appsPanel");
-  const titleEl = document.getElementById("appsPanelDynamicTitle");
-  const list    = document.getElementById("appsList");
+  const panel    = document.getElementById("appsPanel");
+  const titleEl  = document.getElementById("appsPanelDynamicTitle");
+  const list     = document.getElementById("appsList");
   const closeBtn = document.getElementById("appsPanelClose");
+  const nexus    = document.querySelector(".header-nexus");
 
   if (!panel || !titleEl || !list) {
     console.warn("AppsPanel: benötigte Elemente nicht gefunden");
@@ -4844,55 +4781,64 @@ function openAppsPanel(tile) {
   titleEl.textContent = "Apps in " + tile.name;
 
   // ---------------------------------------------------------
-  // 2) Animation im Header
+  // 2) Header-Effekt (Nexus-Band)
   // ---------------------------------------------------------
-const nexus = document.querySelector(".header-nexus");
+  if (nexus) {
+    requestAnimationFrame(() => {
 
-if (nexus) {
-  requestAnimationFrame(() => {
+      // ---------------------------------------------
+      // A) Titelgröße messen → Maskengröße bestimmen
+      // ---------------------------------------------
+      const titleWidth  = titleEl.offsetWidth;
+      const titleHeight = titleEl.offsetHeight;
 
-    // 1) Titelgröße korrekt messen
-    const titleWidth  = titleEl.offsetWidth;
-    const titleHeight = titleEl.offsetHeight;
+      // kompaktere Maske
+      const maskW = titleWidth  + 40;
+      const maskH = titleHeight + 20;
 
-    nexus.style.setProperty("--mask-width",  (titleWidth + 60) + "px");
-    nexus.style.setProperty("--mask-height", (titleHeight + 05) + "px");
+      // Basiswerte für Puls-Animation
+      nexus.style.setProperty("--mask-width-base",  maskW + "px");
+      nexus.style.setProperty("--mask-height-base", maskH + "px");
+      nexus.style.setProperty("--mask-corner-base", "22px");
 
-    nexus.style.setProperty("--mask-corner-radius", "22px");
-    // 1) Puls-Animation
-    nexus.style.setProperty("--mask-width-base",  (titleWidth + 60) + "px");
-    nexus.style.setProperty("--mask-height-base", (titleHeight + 05) + "px");
-    nexus.style.setProperty("--mask-corner-base", "22px");
+      // aktuelle Werte
+      nexus.style.setProperty("--mask-width",  maskW + "px");
+      nexus.style.setProperty("--mask-height", maskH + "px");
+      nexus.style.setProperty("--mask-corner-radius", "22px");
 
+      // ---------------------------------------------
+      // B) Tile-Farb-Boost (C, beidseitig gleich)
+      // ---------------------------------------------
+      const tileAlpha = "D9"; // 85% Deckkraft
+      nexus.style.setProperty("--nexus-color-left",  tile.color + tileAlpha);
+      nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
 
-    // 2) Farbe der Kachel setzen
-nexus.style.setProperty("--nexus-color-left",  tile.color + "AA"); // 66% Deckkraft
-// nexus.style.setProperty("--nexus-color-right", tile.color + "55"); // 33% Deckkraft
-nexus.style.setProperty("--nexus-color-right", tile.color + "AA"); // 66% Deckkraft
+      // ---------------------------------------------
+      // C) Intensität
+      // ---------------------------------------------
+      const intensity = parseFloat(loadSetting("nexusIntensity") || "0.7");
+      nexus.style.setProperty("--nexus-intensity", intensity);
 
-    // 3) Intensität
-    const intensity = parseFloat(loadSetting("nexusIntensity") || "0.7");
-    nexus.style.setProperty("--nexus-intensity", intensity);
+      // ---------------------------------------------
+      // D) Stil setzen (mit Reflow)
+      // ---------------------------------------------
+      const styleKey = loadSetting("nexusStyle") || "soft";
 
-    // 4) Style neu setzen (mit Reflow)
-    const styleKey = loadSetting("nexusStyle") || "soft";
+      nexus.classList.remove(
+        "nexus-soft",
+        "nexus-aurora",
+        "nexus-hologram",
+        "nexus-plasma",
+        "nexus-nebula"
+      );
 
-nexus.classList.remove(
-  "nexus-soft",
-  "nexus-aurora",
-  "nexus-hologram",
-  "nexus-plasma",
-  "nexus-nebula"
-);
-    void nexus.offsetWidth; // Reflow erzwingen
-    nexus.classList.add("nexus-" + styleKey);
-  });
-}
-
-
+      void nexus.offsetWidth; // Reflow erzwingen
+      nexus.classList.add("nexus-" + styleKey);
+    });
+  }
 
   // ---------------------------------------------------------
-  // 4) Liste leeren und Apps einfügen
+  // 3) Liste leeren und Apps einfügen
   // ---------------------------------------------------------
   list.innerHTML = "";
 
@@ -4935,7 +4881,7 @@ nexus.classList.remove(
   });
 
   // ---------------------------------------------------------
-  // 5) Close-Button
+  // 4) Close-Button
   // ---------------------------------------------------------
   if (closeBtn) {
     closeBtn.onclick = () => {
@@ -4944,10 +4890,11 @@ nexus.classList.remove(
   }
 
   // ---------------------------------------------------------
-  // 6) Panel anzeigen
+  // 5) Panel anzeigen
   // ---------------------------------------------------------
   panel.style.display = "flex";
 }
+
 
 
 
