@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 5 <span id="appVersion"></span>
+  Tano – Version 6 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1754,14 +1754,14 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
   /* Dynamischer Radius */
   --mask-corner-radius: 22px;
 
-  /* Masken-Definition (robust) */
+  /* Masken-Definition (robust) TanoTano
   mask-image:
-    linear-gradient(black, black),      /* äußerer Block */
-    linear-gradient(white, white);      /* innerer Block */
+    linear-gradient(black, black),       äußerer Block 
+    linear-gradient(white, white);       innerer Block 
   -webkit-mask-image:
     linear-gradient(black, black),
     linear-gradient(white, white);
-
+*/
   mask-size:
     100% 100%,
     var(--mask-width) var(--mask-height);
@@ -2009,8 +2009,8 @@ mask-border-radius:
   
   /* VARIANTEN-STIL */
   background:
-  /*  linear-gradient(90deg, var(--nexus-color-left), var(--nexus-color-right)),*/
-    /*linear-gradient(90deg, rgba(255, 80, 0, 0.4), rgba(255, 0, 150, 0.4));*/
+  linear-gradient(90deg, var(--nexus-color-left), var(--nexus-color-right)),
+  linear-gradient(90deg, rgba(255, 80, 0, 0.4), rgba(255, 0, 150, 0.4));
   filter: blur(40px);
   opacity: var(--nexus-intensity);
   animation: plasmaFlow 16s ease-in-out infinite;
