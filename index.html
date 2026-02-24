@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 1 <span id="appVersion"></span>
+  Tano – Version 2 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1979,7 +1979,6 @@ mask-image:
 -webkit-mask-image:
   linear-gradient(black, black),
   linear-gradient(white, white);
-
 mask-size:
   100% 100%,
   var(--mask-width) var(--mask-height);
@@ -2004,7 +2003,9 @@ mask-border-radius:
 mask-composite: exclude;
 -webkit-mask-composite: xor;
 
-
+-webkit-mask-composite: source-over !important;
+  /*TanoTano*/
+  
   /* VARIANTEN-STIL */
   background:
     linear-gradient(90deg, var(--nexus-color-left), var(--nexus-color-right)),
