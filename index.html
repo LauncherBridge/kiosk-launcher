@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 5 <span id="appVersion"></span>
+  Tano – Version 6 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1724,9 +1724,6 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
 :root {
   --nexus-intensity: 0.7;
 
-  --mask-height: 20px;
-  --mask-corner-radius: 20px;
-
   --nexus-color-left: rgba(255,255,255,0.3);
   --nexus-color-right: rgba(255,255,255,0.3);
 }
@@ -1758,43 +1755,41 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
   /* ---------------------------------------------------------
      INVERTIERTE ROUNDED-RECT MASKE (2 Rechtecke!)
      --------------------------------------------------------- */
-  mask-image:
-    linear-gradient(black, black),
-    linear-gradient(black, black);
+mask-image:
+  linear-gradient(black, black),
+  linear-gradient(black, black);
 
-  -webkit-mask-image:
-    linear-gradient(black, black),
-    linear-gradient(black, black);
+-webkit-mask-image:
+  linear-gradient(black, black),
+  linear-gradient(black, black);
 
-  mask-size:
-    100% 100%,
-    var(--mask-width) var(--mask-height);
+mask-size:
+  100% 100%,
+  var(--mask-width) var(--mask-height);
 
-  -webkit-mask-size:
-    100% 100%,
-    var(--mask-width) var(--mask-height);
+-webkit-mask-size:
+  100% 100%,
+  var(--mask-width) var(--mask-height);
 
-  mask-position:
-    center,
-    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
+mask-position:
+  center,
+  calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
 
-  -webkit-mask-position:
-    center,
-    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
+-webkit-mask-position:
+  center,
+  calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
 
-  mask-repeat: no-repeat;
-  -webkit-mask-repeat: no-repeat;
+mask-border-radius:
+  0,
+  var(--mask-corner-radius);
 
-  mask-border-radius:
-    0,
-    var(--mask-corner-radius);
+-webkit-mask-border-radius:
+  0,
+  var(--mask-corner-radius);
 
-  -webkit-mask-border-radius:
-    0,
-    var(--mask-corner-radius);
+mask-composite: exclude;
+-webkit-mask-composite: xor;
 
-  mask-composite: exclude;
-  -webkit-mask-composite: xor;
 
   /* Aura-Basis */
   filter: blur(40px);
@@ -1824,10 +1819,44 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
 }
 
 
+
 /* -----------------------------------------------------------
    VARIANTE 1 – SOFT FOG (Ultra-Weich)
 ----------------------------------------------------------- */
 .header-nexus.nexus-soft {
+  /* MASKENLOGIK */
+  mask-image:
+    linear-gradient(black, black),
+    linear-gradient(black, black);
+  -webkit-mask-image:
+    linear-gradient(black, black),
+    linear-gradient(black, black);
+
+  mask-size:
+    100% 100%,
+    var(--mask-width) var(--mask-height);
+  -webkit-mask-size:
+    100% 100%,
+    var(--mask-width) var(--mask-height);
+
+  mask-position:
+    center,
+    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
+  -webkit-mask-position:
+    center,
+    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
+
+  mask-border-radius:
+    0,
+    var(--mask-corner-radius);
+  -webkit-mask-border-radius:
+    0,
+    var(--mask-corner-radius);
+
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+
+  /* VARIANTEN-STIL */
   background:
     linear-gradient(90deg, var(--nexus-color-left), var(--nexus-color-right)),
     linear-gradient(
@@ -1836,9 +1865,12 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
       color-mix(in srgb, var(--nexus-color-right) 60%, transparent)
     );
   filter: blur(55px);
+  opacity: var(--nexus-intensity);
   animation: softDrift 30s linear infinite;
 }
 
+
+    
 @keyframes softDrift {
   0%   { background-position: 0 0; }
   100% { background-position: 150% 0; }
@@ -1849,6 +1881,39 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
    VARIANTE 2 – AURORA (Mehrfarbig, Nordlicht)
 ----------------------------------------------------------- */
 .header-nexus.nexus-aurora {
+  /* MASKENLOGIK */
+  mask-image:
+    linear-gradient(black, black),
+    linear-gradient(black, black);
+  -webkit-mask-image:
+    linear-gradient(black, black),
+    linear-gradient(black, black);
+
+  mask-size:
+    100% 100%,
+    var(--mask-width) var(--mask-height);
+  -webkit-mask-size:
+    100% 100%,
+    var(--mask-width) var(--mask-height);
+
+  mask-position:
+    center,
+    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
+  -webkit-mask-position:
+    center,
+    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
+
+  mask-border-radius:
+    0,
+    var(--mask-corner-radius);
+  -webkit-mask-border-radius:
+    0,
+    var(--mask-corner-radius);
+
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+
+  /* VARIANTEN-STIL */
   background:
     linear-gradient(90deg, var(--nexus-color-left), var(--nexus-color-right)),
     linear-gradient(
@@ -1864,8 +1929,10 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
       rgba(255,255,255,0.02) 6px
     );
   filter: blur(45px);
+  opacity: var(--nexus-intensity);
   animation: auroraWave 22s ease-in-out infinite;
 }
+
 
 @keyframes auroraWave {
   0%   { background-position: 0% 0%; }
@@ -1877,6 +1944,39 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
    VARIANTE 3 – HOLOGRAMM (Sci-Fi HUD)
 ----------------------------------------------------------- */
 .header-nexus.nexus-hologram {
+  /* MASKENLOGIK */
+  mask-image:
+    linear-gradient(black, black),
+    linear-gradient(black, black);
+  -webkit-mask-image:
+    linear-gradient(black, black),
+    linear-gradient(black, black);
+
+  mask-size:
+    100% 100%,
+    var(--mask-width) var(--mask-height);
+  -webkit-mask-size:
+    100% 100%,
+    var(--mask-width) var(--mask-height);
+
+  mask-position:
+    center,
+    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
+  -webkit-mask-position:
+    center,
+    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
+
+  mask-border-radius:
+    0,
+    var(--mask-corner-radius);
+  -webkit-mask-border-radius:
+    0,
+    var(--mask-corner-radius);
+
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+
+  /* VARIANTEN-STIL */
   background:
     linear-gradient(90deg, var(--nexus-color-left), var(--nexus-color-right)),
     repeating-linear-gradient(
@@ -1891,8 +1991,10 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
       rgba(0, 80, 160, 0.4)
     );
   filter: blur(30px);
+  opacity: var(--nexus-intensity);
   animation: holoScan 12s linear infinite;
 }
+
 
 @keyframes holoScan {
   0%   { background-position: 0 0; }
@@ -1904,13 +2006,47 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
    VARIANTE 4 – PLASMA (Energieband)
 ----------------------------------------------------------- */
 .header-nexus.nexus-plasma {
+  /* MASKENLOGIK */
+  mask-image:
+    linear-gradient(black, black),
+    linear-gradient(black, black);
+  -webkit-mask-image:
+    linear-gradient(black, black),
+    linear-gradient(black, black);
+
+  mask-size:
+    100% 100%,
+    var(--mask-width) var(--mask-height);
+  -webkit-mask-size:
+    100% 100%,
+    var(--mask-width) var(--mask-height);
+
+  mask-position:
+    center,
+    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
+  -webkit-mask-position:
+    center,
+    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
+
+  mask-border-radius:
+    0,
+    var(--mask-corner-radius);
+  -webkit-mask-border-radius:
+    0,
+    var(--mask-corner-radius);
+
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+
+  /* VARIANTEN-STIL */
   background:
     linear-gradient(90deg, var(--nexus-color-left), var(--nexus-color-right)),
-
     linear-gradient(90deg, rgba(255, 80, 0, 0.4), rgba(255, 0, 150, 0.4));
   filter: blur(40px);
+  opacity: var(--nexus-intensity);
   animation: plasmaFlow 16s ease-in-out infinite;
 }
+
 
 @keyframes plasmaFlow {
   0%   { background-position: 0% 50%; }
@@ -1924,13 +2060,47 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
    VARIANTE 5– Nebula
 ----------------------------------------------------------- */
 .header-nexus.nexus-nebula {
+  /* MASKENLOGIK */
+  mask-image:
+    linear-gradient(black, black),
+    linear-gradient(black, black);
+  -webkit-mask-image:
+    linear-gradient(black, black),
+    linear-gradient(black, black);
+
+  mask-size:
+    100% 100%,
+    var(--mask-width) var(--mask-height);
+  -webkit-mask-size:
+    100% 100%,
+    var(--mask-width) var(--mask-height);
+
+  mask-position:
+    center,
+    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
+  -webkit-mask-position:
+    center,
+    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
+
+  mask-border-radius:
+    0,
+    var(--mask-corner-radius);
+  -webkit-mask-border-radius:
+    0,
+    var(--mask-corner-radius);
+
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+
+  /* VARIANTEN-STIL */
   background:
     linear-gradient(90deg, var(--nexus-color-left), var(--nexus-color-right)),
-
     linear-gradient(120deg, rgba(255, 100, 200, 0.3), rgba(0, 150, 255, 0.3));
   filter: blur(50px);
+  opacity: var(--nexus-intensity);
   animation: nebulaFlow 18s ease-in-out infinite;
 }
+
 
 @keyframes nebulaFlow {
   0%   { background-position: 0% 0%; }
