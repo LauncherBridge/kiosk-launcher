@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 4 <span id="appVersion"></span>
+  Tano – Version 5 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1723,7 +1723,7 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
 ----------------------------------------------------------- */
 :root {
   --nexus-intensity: 0.7;
-  --mask-width: 300px;
+
   --mask-height: 20px;
   --mask-corner-radius: 20px;
 
@@ -1756,35 +1756,49 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
   animation: nexusPulse 6s ease-in-out infinite;
 
   /* ---------------------------------------------------------
-     ROUNDED-RECT MASKE (normal)
+     INVERTIERTE ROUNDED-RECT MASKE (2 Rechtecke!)
      --------------------------------------------------------- */
-  mask-image: linear-gradient(black, black);
-  -webkit-mask-image: linear-gradient(black, black);
+  mask-image:
+    linear-gradient(black, black),
+    linear-gradient(black, black);
 
-  mask-size: var(--mask-width) var(--mask-height);
-  -webkit-mask-size: var(--mask-width) var(--mask-height);
+  -webkit-mask-image:
+    linear-gradient(black, black),
+    linear-gradient(black, black);
+
+  mask-size:
+    100% 100%,
+    var(--mask-width) var(--mask-height);
+
+  -webkit-mask-size:
+    100% 100%,
+    var(--mask-width) var(--mask-height);
 
   mask-position:
-    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2)
-    center;
+    center,
+    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
+
   -webkit-mask-position:
-    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2)
-    center;
+    center,
+    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
 
   mask-repeat: no-repeat;
   -webkit-mask-repeat: no-repeat;
 
-  mask-border-radius: var(--mask-corner-radius);
-  -webkit-mask-border-radius: var(--mask-corner-radius);
+  mask-border-radius:
+    0,
+    var(--mask-corner-radius);
 
-  /* ---------------------------------------------------------
-     INVERTIEREN → Box wird ausgeschnitten
-     --------------------------------------------------------- */
+  -webkit-mask-border-radius:
+    0,
+    var(--mask-corner-radius);
+
   mask-composite: exclude;
   -webkit-mask-composite: xor;
 
+  /* Aura-Basis */
   filter: blur(40px);
-  opacity: 1;
+  opacity: var(--nexus-intensity);
   transition: opacity 0.3s ease;
 }
 
@@ -1808,7 +1822,6 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
     --mask-corner-radius: calc(var(--mask-corner-base) * 1.00);
   }
 }
-
 
 
 /* -----------------------------------------------------------
@@ -1893,8 +1906,7 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
 .header-nexus.nexus-plasma {
   background:
     linear-gradient(90deg, var(--nexus-color-left), var(--nexus-color-right)),
-    radial-gradient(circle at 20% 50%, rgba(255, 200, 0, 0.6), transparent 60%),
-    radial-gradient(circle at 80% 50%, rgba(255, 0, 120, 0.6), transparent 60%),
+
     linear-gradient(90deg, rgba(255, 80, 0, 0.4), rgba(255, 0, 150, 0.4));
   filter: blur(40px);
   animation: plasmaFlow 16s ease-in-out infinite;
@@ -1914,8 +1926,7 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
 .header-nexus.nexus-nebula {
   background:
     linear-gradient(90deg, var(--nexus-color-left), var(--nexus-color-right)),
-    radial-gradient(circle at 30% 40%, rgba(255, 0, 180, 0.4), transparent 60%),
-    radial-gradient(circle at 70% 60%, rgba(0, 200, 255, 0.4), transparent 60%),
+
     linear-gradient(120deg, rgba(255, 100, 200, 0.3), rgba(0, 150, 255, 0.3));
   filter: blur(50px);
   animation: nebulaFlow 18s ease-in-out infinite;
