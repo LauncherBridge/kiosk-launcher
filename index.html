@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 9 <span id="appVersion"></span>
+  Tano – Version 1 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1731,69 +1731,66 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
 /* ---------------------------------------------------------
    NEXUS-BAND: Maskenlogik + Position + Puls-Animation
 --------------------------------------------------------- */
+/* ============================================
+   FINALER HEADER-NEXUS BLOCK (DYNAMISCHE MASKE)
+   ============================================ */
+
 .header-nexus {
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 8000;
 
-  /* Dynamische Maskenwerte (werden per JS gesetzt) */
---mask-width-base: calc(100% - 92px); /* 46px links + 46px rechts */
---mask-height-base: calc(100% - 15px); /* etwas Abstand oben/unten */
-
-  --mask-corner-base: 22px;
-
-  --mask-width: var(--mask-width-base);
-  --mask-height: var(--mask-height-base);
-  --mask-corner-radius: var(--mask-corner-base);
-
-  /* Abstand zwischen Plus (links) und Close (rechts) */
+  /* Dynamische Maskengröße */
   --mask-left-limit: 46px;
   --mask-right-limit: 46px;
 
-  animation: nexusPulse 6s ease-in-out infinite;
+  /* Dynamische Breite: Headerbreite minus linke/rechte Limits */
+  --mask-width: calc(100% - (var(--mask-left-limit) + var(--mask-right-limit)));
 
-  /* ---------------------------------------------------------
-     INVERTIERTE ROUNDED-RECT MASKE (2 Rechtecke!)
-     --------------------------------------------------------- */
-mask-image:
-  linear-gradient(black, black),      /* äußerer Block */
-  linear-gradient(white, white);      /* innerer Block */
--webkit-mask-image:
-  linear-gradient(black, black),
-  linear-gradient(white, white);
+  /* Dynamische Höhe: etwas kleiner als Headerhöhe */
+  --mask-height: calc(100% - 20px);
 
-mask-size:
-  100% 100%,
-  var(--mask-width) var(--mask-height);
--webkit-mask-size:
-  100% 100%,
-  var(--mask-width) var(--mask-height);
+  /* Dynamischer Radius */
+  --mask-corner-radius: 22px;
 
-mask-position:
-  center,
-  calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
--webkit-mask-position:
-  center,
-  calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
+  /* Masken-Definition (robust) */
+  mask-image:
+    linear-gradient(black, black),      /* äußerer Block */
+    linear-gradient(white, white);      /* innerer Block */
+  -webkit-mask-image:
+    linear-gradient(black, black),
+    linear-gradient(white, white);
 
-mask-border-radius:
-  0,
-  var(--mask-corner-radius);
--webkit-mask-border-radius:
-  0,
-  var(--mask-corner-radius);
+  mask-size:
+    100% 100%,
+    var(--mask-width) var(--mask-height);
+  -webkit-mask-size:
+    100% 100%,
+    var(--mask-width) var(--mask-height);
 
-mask-composite: exclude;
--webkit-mask-composite: xor;
+  mask-position:
+    center,
+    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
+  -webkit-mask-position:
+    center,
+    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
 
+  mask-border-radius:
+    0,
+    var(--mask-corner-radius);
+  -webkit-mask-border-radius:
+    0,
+    var(--mask-corner-radius);
 
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
 
-  /* Aura-Basis */
   filter: blur(40px);
   opacity: var(--nexus-intensity);
   transition: opacity 0.3s ease;
 }
+
 
 /* ---------------------------------------------------------
    Pulsierende Maskenform
@@ -1880,40 +1877,6 @@ mask-composite: exclude;
    VARIANTE 2 – AURORA (Mehrfarbig, Nordlicht)
 ----------------------------------------------------------- */
 .header-nexus.nexus-aurora {
-  /* MASKENLOGIK */
-mask-image:
-  linear-gradient(black, black),      /* äußerer Block */
-  linear-gradient(white, white);      /* innerer Block */
--webkit-mask-image:
-  linear-gradient(black, black),
-  linear-gradient(white, white);
-
-mask-size:
-  100% 100%,
-  var(--mask-width) var(--mask-height);
--webkit-mask-size:
-  100% 100%,
-  var(--mask-width) var(--mask-height);
-
-mask-position:
-  center,
-  calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
--webkit-mask-position:
-  center,
-  calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
-
-mask-border-radius:
-  0,
-  var(--mask-corner-radius);
--webkit-mask-border-radius:
-  0,
-  var(--mask-corner-radius);
-
-mask-composite: exclude;
--webkit-mask-composite: xor;
-
-
-  /* VARIANTEN-STIL */
   background:
     linear-gradient(90deg, var(--nexus-color-left), var(--nexus-color-right)),
     linear-gradient(
@@ -1928,10 +1891,12 @@ mask-composite: exclude;
       rgba(255,255,255,0.10) 3px,
       rgba(255,255,255,0.02) 6px
     );
+
   filter: blur(45px);
   opacity: var(--nexus-intensity);
   animation: auroraWave 22s ease-in-out infinite;
 }
+
 
 
 @keyframes auroraWave {
