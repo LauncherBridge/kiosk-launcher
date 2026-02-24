@@ -1756,17 +1756,15 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
      INVERTIERTE ROUNDED-RECT MASKE (2 Rechtecke!)
      --------------------------------------------------------- */
 mask-image:
-  linear-gradient(black, black),
-  linear-gradient(black, black);
-
+  linear-gradient(black, black),      /* äußerer Block */
+  linear-gradient(white, white);      /* innerer Block */
 -webkit-mask-image:
   linear-gradient(black, black),
-  linear-gradient(black, black);
+  linear-gradient(white, white);
 
 mask-size:
   100% 100%,
   var(--mask-width) var(--mask-height);
-
 -webkit-mask-size:
   100% 100%,
   var(--mask-width) var(--mask-height);
@@ -1774,7 +1772,6 @@ mask-size:
 mask-position:
   center,
   calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
-
 -webkit-mask-position:
   center,
   calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
@@ -1782,13 +1779,13 @@ mask-position:
 mask-border-radius:
   0,
   var(--mask-corner-radius);
-
 -webkit-mask-border-radius:
   0,
   var(--mask-corner-radius);
 
 mask-composite: exclude;
 -webkit-mask-composite: xor;
+
 
 
   /* Aura-Basis */
@@ -1825,36 +1822,37 @@ mask-composite: exclude;
 ----------------------------------------------------------- */
 .header-nexus.nexus-soft {
   /* MASKENLOGIK */
-  mask-image:
-    linear-gradient(black, black),
-    linear-gradient(black, black);
-  -webkit-mask-image:
-    linear-gradient(black, black),
-    linear-gradient(black, black);
+mask-image:
+  linear-gradient(black, black),      /* äußerer Block */
+  linear-gradient(white, white);      /* innerer Block */
+-webkit-mask-image:
+  linear-gradient(black, black),
+  linear-gradient(white, white);
 
-  mask-size:
-    100% 100%,
-    var(--mask-width) var(--mask-height);
-  -webkit-mask-size:
-    100% 100%,
-    var(--mask-width) var(--mask-height);
+mask-size:
+  100% 100%,
+  var(--mask-width) var(--mask-height);
+-webkit-mask-size:
+  100% 100%,
+  var(--mask-width) var(--mask-height);
 
-  mask-position:
-    center,
-    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
-  -webkit-mask-position:
-    center,
-    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
+mask-position:
+  center,
+  calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
+-webkit-mask-position:
+  center,
+  calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
 
-  mask-border-radius:
-    0,
-    var(--mask-corner-radius);
-  -webkit-mask-border-radius:
-    0,
-    var(--mask-corner-radius);
+mask-border-radius:
+  0,
+  var(--mask-corner-radius);
+-webkit-mask-border-radius:
+  0,
+  var(--mask-corner-radius);
 
-  mask-composite: exclude;
-  -webkit-mask-composite: xor;
+mask-composite: exclude;
+-webkit-mask-composite: xor;
+
 
   /* VARIANTEN-STIL */
   background:
@@ -1882,36 +1880,37 @@ mask-composite: exclude;
 ----------------------------------------------------------- */
 .header-nexus.nexus-aurora {
   /* MASKENLOGIK */
-  mask-image:
-    linear-gradient(black, black),
-    linear-gradient(black, black);
-  -webkit-mask-image:
-    linear-gradient(black, black),
-    linear-gradient(black, black);
+mask-image:
+  linear-gradient(black, black),      /* äußerer Block */
+  linear-gradient(white, white);      /* innerer Block */
+-webkit-mask-image:
+  linear-gradient(black, black),
+  linear-gradient(white, white);
 
-  mask-size:
-    100% 100%,
-    var(--mask-width) var(--mask-height);
-  -webkit-mask-size:
-    100% 100%,
-    var(--mask-width) var(--mask-height);
+mask-size:
+  100% 100%,
+  var(--mask-width) var(--mask-height);
+-webkit-mask-size:
+  100% 100%,
+  var(--mask-width) var(--mask-height);
 
-  mask-position:
-    center,
-    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
-  -webkit-mask-position:
-    center,
-    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
+mask-position:
+  center,
+  calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
+-webkit-mask-position:
+  center,
+  calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
 
-  mask-border-radius:
-    0,
-    var(--mask-corner-radius);
-  -webkit-mask-border-radius:
-    0,
-    var(--mask-corner-radius);
+mask-border-radius:
+  0,
+  var(--mask-corner-radius);
+-webkit-mask-border-radius:
+  0,
+  var(--mask-corner-radius);
 
-  mask-composite: exclude;
-  -webkit-mask-composite: xor;
+mask-composite: exclude;
+-webkit-mask-composite: xor;
+
 
   /* VARIANTEN-STIL */
   background:
@@ -1945,36 +1944,37 @@ mask-composite: exclude;
 ----------------------------------------------------------- */
 .header-nexus.nexus-hologram {
   /* MASKENLOGIK */
-  mask-image:
-    linear-gradient(black, black),
-    linear-gradient(black, black);
-  -webkit-mask-image:
-    linear-gradient(black, black),
-    linear-gradient(black, black);
+mask-image:
+  linear-gradient(black, black),      /* äußerer Block */
+  linear-gradient(white, white);      /* innerer Block */
+-webkit-mask-image:
+  linear-gradient(black, black),
+  linear-gradient(white, white);
 
-  mask-size:
-    100% 100%,
-    var(--mask-width) var(--mask-height);
-  -webkit-mask-size:
-    100% 100%,
-    var(--mask-width) var(--mask-height);
+mask-size:
+  100% 100%,
+  var(--mask-width) var(--mask-height);
+-webkit-mask-size:
+  100% 100%,
+  var(--mask-width) var(--mask-height);
 
-  mask-position:
-    center,
-    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
-  -webkit-mask-position:
-    center,
-    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
+mask-position:
+  center,
+  calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
+-webkit-mask-position:
+  center,
+  calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
 
-  mask-border-radius:
-    0,
-    var(--mask-corner-radius);
-  -webkit-mask-border-radius:
-    0,
-    var(--mask-corner-radius);
+mask-border-radius:
+  0,
+  var(--mask-corner-radius);
+-webkit-mask-border-radius:
+  0,
+  var(--mask-corner-radius);
 
-  mask-composite: exclude;
-  -webkit-mask-composite: xor;
+mask-composite: exclude;
+-webkit-mask-composite: xor;
+
 
   /* VARIANTEN-STIL */
   background:
@@ -2007,36 +2007,37 @@ mask-composite: exclude;
 ----------------------------------------------------------- */
 .header-nexus.nexus-plasma {
   /* MASKENLOGIK */
-  mask-image:
-    linear-gradient(black, black),
-    linear-gradient(black, black);
-  -webkit-mask-image:
-    linear-gradient(black, black),
-    linear-gradient(black, black);
+mask-image:
+  linear-gradient(black, black),      /* äußerer Block */
+  linear-gradient(white, white);      /* innerer Block */
+-webkit-mask-image:
+  linear-gradient(black, black),
+  linear-gradient(white, white);
 
-  mask-size:
-    100% 100%,
-    var(--mask-width) var(--mask-height);
-  -webkit-mask-size:
-    100% 100%,
-    var(--mask-width) var(--mask-height);
+mask-size:
+  100% 100%,
+  var(--mask-width) var(--mask-height);
+-webkit-mask-size:
+  100% 100%,
+  var(--mask-width) var(--mask-height);
 
-  mask-position:
-    center,
-    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
-  -webkit-mask-position:
-    center,
-    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
+mask-position:
+  center,
+  calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
+-webkit-mask-position:
+  center,
+  calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
 
-  mask-border-radius:
-    0,
-    var(--mask-corner-radius);
-  -webkit-mask-border-radius:
-    0,
-    var(--mask-corner-radius);
+mask-border-radius:
+  0,
+  var(--mask-corner-radius);
+-webkit-mask-border-radius:
+  0,
+  var(--mask-corner-radius);
 
-  mask-composite: exclude;
-  -webkit-mask-composite: xor;
+mask-composite: exclude;
+-webkit-mask-composite: xor;
+
 
   /* VARIANTEN-STIL */
   background:
@@ -2061,36 +2062,37 @@ mask-composite: exclude;
 ----------------------------------------------------------- */
 .header-nexus.nexus-nebula {
   /* MASKENLOGIK */
-  mask-image:
-    linear-gradient(black, black),
-    linear-gradient(black, black);
-  -webkit-mask-image:
-    linear-gradient(black, black),
-    linear-gradient(black, black);
+mask-image:
+  linear-gradient(black, black),      /* äußerer Block */
+  linear-gradient(white, white);      /* innerer Block */
+-webkit-mask-image:
+  linear-gradient(black, black),
+  linear-gradient(white, white);
 
-  mask-size:
-    100% 100%,
-    var(--mask-width) var(--mask-height);
-  -webkit-mask-size:
-    100% 100%,
-    var(--mask-width) var(--mask-height);
+mask-size:
+  100% 100%,
+  var(--mask-width) var(--mask-height);
+-webkit-mask-size:
+  100% 100%,
+  var(--mask-width) var(--mask-height);
 
-  mask-position:
-    center,
-    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
-  -webkit-mask-position:
-    center,
-    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
+mask-position:
+  center,
+  calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
+-webkit-mask-position:
+  center,
+  calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
 
-  mask-border-radius:
-    0,
-    var(--mask-corner-radius);
-  -webkit-mask-border-radius:
-    0,
-    var(--mask-corner-radius);
+mask-border-radius:
+  0,
+  var(--mask-corner-radius);
+-webkit-mask-border-radius:
+  0,
+  var(--mask-corner-radius);
 
-  mask-composite: exclude;
-  -webkit-mask-composite: xor;
+mask-composite: exclude;
+-webkit-mask-composite: xor;
+
 
   /* VARIANTEN-STIL */
   background:
