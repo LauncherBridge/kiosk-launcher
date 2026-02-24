@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 8 <span id="appVersion"></span>
+  Tano – Version 9 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1738,8 +1738,9 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
   z-index: 8000;
 
   /* Dynamische Maskenwerte (werden per JS gesetzt) */
-  --mask-width-base: 300px;
-  --mask-height-base: 120px;
+--mask-width-base: calc(100% - 92px); /* 46px links + 46px rechts */
+--mask-height-base: calc(100% - 15px); /* etwas Abstand oben/unten */
+
   --mask-corner-base: 22px;
 
   --mask-width: var(--mask-width-base);
