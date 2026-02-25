@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 2 <span id="appVersion"></span>
+  Tano – Version 3 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -2638,74 +2638,6 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 
 </div>
 
-function renderAllTileSettings() {
-  const container = document.getElementById("tileSettingsContent");
-  container.innerHTML = "";
-
-  tiles.forEach(tile => {
-    const nx = loadNexusSettings(tile.name);
-
-    const block = document.createElement("div");
-    block.className = "settings-section";
-    block.style.marginBottom = "20px";
-
-    block.innerHTML = `
-      <h3>${tile.name}</h3>
-
-      <label>Kacheltyp:</label>
-      <div class="settings-value">${tile.type}</div>
-
-      <label>Farbe:</label>
-      <div class="settings-value">${tile.color || "Standard"}</div>
-
-      <label>Variante:</label>
-      <select class="nexusVariant" data-tile="${tile.name}">
-        <option value="soft">Soft Fog</option>
-        <option value="aurora">Aurora</option>
-        <option value="hologram">Hologramm</option>
-        <option value="plasma">Plasma</option>
-        <option value="nebula">Nebula</option>
-      </select>
-
-      <label>Effektbereich:</label>
-      <select class="nexusBoundary" data-tile="${tile.name}">
-        <option value="glow">Glow (strahlt nach unten)</option>
-        <option value="bounded">Begrenzt (nur im Header)</option>
-      </select>
-
-      <label>Intensität:</label>
-      <input type="range" class="nexusIntensity" data-tile="${tile.name}" min="0" max="1" step="0.01">
-
-      <button class="saveNexusTileSettings" data-tile="${tile.name}">
-        Speichern
-      </button>
-    `;
-
-    container.appendChild(block);
-
-    // Werte setzen
-    block.querySelector(".nexusVariant").value = nx.variant;
-    block.querySelector(".nexusBoundary").value = nx.boundary;
-    block.querySelector(".nexusIntensity").value = nx.intensity;
-  });
-}
-
-document.addEventListener("click", (e) => {
-  if (e.target.classList.contains("saveNexusTileSettings")) {
-    const tileName = e.target.dataset.tile;
-
-    const variant = document.querySelector(`.nexusVariant[data-tile="${tileName}"]`).value;
-    const boundary = document.querySelector(`.nexusBoundary[data-tile="${tileName}"]`).value;
-    const intensity = parseFloat(document.querySelector(`.nexusIntensity[data-tile="${tileName}"]`).value);
-
-    saveNexusSettings(tileName, { variant, boundary, intensity });
-
-    alert(`Einstellungen für "${tileName}" gespeichert.`);
-  }
-});
-
-
-
 
 <div id="textContainer">
   <div id="clock"></div>
@@ -2943,6 +2875,74 @@ if (savedContextSetting === "true") {
   enableContextMenuBlock();
 }
 
+function renderAllTileSettings() {
+  const container = document.getElementById("tileSettingsContent");
+  container.innerHTML = "";
+
+  tiles.forEach(tile => {
+    const nx = loadNexusSettings(tile.name);
+
+    const block = document.createElement("div");
+    block.className = "settings-section";
+    block.style.marginBottom = "20px";
+
+    block.innerHTML = `
+      <h3>${tile.name}</h3>
+
+      <label>Kacheltyp:</label>
+      <div class="settings-value">${tile.type}</div>
+
+      <label>Farbe:</label>
+      <div class="settings-value">${tile.color || "Standard"}</div>
+
+      <label>Variante:</label>
+      <select class="nexusVariant" data-tile="${tile.name}">
+        <option value="soft">Soft Fog</option>
+        <option value="aurora">Aurora</option>
+        <option value="hologram">Hologramm</option>
+        <option value="plasma">Plasma</option>
+        <option value="nebula">Nebula</option>
+      </select>
+
+      <label>Effektbereich:</label>
+      <select class="nexusBoundary" data-tile="${tile.name}">
+        <option value="glow">Glow (strahlt nach unten)</option>
+        <option value="bounded">Begrenzt (nur im Header)</option>
+      </select>
+
+      <label>Intensität:</label>
+      <input type="range" class="nexusIntensity" data-tile="${tile.name}" min="0" max="1" step="0.01">
+
+      <button class="saveNexusTileSettings" data-tile="${tile.name}">
+        Speichern
+      </button>
+    `;
+
+    container.appendChild(block);
+
+    // Werte setzen
+    block.querySelector(".nexusVariant").value = nx.variant;
+    block.querySelector(".nexusBoundary").value = nx.boundary;
+    block.querySelector(".nexusIntensity").value = nx.intensity;
+  });
+}
+
+document.addEventListener("click", (e) => {
+  if (e.target.classList.contains("saveNexusTileSettings")) {
+    const tileName = e.target.dataset.tile;
+
+    const variant = document.querySelector(`.nexusVariant[data-tile="${tileName}"]`).value;
+    const boundary = document.querySelector(`.nexusBoundary[data-tile="${tileName}"]`).value;
+    const intensity = parseFloat(document.querySelector(`.nexusIntensity[data-tile="${tileName}"]`).value);
+
+    saveNexusSettings(tileName, { variant, boundary, intensity });
+
+    alert(`Einstellungen für "${tileName}" gespeichert.`);
+  }
+});
+
+
+  
 // ---------------------------------------------------------
 // Nexus-Einstellungen pro Kachel
 // ---------------------------------------------------------
