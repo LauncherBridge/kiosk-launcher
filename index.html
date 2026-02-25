@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 9 <span id="appVersion"></span>
+  Tano – Version 1 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1818,58 +1818,34 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
 /* -----------------------------------------------------------
    VARIANTE 1 – SOFT FOG (Ultra-Weich)
 ----------------------------------------------------------- */
+/* -----------------------------------------------------------
+   VARIANTE 1 – SOFT FOG (Neu, sichtbar, kompatibel)
+----------------------------------------------------------- */
 .header-nexus.nexus-soft {
-  /* MASKENLOGIK */
-mask-image:
-  linear-gradient(black, black),      /* äußerer Block */
-  linear-gradient(white, white);      /* innerer Block */
--webkit-mask-image:
-  linear-gradient(black, black),
-  linear-gradient(white, white);
-
-mask-size:
-  100% 100%,
-  var(--mask-width) var(--mask-height);
--webkit-mask-size:
-  100% 100%,
-  var(--mask-width) var(--mask-height);
-
-mask-position:
-  center,
-  calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
--webkit-mask-position:
-  center,
-  calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
-
-mask-border-radius:
-  0,
-  var(--mask-corner-radius);
--webkit-mask-border-radius:
-  0,
-  var(--mask-corner-radius);
-
-mask-composite: exclude;
--webkit-mask-composite: xor;
-
-
-  /* VARIANTEN-STIL */
+  /* Sichtbarer Fog-Layer */
   background:
-    linear-gradient(90deg, var(--nexus-color-left), var(--nexus-color-right)),
+    radial-gradient(
+      circle at 30% 40%,
+      rgba(255, 255, 255, 0.35),
+      rgba(255, 255, 255, 0.05) 60%,
+      transparent 100%
+    ),
     linear-gradient(
       90deg,
-      color-mix(in srgb, var(--nexus-color-left) 60%, transparent),
-      color-mix(in srgb, var(--nexus-color-right) 60%, transparent)
+      color-mix(in srgb, var(--nexus-color-left) 40%, transparent),
+      color-mix(in srgb, var(--nexus-color-right) 40%, transparent)
     );
+
   filter: blur(55px);
   opacity: var(--nexus-intensity);
-  animation: softDrift 30s linear infinite;
+
+  animation: softFogDrift 28s ease-in-out infinite;
 }
 
-
-    
-@keyframes softDrift {
-  0%   { background-position: 0 0; }
-  100% { background-position: 150% 0; }
+@keyframes softFogDrift {
+  0%   { background-position: 0% 0%; }
+  50%  { background-position: 120% 80%; }
+  100% { background-position: 0% 0%; }
 }
 
 
