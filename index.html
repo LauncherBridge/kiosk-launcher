@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 8 <span id="appVersion"></span>
+  Tano – Version 9 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -2078,6 +2078,24 @@ mask-composite: exclude;
   100% { background-position: 0% 0%; }
 }
 
+
+/* ============================================================
+   NEXUS GLOBAL BOUNDARY SYSTEM
+   ============================================================ */
+
+.header-nexus.nexus-bounded {
+  mask-image: linear-gradient(black, black);
+  -webkit-mask-image: linear-gradient(black, black);
+  mask-size: 100% 100%;
+  -webkit-mask-size: 100% 100%;
+  mask-position: center;
+  -webkit-mask-position: center;
+}
+
+.header-nexus.nexus-glow {
+  mask-image: none !important;
+  -webkit-mask-image: none !important;
+}
 
 
 
@@ -4975,21 +4993,41 @@ function openAppsPanel(tile) {
       const intensity = parseFloat(loadSetting("nexusIntensity") || "0.7");
       nexus.style.setProperty("--nexus-intensity", intensity);
 
-      // ---------------------------------------------
-      // D) Stil setzen (mit Reflow)
-      // ---------------------------------------------
-      const styleKey = loadSetting("nexusStyle") || "soft";
+  // ---------------------------------------------
+// D) Stil setzen (mit Reflow)
+// ---------------------------------------------
+const styleKey = loadSetting("nexusStyle") || "soft";
 
-      nexus.classList.remove(
-        "nexus-soft",
-        "nexus-aurora",
-        "nexus-hologram",
-        "nexus-plasma",
-        "nexus-nebula"
-      );
+nexus.classList.remove(
+  "nexus-soft",
+  "nexus-aurora",
+  "nexus-hologram",
+  "nexus-plasma",
+  "nexus-nebula",
+  "nexus-bounded",
+  "nexus-glow"
+);
 
-      void nexus.offsetWidth; // Reflow erzwingen
-      nexus.classList.add("nexus-" + styleKey);
+void nexus.offsetWidth; // Reflow erzwingen
+nexus.classList.add("nexus-" + styleKey);
+
+// ---------------------------------------------
+// E) Boundary setzen (TESTWERT für Schritt 2)
+// ---------------------------------------------
+// Später kommt hier: loadSetting("nexusBoundaryMode")
+const boundaryMode = "glow"; // <-- TEST: "glow" oder "bounded"
+
+if (boundaryMode === "bounded") {
+  nexus.classList.add("nexus-bounded");
+} else {
+  nexus.classList.add("nexus-glow");
+}
+
+
+
+
+
+      
     });
   }
 
