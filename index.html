@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 9 <span id="appVersion"></span>
+  Tano – Version 1 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -2812,8 +2812,6 @@ function initUIListeners() {
     saveSetting("nexusIntensity", e.target.value);
   });
 
-
-  
 }
 
   
@@ -2879,6 +2877,26 @@ if (savedContextSetting === "true") {
   enableContextMenuBlock();
 }
 
+// ---------------------------------------------------------
+// Nexus-Einstellungen pro Kachel
+// ---------------------------------------------------------
+let nexusSettingsPerTile = JSON.parse(localStorage.getItem("nexusSettingsPerTile") || "{}");
+
+function saveNexusSettings(tileName, settings) {
+  nexusSettingsPerTile[tileName] = {
+    ...nexusSettingsPerTile[tileName],
+    ...settings
+  };
+  localStorage.setItem("nexusSettingsPerTile", JSON.stringify(nexusSettingsPerTile));
+}
+
+function loadNexusSettings(tileName) {
+  return nexusSettingsPerTile[tileName] || {
+    variant: "soft",
+    boundary: "glow",
+    intensity: 0.7
+  };
+}
 
 
 
@@ -4919,20 +4937,29 @@ function openAppsPanel(tile) {
   // ---------------------------------------------
 // D) Stil setzen (mit Reflow)
 // ---------------------------------------------
-const styleKey = loadSetting("nexusStyle") || "soft";
+// ---------------------------------------------------------
+// Kachel-spezifische Nexus-Einstellungen laden
+// ---------------------------------------------------------
+const nx = loadNexusSettings(tile.name);
 
+// Variante setzen
 nexus.classList.remove(
   "nexus-soft",
   "nexus-aurora",
   "nexus-hologram",
   "nexus-plasma",
-  "nexus-nebula",
-  "nexus-bounded",
-  "nexus-glow"
+  "nexus-nebula"
 );
+void nexus.offsetWidth;
+nexus.classList.add("nexus-" + nx.variant);
 
-void nexus.offsetWidth; // Reflow erzwingen
-nexus.classList.add("nexus-" + styleKey);
+// Boundary setzen
+nexus.classList.remove("nexus-glow", "nexus-bounded");
+nexus.classList.add(nx.boundary === "bounded" ? "nexus-bounded" : "nexus-glow");
+
+// Intensität setzen
+nexus.style.setProperty("--nexus-intensity", nx.intensity);
+
 
 // ---------------------------------------------
 // E) Boundary setzen (TESTWERT für Schritt 2)
