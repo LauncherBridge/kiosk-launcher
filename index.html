@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 7 <span id="appVersion"></span>
+  Tano – Version 8 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1925,56 +1925,41 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
 /* -----------------------------------------------------------
    VARIANTE 4 – PLASMA (Energieband)
 ----------------------------------------------------------- */
+/* -----------------------------------------------------------
+   VARIANTE 4 – PLASMA (Energieband, neu & maskenfrei)
+----------------------------------------------------------- */
 .header-nexus.nexus-plasma {
-  /* MASKENLOGIK */
-mask-image:
-  linear-gradient(black, black),      /* äußerer Block */
-  linear-gradient(white, white);      /* innerer Block */
--webkit-mask-image:
-  linear-gradient(black, black),
-  linear-gradient(white, white);
-mask-size:
-  100% 100%,
-  var(--mask-width) var(--mask-height);
--webkit-mask-size:
-  100% 100%,
-  var(--mask-width) var(--mask-height);
-
-mask-position:
-  center,
-  calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
--webkit-mask-position:
-  center,
-  calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
-
-mask-border-radius:
-  0,
-  var(--mask-corner-radius);
--webkit-mask-border-radius:
-  0,
-  var(--mask-corner-radius);
-
-/*mask-composite: exclude;*/
--webkit-mask-composite: xor;
-  /*TanoTano*/
-
--webkit-mask-composite: source-over !important;
-  /*TanoTano*/
-  
-  /* VARIANTEN-STIL */
   background:
-  linear-gradient(90deg, var(--nexus-color-left), var(--nexus-color-right)),
-  linear-gradient(90deg, rgba(255, 80, 0, 0.4), rgba(255, 0, 150, 0.4));
-  filter: blur(40px);
+    /* Energetische Plasma-Welle */
+    linear-gradient(
+      90deg,
+      rgba(255, 80, 0, 0.45),
+      rgba(255, 0, 150, 0.45)
+    ),
+    /* Tieferer Energie-Glow */
+    radial-gradient(
+      circle at 50% 50%,
+      rgba(255, 120, 80, 0.35),
+      rgba(255, 0, 120, 0.05) 60%,
+      transparent 100%
+    ),
+    /* Farbanpassung durch Tile */
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--nexus-color-left) 35%, transparent),
+      color-mix(in srgb, var(--nexus-color-right) 35%, transparent)
+    );
+
+  filter: blur(45px);
   opacity: var(--nexus-intensity);
-  animation: plasmaFlow 16s ease-in-out infinite;
+
+  animation: plasmaFlowNew 14s ease-in-out infinite;
 }
 
-
-@keyframes plasmaFlow {
-  0%   { background-position: 0% 50%; }
-  50%  { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+@keyframes plasmaFlowNew {
+  0%   { background-position: 0% 50%, 0% 0%, 0% 0%; }
+  50%  { background-position: 120% 50%, 20% 40%, 0% 0%; }
+  100% { background-position: 0% 50%, 0% 0%, 0% 0%; }
 }
 
 
