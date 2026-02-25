@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 3 <span id="appVersion"></span>
+  Tano – Version 4 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -5025,19 +5025,7 @@ function openAppsPanel(tile) {
       
       // Intensität setzen
       nexus.style.setProperty("--nexus-intensity", nx.intensity);
-      
-      
-      // ---------------------------------------------
-      // E) Boundary setzen (TESTWERT für Schritt 2)
-      // ---------------------------------------------
-      // Später kommt hier: loadSetting("nexusBoundaryMode")
-      const boundaryMode = "glow"; // <-- TEST: "glow" oder "bounded"
-      
-      if (boundaryMode === "bounded") {
-        nexus.classList.add("nexus-bounded");
-      } else {
-        nexus.classList.add("nexus-glow");
-      }  
+
     });
   }
 
