@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 5 <span id="appVersion"></span>
+  Tano – Version 6 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1980,56 +1980,40 @@ mask-border-radius:
 
 
 /* -----------------------------------------------------------
-   VARIANTE 5– Nebula
+   VARIANTE 5 – NEBULA (kräftig, energiereich, neu & sichtbar)
 ----------------------------------------------------------- */
 .header-nexus.nexus-nebula {
-  /* MASKENLOGIK */
-mask-image:
-  linear-gradient(black, black),      /* äußerer Block */
-  linear-gradient(white, white);      /* innerer Block */
--webkit-mask-image:
-  linear-gradient(black, black),
-  linear-gradient(white, white);
-
-mask-size:
-  100% 100%,
-  var(--mask-width) var(--mask-height);
--webkit-mask-size:
-  100% 100%,
-  var(--mask-width) var(--mask-height);
-
-mask-position:
-  center,
-  calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
--webkit-mask-position:
-  center,
-  calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
-
-mask-border-radius:
-  0,
-  var(--mask-corner-radius);
--webkit-mask-border-radius:
-  0,
-  var(--mask-corner-radius);
-
-mask-composite: exclude;
--webkit-mask-composite: xor;
-
-
-  /* VARIANTEN-STIL */
   background:
-    linear-gradient(90deg, var(--nexus-color-left), var(--nexus-color-right)),
-    linear-gradient(120deg, rgba(255, 100, 200, 0.3), rgba(0, 150, 255, 0.3));
+    /* Energetische Farbwellen */
+    radial-gradient(
+      circle at 20% 30%,
+      rgba(255, 80, 200, 0.45),
+      rgba(255, 80, 200, 0.05) 60%,
+      transparent 100%
+    ),
+    radial-gradient(
+      circle at 80% 60%,
+      rgba(0, 150, 255, 0.45),
+      rgba(0, 150, 255, 0.05) 60%,
+      transparent 100%
+    ),
+    /* Farbanpassung durch Tile */
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--nexus-color-left) 35%, transparent),
+      color-mix(in srgb, var(--nexus-color-right) 35%, transparent)
+    );
+
   filter: blur(50px);
   opacity: var(--nexus-intensity);
-  animation: nebulaFlow 18s ease-in-out infinite;
+
+  animation: nebulaPulse 20s ease-in-out infinite;
 }
 
-
-@keyframes nebulaFlow {
-  0%   { background-position: 0% 0%; }
-  50%  { background-position: 120% 80%; }
-  100% { background-position: 0% 0%; }
+@keyframes nebulaPulse {
+  0%   { background-position: 0% 0%, 0% 0%, 0% 0%; }
+  50%  { background-position: 20% 40%, -20% -30%, 0% 0%; }
+  100% { background-position: 0% 0%, 0% 0%, 0% 0%; }
 }
 
 
