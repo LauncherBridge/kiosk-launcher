@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 6 <span id="appVersion"></span>
+  Tano – Version 7 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1734,6 +1734,11 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
 /* ============================================
    FINALER HEADER-NEXUS BLOCK (DYNAMISCHE MASKE)
    ============================================ */
+.header-nexus {
+  --mask-center-x: 50%;
+  --mask-center-y: 50%;
+  --mask-hole-radius: 0px;
+}
 
 .header-nexus {
   position: absolute;
@@ -4951,6 +4956,7 @@ function resetAppsPanelHeader() {
 
 
 function openAppsPanel(tile) {
+  panel.style.display = "flex";
   resetAppsPanelHeader();
 
   if (!tile) return;
@@ -4975,9 +4981,9 @@ function openAppsPanel(tile) {
   // ---------------------------------------------------------
   // 2) Header-Effekt (Nexus-Band)
   // ---------------------------------------------------------
-  if (nexus) {
-    requestAnimationFrame(() => {
-
+ 
+  requestAnimationFrame(() => {
+     if (nexus) {
       // ---------------------------------------------
       // A) Titelgröße messen → Maskengröße bestimmen
       // ---------------------------------------------
@@ -5105,7 +5111,7 @@ function openAppsPanel(tile) {
   // ---------------------------------------------------------
   // 5) Panel anzeigen
   // ---------------------------------------------------------
-  panel.style.display = "flex";
+  //panel.style.display = "flex";
 }
  
 function renderApps(apps) {
