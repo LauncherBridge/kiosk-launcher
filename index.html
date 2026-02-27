@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 1 <span id="appVersion"></span>
+  Tano – Version 2 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1752,7 +1752,6 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
      MASKEN: RECHTECK + LOCH
      ============================ */
   mask-image:
-    /* Loch um den Titel */
     radial-gradient(
       circle at var(--mask-center-x) var(--mask-center-y),
       transparent 0,
@@ -1760,15 +1759,31 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
       black calc(var(--mask-hole-radius)),
       black 100%
     ),
+    linear-gradient(black, black);
 
-    /* Rechteckige Grundmaske */
+  -webkit-mask-image:
+    radial-gradient(
+      circle at var(--mask-center-x) var(--mask-center-y),
+      transparent 0,
+      transparent calc(var(--mask-hole-radius) - 8px),
+      black calc(var(--mask-hole-radius)),
+      black 100%
+    ),
     linear-gradient(black, black);
 
   mask-size:
     100% 100%,
     var(--mask-width) var(--mask-height);
 
+  -webkit-mask-size:
+    100% 100%,
+    var(--mask-width) var(--mask-height);
+
   mask-position:
+    center,
+    center;
+
+  -webkit-mask-position:
     center,
     center;
 
@@ -1779,6 +1794,7 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
   opacity: var(--nexus-intensity);
   transition: opacity 0.3s ease;
 }
+
 
 
 
