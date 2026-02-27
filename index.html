@@ -452,7 +452,32 @@ body {
   overflow: hidden;
 }
 
+.tile {
+  position: relative;
+  overflow: hidden;
+}
 
+.tile-nexus {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  z-index: 1;
+}
+
+.tile:hover .tile-nexus,
+.tile.hovered .tile-nexus {
+  opacity: 1;
+}
+
+.tile-content {
+  position: relative;
+  z-index: 2;
+}
+
+
+    
 
 
 .tiles-colored .tile {
@@ -1182,7 +1207,7 @@ body {
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 5 <span id="appVersion"></span>
+  Tano – Version 6 <span id="appVersion"></span>
 </div>
 
   <div class="header">
