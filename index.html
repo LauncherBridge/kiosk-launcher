@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 8 <span id="appVersion"></span>
+  Tano – Version 1 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1741,55 +1741,45 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
   pointer-events: none;
   z-index: 1000;
 
-  /* Dynamische Maskengröße */
   --mask-left-limit: 46px;
   --mask-right-limit: 46px;
 
-  /* Dynamische Breite: Headerbreite minus linke/rechte Limits */
   --mask-width: calc(100% - (var(--mask-left-limit) + var(--mask-right-limit)));
-
-  /* Dynamische Höhe: etwas kleiner als Headerhöhe */
   --mask-height: calc(100% - 20px);
-
-  /* Dynamischer Radius */
   --mask-corner-radius: 22px;
 
-  /* Masken-Definition (robust) TanoTano
+  /* ============================
+     MASKEN: RECHTECK + LOCH
+     ============================ */
   mask-image:
-    linear-gradient(black, black),       äußerer Block 
-    linear-gradient(white, white);       innerer Block 
-  -webkit-mask-image:
-    linear-gradient(black, black),
-    linear-gradient(white, white);
+    /* Loch um den Titel */
+    radial-gradient(
+      circle at var(--mask-center-x) var(--mask-center-y),
+      transparent 0,
+      transparent calc(var(--mask-hole-radius) - 8px),
+      black calc(var(--mask-hole-radius)),
+      black 100%
+    ),
+
+    /* Rechteckige Grundmaske */
+    linear-gradient(black, black);
 
   mask-size:
-    100% 100%,
-    var(--mask-width) var(--mask-height);
-  -webkit-mask-size:
     100% 100%,
     var(--mask-width) var(--mask-height);
 
   mask-position:
     center,
-    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
-  -webkit-mask-position:
-    center,
-    calc(50% + (var(--mask-left-limit) - var(--mask-right-limit)) / 2) center;
-
-  mask-border-radius:
-    0,
-    var(--mask-corner-radius);
-  -webkit-mask-border-radius:
-    0,
-    var(--mask-corner-radius);
+    center;
 
   mask-composite: exclude;
   -webkit-mask-composite: xor;
-*/
+
   filter: blur(40px);
   opacity: var(--nexus-intensity);
   transition: opacity 0.3s ease;
 }
+
 
 
 /* ---------------------------------------------------------
@@ -4987,6 +4977,16 @@ function openAppsPanel(tile) {
       nexus.style.setProperty("--mask-height", maskH + "px");
       nexus.style.setProperty("--mask-corner-radius", "22px");
 
+
+      // Lochradius eng um den Titel
+      const holeRadius = Math.max(maskW, maskH) * 0.45;
+      
+      // Lochposition (immer Mitte des Nexus-Bandes)
+      nexus.style.setProperty("--mask-center-x", "50%");
+      nexus.style.setProperty("--mask-center-y", "50%");
+      nexus.style.setProperty("--mask-hole-radius", holeRadius + "px");
+
+      
       // ---------------------------------------------
       // B) Tile-Farb-Boost (C, beidseitig gleich)
       // ---------------------------------------------
