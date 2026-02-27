@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 5 <span id="appVersion"></span>
+  Tano – Version 6 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1779,23 +1779,30 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
     100% 100%,
     var(--mask-width) var(--mask-height);
 
-  -webkit-mask-position:
-    center,
-    center;
+  -webkit-mask-position: center, center;
+  mask-position: center, center;
 
-  mask-position:
-    center,
-    center;
-
-  /* WICHTIG: Chrome/WebView akzeptiert nur XOR */
   -webkit-mask-composite: xor;
   mask-composite: exclude;
 
-  filter: blur(40px);
+  /* WICHTIG: KEIN BLUR HIER! */
   opacity: var(--nexus-intensity);
   transition: opacity 0.3s ease;
-
 }
+.header-nexus::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+
+  /* Hier kommen die Nexus-Varianten rein */
+  background: transparent;
+
+  filter: blur(40px);
+  opacity: inherit;
+  transition: inherit;
+}
+
 
 
 
@@ -1830,8 +1837,7 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
 /* -----------------------------------------------------------
    VARIANTE 1 – SOFT FOG (Neu, sichtbar, kompatibel)
 ----------------------------------------------------------- */
-.header-nexus.nexus-soft {
-  /* Sichtbarer Fog-Layer */
+.header-nexus.nexus-soft::before {
   background:
     radial-gradient(
       circle at 30% 40%,
@@ -1844,12 +1850,8 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
       color-mix(in srgb, var(--nexus-color-left) 40%, transparent),
       color-mix(in srgb, var(--nexus-color-right) 40%, transparent)
     );
-
-filter: none;
-  opacity: var(--nexus-intensity);
-
-  animation: softFogDrift 28s ease-in-out infinite;
 }
+
 
 @keyframes softFogDrift {
   0%   { background-position: 0% 0%; }
