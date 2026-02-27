@@ -423,12 +423,11 @@ body {
 }
 
 
-/* Dein bestehendes Tile-Layout */
 .tile {
   min-width: 140px;
   height: 140px;
   background: rgba(0,0,0,0.35);
-  opacity: 1;
+opacity: 1; /* inaktiver Zustand */
   border-radius: 20px;
   display: flex;
   justify-content: center;
@@ -440,44 +439,12 @@ body {
   user-select: none;
   cursor: pointer;
   transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease,
-    background 0.6s ease,
-    opacity 0.4s ease;
+  transform 0.15s ease,
+  box-shadow 0.15s ease,
+  background 0.6s ease,
+  opacity 0.4s ease;
 }
 
-/* Ergänzung für Nexus-Hover */
-.tile {
-  position: relative;
-  overflow: hidden;
-}
-
-.tile {
-  position: relative;
-  overflow: hidden;
-}
-
-.tile-nexus {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.25s ease;
-  z-index: 1;
-}
-
-.tile:hover .tile-nexus,
-.tile.hovered .tile-nexus {
-  opacity: 1;
-}
-
-.tile-content {
-  position: relative;
-  z-index: 2;
-}
-
-
-    
 
 
 .tiles-colored .tile {
@@ -1207,7 +1174,7 @@ body {
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 8 <span id="appVersion"></span>
+  Tano – Version 4 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -2305,31 +2272,7 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 }
 
 
-.tile {
-  position: relative;
-  overflow: hidden;
-}
 
-/* TEST: Nexus sichtbar machen */
-.tile-nexus {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0;
-  background: rgba(0, 255, 180, 0.35); /* TEST: giftgrüner Schleier */
-  transition: opacity 0.2s ease;
-  z-index: 1;
-}
-
-.tile:hover .tile-nexus,
-.tile.hovered .tile-nexus {
-  opacity: 1;
-}
-
-.tile-content {
-  position: relative;
-  z-index: 2;
-}
 
 
     
@@ -3133,25 +3076,11 @@ function renderTiles() {
   tiles.forEach(tileData => {
     const tile = document.createElement("div");
     tile.className = "tile";
-    tile.innerHTML = `
-      <div class="tile-nexus"></div>
-      <div class="tile-content">${tileData.name}</div>
-    `;
+    tile.innerText = tileData.name;
 
     // Farbe speichern
     tile.dataset.color = tileData.color;
     tile.style.setProperty("--tile-hover-color", tileData.color);
-      const nx = loadNexusSettings(tileData.name);
-      const nexus = tile.querySelector(".tile-nexus");
-      
-      // Variante
-      nexus.classList.add("nexus-" + nx.variant);
-      
-      // Boundary
-      nexus.classList.add(nx.boundary === "bounded" ? "nexus-bounded" : "nexus-glow");
-      
-      // Intensität
-      nexus.style.setProperty("--nexus-intensity", nx.intensity);
 
 
     // ============================================================
@@ -5904,7 +5833,6 @@ document.getElementById("importFile").addEventListener("change", (e) => {
     importSettings(e.target.files[0]);
   }
 });
-
 
 
   
