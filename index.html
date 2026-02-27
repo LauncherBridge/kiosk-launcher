@@ -1207,7 +1207,7 @@ body {
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 7 <span id="appVersion"></span>
+  Tano – Version 8 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -2305,7 +2305,31 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 }
 
 
+.tile {
+  position: relative;
+  overflow: hidden;
+}
 
+/* TEST: Nexus sichtbar machen */
+.tile-nexus {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: rgba(0, 255, 180, 0.35); /* TEST: giftgrüner Schleier */
+  transition: opacity 0.2s ease;
+  z-index: 1;
+}
+
+.tile:hover .tile-nexus,
+.tile.hovered .tile-nexus {
+  opacity: 1;
+}
+
+.tile-content {
+  position: relative;
+  z-index: 2;
+}
 
 
     
@@ -5881,31 +5905,7 @@ document.getElementById("importFile").addEventListener("change", (e) => {
   }
 });
 
-.tile {
-  position: relative;
-  overflow: hidden;
-}
 
-/* TEST: Nexus sichtbar machen */
-.tile-nexus {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0;
-  background: rgba(0, 255, 180, 0.35); /* TEST: giftgrüner Schleier */
-  transition: opacity 0.2s ease;
-  z-index: 1;
-}
-
-.tile:hover .tile-nexus,
-.tile.hovered .tile-nexus {
-  opacity: 1;
-}
-
-.tile-content {
-  position: relative;
-  z-index: 2;
-}
 
   
 </script>
