@@ -163,7 +163,7 @@
       top: 0; left: 0;
       width: 100%; height: 100%;
       pointer-events: none;
-      z-index: 10;
+      z-index: 9;
       background-color: var(--overlay-color);
     }
 
@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 4 <span id="appVersion"></span>
+  Tano – Version 6 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1424,7 +1424,7 @@ body {
       bottom: 25px;
       display: flex;
       gap: 40px;
-      z-index: 20;
+      z-index: 8000;
     }
 
     #navHistory { left: 40px; }
@@ -1739,7 +1739,7 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 8000;
+  z-index: 1000;
 
   /* Dynamische Maskengröße */
   --mask-left-limit: 46px;
@@ -2042,14 +2042,14 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
 /* Titel und Close-Button darüber */
 #appsPanelDynamicTitle {
   position: relative;
-  z-index: 4;
+  z-index: 1004;
 }
 
 #appsPanelClose {
   position: absolute; /* WICHTIG */
   top: 14px;
   right: 14px;
-  z-index: 4;
+  z-index: 1004;
 }
 
 
@@ -2078,7 +2078,7 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
   color: white;
   cursor: pointer;
   transition: transform 0.15s ease, background 0.2s ease;
-  z-index: 999;
+  z-index: 1004;
 }
 
 /* ============================================
@@ -2099,7 +2099,7 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
   justify-content: center;
   cursor: pointer;
   transition: transform 0.15s ease, background 0.2s ease;
-  z-index: 999;
+  z-index: 1004;
 
   /* WICHTIG: verhindert Überschreiben durch alte Regeln */
   --plus-rotate-h: 0deg;
@@ -2157,7 +2157,7 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
   width: 32px;
   height: 32px;
   cursor: pointer;
-  z-index: 999;
+  z-index: 1004;
 }
 
 /* Die beiden Linien */
@@ -2267,7 +2267,7 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 }
 
 .header-add-btn.jumping {
-  transform: translateX(50px) scale(1.25);
+  transform: translateX(150px) scale(1.25);
   transition: transform 0.25s ease;
 }
 
