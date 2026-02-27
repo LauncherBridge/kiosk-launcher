@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 1 <span id="appVersion"></span>
+  Tano – Version 2 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -4955,7 +4955,6 @@ function resetAppsPanelHeader() {
 
 
 function openAppsPanel(tile) {
-  panel.style.display = "flex";
   resetAppsPanelHeader();
 
   if (!tile) return;
@@ -4972,6 +4971,9 @@ function openAppsPanel(tile) {
     return;
   }
 
+  // Panel jetzt korrekt sichtbar machen
+  panel.style.display = "flex";
+
   // ---------------------------------------------------------
   // 1) Titel setzen
   // ---------------------------------------------------------
@@ -4980,80 +4982,60 @@ function openAppsPanel(tile) {
   // ---------------------------------------------------------
   // 2) Header-Effekt (Nexus-Band)
   // ---------------------------------------------------------
- 
   requestAnimationFrame(() => {
-if (!nexus) return;
-      // ---------------------------------------------
-      // A) Titelgröße messen → Maskengröße bestimmen
-      // ---------------------------------------------
-      const titleWidth  = titleEl.offsetWidth;
-      const titleHeight = titleEl.offsetHeight;
+    if (!nexus) return;
 
-      // kompaktere Maske
-      const maskW = titleWidth  + 40;
-      const maskH = titleHeight + 20;
+    // ---------------------------------------------
+    // A) Titelgröße messen → Maskengröße bestimmen
+    // ---------------------------------------------
+    const titleWidth  = titleEl.offsetWidth;
+    const titleHeight = titleEl.offsetHeight;
 
-      // Basiswerte für Puls-Animation
-      nexus.style.setProperty("--mask-width-base",  maskW + "px");
-      nexus.style.setProperty("--mask-height-base", maskH + "px");
-      nexus.style.setProperty("--mask-corner-base", "22px");
+    const maskW = titleWidth  + 40;
+    const maskH = titleHeight + 20;
 
-      // aktuelle Werte
-      nexus.style.setProperty("--mask-width",  maskW + "px");
-      nexus.style.setProperty("--mask-height", maskH + "px");
-      nexus.style.setProperty("--mask-corner-radius", "22px");
+    nexus.style.setProperty("--mask-width-base",  maskW + "px");
+    nexus.style.setProperty("--mask-height-base", maskH + "px");
+    nexus.style.setProperty("--mask-corner-base", "22px");
 
+    nexus.style.setProperty("--mask-width",  maskW + "px");
+    nexus.style.setProperty("--mask-height", maskH + "px");
+    nexus.style.setProperty("--mask-corner-radius", "22px");
 
-      // Lochradius eng um den Titel
-      const holeRadius = Math.max(maskW, maskH) * 0.45;
-      
-      // Lochposition (immer Mitte des Nexus-Bandes)
-      nexus.style.setProperty("--mask-center-x", "50%");
-      nexus.style.setProperty("--mask-center-y", "50%");
-      nexus.style.setProperty("--mask-hole-radius", holeRadius + "px");
+    // Lochradius
+    const holeRadius = Math.max(maskW, maskH) * 0.45;
+    nexus.style.setProperty("--mask-center-x", "50%");
+    nexus.style.setProperty("--mask-center-y", "50%");
+    nexus.style.setProperty("--mask-hole-radius", holeRadius + "px");
 
-      
-      // ---------------------------------------------
-      // B) Tile-Farb-Boost (C, beidseitig gleich)
-      // ---------------------------------------------
-      const tileAlpha = "D9"; // 85% Deckkraft
-      nexus.style.setProperty("--nexus-color-left",  tile.color + tileAlpha);
-      nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
+    // ---------------------------------------------
+    // B) Tile-Farb-Boost
+    // ---------------------------------------------
+    const tileAlpha = "D9";
+    nexus.style.setProperty("--nexus-color-left",  tile.color + tileAlpha);
+    nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
 
-      // ---------------------------------------------
-      // C) Intensität
-      // ---------------------------------------------
-      const intensity = parseFloat(loadSetting("nexusIntensity") || "0.7");
-      nexus.style.setProperty("--nexus-intensity", intensity);
+    // ---------------------------------------------
+    // C) Intensität
+    // ---------------------------------------------
+    const nx = loadNexusSettings(tile.name);
+    nexus.style.setProperty("--nexus-intensity", nx.intensity);
 
-        // ---------------------------------------------
-      // D) Stil setzen (mit Reflow)
-      // ---------------------------------------------
-      // ---------------------------------------------------------
-      // Kachel-spezifische Nexus-Einstellungen laden
-      // ---------------------------------------------------------
-      const nx = loadNexusSettings(tile.name);
-      
-      // Variante setzen
-      nexus.classList.remove(
-        "nexus-soft",
-        "nexus-aurora",
-        "nexus-hologram",
-        "nexus-plasma",
-        "nexus-nebula"
-      );
-      void nexus.offsetWidth;
-      nexus.classList.add("nexus-" + nx.variant);
-      
-      // Boundary setzen
-      nexus.classList.remove("nexus-glow", "nexus-bounded");
-      nexus.classList.add(nx.boundary === "bounded" ? "nexus-bounded" : "nexus-glow");
-      
-      // Intensität setzen
-      nexus.style.setProperty("--nexus-intensity", nx.intensity);
+    // Variante setzen
+    nexus.classList.remove(
+      "nexus-soft",
+      "nexus-aurora",
+      "nexus-hologram",
+      "nexus-plasma",
+      "nexus-nebula"
+    );
+    void nexus.offsetWidth;
+    nexus.classList.add("nexus-" + nx.variant);
 
-    });
-  
+    // Boundary setzen
+    nexus.classList.remove("nexus-glow", "nexus-bounded");
+    nexus.classList.add(nx.boundary === "bounded" ? "nexus-bounded" : "nexus-glow");
+  });
 
   // ---------------------------------------------------------
   // 3) Liste leeren und Apps einfügen
@@ -5106,12 +5088,8 @@ if (!nexus) return;
       panel.style.display = "none";
     };
   }
-
-  // ---------------------------------------------------------
-  // 5) Panel anzeigen
-  // ---------------------------------------------------------
-  //panel.style.display = "flex";
 }
+
  
 function renderApps(apps) {
     const list = document.getElementById("appsList");
