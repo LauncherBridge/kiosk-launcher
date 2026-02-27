@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 8 <span id="appVersion"></span>
+  Tano – Version 9 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -4982,7 +4982,7 @@ function openAppsPanel(tile) {
   // ---------------------------------------------------------
  
   requestAnimationFrame(() => {
-     if (nexus) {
+if (!nexus) return;
       // ---------------------------------------------
       // A) Titelgröße messen → Maskengröße bestimmen
       // ---------------------------------------------
