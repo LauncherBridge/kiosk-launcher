@@ -423,11 +423,12 @@ body {
 }
 
 
+/* Dein bestehendes Tile-Layout */
 .tile {
   min-width: 140px;
   height: 140px;
   background: rgba(0,0,0,0.35);
-opacity: 1; /* inaktiver Zustand */
+  opacity: 1;
   border-radius: 20px;
   display: flex;
   justify-content: center;
@@ -439,11 +440,18 @@ opacity: 1; /* inaktiver Zustand */
   user-select: none;
   cursor: pointer;
   transition:
-  transform 0.15s ease,
-  box-shadow 0.15s ease,
-  background 0.6s ease,
-  opacity 0.4s ease;
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.6s ease,
+    opacity 0.4s ease;
 }
+
+/* Ergänzung für Nexus-Hover */
+.tile {
+  position: relative;
+  overflow: hidden;
+}
+
 
 
 
@@ -1174,7 +1182,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 4 <span id="appVersion"></span>
+  Tano – Version 5 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -3076,11 +3084,25 @@ function renderTiles() {
   tiles.forEach(tileData => {
     const tile = document.createElement("div");
     tile.className = "tile";
-    tile.innerText = tileData.name;
+    tile.innerHTML = `
+      <div class="tile-nexus"></div>
+      <div class="tile-content">${tileData.name}</div>
+    `;
 
     // Farbe speichern
     tile.dataset.color = tileData.color;
     tile.style.setProperty("--tile-hover-color", tileData.color);
+      const nx = loadNexusSettings(tileData.name);
+      const nexus = tile.querySelector(".tile-nexus");
+      
+      // Variante
+      nexus.classList.add("nexus-" + nx.variant);
+      
+      // Boundary
+      nexus.classList.add(nx.boundary === "bounded" ? "nexus-bounded" : "nexus-glow");
+      
+      // Intensität
+      nexus.style.setProperty("--nexus-intensity", nx.intensity);
 
 
     // ============================================================
