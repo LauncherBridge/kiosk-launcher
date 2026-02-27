@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 2 <span id="appVersion"></span>
+  Tano – Version 3 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1751,16 +1751,6 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
   /* ============================
      MASKEN: RECHTECK + LOCH
      ============================ */
-  mask-image:
-    radial-gradient(
-      circle at var(--mask-center-x) var(--mask-center-y),
-      transparent 0,
-      transparent calc(var(--mask-hole-radius) - 8px),
-      black calc(var(--mask-hole-radius)),
-      black 100%
-    ),
-    linear-gradient(black, black);
-
   -webkit-mask-image:
     radial-gradient(
       circle at var(--mask-center-x) var(--mask-center-y),
@@ -1771,29 +1761,42 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
     ),
     linear-gradient(black, black);
 
-  mask-size:
-    100% 100%,
-    var(--mask-width) var(--mask-height);
+  mask-image:
+    radial-gradient(
+      circle at var(--mask-center-x) var(--mask-center-y),
+      transparent 0,
+      transparent calc(var(--mask-hole-radius) - 8px),
+      black calc(var(--mask-hole-radius)),
+      black 100%
+    ),
+    linear-gradient(black, black);
 
   -webkit-mask-size:
     100% 100%,
     var(--mask-width) var(--mask-height);
 
-  mask-position:
-    center,
-    center;
+  mask-size:
+    100% 100%,
+    var(--mask-width) var(--mask-height);
 
   -webkit-mask-position:
     center,
     center;
 
-  mask-composite: exclude;
+  mask-position:
+    center,
+    center;
+
+  /* WICHTIG: Chrome/WebView akzeptiert nur XOR */
   -webkit-mask-composite: xor;
+  mask-composite: exclude;
 
   filter: blur(40px);
   opacity: var(--nexus-intensity);
   transition: opacity 0.3s ease;
+  background: red !important;
 }
+
 
 
 
