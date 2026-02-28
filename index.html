@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 4 <span id="appVersion"></span>
+  Tano – Version 5 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1739,27 +1739,26 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  
-  /* Dynamische Größe per JS */
-  width: var(--spot-width, 200px);
-  height: var(--spot-height, 60px);
 
-  /* Oval */
+  width: var(--spot-width, 240px);
+  height: var(--spot-height, 70px);
+
   border-radius: 999px;
 
   /* Hintergrund wie der Panel-Header ohne Nexus */
-  background: rgba(0, 0, 0, 0.35); /* oder dein echter Header-Background */
+  background: rgba(0, 0, 0, 0.55); /* NICHT transparent! */
 
-  /* Weiche Kanten */
+  /* Weiche Außenkanten */
   box-shadow:
-    0 0 30px 20px rgba(0, 0, 0, 0.25),
-    0 0 10px 5px rgba(255, 255, 255, 0.15) inset;
+    0 0 40px 25px rgba(0, 0, 0, 0.35),   /* weicher Außen-Glow */
+    0 0 20px 10px rgba(255, 255, 255, 0.15) inset; /* weiche Innenkante */
 
   pointer-events: none;
-  z-index: 900; /* unter dem Titel, über Nexus */
+  z-index: 950; /* über Nexus, unter Titel */
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.25s ease;
 }
+
 
 
 .header-nexus {
