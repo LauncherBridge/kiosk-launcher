@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 7 <span id="appVersion"></span>
+  Tano – Version 8 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1745,22 +1745,24 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
 
   border-radius: 999px;
 
-  /* Sanfter, matter Hintergrund – NICHT transparent */
-  background: rgba(0, 0, 0, 0.45);
+  /* Weiches, nicht-glühendes Feather-Oval */
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, 0.55) 0%,      /* innen sichtbar */
+    rgba(0, 0, 0, 0.35) 40%,     /* weicher Übergang */
+    rgba(0, 0, 0, 0.15) 70%,     /* noch weicher */
+    rgba(0, 0, 0, 0.0) 100%      /* komplett ausfaden */
+  );
 
-  /* Extrem weiche Außenkante, ohne Glow */
-  box-shadow:
-    0 0 80px 40px rgba(0, 0, 0, 0.35);
-
-  /* Keine inneren Lichter, kein Glow */
   pointer-events: none;
 
-  /* Wichtig: über Nexus, unter Titel */
-  z-index: 1001;
+  /* Wichtig: über Nexus (999), unter Titel */
+  z-index: 1000;
 
   opacity: 0;
   transition: opacity 0.25s ease;
 }
+
 
 
 
