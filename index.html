@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 8 <span id="appVersion"></span>
+  Tano – Version 1 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1735,7 +1735,37 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
    FINALER HEADER-NEXUS BLOCK (DYNAMISCHE MASKE)
    ============================================ */
 
-.header-nexus {
+.header-title-spot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+
+  width: var(--spot-width, 260px);
+  height: var(--spot-height, 80px);
+
+  border-radius: 999px;
+
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, 0.99) 20%,   /* kleiner Kern */
+    rgba(0, 0, 0, 0.55) 35%,   /* früher Übergang */
+    rgba(0, 0, 0, 0.20) 50%,   /* weicher Fade */
+    rgba(0, 0, 0, 0.05) 65%,   /* letzter sichtbarer Bereich */
+    rgba(0, 0, 0, 0.00) 100%   /* komplett ausfaden */
+  );
+
+  pointer-events: none;
+
+  /* über Nexus (999), unter Titel */
+  z-index: 1000;
+
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+    
+    .header-nexus {
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -4960,6 +4990,21 @@ function openAppsPanel(tile) {
   // 1) Titel setzen
   // ---------------------------------------------------------
   titleEl.textContent = "Apps in " + tile.name;
+  const spot = document.querySelector(".header-title-spot");
+
+requestAnimationFrame(() => {
+    const titleWidth  = titleEl.offsetWidth;
+    const titleHeight = titleEl.offsetHeight;
+
+    const spotW = titleWidth + 100;  // flacheres Oval braucht mehr Breite
+    const spotH = titleHeight + 15;  // flachere Höhe
+
+    spot.style.setProperty("--spot-width",  spotW + "px");
+    spot.style.setProperty("--spot-height", spotH + "px");
+
+    spot.style.opacity = 1;
+});
+
 
   // ---------------------------------------------------------
   // 2) Header-Effekt (Nexus-Band)
@@ -5075,11 +5120,15 @@ function openAppsPanel(tile) {
   // ---------------------------------------------------------
   // 4) Close-Button
   // ---------------------------------------------------------
-  if (closeBtn) {
-    closeBtn.onclick = () => {
-      panel.style.display = "none";
-    };
-  }
+if (closeBtn) {
+  closeBtn.onclick = () => {
+    const spot = document.querySelector(".header-title-spot");
+    if (spot) spot.style.opacity = 0;
+
+    panel.style.display = "none";
+  };
+}
+
 
   // ---------------------------------------------------------
   // 5) Panel anzeigen
