@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 9 <span id="appVersion"></span>
+  Tano – Version 1 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1748,12 +1748,13 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
   /* Weiches, nicht-glühendes Feather-Oval */
 background: radial-gradient(
   ellipse at center,
-  rgba(0, 0, 0, 0.55) 0%,     /* kleiner sichtbarer Kern */
-  rgba(0, 0, 0, 0.40) 20%,    /* früher Übergang */
-  rgba(0, 0, 0, 0.20) 45%,    /* weicher Fade */
-  rgba(0, 0, 0, 0.10) 65%,    /* noch weicher */
+  rgba(0, 0, 0, 0.55) 0%,     /* kleiner Kern */
+  rgba(0, 0, 0, 0.35) 15%,    /* sehr früher Übergang */
+  rgba(0, 0, 0, 0.20) 35%,    /* weicher Fade */
+  rgba(0, 0, 0, 0.10) 55%,    /* noch weicher */
   rgba(0, 0, 0, 0.00) 100%    /* komplett ausfaden */
 );
+
 
 
   pointer-events: none;
@@ -5019,7 +5020,7 @@ requestAnimationFrame(() => {
     const titleHeight = titleEl.offsetHeight;
 
     const spotW = titleWidth + 60;  // etwas breiter als der Titel
-    const spotH = titleHeight + 30; // etwas höher
+    const spotH = titleHeight + 15; // etwas höher
 
     spot.style.setProperty("--spot-width",  spotW + "px");
     spot.style.setProperty("--spot-height", spotH + "px");
