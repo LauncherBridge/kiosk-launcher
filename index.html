@@ -972,22 +972,24 @@ opacity: 1; /* inaktiver Zustand */
   100% {
     opacity: 0;
     transform: scale(0.92);
-   --panel-blur: 4px;
+    --panel-blur: 4px;
   }
 }
+
 
 @keyframes panelFadeIn {
   0% {
     opacity: 0;
-    transform: scale(1.06);
-    --panel-blur: 12px;
+    transform: scale(0.92);
+    --panel-blur: 4px;
   }
   100% {
     opacity: 1;
     transform: scale(1);
-    --panel-blur: 4px;
+    --panel-blur: 12px;
   }
 }
+
 
 /* Picker → Panel Animationen */
 .picker-anim-out {
@@ -1701,17 +1703,22 @@ box-shadow:
 
 
 /* Header */
-#appsPanelHeader {
-  position: relative;
+#appsPanelHeader,
+#smartHomePanelHeader {
+  width: 100%;
   height: 64px;
-  min-height: 64px; /* doppelte Sicherheit */
- /* overflow: hidden;*/
+  min-height: 64px;
+  position: relative;
+  padding-left: 0;
+  padding-right: 0;
+  padding-top: 18px;
+  padding-bottom: 18px;
+  box-sizing: border-box;
   overflow: visible;
-
-  /* Der dunkle Balken, der vorher da war */
   background: rgba(0,0,0,0.45);
   backdrop-filter: blur(22px);
 }
+
 
 const tileAlpha = "D9"; // 85% Deckkraft
 
@@ -2198,6 +2205,40 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
   background: rgba(255,255,255,0.25);
 }
 
+.mini-menu {
+  position: absolute;
+  top: 72px; /* direkt unter dem Header */
+  left: 14px;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(12px);
+  border-radius: 14px;
+  padding: 10px 0;
+  width: 220px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  opacity: 1;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.mini-menu.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-10px);
+}
+
+.mini-menu-item {
+  padding: 12px 16px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.mini-menu-item:hover {
+  background: rgba(255,255,255,0.12);
+}
 
 
 .panel-close-btn {
@@ -2293,17 +2334,7 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 */
 
 
-/* Header volle Breite, aber ohne Überbreite */
-#appsPanelHeader {
-  width: 100%;
-  height: 64px;
-  position: relative;
-  padding-left: 0;
-  padding-right: 0;
-  padding-top: 18px;
-  padding-bottom: 18px;
-  box-sizing: border-box; /* verhindert Überbreite */
-}
+
 
 /* Titel absolut zentrieren */
 #appsPanelDynamicTitle {
@@ -2729,15 +2760,28 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 
   
 <div id="smartHomePanel" class="panel hidden">
+  <div id="smartHomePanelHeader">
+    <div class="header-nexus"></div>
+    <div class="header-progress"></div>
+    <div class="header-title-spot"></div>
 
-  <div class="panel-header">
-    <span id="smartHomePanelTitle"></span>
-    <span id="smartHomePanelAdd" class="panel-add">+</span>
+    <div id="smartHomePanelAddButton" class="header-add-btn"></div>
+    <div id="smartHomePanelDynamicTitle"></div>
+    <div id="smartHomePanelClose" class="panel-close-btn">×</div>
   </div>
 
-  <div class="panel-content" id="smartHomeDeviceList"></div>
+  <!-- ⬇️ HIER GENAU KOMMT DAS MINI-MENÜ HIN -->
+  <div id="smartHomeMiniMenu" class="mini-menu hidden">
+    <div class="mini-menu-item" data-action="add-device">Gerät hinzufügen</div>
+    <div class="mini-menu-item" data-action="add-room">Raum hinzufügen</div>
+    <div class="mini-menu-item" data-action="add-scene">Szene erstellen</div>
+    <div class="mini-menu-item" data-action="show-automations">Automationen anzeigen</div>
+  </div>
+  <!-- ⬆️ GENAU HIER -->
 
+  <div class="panel-content" id="smartHomeDeviceList"></div>
 </div>
+
 
 <div id="alarmPanel" class="panel hidden">
 
@@ -4990,55 +5034,40 @@ function resetAppsPanelHeader() {
 }
 
 
-function openAppsPanel(tile) {
-  resetAppsPanelHeader();
+function setupPanelHeader(panelPrefix, tile) {
+  const header = document.getElementById(panelPrefix + "Header");
+  if (!header) return;
 
-  if (!tile) return;
-  currentTile = tile;
+  const titleEl = document.getElementById(panelPrefix + "DynamicTitle");
+  const spot    = header.querySelector(".header-title-spot");
+  const nexus   = header.querySelector(".header-nexus");
 
-  const panel    = document.getElementById("appsPanel");
-  const titleEl  = document.getElementById("appsPanelDynamicTitle");
-  const list     = document.getElementById("appsList");
-  const closeBtn = document.getElementById("appsPanelClose");
-  const nexus    = document.querySelector(".header-nexus");
-
-  if (!panel || !titleEl || !list) {
-    console.warn("AppsPanel: benötigte Elemente nicht gefunden");
-    return;
+  // Titel setzen
+  if (panelPrefix === "appsPanel") {
+    titleEl.textContent = "Apps in " + tile.name;
+  } else if (panelPrefix === "smartHomePanel") {
+    titleEl.textContent = "Smart Home – " + tile.name;
+  } else if (panelPrefix === "alarmPanel") {
+    titleEl.textContent = "Alarm – " + tile.name;
   }
 
-  // Panel jetzt korrekt sichtbar machen
-  panel.style.display = "flex";
-
-  // ---------------------------------------------------------
-  // 1) Titel setzen
-  // ---------------------------------------------------------
-  titleEl.textContent = "Apps in " + tile.name;
-  const spot = document.querySelector(".header-title-spot");
-
-requestAnimationFrame(() => {
+  // Titel-Spot anpassen
+  requestAnimationFrame(() => {
     const titleWidth  = titleEl.offsetWidth;
     const titleHeight = titleEl.offsetHeight;
 
-    const spotW = titleWidth + 60;  // etwas breiter als der Titel
-    const spotH = titleHeight + 15; // etwas höher
+    const spotW = titleWidth + 60;
+    const spotH = titleHeight + 15;
 
     spot.style.setProperty("--spot-width",  spotW + "px");
     spot.style.setProperty("--spot-height", spotH + "px");
-
     spot.style.opacity = 1;
-});
+  });
 
-
-  // ---------------------------------------------------------
-  // 2) Header-Effekt (Nexus-Band)
-  // ---------------------------------------------------------
+  // Nexus-Maske + Farben + Intensität
   requestAnimationFrame(() => {
     if (!nexus) return;
 
-    // ---------------------------------------------
-    // A) Titelgröße messen → Maskengröße bestimmen
-    // ---------------------------------------------
     const titleWidth  = titleEl.offsetWidth;
     const titleHeight = titleEl.offsetHeight;
 
@@ -5053,28 +5082,17 @@ requestAnimationFrame(() => {
     nexus.style.setProperty("--mask-height", maskH + "px");
     nexus.style.setProperty("--mask-corner-radius", "22px");
 
-    // Lochradius
-    const holeRadius = Math.max(maskW, maskH) * 0.45;
     nexus.style.setProperty("--mask-center-x", "50%");
     nexus.style.setProperty("--mask-center-y", "50%");
-    //nexus.style.setProperty("--mask-hole-radius", holeRadius + "px");
-        nexus.style.setProperty("--mask-hole-radius", 88);
+    nexus.style.setProperty("--mask-hole-radius", 88);
 
-
-    // ---------------------------------------------
-    // B) Tile-Farb-Boost
-    // ---------------------------------------------
     const tileAlpha = "D9";
     nexus.style.setProperty("--nexus-color-left",  tile.color + tileAlpha);
     nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
 
-    // ---------------------------------------------
-    // C) Intensität
-    // ---------------------------------------------
     const nx = loadNexusSettings(tile.name);
     nexus.style.setProperty("--nexus-intensity", nx.intensity);
 
-    // Variante setzen
     nexus.classList.remove(
       "nexus-soft",
       "nexus-aurora",
@@ -5085,16 +5103,70 @@ requestAnimationFrame(() => {
     void nexus.offsetWidth;
     nexus.classList.add("nexus-" + nx.variant);
 
-    // Boundary setzen
     nexus.classList.remove("nexus-glow", "nexus-bounded");
     nexus.classList.add(nx.boundary === "bounded" ? "nexus-bounded" : "nexus-glow");
   });
+}
+
+function toggleSmartHomeMiniMenu() {
+  const menu = document.getElementById("smartHomeMiniMenu");
+  if (!menu) return;
+
+  const isHidden = menu.classList.contains("hidden");
+  menu.classList.toggle("hidden", !isHidden);
+}
+  
+document.addEventListener("click", (ev) => {
+  const menu = document.getElementById("smartHomeMiniMenu");
+  if (!menu) return;
+
+  if (menu.classList.contains("hidden")) return;
+
+  const item = ev.target.closest(".mini-menu-item");
+  if (!item) return;
+
+  const action = item.dataset.action;
+
+  if (action === "add-device") {
+    console.log("Gerät hinzufügen");
+  } else if (action === "add-room") {
+    console.log("Raum hinzufügen");
+  } else if (action === "add-scene") {
+    console.log("Szene erstellen");
+  } else if (action === "show-automations") {
+    console.log("Automationen anzeigen");
+  }
+
+  menu.classList.add("hidden");
+});
+
+
+  
+function openAppsPanel(tile) {
+  resetAppsPanelHeader();
+
+  if (!tile) return;
+  currentTile = tile;
+
+  const panel    = document.getElementById("appsPanel");
+  const list     = document.getElementById("appsList");
+  const closeBtn = document.getElementById("appsPanelClose");
+
+  if (!panel || !list) {
+    console.warn("AppsPanel: benötigte Elemente nicht gefunden");
+    return;
+  }
+
+  // Panel sichtbar machen
+  panel.style.display = "flex";
+
+  // 🔥 NEU: Der gesamte Header wird jetzt über eine einzige Funktion gesetzt
+  setupPanelHeader("appsPanel", tile);
 
   // ---------------------------------------------------------
-  // 3) Liste leeren und Apps einfügen
+  // Apps-Liste aufbauen
   // ---------------------------------------------------------
   list.innerHTML = "";
-
   const apps = appsPerTile[tile.name] || [];
 
   apps.forEach(app => {
@@ -5134,18 +5206,17 @@ requestAnimationFrame(() => {
   });
 
   // ---------------------------------------------------------
-  // 4) Close-Button
+  // Close-Button
   // ---------------------------------------------------------
   if (closeBtn) {
-  closeBtn.onclick = () => {
-    const spot = document.querySelector(".header-title-spot");
-    if (spot) spot.style.opacity = 0;
-
-    panel.style.display = "none";
-  };
+    closeBtn.onclick = () => {
+      const spot = document.querySelector("#appsPanelHeader .header-title-spot");
+      if (spot) spot.style.opacity = 0;
+      panel.style.display = "none";
+    };
+  }
 }
 
-}
 
  
 function renderApps(apps) {
@@ -5171,40 +5242,66 @@ function renderApps(apps) {
 function openSmartHomePanel(tile) {
   if (!tile) return;
 
-  const panel = document.getElementById("smartHomePanel");
-  const title = document.getElementById("smartHomePanelTitle");
-  const list = document.getElementById("smartHomeDeviceList");
-  const addBtn = document.getElementById("smartHomePanelAdd");
+  currentTile = tile;
 
-  // Titel setzen (Name der Kachel)
-  title.textContent = tile.name;
+  const panel    = document.getElementById("smartHomePanel");
+  const list     = document.getElementById("smartHomeDeviceList");
+  const closeBtn = document.getElementById("smartHomePanelClose");
+  const addBtn   = document.getElementById("smartHomePanelAddButton");
+  const bar      = document.querySelector("#smartHomePanelHeader .header-progress");
 
-  // Liste leeren
+  if (!panel || !list) {
+    console.warn("SmartHomePanel: benötigte Elemente nicht gefunden");
+    return;
+  }
+
+  // Panel sichtbar machen
+animatePanelTransition("appsPanel", "smartHomePanel");
+
+  // 🔥 NEU: kompletter Nexus‑Header, Titel, Spot, Masken, Farben, Intensität
+  setupPanelHeader("smartHomePanel", tile);
+
+  // ---------------------------------------------------------
+  // Geräte-Liste aufbauen
+  // ---------------------------------------------------------
   list.innerHTML = "";
 
-  // Geräte rendern
-  tile.devices.forEach(device => {
+  (tile.devices || []).forEach(device => {
     const btn = document.createElement("button");
-    btn.className = "app-button"; // wir nutzen das gleiche Button-Design
+    btn.className = "app-button";
     btn.textContent = device.label;
 
     btn.onclick = () => {
-      // später: Gerät steuern
       console.log("Gerät öffnen:", device.id);
     };
 
     list.appendChild(btn);
   });
 
-  // Plus-Symbol → später Geräte-Picker
-  addBtn.onclick = () => {
-    // später: animiertes Morph + Geräte-Auswahl
-    console.log("Gerät hinzufügen für Tile:", tile.id);
-  };
+  // ---------------------------------------------------------
+  // Plus-Button (Tap + Long-Press)
+  // ---------------------------------------------------------
+  if (addBtn && bar) {
+    setupPlusButtonBehavior(
+      addBtn,
+      bar,
+      () => toggleSmartHomeMiniMenu(),   // Tap → später Mini-Menü
+      () => console.log("SmartHome Remove Mode") // Long-Press
+    );
+  }
 
-  // Panel anzeigen
-  panel.style.display = "flex";
+  // ---------------------------------------------------------
+  // Close-Button
+  // ---------------------------------------------------------
+  if (closeBtn) {
+    closeBtn.onclick = () => {
+      const spot = document.querySelector("#smartHomePanelHeader .header-title-spot");
+      if (spot) spot.style.opacity = 0;
+animatePanelTransition("smartHomePanel", "appsPanel");
+    };
+  }
 }
+
 
 function openAlarmPanel(tile) {
   if (!tile) return;
