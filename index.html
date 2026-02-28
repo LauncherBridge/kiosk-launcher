@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 2 <span id="appVersion"></span>
+  Tano – Version 3 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1739,7 +1739,7 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
 .header-nexus {
     --mask-center-x: 50%;
   --mask-center-y: 50%;
-  --mask-hole-radius: 0px;
+  --mask-hole-radius: 40px;
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -5006,7 +5006,9 @@ function openAppsPanel(tile) {
     const holeRadius = Math.max(maskW, maskH) * 0.45;
     nexus.style.setProperty("--mask-center-x", "50%");
     nexus.style.setProperty("--mask-center-y", "50%");
-    nexus.style.setProperty("--mask-hole-radius", holeRadius + "px");
+    //nexus.style.setProperty("--mask-hole-radius", holeRadius + "px");
+        nexus.style.setProperty("--mask-hole-radius", 88);
+
 
     // ---------------------------------------------
     // B) Tile-Farb-Boost
