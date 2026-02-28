@@ -1177,7 +1177,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 1 <span id="appVersion"></span>
+  Tano – Version 2 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -5256,14 +5256,18 @@ function openSmartHomePanel(tile) {
     return;
   }
 
-  // Panel sichtbar machen
-animatePanelTransition("appsPanel", "smartHomePanel");
-
-  // 🔥 NEU: kompletter Nexus‑Header, Titel, Spot, Masken, Farben, Intensität
+  // ---------------------------------------------------------
+  // 1) Header EINMAL korrekt initialisieren
+  // ---------------------------------------------------------
   setupPanelHeader("smartHomePanel", tile);
 
   // ---------------------------------------------------------
-  // Geräte-Liste aufbauen
+  // 2) Panel öffnen (Transition)
+  // ---------------------------------------------------------
+  animatePanelTransition("appsPanel", "smartHomePanel");
+
+  // ---------------------------------------------------------
+  // 3) Geräte-Liste aufbauen
   // ---------------------------------------------------------
   list.innerHTML = "";
 
@@ -5280,28 +5284,25 @@ animatePanelTransition("appsPanel", "smartHomePanel");
   });
 
   // ---------------------------------------------------------
-  // Plus-Button (Tap + Long-Press)
+  // 4) Plus-Button (Tap → Mini-Menü)
   // ---------------------------------------------------------
-  if (addBtn && bar) {
-    setupPlusButtonBehavior(
-      addBtn,
-      bar,
-      () => toggleSmartHomeMiniMenu(),   // Tap → später Mini-Menü
-      () => console.log("SmartHome Remove Mode") // Long-Press
-    );
+  if (addBtn) {
+    addBtn.onclick = () => toggleSmartHomeMiniMenu();
   }
 
   // ---------------------------------------------------------
-  // Close-Button
+  // 5) Close-Button
   // ---------------------------------------------------------
   if (closeBtn) {
     closeBtn.onclick = () => {
       const spot = document.querySelector("#smartHomePanelHeader .header-title-spot");
       if (spot) spot.style.opacity = 0;
-animatePanelTransition("smartHomePanel", "appsPanel");
+
+      animatePanelTransition("smartHomePanel", "appsPanel");
     };
   }
 }
+
 
 
 function openAlarmPanel(tile) {
