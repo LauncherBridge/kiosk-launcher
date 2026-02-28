@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 3 <span id="appVersion"></span>
+  Tano – Version 4 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1734,6 +1734,32 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
 /* ============================================
    FINALER HEADER-NEXUS BLOCK (DYNAMISCHE MASKE)
    ============================================ */
+.header-title-spot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  
+  /* Dynamische Größe per JS */
+  width: var(--spot-width, 200px);
+  height: var(--spot-height, 60px);
+
+  /* Oval */
+  border-radius: 999px;
+
+  /* Hintergrund wie der Panel-Header ohne Nexus */
+  background: rgba(0, 0, 0, 0.35); /* oder dein echter Header-Background */
+
+  /* Weiche Kanten */
+  box-shadow:
+    0 0 30px 20px rgba(0, 0, 0, 0.25),
+    0 0 10px 5px rgba(255, 255, 255, 0.15) inset;
+
+  pointer-events: none;
+  z-index: 900; /* unter dem Titel, über Nexus */
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
 
 
 .header-nexus {
@@ -2358,9 +2384,10 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
     <div id="appsPanelHeader">
       
       <div class="header-nexus"></div>
-
+      
       <div class="header-progress"></div>
-  
+      <div class="header-title-spot"></div>
+
       <!-- Plus-Symbol im Header -->
       <div id="appsPanelAddButton" class="header-add-btn"></div>
   
@@ -4978,6 +5005,21 @@ function openAppsPanel(tile) {
   // 1) Titel setzen
   // ---------------------------------------------------------
   titleEl.textContent = "Apps in " + tile.name;
+  const spot = document.querySelector(".header-title-spot");
+
+requestAnimationFrame(() => {
+    const titleWidth  = titleEl.offsetWidth;
+    const titleHeight = titleEl.offsetHeight;
+
+    const spotW = titleWidth + 60;  // etwas breiter als der Titel
+    const spotH = titleHeight + 30; // etwas höher
+
+    spot.style.setProperty("--spot-width",  spotW + "px");
+    spot.style.setProperty("--spot-height", spotH + "px");
+
+    spot.style.opacity = 1;
+});
+
 
   // ---------------------------------------------------------
   // 2) Header-Effekt (Nexus-Band)
@@ -5086,10 +5128,14 @@ function openAppsPanel(tile) {
   // 4) Close-Button
   // ---------------------------------------------------------
   if (closeBtn) {
-    closeBtn.onclick = () => {
-      panel.style.display = "none";
-    };
-  }
+  closeBtn.onclick = () => {
+    const spot = document.querySelector(".header-title-spot");
+    if (spot) spot.style.opacity = 0;
+
+    panel.style.display = "none";
+  };
+}
+
 }
 
  
