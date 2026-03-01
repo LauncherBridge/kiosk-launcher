@@ -1227,7 +1227,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 8 <span id="appVersion"></span>
+  Tano – Version 9 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -6156,6 +6156,8 @@ function openTileSwitcher() {
 
   content.innerHTML = "";
 console.log("Tiles:", tiles);
+  tiles.forEach((t, i) => console.log("Tile", i, t));
+
 console.log("Tile count:", tiles.length);
 
   tiles.forEach(tile => {
