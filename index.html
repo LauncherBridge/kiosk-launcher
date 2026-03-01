@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 6 <span id="appVersion"></span>
+  Tano – Version 7 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1805,6 +1805,43 @@ box-shadow:
   transition: transform 0.15s ease, background 0.2s ease;
 }
 
+/* Uhrzeit + Datum im Nexus-Header */
+#smartHomePanelHeader .header-clock,
+#alarmPanelHeader .header-clock {
+  position: absolute;
+  top: 14px;
+  right: 60px; /* Abstand zum Close-Button */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end; /* rechtsbündig */
+  z-index: 1004;
+  pointer-events: none;
+}
+
+.header-clock #clock {
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
+  line-height: 1.1;
+}
+
+.header-clock #date {
+  font-size: 14px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.75);
+  line-height: 1.1;
+}
+
+
+
+    
+#smartHomePanel .panel-content,
+#alarmPanel .panel-content {
+  background: #0a0a0a;      /* tiefes Schwarz */
+  backdrop-filter: none;    /* kein Blur */
+  opacity: 1;               /* volle Deckkraft */
+}
+    
 /* Inhalt scrollt */
 #smartHomeDeviceList,
 #alarmZoneList {
@@ -2935,6 +2972,10 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 
     <!-- Floating Close Button -->
     <div id="smartHomePanelClose" class="panel-close-btn">×</div>
+    <div class="header-clock">
+        <div id="headerTime"></div>
+        <div id="headerDate"></div>
+    </div>
   </div>
 
   <div class="panel-content" id="smartHomeDeviceList"></div>
@@ -4429,16 +4470,18 @@ function updateClock() {
     ? { hour: '2-digit', minute: '2-digit', second: '2-digit' }
     : { hour: '2-digit', minute: '2-digit' };
 
-  document.getElementById('clock').textContent =
-    now.toLocaleTimeString('de-DE', format);
+  document.querySelectorAll('#clock').forEach(el => {
+    el.textContent = now.toLocaleTimeString('de-DE', format);
+  });
 
-  document.getElementById('date').textContent =
-    now.toLocaleDateString('de-DE', {
+  document.querySelectorAll('#date').forEach(el => {
+    el.textContent = now.toLocaleDateString('de-DE', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
       day: 'numeric'
     });
+  });
 }
 
 /* ============================================================
