@@ -1181,60 +1181,42 @@ opacity: 1; /* inaktiver Zustand */
   backdrop-filter: blur(22px);
 }
 
-/* ---------------------------------------------
-   NEXUS-BAND (Maskenlogik + Glow)
---------------------------------------------- */
+/* Nexus */
 #smartHomePanelHeader .header-nexus {
   --mask-center-x: 50%;
   --mask-center-y: 50%;
   --mask-hole-radius: 40px;
-
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 1000;
-
   --mask-left-limit: 46px;
   --mask-right-limit: 46px;
-
   --mask-width: calc(100% - (var(--mask-left-limit) + var(--mask-right-limit)));
   --mask-height: calc(100% - 20px);
   --mask-corner-radius: 22px;
-
   -webkit-mask-image:
-    radial-gradient(
-      circle at var(--mask-center-x) var(--mask-center-y),
+    radial-gradient(circle at var(--mask-center-x) var(--mask-center-y),
       transparent 0,
       transparent calc(var(--mask-hole-radius) - 8px),
       black calc(var(--mask-hole-radius)),
       black 100%
     ),
     linear-gradient(black, black);
-
   mask-image:
-    radial-gradient(
-      circle at var(--mask-center-x) var(--mask-center-y),
+    radial-gradient(circle at var(--mask-center-x) var(--mask-center-y),
       transparent 0,
       transparent calc(var(--mask-hole-radius) - 8px),
       black calc(var(--mask-hole-radius)),
       black 100%
     ),
     linear-gradient(black, black);
-
-  -webkit-mask-size:
-    100% 100%,
-    var(--mask-width) var(--mask-height);
-
-  mask-size:
-    100% 100%,
-    var(--mask-width) var(--mask-height);
-
+  -webkit-mask-size: 100% 100%, var(--mask-width) var(--mask-height);
+  mask-size: 100% 100%, var(--mask-width) var(--mask-height);
   -webkit-mask-position: center, center;
   mask-position: center, center;
-
   -webkit-mask-composite: xor;
   mask-composite: exclude;
-
   opacity: var(--nexus-intensity);
   transition: opacity 0.3s ease;
 }
@@ -1250,24 +1232,18 @@ opacity: 1; /* inaktiver Zustand */
   transition: inherit;
 }
 
-/* ---------------------------------------------
-   SPOT (Ellipse hinter dem Titel)
---------------------------------------------- */
+/* Spot */
 #smartHomePanelHeader .header-title-spot {
   position: absolute;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-
   width: var(--spot-width, 240px);
   height: var(--spot-height, 70px);
-
   display: flex;
   justify-content: center;
   align-items: center;
-
   border-radius: 999px;
-
   background: radial-gradient(
     ellipse at center,
     rgba(0, 0, 0, 0.99) 30%,
@@ -1276,16 +1252,13 @@ opacity: 1; /* inaktiver Zustand */
     rgba(0, 0, 0, 0.05) 85%,
     rgba(0, 0, 0, 0.00) 100%
   );
-
   pointer-events: none;
   z-index: 1000;
   opacity: 0;
   transition: opacity 0.25s ease;
 }
 
-/* ---------------------------------------------
-   PROGRESS-BAR
---------------------------------------------- */
+/* Progress */
 #smartHomePanelHeader .header-progress {
   position: absolute;
   top: 0;
@@ -1299,9 +1272,7 @@ opacity: 1; /* inaktiver Zustand */
   z-index: 1003;
 }
 
-/* ---------------------------------------------
-   TITEL
---------------------------------------------- */
+/* Titel */
 #smartHomePanelDynamicTitle {
   position: relative;
   z-index: 1004;
@@ -1310,9 +1281,7 @@ opacity: 1; /* inaktiver Zustand */
   color: white;
 }
 
-/* ---------------------------------------------
-   CLOSE BUTTON
---------------------------------------------- */
+/* Close */
 #smartHomePanelHeader .panel-close-btn {
   position: absolute;
   top: 14px;
@@ -1323,79 +1292,17 @@ opacity: 1; /* inaktiver Zustand */
   z-index: 1004;
 }
 
-#smartHomePanelHeader .panel-close-btn::before,
-#smartHomePanelHeader .panel-close-btn::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 26px;
-  height: 2px;
-  background: rgba(255,255,255,0.85);
-  border-radius: 2px;
-  transform-origin: center;
-  transition: transform 0.2s ease, background 0.2s ease;
-}
-
-#smartHomePanelHeader .panel-close-btn::before {
-  transform: translate(-50%, -50%) rotate(45deg);
-}
-
-#smartHomePanelHeader .panel-close-btn::after {
-  transform: translate(-50%, -50%) rotate(-45deg);
-}
-
-/* ---------------------------------------------
-   PLUS BUTTON
---------------------------------------------- */
+/* Plus */
 #smartHomePanelHeader .header-add-btn {
   position: absolute;
   top: 14px;
   left: 14px;
   width: 32px;
   height: 32px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.12);
-  backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   cursor: pointer;
-  transition: transform 0.15s ease, background 0.2s ease;
   z-index: 1004;
-
-  --plus-rotate-h: 0deg;
-  --plus-rotate-v: 90deg;
 }
 
-#smartHomePanelHeader .header-add-btn::before,
-#smartHomePanelHeader .header-add-btn::after {
-  content: "";
-  position: absolute;
-  width: 26px;
-  height: 2px;
-  background: rgba(255,255,255,0.85);
-  border-radius: 2px;
-  transform-origin: center;
-  transition: transform 0.75s ease, background 0.2s ease;
-}
-
-#smartHomePanelHeader .header-add-btn::after {
-  transform: translate(-50%, -50%) rotate(var(--plus-rotate-h));
-  top: 50%;
-  left: 50%;
-}
-
-#smartHomePanelHeader .header-add-btn::before {
-  transform: translate(-50%, -50%) rotate(var(--plus-rotate-v));
-  top: 50%;
-  left: 50%;
-}
-
-#smartHomePanelHeader .header-add-btn:active {
-  transform: scale(0.9);
-  background: rgba(255,255,255,0.25);
-}
 
 
     
@@ -1413,7 +1320,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 6 <span id="appVersion"></span>
+  Tano – Version 7 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -2998,16 +2905,21 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 
   <!-- IDENTISCHER HEADER WIE APPSPANEL -->
 <div id="smartHomePanelHeader">
+
   <div class="header-nexus"></div>
+
   <div class="header-progress"></div>
-  
-  <div class="header-title-spot">
-    <div id="smartHomePanelDynamicTitle"></div>
-  </div>
+
+  <div class="header-title-spot"></div>
 
   <div id="smartHomePanelAddButton" class="header-add-btn"></div>
+
+  <div id="smartHomePanelDynamicTitle"></div>
+
   <div id="smartHomePanelClose" class="panel-close-btn">×</div>
+
 </div>
+
 
 
 
