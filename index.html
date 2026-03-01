@@ -1170,6 +1170,12 @@ opacity: 1; /* inaktiver Zustand */
   z-index: 50000;
   box-shadow: 0 8px 20px rgba(0,0,0,0.4);
 }
+#tileSwitcherOverlay {
+  display: block !important;
+  width: 300px !important;
+  height: 300px !important;
+  background: red !important;
+}
 
 
 
@@ -1221,7 +1227,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 7 <span id="appVersion"></span>
+  Tano – Version 8 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -6149,6 +6155,8 @@ function openTileSwitcher() {
   const content = overlay.querySelector(".tile-switcher-content");
 
   content.innerHTML = "";
+console.log("Tiles:", tiles);
+console.log("Tile count:", tiles.length);
 
   tiles.forEach(tile => {
     const el = document.createElement("div");
