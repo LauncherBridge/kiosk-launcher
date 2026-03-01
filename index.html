@@ -1698,6 +1698,122 @@ box-shadow:
   z-index: 999;
 }
 
+/* ============================================================
+   SMART HOME & ALARM PANEL – VOLLBILD VERSION
+   ============================================================ */
+
+#smartHomePanel,
+#alarmPanel {
+  position: fixed;
+  inset: 0;                     /* Vollbild */
+  width: 100%;
+  height: 100%;
+  display: none;                /* wird per JS auf flex gesetzt */
+  flex-direction: column;
+  background: rgba(20,20,20,0.55);
+  backdrop-filter: blur(18px);
+  border-radius: 0;             /* keine Rundung im Vollbild */
+  z-index: 9999;                /* über AppsPanel */
+  overflow: hidden;             /* Header fix, Inhalt scrollt */
+}
+
+/* Header identisch zum AppsPanel, aber höher */
+#smartHomePanelHeader,
+#alarmPanelHeader {
+  position: relative;
+  height: 90px;                 /* größer als AppsPanel */
+  min-height: 90px;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(22px);
+  overflow: visible;
+}
+
+/* Nexus-Band im Header */
+#smartHomePanelHeader .header-nexus,
+#alarmPanelHeader .header-nexus {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* Titel-Spot */
+#smartHomePanelHeader .header-title-spot,
+#alarmPanelHeader .header-title-spot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  pointer-events: none;
+  z-index: 1001;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+/* Titel */
+#smartHomePanelDynamicTitle,
+#alarmPanelDynamicTitle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 26px;
+  font-weight: 600;
+  color: white;
+  z-index: 1004;
+  pointer-events: none;
+}
+
+/* Close-Button */
+#smartHomePanelClose,
+#alarmPanelClose {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  color: white;
+  cursor: pointer;
+  z-index: 1004;
+  transition: transform 0.15s ease, background 0.2s ease;
+}
+
+/* Plus-Button */
+#smartHomePanelAddButton,
+#alarmPanelAddButton {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1004;
+  transition: transform 0.15s ease, background 0.2s ease;
+}
+
+/* Inhalt scrollt */
+#smartHomeDeviceList,
+#alarmZoneList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+    
 
 
 /* Header */
@@ -2730,25 +2846,47 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
   
 <div id="smartHomePanel" class="panel hidden">
 
-  <div class="panel-header">
-    <span id="smartHomePanelTitle"></span>
-    <span id="smartHomePanelAdd" class="panel-add">+</span>
+  <div id="smartHomePanelHeader">
+    <div class="header-nexus"></div>
+
+    <div class="header-progress"></div>
+    <div class="header-title-spot"></div>
+
+    <!-- Plus-Symbol im Header -->
+    <div id="smartHomePanelAddButton" class="header-add-btn"></div>
+
+    <!-- Titel im Header -->
+    <div id="smartHomePanelDynamicTitle"></div>
+
+    <!-- Floating Close Button -->
+    <div id="smartHomePanelClose" class="panel-close-btn">×</div>
   </div>
 
   <div class="panel-content" id="smartHomeDeviceList"></div>
-
 </div>
+
 
 <div id="alarmPanel" class="panel hidden">
 
-  <div class="panel-header">
-    <span id="alarmPanelTitle"></span>
-    <span id="alarmPanelAdd" class="panel-add">+</span>
+  <div id="alarmPanelHeader">
+    <div class="header-nexus"></div>
+
+    <div class="header-progress"></div>
+    <div class="header-title-spot"></div>
+
+    <!-- Plus-Symbol im Header -->
+    <div id="alarmPanelAddButton" class="header-add-btn"></div>
+
+    <!-- Titel im Header -->
+    <div id="alarmPanelDynamicTitle"></div>
+
+    <!-- Floating Close Button -->
+    <div id="alarmPanelClose" class="panel-close-btn">×</div>
   </div>
 
   <div class="panel-content" id="alarmZoneList"></div>
-
 </div>
+
 
 
   <!--  
@@ -5176,8 +5314,76 @@ function openSmartHomePanel(tile) {
   const list = document.getElementById("smartHomeDeviceList");
   const addBtn = document.getElementById("smartHomePanelAdd");
 
-  // Titel setzen (Name der Kachel)
-  title.textContent = tile.name;
+// ---------------------------------------------------------
+// 1) Titel setzen
+// ---------------------------------------------------------
+const titleEl = document.getElementById("smartHomePanelDynamicTitle");
+titleEl.textContent = tile.name;
+
+const spot = document.querySelector("#smartHomePanelHeader .header-title-spot");
+
+requestAnimationFrame(() => {
+  const titleWidth  = titleEl.offsetWidth;
+  const titleHeight = titleEl.offsetHeight;
+
+  const spotW = titleWidth + 60;
+  const spotH = titleHeight + 15;
+
+  spot.style.setProperty("--spot-width",  spotW + "px");
+  spot.style.setProperty("--spot-height", spotH + "px");
+
+  spot.style.opacity = 1;
+});
+
+// ---------------------------------------------------------
+// 2) Nexus‑Band initialisieren
+// ---------------------------------------------------------
+const nexus = document.querySelector("#smartHomePanelHeader .header-nexus");
+
+requestAnimationFrame(() => {
+  if (!nexus) return;
+
+  const titleWidth  = titleEl.offsetWidth;
+  const titleHeight = titleEl.offsetHeight;
+
+  const maskW = titleWidth + 40;
+  const maskH = titleHeight + 20;
+
+  nexus.style.setProperty("--mask-width-base",  maskW + "px");
+  nexus.style.setProperty("--mask-height-base", maskH + "px");
+  nexus.style.setProperty("--mask-corner-base", "22px");
+
+  nexus.style.setProperty("--mask-width",  maskW + "px");
+  nexus.style.setProperty("--mask-height", maskH + "px");
+  nexus.style.setProperty("--mask-corner-radius", "22px");
+
+  const holeRadius = Math.max(maskW, maskH) * 0.45;
+  nexus.style.setProperty("--mask-center-x", "50%");
+  nexus.style.setProperty("--mask-center-y", "50%");
+  nexus.style.setProperty("--mask-hole-radius", holeRadius + "px");
+
+  // Tile‑Farbe
+  const tileAlpha = "D9";
+  nexus.style.setProperty("--nexus-color-left",  tile.color + tileAlpha);
+  nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
+
+  // Nexus‑Settings pro Tile
+  const nx = loadNexusSettings(tile.name);
+  nexus.style.setProperty("--nexus-intensity", nx.intensity);
+
+  nexus.classList.remove(
+    "nexus-soft",
+    "nexus-aurora",
+    "nexus-hologram",
+    "nexus-plasma",
+    "nexus-nebula"
+  );
+  void nexus.offsetWidth;
+  nexus.classList.add("nexus-" + nx.variant);
+
+  nexus.classList.remove("nexus-glow", "nexus-bounded");
+  nexus.classList.add(nx.boundary === "bounded" ? "nexus-bounded" : "nexus-glow");
+});
 
   // Liste leeren
   list.innerHTML = "";
@@ -5214,7 +5420,77 @@ function openAlarmPanel(tile) {
   const list = document.getElementById("alarmZoneList");
   const addBtn = document.getElementById("alarmPanelAdd");
 
-  title.textContent = tile.name;
+ // ---------------------------------------------------------
+// 1) Titel setzen
+// ---------------------------------------------------------
+const titleEl = document.getElementById("alarmPanelDynamicTitle");
+titleEl.textContent = tile.name;
+
+const spot = document.querySelector("#alarmPanelHeader .header-title-spot");
+
+requestAnimationFrame(() => {
+  const titleWidth  = titleEl.offsetWidth;
+  const titleHeight = titleEl.offsetHeight;
+
+  const spotW = titleWidth + 60;
+  const spotH = titleHeight + 15;
+
+  spot.style.setProperty("--spot-width",  spotW + "px");
+  spot.style.setProperty("--spot-height", spotH + "px");
+
+  spot.style.opacity = 1;
+});
+
+// ---------------------------------------------------------
+// 2) Nexus‑Band initialisieren
+// ---------------------------------------------------------
+const nexus = document.querySelector("#alarmPanelHeader .header-nexus");
+
+requestAnimationFrame(() => {
+  if (!nexus) return;
+
+  const titleWidth  = titleEl.offsetWidth;
+  const titleHeight = titleEl.offsetHeight;
+
+  const maskW = titleWidth + 40;
+  const maskH = titleHeight + 20;
+
+  nexus.style.setProperty("--mask-width-base",  maskW + "px");
+  nexus.style.setProperty("--mask-height-base", maskH + "px");
+  nexus.style.setProperty("--mask-corner-base", "22px");
+
+  nexus.style.setProperty("--mask-width",  maskW + "px");
+  nexus.style.setProperty("--mask-height", maskH + "px");
+  nexus.style.setProperty("--mask-corner-radius", "22px");
+
+  const holeRadius = Math.max(maskW, maskH) * 0.45;
+  nexus.style.setProperty("--mask-center-x", "50%");
+  nexus.style.setProperty("--mask-center-y", "50%");
+  nexus.style.setProperty("--mask-hole-radius", holeRadius + "px");
+
+  // Tile‑Farbe
+  const tileAlpha = "D9";
+  nexus.style.setProperty("--nexus-color-left",  tile.color + tileAlpha);
+  nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
+
+  // Nexus‑Settings pro Tile
+  const nx = loadNexusSettings(tile.name);
+  nexus.style.setProperty("--nexus-intensity", nx.intensity);
+
+  nexus.classList.remove(
+    "nexus-soft",
+    "nexus-aurora",
+    "nexus-hologram",
+    "nexus-plasma",
+    "nexus-nebula"
+  );
+  void nexus.offsetWidth;
+  nexus.classList.add("nexus-" + nx.variant);
+
+  nexus.classList.remove("nexus-glow", "nexus-bounded");
+  nexus.classList.add(nx.boundary === "bounded" ? "nexus-bounded" : "nexus-glow");
+});
+
   list.innerHTML = "";
 
   (tile.zones || []).forEach(zone => {
