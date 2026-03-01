@@ -2552,6 +2552,57 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
   transition: transform 0.25s ease;
 }
 
+.panel-switcher {
+  position: fixed;
+top: calc(10vh + 20px);
+  left: 50%;
+transform: translate(-50%, -10px);
+transition: opacity 0.25s ease, transform 0.25s ease;
+  width: 90%;
+  max-width: 600px;
+  background: rgba(0,0,0,0.55);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(12px);
+  border-radius: 22px;
+  padding: 14px;
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 99998;
+}
+
+.panel-switcher.hidden {
+  display: none;
+}
+
+.panel-switcher-item {
+  padding: 14px 18px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.06);
+  color: white;
+  font-size: 20px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.25s, transform 0.15s;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.panel-switcher-item:hover {
+  background: var(--tile-color);
+  transform: translateY(-2px);
+}
+.panel-switcher {
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.panel-switcher:not(.hidden) {
+  transform: translate(-50%, 0);
+  opacity: 1;
+}
+.panel-switcher-item:last-child {
+  border-bottom: none;
+}
 
 
 
@@ -5453,6 +5504,11 @@ requestAnimationFrame(() => {
   };
 }
 
+document.getElementById("appsPanelDynamicTitle").onclick = () => {
+  openPanelSwitcher(currentTile);
+};
+
+  
 }
 
  
@@ -5596,6 +5652,11 @@ if (addBtn) {
 
   // Panel anzeigen
   panel.style.display = "flex";
+
+document.getElementById("smartHomePanelDynamicTitle").onclick = () => {
+  openPanelSwitcher(currentTile);
+};
+ 
 }
 
 function openSmartHomeAddMenu(tile) {
@@ -5755,6 +5816,12 @@ if (addBtn) {
 
 
   panel.style.display = "flex";
+
+document.getElementById("alarmPanelDynamicTitle").onclick = () => {
+  openPanelSwitcher(currentTile);
+};
+
+  
 }
 
 function openAlarmAddMenu(tile) {
@@ -6057,6 +6124,38 @@ function closeAppsPanel() {
   //document.querySelector("#tile-apps").classList.remove("tile-active"); Tano active deaktiv.
  // currentTile.classList.remove("tile-active");
 }
+
+
+function openPanelSwitcher(currentTile) {
+  const switcher = document.getElementById("panelSwitcher");
+  const list = document.getElementById("panelSwitcherList");
+
+  list.innerHTML = "";
+
+  tiles
+    .filter(t => t.id !== currentTile.id)
+    .forEach(tile => {
+      const item = document.createElement("div");
+      item.className = "panel-switcher-item";
+      item.textContent = tile.name;
+
+      item.style.setProperty("--tile-color", tile.color);
+
+      item.onclick = () => {
+        switcher.classList.add("hidden");
+        openTile(tile.id);
+      };
+
+      list.appendChild(item);
+    });
+
+  switcher.classList.remove("hidden");
+}
+
+ function closePanelSwitcher() {
+  document.getElementById("panelSwitcher").classList.add("hidden");
+}
+ 
 
 function removeAppFromTile(tileName, packageName) {
   if (!appsPerTile[tileName]) return;
@@ -6449,9 +6548,21 @@ document.getElementById("importFile").addEventListener("change", (e) => {
   }
 });
 
+document.addEventListener("click", (event) => {
+  const switcher = document.getElementById("panelSwitcher");
+  if (!switcher.classList.contains("hidden") && !switcher.contains(event.target)) {
+    closePanelSwitcher();
+  }
+});
+document.getElementById("panelSwitcher").addEventListener("click", (event) => {
+  event.stopPropagation();
+});
 
   
 </script>
+<div id="panelSwitcher" class="panel-switcher hidden">
+  <div id="panelSwitcherList"></div>
+</div>
 
 
 </body>
