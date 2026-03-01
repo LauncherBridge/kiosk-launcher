@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 1 <span id="appVersion"></span>
+  Tano – Version 2 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1931,6 +1931,7 @@ background: radial-gradient(
 
   opacity: 0;
   transition: opacity 0.25s ease;
+  pointer-events: none;
 }
 
 
@@ -1993,6 +1994,7 @@ background: radial-gradient(
   /* WICHTIG: KEIN BLUR HIER! */
   opacity: var(--nexus-intensity);
   transition: opacity 0.3s ease;
+  pointer-events: none;
 }
 .header-nexus::before {
   content: "";
