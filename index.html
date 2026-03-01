@@ -1170,14 +1170,6 @@ opacity: 1; /* inaktiver Zustand */
   z-index: 50000;
   box-shadow: 0 8px 20px rgba(0,0,0,0.4);
 }
-#tileSwitcherOverlay {
-  display: block !important;
-  width: 300px !important;
-  height: 300px !important;
-  background: red !important;
-}
-
-
 
 
 #tileSwitcherOverlay.active {
@@ -1197,21 +1189,21 @@ opacity: 1; /* inaktiver Zustand */
 
 
 .tile-switcher-item {
-  background: rgba(255,255,255,0.08);
-  padding: 12px;
-  border-radius: 12px;
-  text-align: center;
+  padding: 10px 16px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 8px;
+  color: white;
+  font-size: 16px;
   cursor: pointer;
-  transition: 0.15s;
+  white-space: nowrap;
 }
 
 .tile-switcher-item:hover {
-  background: rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.15);
 }
 
-* {
-  outline: 1px solid rgba(0,255,0,0.3);
-}
+
+
     
   </style>
 </head>
@@ -1227,7 +1219,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 9 <span id="appVersion"></span>
+  Tano – Version 1 <span id="appVersion"></span>
 </div>
 
   <div class="header">
