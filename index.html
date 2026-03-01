@@ -1223,7 +1223,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 2 <span id="appVersion"></span>
+  Tano – Version 3 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -3021,26 +3021,29 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 <div id="smartHomePanel" class="panel hidden">
 
 <div id="smartHomePanelHeader">
-    <div class="header-nexus"></div>
-    <div class="header-progress"></div>
-    <div class="header-title-spot"></div>
+  <div class="header-nexus"></div>
+  <div class="header-progress"></div>
+  <div class="header-title-spot"></div>
 
-    <div id="smartHomePanelAddButton" class="header-add-btn"></div>
+  <div id="smartHomePanelAddButton" class="header-add-btn"></div>
 
-    <div id="smartHomePanelDynamicTitle" class="panel-title">
+  <!-- TITEL + SWITCHFENSTER ZUSAMMEN -->
+  <div id="smartHomePanelDynamicTitle" class="panel-title">
+    <span class="panel-title-text"></span>
 
-        <!-- Switchfenster direkt unter dem Titel -->
-        <div id="tileSwitcherOverlay">
-            <div class="tile-switcher-content"></div>
-        </div>
+    <div id="tileSwitcherOverlay">
+      <div class="tile-switcher-content"></div>
     </div>
-    <div id="smartHomePanelClose" class="panel-close-btn">×</div>
+  </div>
 
-    <div class="header-clock">
-        <div class="clock"></div>
-        <div class="date"></div>
-    </div>
+  <div id="smartHomePanelClose" class="panel-close-btn">×</div>
+
+  <div class="header-clock">
+    <div class="clock"></div>
+    <div class="date"></div>
+  </div>
 </div>
+
 
 
   <div class="panel-content" id="smartHomeDeviceList"></div>
@@ -3115,9 +3118,7 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 
 </div>
 
-<div id="tileSwitcherOverlay">
-  <div class="tile-switcher-content"></div>
-</div>
+
 
 
   
