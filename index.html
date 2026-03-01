@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 5 <span id="appVersion"></span>
+  Tano – Version 6 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1810,8 +1810,9 @@ box-shadow:
 #smartHomePanelHeader .header-clock,
 #alarmPanelHeader .header-clock {
   position: absolute;
-  top: 14px;
-  right: 60px; /* links vom Close-Button */
+  top: 50%;                 /* vertikale Mitte */
+  right: 100px;              /* Abstand zum Close-Button */
+  transform: translateY(-50%); /* exakte Zentrierung */
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -1819,9 +1820,10 @@ box-shadow:
   pointer-events: none;
 }
 
+
 #smartHomePanelHeader .header-clock .clock,
 #alarmPanelHeader .header-clock .clock {
-font-size: 14px !important;
+font-size: 16px !important;
   font-weight: 600;
   color: white;
   line-height: 1.1;
@@ -1829,7 +1831,7 @@ font-size: 14px !important;
 
 #smartHomePanelHeader .header-clock .date,
 #alarmPanelHeader .header-clock .date {
-font-size: 11px !important;
+font-size: 12px !important;
   font-weight: 400;
   color: rgba(255,255,255,0.75);
   line-height: 1.1;
@@ -1838,9 +1840,9 @@ font-size: 11px !important;
 
 #smartHomePanel .panel-content,
 #alarmPanel .panel-content {
-  background: #0a0a0a;      /* tiefes Schwarz */
+  background: #0a0a0a !important;      /* tiefes Schwarz */
   backdrop-filter: none;    /* kein Blur */
-  opacity: 1;               /* volle Deckkraft */
+  opacity: 1 !important;               /* volle Deckkraft */
 }
     
 /* Inhalt scrollt */
