@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 2 <span id="appVersion"></span>
+  Tano – Version 3 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1806,31 +1806,35 @@ box-shadow:
 }
 
 /* Uhrzeit + Datum im Nexus-Header */
+/* Uhr + Datum im Header (klein) */
 #smartHomePanelHeader .header-clock,
 #alarmPanelHeader .header-clock {
   position: absolute;
   top: 14px;
-  right: 60px; /* Abstand zum Close-Button */
+  right: 60px; /* links vom Close-Button */
   display: flex;
   flex-direction: column;
-  align-items: flex-end; /* rechtsbündig */
+  align-items: flex-end;
   z-index: 1004;
   pointer-events: none;
 }
 
-.header-clock .clock {
-  font-size: 18px;
+#smartHomePanelHeader .header-clock .clock,
+#alarmPanelHeader .header-clock .clock {
+  font-size: 14px;
   font-weight: 600;
   color: white;
   line-height: 1.1;
 }
 
-.header-clock .date {
-  font-size: 14px;
+#smartHomePanelHeader .header-clock .date,
+#alarmPanelHeader .header-clock .date {
+  font-size: 11px;
   font-weight: 400;
   color: rgba(255,255,255,0.75);
   line-height: 1.1;
 }
+
 
 
 
@@ -4473,12 +4477,12 @@ function updateClock() {
     ? { hour: '2-digit', minute: '2-digit', second: '2-digit' }
     : { hour: '2-digit', minute: '2-digit' };
 
-  // Uhrzeit
+  // Uhrzeit aktualisieren
   document.querySelectorAll('#clock, .clock').forEach(el => {
     el.textContent = now.toLocaleTimeString('de-DE', format);
   });
 
-  // Datum
+  // Datum aktualisieren
   document.querySelectorAll('#date, .date').forEach(el => {
     el.textContent = now.toLocaleDateString('de-DE', {
       weekday: 'long',
@@ -4488,6 +4492,7 @@ function updateClock() {
     });
   });
 }
+
 
 
 
