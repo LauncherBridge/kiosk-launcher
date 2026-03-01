@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 5 <span id="appVersion"></span>
+  Tano – Version 6 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1184,17 +1184,9 @@ opacity: 1; /* inaktiver Zustand */
    
 </div>
 
-
-
-  <div class="panel-switcher hidden" id="panelSwitcher">
-    <div class="panel-switcher-item" data-target="appsPanel">Apps</div>
-    <div class="panel-switcher-item" data-target="smartHomePanel">Smart Home</div>
-    <div class="panel-switcher-item" data-target="alarmPanel">Alarm</div>
-    <div class="panel-switcher-item" data-target="settingsPanel">Einstellungen</div>
-  </div>
-
-  <!-- ab hier kommt dein restliches HTML -->
-
+<div id="panelSwitcher" class="panel-switcher hidden">
+  <div id="panelSwitcherList"></div>
+</div>
 
   <style>
 
@@ -2568,32 +2560,40 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 }
 
 
+/* ============================================================
+   PANEL SWITCHER – Bereinigte, konfliktfreie Version
+============================================================ */
+
 .panel-switcher {
   position: fixed;
   top: 120px;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, 0) scale(0.98);   /* ruhiger Ausgangszustand */
   z-index: 99998;
 
-  display: none;          /* Standard: nicht sichtbar */
-  pointer-events: none;   /* Standard: NICHT klickbar */
+  display: none;          /* geschlossen → unsichtbar */
+  pointer-events: none;   /* geschlossen → nicht klickbar */
 
-  /* dein restliches Styling hier lassen (background, shadow, padding, etc.) */
+  opacity: 0;             /* geschlossen → transparent */
+  transition: opacity 0.25s ease, transform 0.25s ease;
 }
 
-    
-.panel-switcher.hidden {
-  display: none;          /* falls du die Klasse noch irgendwo nutzt */
-}
-    
 .panel-switcher.open {
-  display: flex;          /* nur im offenen Zustand sichtbar */
-  pointer-events: auto;   /* nur im offenen Zustand klickbar */
+  display: flex;          /* offen → sichtbar */
+  pointer-events: auto;   /* offen → klickbar */
+  opacity: 1;             /* Fade-In */
+  transform: translate(-50%, 0) scale(1);  /* sanftes Aufskalieren */
 }
 
+.panel-switcher.open .panel-switcher-item {
+  animation: panelItemGlow 0.35s ease;
+}
 
-
-
+@keyframes panelItemGlow {
+  0%   { background: rgba(255,255,255,0.00); }
+  40%  { background: rgba(255,255,255,0.10); }
+  100% { background: rgba(255,255,255,0.06); }
+}
 
 .panel-switcher-item {
   padding: 16px 18px;
@@ -2609,49 +2609,21 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-.panel-switcher-item:hover {
-  background: var(--tile-color);
-  transform: translateY(-2px);
-}
-.panel-switcher {
-  opacity: 0;
-  transition: opacity 0.25s ease;
-}
-
-.panel-switcher:not(.hidden) {
-transform: translate(-50%, 0) scale(1);
-  opacity: 1;
-}
- .panel-switcher:not(.hidden) .panel-switcher-item {
-  animation: panelItemGlow 0.35s ease;
-}
-
-@keyframes panelItemGlow {
-  0% { background: rgba(255,255,255,0.00); }
-  40% { background: rgba(255,255,255,0.10); }
-  100% { background: rgba(255,255,255,0.06); }
-}
-   
 .panel-switcher-item:last-child {
   border-bottom: none;
 }
+
+.panel-switcher-item:hover {
+  background: rgba(255,255,255,0.10);
+  transform: translateY(-1px);
+}
+
 .panel-switcher-item:active {
   transform: scale(0.97);
-  background: rgba(255,255,255,0.12);
-}
-.panel-switcher-item:active {
   background: rgba(255,255,255,0.18);
   font-weight: 600;
 }
 
-  
-    
-@media (hover: hover) and (pointer: fine) {
-  .panel-switcher-item:hover {
-    background: rgba(255,255,255,0.10);
-    transform: translateY(-1px);
-  }
-}
 
 
 
@@ -6633,9 +6605,7 @@ document.getElementById("panelSwitcher").addEventListener("click", (event) => {
 
   
 </script>
-<div id="panelSwitcher" class="panel-switcher hidden">
-  <div id="panelSwitcherList"></div>
-</div>
+
 
 
 </body>
