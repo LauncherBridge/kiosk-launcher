@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 2 <span id="appVersion"></span>
+  Tano – Version 1 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1184,6 +1184,16 @@ opacity: 1; /* inaktiver Zustand */
    
 </div>
 
+
+
+  <div class="panel-switcher hidden" id="panelSwitcher">
+    <div class="panel-switcher-item" data-target="appsPanel">Apps</div>
+    <div class="panel-switcher-item" data-target="smartHomePanel">Smart Home</div>
+    <div class="panel-switcher-item" data-target="alarmPanel">Alarm</div>
+    <div class="panel-switcher-item" data-target="settingsPanel">Einstellungen</div>
+  </div>
+
+  <!-- ab hier kommt dein restliches HTML -->
 
 
   <style>
@@ -2712,12 +2722,12 @@ transform: translate(-50%, 0) scale(1);
 =============================================== -->
 <div id="appPicker" class="panel" style="display:none;">
 
-  <div class="panel-header">
+  l-header">
     <span id="appPickerTitle">App hinzufügen</span>
     <span id="appPickerClose" class="panel-add">×</span>
   </div>
 
-  <div class="panel-content">
+  l-content">
     <!-- Nur das neue Grid bleibt -->
     <div id="appPickerGrid"></div>
   </div>
