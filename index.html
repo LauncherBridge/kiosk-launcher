@@ -1158,6 +1158,10 @@ opacity: 1; /* inaktiver Zustand */
   z-index: 1003;
 }
 
+#smartHomePanelDynamicTitle {
+  position: relative; /* neu */
+}
+    
 #tileSwitcherOverlay {
   position: absolute;
   top: calc(100% + 8px);   /* 8px Abstand unter dem Titel */
@@ -1219,7 +1223,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 1 <span id="appVersion"></span>
+  Tano – Version 2 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -3023,13 +3027,13 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 
     <div id="smartHomePanelAddButton" class="header-add-btn"></div>
 
-    <div id="smartHomePanelDynamicTitle" class="panel-title"></div>
+    <div id="smartHomePanelDynamicTitle" class="panel-title">
 
-    <!-- Switchfenster direkt unter dem Titel -->
-    <div id="tileSwitcherOverlay">
-        <div class="tile-switcher-content"></div>
+        <!-- Switchfenster direkt unter dem Titel -->
+        <div id="tileSwitcherOverlay">
+            <div class="tile-switcher-content"></div>
+        </div>
     </div>
-
     <div id="smartHomePanelClose" class="panel-close-btn">×</div>
 
     <div class="header-clock">
