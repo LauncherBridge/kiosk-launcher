@@ -2386,7 +2386,82 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 .apps-panel-item:hover {
   background: rgba(255,255,255,0.08);
 }
+/* ============================================================
+   UNIVERSAL ADD-MENU
+============================================================ */
 
+.add-menu-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(6px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+}
+
+.add-menu {
+  width: 90%;
+  max-width: 420px;
+  background: rgba(30,30,30,0.85);
+  border-radius: 22px;
+  padding: 20px;
+  box-shadow: 0 0 40px rgba(0,0,0,0.4);
+  position: relative;
+  animation: menuPop 0.25s ease;
+}
+
+@keyframes menuPop {
+  from { transform: scale(0.85); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+.add-menu-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.add-menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.add-menu-item {
+  padding: 14px 18px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 14px;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.add-menu-item:hover {
+  background: rgba(255,255,255,0.18);
+}
+
+.add-menu-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: white;
+  cursor: pointer;
+}
+
+    
 .apps-panel-icon {
   width: 42px;
   height: 42px;
@@ -2931,6 +3006,18 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 
 </div>
 
+<!-- ============================================================
+     UNIVERSAL ADD-MENU (für SmartHome & Alarm)
+============================================================ -->
+<div id="addMenuOverlay" class="add-menu-overlay">
+  <div id="addMenu" class="add-menu">
+    <div id="addMenuTitle" class="add-menu-title"></div>
+
+    <div id="addMenuList" class="add-menu-list"></div>
+
+    <div id="addMenuClose" class="add-menu-close">×</div>
+  </div>
+</div>
 
   
   
@@ -3044,7 +3131,38 @@ if (buildVersion > appVersion) {
   updateVersionDisplay();
 }
 
-  
+ /* ============================================================
+   UNIVERSAL ADD-MENU LOGIC
+============================================================ */
+
+function openAddMenu(title, items, callback) {
+  const overlay = document.getElementById("addMenuOverlay");
+  const menuTitle = document.getElementById("addMenuTitle");
+  const list = document.getElementById("addMenuList");
+
+  menuTitle.textContent = title;
+  list.innerHTML = "";
+
+  items.forEach(item => {
+    const el = document.createElement("div");
+    el.className = "add-menu-item";
+    el.textContent = item.label;
+
+    el.onclick = () => {
+      overlay.style.display = "none";
+      callback(item);
+    };
+
+    list.appendChild(el);
+  });
+
+  overlay.style.display = "flex";
+}
+
+document.getElementById("addMenuClose").onclick = () => {
+  document.getElementById("addMenuOverlay").style.display = "none";
+};
+ 
 
 // --- Setting-Toggle anbinden ---
 const contextToggle = document.querySelector('#disableContextMenu');
@@ -5401,17 +5519,75 @@ requestAnimationFrame(() => {
 
     list.appendChild(btn);
   });
+// ---------------------------------------------------------
+// 3) Close‑Button
+// ---------------------------------------------------------
+const closeBtn = document.getElementById("smartHomePanelClose");
+if (closeBtn) {
+  closeBtn.onclick = () => {
+    const spot = document.querySelector("#smartHomePanelHeader .header-title-spot");
+    if (spot) spot.style.opacity = 0;
 
-  // Plus-Symbol → später Geräte-Picker
-  addBtn.onclick = () => {
-    // später: animiertes Morph + Geräte-Auswahl
-    console.log("Gerät hinzufügen für Tile:", tile.id);
+    document.getElementById("smartHomePanel").style.display = "none";
   };
+}
+
+// ---------------------------------------------------------
+// 4) Plus‑Button → öffnet später das Auswahlmenü
+// ---------------------------------------------------------
+const addBtn = document.getElementById("smartHomePanelAddButton");
+if (addBtn) {
+  addBtn.onclick = () => {
+    openSmartHomeAddMenu(tile);
+  };
+}
+
 
   // Panel anzeigen
   panel.style.display = "flex";
 }
 
+function openSmartHomeAddMenu(tile) {
+  const items = [
+    { type: "room", label: "Raum hinzufügen" },
+    { type: "floor", label: "Etage hinzufügen" },
+    { type: "device", label: "Smart Device hinzufügen" },
+    { type: "automation", label: "Automation erstellen" }
+  ];
+
+  openAddMenu("SmartHome – hinzufügen", items, (item) => {
+    switch (item.type) {
+      case "room":
+        console.log("Raum hinzufügen:", tile);
+        break;
+
+      case "floor":
+        console.log("Etage hinzufügen:", tile);
+        break;
+
+      case "device":
+        openDevicePicker(tile);
+        break;
+
+      case "automation":
+        console.log("Automation erstellen:", tile);
+        break;
+    }
+  });
+}
+
+
+  
+function openSmartHomeAddMenu(tile) {
+  console.log("SmartHome Menü öffnen für:", tile.name);
+
+  // Schritt 4: Hier kommt das echte Menü rein
+  // Jetzt nur ein Platzhalter:
+  alert("SmartHome: Was möchtest du hinzufügen?\n\n(Raum / Etage / Gerät / Automation …)");
+}
+
+
+  
 function openAlarmPanel(tile) {
   if (!tile) return;
 
@@ -5504,16 +5680,68 @@ requestAnimationFrame(() => {
 
     list.appendChild(btn);
   });
+// ---------------------------------------------------------
+// 3) Close‑Button
+// ---------------------------------------------------------
+const closeBtn = document.getElementById("alarmPanelClose");
+if (closeBtn) {
+  closeBtn.onclick = () => {
+    const spot = document.querySelector("#alarmPanelHeader .header-title-spot");
+    if (spot) spot.style.opacity = 0;
 
-  addBtn.onclick = () => {
-    openZonePicker(tile);
+    document.getElementById("alarmPanel").style.display = "none";
   };
+}
+
+// ---------------------------------------------------------
+// 4) Plus‑Button → öffnet später das Auswahlmenü
+// ---------------------------------------------------------
+const addBtn = document.getElementById("alarmPanelAddButton");
+if (addBtn) {
+  addBtn.onclick = () => {
+    openAlarmAddMenu(tile);
+  };
+}
+
 
   panel.style.display = "flex";
 }
 
+function openAlarmAddMenu(tile) {
+  const items = [
+    { type: "zone", label: "Alarmzone hinzufügen" },
+    { type: "camera", label: "WebCam hinzufügen" },
+    { type: "sensor", label: "Sensor hinzufügen" }
+  ];
+
+  openAddMenu("Alarm – hinzufügen", items, (item) => {
+    switch (item.type) {
+      case "zone":
+        openZonePicker(tile);
+        break;
+
+      case "camera":
+        console.log("Kamera hinzufügen:", tile);
+        break;
+
+      case "sensor":
+        console.log("Sensor hinzufügen:", tile);
+        break;
+    }
+  });
+}
+
+
+  
 function updateAppPickerSortButtons() {
   // vorerst leer – wird später gefüllt
+}
+function openAlarmAddMenu(tile) {
+  console.log("Alarm Menü öffnen für:", tile.name);
+
+  // Schritt 4: Hier kommt das echte Menü rein
+  // Jetzt nur ein Platzhalter:
+  alert("Alarm: Was möchtest du hinzufügen?\n\n(WebCam / Zone / Sensor …)");
 }
 
   
