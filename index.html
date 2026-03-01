@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 7 <span id="appVersion"></span>
+  Tano – Version 8 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1184,6 +1184,9 @@ opacity: 1; /* inaktiver Zustand */
    
 </div>
 
+<div id="tileSwitcherOverlay">
+  <div class="tile-switcher-content"></div>
+</div>
 
 
   <style>
@@ -1869,6 +1872,48 @@ font-size: 12px !important;
   backdrop-filter: blur(22px);
 }
 
+#tileSwitcherOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(10px);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 5000;
+}
+
+#tileSwitcherOverlay.active {
+  display: flex;
+}
+
+.tile-switcher-content {
+  background: rgba(20,20,20,0.9);
+  padding: 20px;
+  border-radius: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 16px;
+  max-width: 90%;
+  max-height: 80%;
+  overflow-y: auto;
+}
+
+.tile-switcher-item {
+  background: rgba(255,255,255,0.08);
+  padding: 12px;
+  border-radius: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: 0.15s;
+}
+
+.tile-switcher-item:hover {
+  background: rgba(255,255,255,0.18);
+}
+
+
+    
 const tileAlpha = "D9"; // 85% Deckkraft
 
 nexus.style.setProperty("--nexus-color-left",  tile.color + tileAlpha);
@@ -2632,7 +2677,7 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
       <div id="appsPanelAddButton" class="header-add-btn"></div>
   
       <!-- Titel im Header -->
-      <div id="appsPanelDynamicTitle"></div>
+<div id="appsPanelDynamicTitle" class="panel-title"></div>
   
       <!-- Floating Close Button -->
       <div id="appsPanelClose" class="panel-close-btn">×</div>
@@ -2969,7 +3014,7 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
     <!-- Plus-Symbol im Header -->
     <div id="smartHomePanelAddButton" class="header-add-btn"></div>
     <!-- Titel im Header -->
-    <div id="smartHomePanelDynamicTitle"></div>
+<div id="smartHomePanelDynamicTitle" class="panel-title"></div>
 
     <!-- Floating Close Button -->
     <div id="smartHomePanelClose" class="panel-close-btn">×</div>    
@@ -2994,7 +3039,7 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
     <!-- Plus-Symbol im Header -->
     <div id="alarmPanelAddButton" class="header-add-btn"></div>
     <!-- Titel im Header -->
-    <div id="alarmPanelDynamicTitle"></div>
+<div id="alarmPanelDynamicTitle" class="panel-title"></div>
 
     <!-- Floating Close Button -->
     <div id="alarmPanelClose" class="panel-close-btn">×</div>
@@ -3007,6 +3052,9 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
   <div class="panel-content" id="alarmZoneList"></div>
 </div>
 
+<div id="tileSwitcherOverlay">
+  <div class="tile-switcher-content"></div>
+</div>
 
 
   <!--  
@@ -6074,6 +6122,31 @@ function removeAppFromTile(tileName, packageName) {
   saveTileData();
 }
 
+function openTileSwitcher() {
+  const overlay = document.getElementById("tileSwitcherOverlay");
+  const content = overlay.querySelector(".tile-switcher-content");
+
+  content.innerHTML = "";
+
+  tiles.forEach(tile => {
+    const el = document.createElement("div");
+    el.className = "tile-switcher-item";
+    el.textContent = tile.title;
+
+    el.addEventListener("click", () => {
+      overlay.classList.remove("active");
+      openTile(tile.id);
+    });
+
+    content.appendChild(el);
+  });
+
+  overlay.classList.add("active");
+}
+
+
+
+  
 function openTileSettings(tile) {
   const panel = document.getElementById("tileSettings");
   const content = document.getElementById("tileSettingsContent");
@@ -6449,6 +6522,19 @@ document.getElementById("importFile").addEventListener("change", (e) => {
   }
 });
 
+document.querySelectorAll(".panel-title").forEach(title => {
+  title.addEventListener("click", openTileSwitcher);
+});
+document.getElementById("tileSwitcherOverlay").addEventListener("click", e => {
+  if (e.target.id === "tileSwitcherOverlay") {
+    e.target.classList.remove("active");
+  }
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") {
+    document.getElementById("tileSwitcherOverlay").classList.remove("active");
+  }
+});
 
   
 </script>
