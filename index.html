@@ -1213,7 +1213,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 1 <span id="appVersion"></span>
+  Tano – Version 2 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -6128,6 +6128,8 @@ function removeAppFromTile(tileName, packageName) {
 }
 
 function openTileSwitcher() {
+  console.log("openTileSwitcher wurde ausgeführt");
+
   const overlay = document.getElementById("tileSwitcherOverlay");
   const content = overlay.querySelector(".tile-switcher-content");
 
