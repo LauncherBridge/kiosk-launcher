@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 7 <span id="appVersion"></span>
+  Tano – Version 1 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1818,19 +1818,20 @@ box-shadow:
   pointer-events: none;
 }
 
-.header-clock #clock {
+.header-clock .clock {
   font-size: 18px;
   font-weight: 600;
   color: white;
   line-height: 1.1;
 }
 
-.header-clock #date {
+.header-clock .date {
   font-size: 14px;
   font-weight: 400;
   color: rgba(255,255,255,0.75);
   line-height: 1.1;
 }
+
 
 
 
@@ -2960,22 +2961,20 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 
   <div id="smartHomePanelHeader">
     <div class="header-nexus"></div>
-
     <div class="header-progress"></div>
     <div class="header-title-spot"></div>
 
     <!-- Plus-Symbol im Header -->
     <div id="smartHomePanelAddButton" class="header-add-btn"></div>
-
     <!-- Titel im Header -->
     <div id="smartHomePanelDynamicTitle"></div>
 
     <!-- Floating Close Button -->
-    <div id="smartHomePanelClose" class="panel-close-btn">×</div>
-    <div class="header-clock">
-        <div id="headerTime"></div>
-        <div id="headerDate"></div>
-    </div>
+    <div id="smartHomePanelClose" class="panel-close-btn">×</div>    
+      <div class="header-clock">
+          <div id="clock"></div>
+          <div id="date"></div>
+      </div>
   </div>
 
   <div class="panel-content" id="smartHomeDeviceList"></div>
@@ -2998,6 +2997,10 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 
     <!-- Floating Close Button -->
     <div id="alarmPanelClose" class="panel-close-btn">×</div>
+      <div class="header-clock">
+        <div id="clock"></div>
+        <div id="date"></div>
+      </div>
   </div>
 
   <div class="panel-content" id="alarmZoneList"></div>
@@ -4470,11 +4473,11 @@ function updateClock() {
     ? { hour: '2-digit', minute: '2-digit', second: '2-digit' }
     : { hour: '2-digit', minute: '2-digit' };
 
-  document.querySelectorAll('#clock').forEach(el => {
+  document.querySelectorAll('.clock').forEach(el => {
     el.textContent = now.toLocaleTimeString('de-DE', format);
   });
 
-  document.querySelectorAll('#date').forEach(el => {
+  document.querySelectorAll('.date').forEach(el => {
     el.textContent = now.toLocaleDateString('de-DE', {
       weekday: 'long',
       year: 'numeric',
@@ -4483,6 +4486,7 @@ function updateClock() {
     });
   });
 }
+
 
 /* ============================================================
    WETTER
