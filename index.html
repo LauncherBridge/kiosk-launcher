@@ -1159,31 +1159,36 @@ opacity: 1; /* inaktiver Zustand */
 }
 
 #tileSwitcherOverlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.55);
-  backdrop-filter: blur(10px);
+  position: absolute;
+  top: calc(100% + 8px);   /* 8px Abstand unter dem Titel */
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(20,20,20,0.95);
+  padding: 10px 0;
+  border-radius: 12px;
   display: none;
-  justify-content: center;
-  align-items: center;
   z-index: 50000;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
 }
+
+
+
 
 #tileSwitcherOverlay.active {
   display: flex;
 }
 
 .tile-switcher-content {
-  background: rgba(20,20,20,0.9);
-  padding: 20px;
-  border-radius: 16px;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 16px;
-  max-width: 90%;
-  max-height: 80%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 300px;
   overflow-y: auto;
+  padding: 10px 20px;
+  background: rgba(20,20,20,0.9);
+  border-radius: 12px;
 }
+
 
 .tile-switcher-item {
   background: rgba(255,255,255,0.08);
@@ -1216,7 +1221,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 6 <span id="appVersion"></span>
+  Tano – Version 7 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -3013,24 +3018,28 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
   
 <div id="smartHomePanel" class="panel hidden">
 
-  <div id="smartHomePanelHeader">
+<div id="smartHomePanelHeader">
     <div class="header-nexus"></div>
     <div class="header-progress"></div>
     <div class="header-title-spot"></div>
 
-    <!-- Plus-Symbol im Header -->
     <div id="smartHomePanelAddButton" class="header-add-btn"></div>
-    <!-- Titel im Header -->
-<div id="smartHomePanelDynamicTitle" class="panel-title"></div>
 
-    <!-- Floating Close Button -->
-    <div id="smartHomePanelClose" class="panel-close-btn">×</div>    
-      <div class="header-clock">
+    <div id="smartHomePanelDynamicTitle" class="panel-title"></div>
+
+    <!-- Switchfenster direkt unter dem Titel -->
+    <div id="tileSwitcherOverlay">
+        <div class="tile-switcher-content"></div>
+    </div>
+
+    <div id="smartHomePanelClose" class="panel-close-btn">×</div>
+
+    <div class="header-clock">
         <div class="clock"></div>
         <div class="date"></div>
-      </div>
+    </div>
+</div>
 
-  </div>
 
   <div class="panel-content" id="smartHomeDeviceList"></div>
 </div>
@@ -6144,10 +6153,15 @@ function openTileSwitcher() {
   tiles.forEach(tile => {
     const el = document.createElement("div");
     el.className = "tile-switcher-item";
-    el.textContent = tile.title;
+    el.textContent = tile.name;
 
     el.addEventListener("click", () => {
       overlay.classList.remove("active");
+
+      // FIX 1: Alle Panels schließen
+      document.querySelectorAll(".panel").forEach(p => p.style.display = "none");
+
+      // FIX 2: Neues Panel öffnen
       openTile(tile.id);
     });
 
@@ -6156,6 +6170,7 @@ function openTileSwitcher() {
 
   overlay.classList.add("active");
 }
+
 
 
 
