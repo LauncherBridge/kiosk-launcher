@@ -1158,6 +1158,45 @@ opacity: 1; /* inaktiver Zustand */
   z-index: 1003;
 }
 
+#tileSwitcherOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(10px);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 5000;
+}
+
+#tileSwitcherOverlay.active {
+  display: flex;
+}
+
+.tile-switcher-content {
+  background: rgba(20,20,20,0.9);
+  padding: 20px;
+  border-radius: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 16px;
+  max-width: 90%;
+  max-height: 80%;
+  overflow-y: auto;
+}
+
+.tile-switcher-item {
+  background: rgba(255,255,255,0.08);
+  padding: 12px;
+  border-radius: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: 0.15s;
+}
+
+.tile-switcher-item:hover {
+  background: rgba(255,255,255,0.18);
+}
 
     
   </style>
@@ -1174,7 +1213,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 9 <span id="appVersion"></span>
+  Tano – Version 1 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1872,45 +1911,7 @@ font-size: 12px !important;
   backdrop-filter: blur(22px);
 }
 
-#tileSwitcherOverlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.55);
-  backdrop-filter: blur(10px);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 5000;
-}
 
-#tileSwitcherOverlay.active {
-  display: flex;
-}
-
-.tile-switcher-content {
-  background: rgba(20,20,20,0.9);
-  padding: 20px;
-  border-radius: 16px;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 16px;
-  max-width: 90%;
-  max-height: 80%;
-  overflow-y: auto;
-}
-
-.tile-switcher-item {
-  background: rgba(255,255,255,0.08);
-  padding: 12px;
-  border-radius: 12px;
-  text-align: center;
-  cursor: pointer;
-  transition: 0.15s;
-}
-
-.tile-switcher-item:hover {
-  background: rgba(255,255,255,0.18);
-}
 
 
     
