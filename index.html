@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 1 <span id="appVersion"></span>
+  Tano – Version 2 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -2546,43 +2546,65 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
   width: max-content;
   pointer-events: none;
 }
+#appsPanelDynamicTitle {
+  padding: 8px 12px;
+}
 
 .header-add-btn.jumping {
   transform: translateX(150px) scale(1.25);
   transition: transform 0.25s ease;
 }
 
+
+    
 .panel-switcher {
   position: fixed;
-top: calc(10vh + 20px);
+  margin-top: 6px;
+  top: calc(10vh + 20px);
   left: 50%;
-transform: translate(-50%, -10px);
-transition: opacity 0.25s ease, transform 0.25s ease;
+  transform: translate(-50%, -10px) scale(0.98);
+  transform-origin: top center;
+  transition: opacity 0.25s ease, transform 0.25s ease;
   width: 90%;
   max-width: 600px;
   background: rgba(0,0,0,0.55);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+
+  /* beide Shadows kombiniert */
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.35),
+    inset 0 0 18px rgba(255, 255, 255, 0.06);
+
   backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  /* weiche Rundungsmaske */
+  mask-image: radial-gradient(circle at center, black 92%, transparent 100%);
+
   border-radius: 22px;
   padding: 14px;
+  padding-bottom: 24px;
+
   display: none;
   flex-direction: column;
   gap: 10px;
   z-index: 99998;
 }
 
+
 .panel-switcher.hidden {
   display: none;
 }
 
 .panel-switcher-item {
-  padding: 14px 18px;
+  padding: 16px 18px;
   border-radius: 18px;
   background: rgba(255,255,255,0.06);
   color: white;
   font-size: 20px;
   font-weight: 500;
   cursor: pointer;
+  touch-action: manipulation;
+
   transition: background 0.25s, transform 0.15s;
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
@@ -2597,13 +2619,43 @@ transition: opacity 0.25s ease, transform 0.25s ease;
 }
 
 .panel-switcher:not(.hidden) {
-  transform: translate(-50%, 0);
+transform: translate(-50%, 0) scale(1);
   opacity: 1;
 }
+ .panel-switcher:not(.hidden) .panel-switcher-item {
+  animation: panelItemGlow 0.35s ease;
+}
+
+@keyframes panelItemGlow {
+  0% { background: rgba(255,255,255,0.00); }
+  40% { background: rgba(255,255,255,0.10); }
+  100% { background: rgba(255,255,255,0.06); }
+}
+   
 .panel-switcher-item:last-child {
   border-bottom: none;
 }
+.panel-switcher-item:active {
+  transform: scale(0.97);
+  background: rgba(255,255,255,0.12);
+}
+.panel-switcher-item:active {
+  background: rgba(255,255,255,0.18);
+  font-weight: 600;
+}
 
+  
+    
+@media (hover: hover) and (pointer: fine) {
+  .panel-switcher-item:hover {
+    background: rgba(255,255,255,0.10);
+    transform: translateY(-1px);
+  }
+}
+
+
+
+    
 .panel-title {
   pointer-events: auto !important;
 }
