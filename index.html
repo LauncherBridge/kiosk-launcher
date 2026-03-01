@@ -1212,7 +1212,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 4 <span id="appVersion"></span>
+  Tano – Version 5 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -2796,15 +2796,18 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 <div id="smartHomePanel" class="panel hidden">
 
   <!-- IDENTISCHER HEADER WIE APPSPANEL -->
-  <div id="smartHomePanelHeader" class="panel-header">
-    <div id="smartHomePanelClose" class="panel-close-btn">×</div>
+<div id="smartHomePanelHeader" class="panel-header">
+  <div class="header-nexus"></div>
+  <div class="header-progress"></div>
 
-    <div class="panel-header-title">
-      <span id="smartHomePanelDynamicTitle"></span>
-    </div>
-
-    <div id="smartHomePanelAddButton" class="panel-add">+</div>
+  <div class="header-title-spot">
+    <div id="smartHomePanelDynamicTitle"></div>
   </div>
+
+  <div id="smartHomePanelAddButton" class="header-add-btn"></div>
+  <div id="smartHomePanelClose" class="panel-close-btn">×</div>
+</div>
+
 
   <!-- MINI-MENÜ -->
   <div id="smartHomeMiniMenu" class="mini-menu hidden">
