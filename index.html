@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 1 <span id="appVersion"></span>
+  Tano – Version 2 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -4473,11 +4473,13 @@ function updateClock() {
     ? { hour: '2-digit', minute: '2-digit', second: '2-digit' }
     : { hour: '2-digit', minute: '2-digit' };
 
-  document.querySelectorAll('.clock').forEach(el => {
+  // Uhrzeit
+  document.querySelectorAll('#clock, .clock').forEach(el => {
     el.textContent = now.toLocaleTimeString('de-DE', format);
   });
 
-  document.querySelectorAll('.date').forEach(el => {
+  // Datum
+  document.querySelectorAll('#date, .date').forEach(el => {
     el.textContent = now.toLocaleDateString('de-DE', {
       weekday: 'long',
       year: 'numeric',
@@ -4486,6 +4488,7 @@ function updateClock() {
     });
   });
 }
+
 
 
 /* ============================================================
