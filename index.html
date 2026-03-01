@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 4 <span id="appVersion"></span>
+  Tano – Version 5 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -2581,14 +2581,17 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
   /* dein restliches Styling hier lassen (background, shadow, padding, etc.) */
 }
 
+    
+.panel-switcher.hidden {
+  display: none;          /* falls du die Klasse noch irgendwo nutzt */
+}
+    
 .panel-switcher.open {
   display: flex;          /* nur im offenen Zustand sichtbar */
   pointer-events: auto;   /* nur im offenen Zustand klickbar */
 }
 
-.panel-switcher.hidden {
-  display: none;          /* falls du die Klasse noch irgendwo nutzt */
-}
+
 
 
 
@@ -6185,22 +6188,27 @@ function openPanelSwitcher(currentTile) {
 
   list.innerHTML = "";
 
-  // (Inhalt füllen – Namen/Typen egal, das korrigieren wir später)
+  // WICHTIG: Nur die Tiles verwenden
   tiles
     .filter(t => t.id !== currentTile.id)
     .forEach(tile => {
       const item = document.createElement("div");
       item.className = "panel-switcher-item";
-      item.textContent = tile.name || tile.type; // Inhalt später sauber
+
+      // Der echte Name des Tiles
+      item.textContent = tile.name;
+
       item.onclick = () => {
         openTile(tile.id);
         closePanelSwitcher();
       };
+
       list.appendChild(item);
     });
 
   switcher.classList.add("open");
 }
+
 
 function closePanelSwitcher() {
   const switcher = document.getElementById("panelSwitcher");
