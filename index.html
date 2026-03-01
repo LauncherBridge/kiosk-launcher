@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 3 <span id="appVersion"></span>
+  Tano – Version 4 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -2570,34 +2570,26 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 
 .panel-switcher {
   position: fixed;
-  margin-top: 6px;
-  top: calc(10vh + 20px);
+  top: 120px;
   left: 50%;
-  transform: translate(-50%, -10px) scale(0.98);
-  transform-origin: top center;
-  transition: opacity 0.25s ease, transform 0.25s ease;
-  width: 90%;
-  max-width: 600px;
-  background: rgba(0,0,0,0.55);
-  box-shadow:
-    0 12px 32px rgba(0, 0, 0, 0.35),
-    inset 0 0 18px rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  mask-image: radial-gradient(circle at center, black 92%, transparent 100%);
-  border-radius: 22px;
-  padding: 14px;
-  padding-bottom: 24px;
-
-  /* ❗ WICHTIG: NICHT display:none */
-  display: flex;
-
-  flex-direction: column;
-  gap: 10px;
+  transform: translateX(-50%);
   z-index: 99998;
 
-  opacity: 0; /* Startzustand */
+  display: none;          /* Standard: nicht sichtbar */
+  pointer-events: none;   /* Standard: NICHT klickbar */
+
+  /* dein restliches Styling hier lassen (background, shadow, padding, etc.) */
 }
+
+.panel-switcher.open {
+  display: flex;          /* nur im offenen Zustand sichtbar */
+  pointer-events: auto;   /* nur im offenen Zustand klickbar */
+}
+
+.panel-switcher.hidden {
+  display: none;          /* falls du die Klasse noch irgendwo nutzt */
+}
+
 
 
 .panel-switcher-item {
@@ -6189,31 +6181,33 @@ function closeAppsPanel() {
 function openPanelSwitcher(currentTile) {
   const switcher = document.getElementById("panelSwitcher");
   const list = document.getElementById("panelSwitcherList");
+  if (!switcher || !list || !currentTile) return;
 
   list.innerHTML = "";
 
+  // (Inhalt füllen – Namen/Typen egal, das korrigieren wir später)
   tiles
     .filter(t => t.id !== currentTile.id)
     .forEach(tile => {
       const item = document.createElement("div");
       item.className = "panel-switcher-item";
-      item.textContent = tile.name;
-
-      item.style.setProperty("--tile-color", tile.color);
-
+      item.textContent = tile.name || tile.type; // Inhalt später sauber
       item.onclick = () => {
-        switcher.classList.add("hidden");
         openTile(tile.id);
+        closePanelSwitcher();
       };
-
       list.appendChild(item);
     });
 
-  switcher.classList.remove("hidden");
-  switcher.style.opacity = "1";
-switcher.style.transform = "translate(-50%, 0) scale(1)";
-
+  switcher.classList.add("open");
 }
+
+function closePanelSwitcher() {
+  const switcher = document.getElementById("panelSwitcher");
+  if (!switcher) return;
+  switcher.classList.remove("open");
+}
+
 
  function closePanelSwitcher() {
   document.getElementById("panelSwitcher").classList.add("hidden");
@@ -6616,13 +6610,18 @@ document.getElementById("importFile").addEventListener("change", (e) => {
 
 document.addEventListener("click", (event) => {
   const switcher = document.getElementById("panelSwitcher");
-  if (!switcher.classList.contains("hidden") && !switcher.contains(event.target)) {
-    closePanelSwitcher();
-  }
+  if (!switcher) return;
+
+  if (!switcher.classList.contains("open")) return;
+  if (switcher.contains(event.target)) return;
+
+  closePanelSwitcher();
 });
+
 document.getElementById("panelSwitcher").addEventListener("click", (event) => {
   event.stopPropagation();
 });
+
 
   
 </script>
