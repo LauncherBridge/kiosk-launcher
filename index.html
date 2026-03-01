@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 1 <span id="appVersion"></span>
+  Tano – Version 2 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -2568,7 +2568,6 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 }
 
 
-    
 .panel-switcher {
   position: fixed;
   margin-top: 6px;
@@ -2580,32 +2579,26 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
   width: 90%;
   max-width: 600px;
   background: rgba(0,0,0,0.55);
-
-  /* beide Shadows kombiniert */
   box-shadow:
     0 12px 32px rgba(0, 0, 0, 0.35),
     inset 0 0 18px rgba(255, 255, 255, 0.06);
-
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.08);
-
-  /* weiche Rundungsmaske */
   mask-image: radial-gradient(circle at center, black 92%, transparent 100%);
-
   border-radius: 22px;
   padding: 14px;
   padding-bottom: 24px;
 
-  display: none;
+  /* ❗ WICHTIG: NICHT display:none */
+  display: flex;
+
   flex-direction: column;
   gap: 10px;
   z-index: 99998;
+
+  opacity: 0; /* Startzustand */
 }
 
-
-.panel-switcher.hidden {
-  display: none;
-}
 
 .panel-switcher-item {
   padding: 16px 18px;
