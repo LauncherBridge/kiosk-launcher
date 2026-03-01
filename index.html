@@ -1158,55 +1158,6 @@ opacity: 1; /* inaktiver Zustand */
   z-index: 1003;
 }
 
-#smartHomePanelDynamicTitle {
-  position: relative; /* neu */
-}
-    
-#tileSwitcherOverlay {
-  position: absolute;
-  top: calc(100% + 8px);   /* 8px Abstand unter dem Titel */
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(20,20,20,0.95);
-  padding: 10px 0;
-  border-radius: 12px;
-  display: none;
-  z-index: 50000;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-}
-
-
-#tileSwitcherOverlay.active {
-  display: flex;
-}
-
-.tile-switcher-content {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  max-height: 300px;
-  overflow-y: auto;
-  padding: 10px 20px;
-  background: rgba(20,20,20,0.9);
-  border-radius: 12px;
-}
-
-
-.tile-switcher-item {
-  padding: 10px 16px;
-  background: rgba(255,255,255,0.05);
-  border-radius: 8px;
-  color: white;
-  font-size: 16px;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.tile-switcher-item:hover {
-  background: rgba(255,255,255,0.15);
-}
-
-
 
     
   </style>
@@ -1223,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 3 <span id="appVersion"></span>
+  Tano – Version 7 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1233,9 +1184,6 @@ opacity: 1; /* inaktiver Zustand */
    
 </div>
 
-<div id="tileSwitcherOverlay">
-  <div class="tile-switcher-content"></div>
-</div>
 
 
   <style>
@@ -1814,7 +1762,7 @@ box-shadow:
   font-weight: 600;
   color: white;
   z-index: 1004;
-/*  pointer-events: none;*/
+  pointer-events: none;
 }
 
 /* Close-Button */
@@ -1921,10 +1869,6 @@ font-size: 12px !important;
   backdrop-filter: blur(22px);
 }
 
-
-
-
-    
 const tileAlpha = "D9"; // 85% Deckkraft
 
 nexus.style.setProperty("--nexus-color-left",  tile.color + tileAlpha);
@@ -2610,9 +2554,6 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 
 
 
-.panel-title {
-  background: rgba(255,0,0,0.3) !important;
-}
 
 
     
@@ -2691,7 +2632,7 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
       <div id="appsPanelAddButton" class="header-add-btn"></div>
   
       <!-- Titel im Header -->
-<div id="appsPanelDynamicTitle" class="panel-title"></div>
+      <div id="appsPanelDynamicTitle"></div>
   
       <!-- Floating Close Button -->
       <div id="appsPanelClose" class="panel-close-btn">×</div>
@@ -3020,31 +2961,24 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
   
 <div id="smartHomePanel" class="panel hidden">
 
-<div id="smartHomePanelHeader">
-  <div class="header-nexus"></div>
-  <div class="header-progress"></div>
-  <div class="header-title-spot"></div>
+  <div id="smartHomePanelHeader">
+    <div class="header-nexus"></div>
+    <div class="header-progress"></div>
+    <div class="header-title-spot"></div>
 
-  <div id="smartHomePanelAddButton" class="header-add-btn"></div>
+    <!-- Plus-Symbol im Header -->
+    <div id="smartHomePanelAddButton" class="header-add-btn"></div>
+    <!-- Titel im Header -->
+    <div id="smartHomePanelDynamicTitle"></div>
 
-  <!-- TITEL + SWITCHFENSTER ZUSAMMEN -->
-  <div id="smartHomePanelDynamicTitle" class="panel-title">
-    <span class="panel-title-text"></span>
+    <!-- Floating Close Button -->
+    <div id="smartHomePanelClose" class="panel-close-btn">×</div>    
+      <div class="header-clock">
+        <div class="clock"></div>
+        <div class="date"></div>
+      </div>
 
-    <div id="tileSwitcherOverlay">
-      <div class="tile-switcher-content"></div>
-    </div>
   </div>
-
-  <div id="smartHomePanelClose" class="panel-close-btn">×</div>
-
-  <div class="header-clock">
-    <div class="clock"></div>
-    <div class="date"></div>
-  </div>
-</div>
-
-
 
   <div class="panel-content" id="smartHomeDeviceList"></div>
 </div>
@@ -3060,7 +2994,7 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
     <!-- Plus-Symbol im Header -->
     <div id="alarmPanelAddButton" class="header-add-btn"></div>
     <!-- Titel im Header -->
-<div id="alarmPanelDynamicTitle" class="panel-title"></div>
+    <div id="alarmPanelDynamicTitle"></div>
 
     <!-- Floating Close Button -->
     <div id="alarmPanelClose" class="panel-close-btn">×</div>
@@ -3072,7 +3006,6 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 
   <div class="panel-content" id="alarmZoneList"></div>
 </div>
-
 
 
 
@@ -3118,10 +3051,6 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 
 </div>
 
-
-
-
-  
 <!-- ============================================================
      UNIVERSAL ADD-MENU (für SmartHome & Alarm)
 ============================================================ -->
@@ -6145,43 +6074,6 @@ function removeAppFromTile(tileName, packageName) {
   saveTileData();
 }
 
-function openTileSwitcher() {
-  console.log("openTileSwitcher wurde ausgeführt");
-
-  const overlay = document.getElementById("tileSwitcherOverlay");
-  const content = overlay.querySelector(".tile-switcher-content");
-
-  content.innerHTML = "";
-console.log("Tiles:", tiles);
-  tiles.forEach((t, i) => console.log("Tile", i, t));
-
-console.log("Tile count:", tiles.length);
-
-  tiles.forEach(tile => {
-    const el = document.createElement("div");
-    el.className = "tile-switcher-item";
-    el.textContent = tile.name;
-
-    el.addEventListener("click", () => {
-      overlay.classList.remove("active");
-
-      // FIX 1: Alle Panels schließen
-      document.querySelectorAll(".panel").forEach(p => p.style.display = "none");
-
-      // FIX 2: Neues Panel öffnen
-      openTile(tile.id);
-    });
-
-    content.appendChild(el);
-  });
-
-  overlay.classList.add("active");
-}
-
-
-
-
-  
 function openTileSettings(tile) {
   const panel = document.getElementById("tileSettings");
   const content = document.getElementById("tileSettingsContent");
@@ -6556,21 +6448,7 @@ document.getElementById("importFile").addEventListener("change", (e) => {
     importSettings(e.target.files[0]);
   }
 });
-  
-console.log("Panel-Titel gefunden:", document.querySelectorAll(".panel-title").length);
-document.querySelectorAll(".panel-title").forEach(title => {
-  title.addEventListener("click", openTileSwitcher);
-});
-document.getElementById("tileSwitcherOverlay").addEventListener("click", e => {
-  if (e.target.id === "tileSwitcherOverlay") {
-    e.target.classList.remove("active");
-  }
-});
-document.addEventListener("keydown", e => {
-  if (e.key === "Escape") {
-    document.getElementById("tileSwitcherOverlay").classList.remove("active");
-  }
-});
+
 
   
 </script>
