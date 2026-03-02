@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 3 <span id="appVersion"></span>
+  Tano – Version 4 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1184,7 +1184,7 @@ opacity: 1; /* inaktiver Zustand */
    
 </div>
 
-<div id="panelSwitcher" class="panel-switcher hidden">
+<div id="panelSwitcher" class="panel-switcher">
   <div id="panelSwitcherList"></div>
 </div>
 
@@ -1670,8 +1670,6 @@ body {
 /* ============================
    FINAL: Apps Panel
    ============================ */
-
-
 #appsPanel {
   position: fixed;
   left: 50%;
@@ -1694,7 +1692,6 @@ box-shadow:
     0 12px 24px rgba(0,0,0,0.40),
     0 4px 10px rgba(0,0,0,0.30);
 
-
   display: none;
   overflow-y: auto;   /* Panel scrollt innen */
   z-index: 999;
@@ -1703,7 +1700,6 @@ box-shadow:
 /* ============================================================
    SMART HOME & ALARM PANEL – VOLLBILD VERSION
    ============================================================ */
-
 #smartHomePanel,
 #alarmPanel {
   position: fixed;
@@ -5378,6 +5374,7 @@ function resetAppsPanelHeader() {
   isPointerDown = false;
 }
 
+  // ----------------------------------------------------------------------------------------------------------------------------
 
 function openAppsPanel(tile) {
   resetAppsPanelHeader();
