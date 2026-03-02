@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 3 <span id="appVersion"></span>
+  Tano – Version 6 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1184,7 +1184,7 @@ opacity: 1; /* inaktiver Zustand */
    
 </div>
 
-<div id="panelSwitcher" class="panel-switcher">
+<div id="panelSwitcher" class="panel-switcher hidden">
   <div id="panelSwitcherList"></div>
 </div>
 
@@ -3357,8 +3357,19 @@ function renderAllTileSettings() {
   });
 }
 
+document.addEventListener("click", (e) => {
+  if (e.target.classList.contains("saveNexusTileSettings")) {
+    const tileName = e.target.dataset.tile;
 
+    const variant = document.querySelector(`.nexusVariant[data-tile="${tileName}"]`).value;
+    const boundary = document.querySelector(`.nexusBoundary[data-tile="${tileName}"]`).value;
+    const intensity = parseFloat(document.querySelector(`.nexusIntensity[data-tile="${tileName}"]`).value);
 
+    saveNexusSettings(tileName, { variant, boundary, intensity });
+
+    alert(`Einstellungen für "${tileName}" gespeichert.`);
+  }
+});
 
 
   
@@ -6160,8 +6171,8 @@ function openPanelSwitcher(currentTile) {
       item.textContent = tile.name;
 
       item.onclick = () => {
-        closePanelSwitcher();
         openTile(tile.id);
+        closePanelSwitcher();
       };
 
       list.appendChild(item);
@@ -6177,6 +6188,9 @@ function closePanelSwitcher() {
   switcher.classList.remove("open");
 }
 
+
+
+ 
 
 function removeAppFromTile(tileName, packageName) {
   if (!appsPerTile[tileName]) return;
@@ -6569,44 +6583,19 @@ document.getElementById("importFile").addEventListener("change", (e) => {
   }
 });
 
-
-
-
-
-
-document.addEventListener("click", (e) => {
-  if (!e.target.classList.contains("saveNexusTileSettings")) return;
-
-  const tileName = e.target.dataset.tile;
-  const variant = document.querySelector(`.nexusVariant[data-tile="${tileName}"]`).value;
-  const boundary = document.querySelector(`.nexusBoundary[data-tile="${tileName}"]`).value;
-  const intensity = parseFloat(document.querySelector(`.nexusIntensity[data-tile="${tileName}"]`).value);
-
-  saveNexusSettings(tileName, { variant, boundary, intensity });
-
-  setTimeout(() => {
-    alert(`Einstellungen für "${tileName}" gespeichert.`);
-  }, 200);
-});
-
 document.addEventListener("click", (event) => {
   const switcher = document.getElementById("panelSwitcher");
   if (!switcher) return;
 
-  // Wenn Switcher nicht offen → nichts tun
   if (!switcher.classList.contains("open")) return;
-
-  // Wenn Klick auf ein Item → NICHT schließen (Item-Klick soll laufen)
-  if (event.target.classList.contains("panel-switcher-item")) return;
-
-  // Wenn Klick INNEN → NICHT schließen
   if (switcher.contains(event.target)) return;
 
-  // Klick AUSSERHALB → schließen
   closePanelSwitcher();
 });
 
-
+document.getElementById("panelSwitcher").addEventListener("click", (event) => {
+  event.stopPropagation();
+});
 
 
   
