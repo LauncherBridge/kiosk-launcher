@@ -5360,8 +5360,7 @@ renderTiles();
 let currentTile = null; // falls noch nicht global vorhanden
 
 function openTile(tileId) {
-  console.log("openTile called with tileId:", tileId);
-console.log("found tile:", tile);
+
 
   const tile = tiles.find(t => t.id === tileId);
   if (!tile) return;
