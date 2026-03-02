@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 2 <span id="appVersion"></span>
+  Tano – Version 3 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -5567,13 +5567,13 @@ function openSmartHomePanel(tile) {
   currentTile = tile;
 
   const panel = document.getElementById("smartHomePanel");
+  const titleEl = document.getElementById("smartHomePanelDynamicTitle");
   const title = document.getElementById("smartHomePanelTitle");
   const list = document.getElementById("smartHomeDeviceList");
 
 // ---------------------------------------------------------
 // 1) Titel setzen
 // ---------------------------------------------------------
-const titleEl = document.getElementById("smartHomePanelDynamicTitle");
 titleEl.textContent = tile.name;
 
 const spot = document.querySelector("#smartHomePanelHeader .header-title-spot");
@@ -6153,7 +6153,7 @@ item.onclick = () => {
   
 function closeAppsPanel() {
   document.getElementById("appsPanel").classList.remove("open");
-  //document.querySelector("#tile-apps").classList.remove("tile-active"); Tano active deaktiv.
+  //document.querySelector("#tile-apps").classList.remove("tile-active");  active deaktiv.
  // currentTile.classList.remove("tile-active");
 }
 
