@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 6 <span id="appVersion"></span>
+  Tano – Version 1 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -6189,7 +6189,12 @@ function closePanelSwitcher() {
 }
 
 
-
+ function closePanelSwitcher() {
+  document.getElementById("panelSwitcher").classList.add("hidden");
+  switcher.style.opacity = "0";
+switcher.style.transform = "translate(-50%, -10px) scale(0.98)";
+ 
+}
  
 
 function removeAppFromTile(tileName, packageName) {
