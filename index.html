@@ -5562,7 +5562,8 @@ function renderApps(apps) {
 }
 
 
-function openSmartHomePanel(tile) {
+
+function openSmartHomeAdfunction openSmartHomePanel(tile) {
   if (!tile) return;
 
   const panel = document.getElementById("smartHomePanel");
@@ -5683,6 +5684,7 @@ if (addBtn) {
   // Panel anzeigen
   panel.style.display = "flex";
 
+  
 document.getElementById("smartHomePanelDynamicTitle").onclick = () => {
   openPanelSwitcher(currentTile);
 };
@@ -5719,14 +5721,13 @@ function openSmartHomeAddMenu(tile) {
 }
 
 
-  
-function openSmartHomeAddMenu(tile) {
-  console.log("SmartHome Menü öffnen für:", tile.name);
+//  dMenu(tile) {
+//  console.log("SmartHome Menü öffnen für:", tile.name);
 
   // Schritt 4: Hier kommt das echte Menü rein
   // Jetzt nur ein Platzhalter:
-  alert("SmartHome: Was möchtest du hinzufügen?\n\n(Raum / Etage / Gerät / Automation …)");
-}
+//  alert("SmartHome: Was möchtest du hinzufügen?\n\n(Raum / Etage / Gerät / Automation …)");
+// }
 
 
   
