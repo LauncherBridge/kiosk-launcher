@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 7 <span id="appVersion"></span>
+  Tano – Version 8 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -6578,15 +6578,7 @@ document.getElementById("importFile").addEventListener("change", (e) => {
   }
 });
 
-document.addEventListener("click", (event) => {
-  const switcher = document.getElementById("panelSwitcher");
-  if (!switcher) return;
 
-  if (!switcher.classList.contains("open")) return;
-  if (switcher.contains(event.target)) return;
-
-  closePanelSwitcher();
-});
 
 document.getElementById("panelSwitcher").addEventListener("click", (event) => {
   event.stopPropagation();
@@ -6604,8 +6596,20 @@ document.addEventListener("click", (e) => {
 
   setTimeout(() => {
     alert(`Einstellungen für "${tileName}" gespeichert.`);
-  }, 150);
+  }, 200);
 });
+
+document.addEventListener("click", (event) => {
+  const switcher = document.getElementById("panelSwitcher");
+  if (!switcher) return;
+
+  if (!switcher.classList.contains("open")) return;
+  if (switcher.contains(event.target)) return;
+
+  closePanelSwitcher();
+});
+
+
   
 </script>
 
