@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 9 <span id="appVersion"></span>
+  Tano – Version 1 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -6604,17 +6604,19 @@ document.addEventListener("click", (event) => {
   const switcher = document.getElementById("panelSwitcher");
   if (!switcher) return;
 
+  // Wenn Switcher nicht offen → nichts tun
   if (!switcher.classList.contains("open")) return;
 
-  // Klick auf ein Item → NICHT schließen
+  // Wenn Klick auf ein Item → NICHT schließen (Item-Klick soll laufen)
   if (event.target.classList.contains("panel-switcher-item")) return;
 
-  // Klick INNEN → NICHT schließen
+  // Wenn Klick INNEN → NICHT schließen
   if (switcher.contains(event.target)) return;
 
   // Klick AUSSERHALB → schließen
   closePanelSwitcher();
 });
+
 
 
 
