@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 4 <span id="appVersion"></span>
+  Tano – Version 5 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1724,6 +1724,7 @@ box-shadow:
   background: rgba(0,0,0,0.45);
   backdrop-filter: blur(22px);
   overflow: visible;
+  pointer-events: none;
 }
 
 /* Nexus-Band im Header */
@@ -1760,6 +1761,7 @@ box-shadow:
   font-weight: 600;
   color: white;
   z-index: 1004;
+  pointer-events: auto;
 
 }
 
@@ -1782,6 +1784,7 @@ box-shadow:
   cursor: pointer;
   z-index: 1004;
   transition: transform 0.15s ease, background 0.2s ease;
+  pointer-events: auto;
 }
 
 /* Plus-Button */
@@ -1801,6 +1804,7 @@ box-shadow:
   cursor: pointer;
   z-index: 1004;
   transition: transform 0.15s ease, background 0.2s ease;
+  pointer-events: auto;
 }
 
 /* Uhrzeit + Datum im Nexus-Header */
@@ -2722,6 +2726,110 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 </div>
 </div> <!-- AppsPanel schließen -->
 
+<div id="smartHomePanel" class="panel hidden">
+
+  <div id="smartHomePanelHeader">
+    <div class="header-nexus"></div>
+    <div class="header-progress"></div>
+    <div class="header-title-spot"></div>
+
+    <!-- Plus-Symbol im Header -->
+    <div id="smartHomePanelAddButton" class="header-add-btn"></div>
+    <!-- Titel im Header -->
+    <div id="smartHomePanelDynamicTitle"></div>
+
+    <!-- Floating Close Button -->
+    <div id="smartHomePanelClose" class="panel-close-btn">×</div>    
+      <div class="header-clock">
+        <div class="clock"></div>
+        <div class="date"></div>
+      </div>
+
+  </div>
+
+  <div class="panel-content" id="smartHomeDeviceList"></div>
+</div>
+
+
+<div id="alarmPanel" class="panel hidden">
+
+  <div id="alarmPanelHeader">
+    <div class="header-nexus"></div>
+    <div class="header-progress"></div>
+    <div class="header-title-spot"></div>
+    
+    <!-- Plus-Symbol im Header -->
+    <div id="alarmPanelAddButton" class="header-add-btn"></div>
+    <!-- Titel im Header -->
+    <div id="alarmPanelDynamicTitle"></div>
+
+    <!-- Floating Close Button -->
+    <div id="alarmPanelClose" class="panel-close-btn">×</div>
+      <div class="header-clock">
+        <div class="clock"></div>
+        <div class="date"></div>
+      </div>
+  </div>
+
+  <div class="panel-content" id="alarmZoneList"></div>
+</div>
+
+
+
+  <!--  
+<div id="appPicker" class="panel hidden">
+
+  <div class="panel-header">
+    <span id="appPickerTitle">App auswählen</span>
+    <span id="appPickerClose" class="panel-add">×</span>
+  </div>
+
+  <div class="panel-content">
+    <div id="appPickerGrid" class="app-picker-grid"></div>
+  </div>
+
+</div>
+-->
+
+  
+<div id="devicePicker" class="panel hidden">
+
+  <div class="panel-header">
+    <span id="devicePickerTitle">Gerät auswählen</span>
+    <span id="devicePickerClose" class="panel-add">×</span>
+  </div>
+
+  <div class="panel-content">
+    <div id="devicePickerGrid" class="app-picker-grid"></div>
+  </div>
+
+</div>
+  
+<div id="zonePicker" class="panel hidden">
+
+  <div class="panel-header">
+    <span id="zonePickerTitle">Zone auswählen</span>
+    <span id="zonePickerClose" class="panel-add">×</span>
+  </div>
+
+  <div class="panel-content">
+    <div id="zonePickerGrid" class="app-picker-grid"></div>
+  </div>
+
+</div>
+
+<!-- ============================================================
+     UNIVERSAL ADD-MENU (für SmartHome & Alarm)
+============================================================ -->
+<div id="addMenuOverlay" class="add-menu-overlay">
+  <div id="addMenu" class="add-menu">
+    <div id="addMenuTitle" class="add-menu-title"></div>
+
+    <div id="addMenuList" class="add-menu-list"></div>
+
+    <div id="addMenuClose" class="add-menu-close">×</div>
+  </div>
+</div>
 
 
 
@@ -3036,110 +3144,6 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 
 
   
-<div id="smartHomePanel" class="panel hidden">
-
-  <div id="smartHomePanelHeader">
-    <div class="header-nexus"></div>
-    <div class="header-progress"></div>
-    <div class="header-title-spot"></div>
-
-    <!-- Plus-Symbol im Header -->
-    <div id="smartHomePanelAddButton" class="header-add-btn"></div>
-    <!-- Titel im Header -->
-    <div id="smartHomePanelDynamicTitle"></div>
-
-    <!-- Floating Close Button -->
-    <div id="smartHomePanelClose" class="panel-close-btn">×</div>    
-      <div class="header-clock">
-        <div class="clock"></div>
-        <div class="date"></div>
-      </div>
-
-  </div>
-
-  <div class="panel-content" id="smartHomeDeviceList"></div>
-</div>
-
-
-<div id="alarmPanel" class="panel hidden">
-
-  <div id="alarmPanelHeader">
-    <div class="header-nexus"></div>
-    <div class="header-progress"></div>
-    <div class="header-title-spot"></div>
-    
-    <!-- Plus-Symbol im Header -->
-    <div id="alarmPanelAddButton" class="header-add-btn"></div>
-    <!-- Titel im Header -->
-    <div id="alarmPanelDynamicTitle"></div>
-
-    <!-- Floating Close Button -->
-    <div id="alarmPanelClose" class="panel-close-btn">×</div>
-      <div class="header-clock">
-        <div class="clock"></div>
-        <div class="date"></div>
-      </div>
-  </div>
-
-  <div class="panel-content" id="alarmZoneList"></div>
-</div>
-
-
-
-  <!--  
-<div id="appPicker" class="panel hidden">
-
-  <div class="panel-header">
-    <span id="appPickerTitle">App auswählen</span>
-    <span id="appPickerClose" class="panel-add">×</span>
-  </div>
-
-  <div class="panel-content">
-    <div id="appPickerGrid" class="app-picker-grid"></div>
-  </div>
-
-</div>
--->
-
-  
-<div id="devicePicker" class="panel hidden">
-
-  <div class="panel-header">
-    <span id="devicePickerTitle">Gerät auswählen</span>
-    <span id="devicePickerClose" class="panel-add">×</span>
-  </div>
-
-  <div class="panel-content">
-    <div id="devicePickerGrid" class="app-picker-grid"></div>
-  </div>
-
-</div>
-  
-<div id="zonePicker" class="panel hidden">
-
-  <div class="panel-header">
-    <span id="zonePickerTitle">Zone auswählen</span>
-    <span id="zonePickerClose" class="panel-add">×</span>
-  </div>
-
-  <div class="panel-content">
-    <div id="zonePickerGrid" class="app-picker-grid"></div>
-  </div>
-
-</div>
-
-<!-- ============================================================
-     UNIVERSAL ADD-MENU (für SmartHome & Alarm)
-============================================================ -->
-<div id="addMenuOverlay" class="add-menu-overlay">
-  <div id="addMenu" class="add-menu">
-    <div id="addMenuTitle" class="add-menu-title"></div>
-
-    <div id="addMenuList" class="add-menu-list"></div>
-
-    <div id="addMenuClose" class="add-menu-close">×</div>
-  </div>
-</div>
 
   
   
