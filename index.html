@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 2 <span id="appVersion"></span>
+  Tano – Version 1 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -5565,6 +5565,7 @@ function renderApps(apps) {
 
 function openSmartHomeAdfunction openSmartHomePanel(tile) {
   if (!tile) return;
+  currentTile = tile;
 
   const panel = document.getElementById("smartHomePanel");
   const title = document.getElementById("smartHomePanelTitle");
@@ -5733,6 +5734,7 @@ function openSmartHomeAddMenu(tile) {
   
 function openAlarmPanel(tile) {
   if (!tile) return;
+  currentTile = tile;
 
   const panel = document.getElementById("alarmPanel");
   const title = document.getElementById("alarmPanelTitle");
