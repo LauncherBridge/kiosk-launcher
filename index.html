@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 6 <span id="appVersion"></span>
+  Tano – Version 7 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -2566,7 +2566,7 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 
 .panel-switcher {
   position: fixed;
-  top: 120px;
+top: calc(50px + 4vh);
   left: 50%;
   transform: translate(-50%, 0) scale(0.98);   /* ruhiger Ausgangszustand */
   z-index: 99998;
@@ -6171,8 +6171,8 @@ function openPanelSwitcher(currentTile) {
       item.textContent = tile.name;
 
       item.onclick = () => {
-        openTile(tile.id);
         closePanelSwitcher();
+        openTile(tile.id);
       };
 
       list.appendChild(item);
@@ -6185,16 +6185,10 @@ function openPanelSwitcher(currentTile) {
 function closePanelSwitcher() {
   const switcher = document.getElementById("panelSwitcher");
   if (!switcher) return;
+
   switcher.classList.remove("open");
 }
 
-
- function closePanelSwitcher() {
-  document.getElementById("panelSwitcher").classList.add("hidden");
-  switcher.style.opacity = "0";
-switcher.style.transform = "translate(-50%, -10px) scale(0.98)";
- 
-}
  
 
 function removeAppFromTile(tileName, packageName) {
