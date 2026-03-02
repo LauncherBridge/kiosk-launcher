@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 1 <span id="appVersion"></span>
+  Tano – Version 2 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -2579,11 +2579,14 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 }
 
 .panel-switcher.open {
-  display: flex;          /* offen → sichtbar */
-  pointer-events: auto;   /* offen → klickbar */
-  opacity: 1;             /* Fade-In */
-  transform: translate(-50%, 0) scale(1);  /* sanftes Aufskalieren */
+  display: flex;                     /* sichtbar machen */
+  flex-direction: column;            /* Liste untereinander */
+  pointer-events: auto;              /* Klicks wieder aktiv */
+  opacity: 1;                        /* sichtbar */
+  transform: translate(-50%, 0) scale(1); /* leichte Aufzoom-Animation */
+  transition: opacity 0.25s ease, transform 0.25s ease;
 }
+
 
 .panel-switcher.open .panel-switcher-item {
   animation: panelItemGlow 0.35s ease;
@@ -6189,13 +6192,6 @@ function closePanelSwitcher() {
 }
 
 
- function closePanelSwitcher() {
-  document.getElementById("panelSwitcher").classList.add("hidden");
-  switcher.style.opacity = "0";
-switcher.style.transform = "translate(-50%, -10px) scale(0.98)";
- 
-}
- 
 
 function removeAppFromTile(tileName, packageName) {
   if (!appsPerTile[tileName]) return;
@@ -6320,24 +6316,7 @@ if (!panel) return; // <– NEU
 panel.classList.remove("open");
 }
 
-/*  
-document.addEventListener("click", (event) => {
-  const panel = document.getElementById("categoryPanel");
-  if (!panel) return; // <– NEU: wenn es kein Panel gibt, gar nichts tun
 
-  // Wenn Panel nicht offen → nichts tun
-  if (!panel.classList.contains("open")) return;
-
-  // Wenn Klick IN dem Panel war → nichts tun
-  if (panel.contains(event.target)) return;
-
-  // Wenn Klick auf eine Kachel war → nichts tun (Panel soll sich ja öffnen)
-  if (event.target.classList.contains("tile")) return;
-
-  // Ansonsten Panel schließen
-  closeCategoryPanel();
-});
-*/
 
 function launchApp(packageName) {
   try {
@@ -6592,11 +6571,22 @@ document.addEventListener("click", (event) => {
   const switcher = document.getElementById("panelSwitcher");
   if (!switcher) return;
 
+  // Wenn Switcher nicht offen → nichts tun
   if (!switcher.classList.contains("open")) return;
+
+  // Wenn der Klick der Öffnen-Button war → NICHT schließen
+  if (event.target.closest("#appsPanelDynamicTitle")) return;
+
+  // Wenn Klick auf ein Item → NICHT schließen
+  if (event.target.classList.contains("panel-switcher-item")) return;
+
+  // Wenn Klick INNEN → NICHT schließen
   if (switcher.contains(event.target)) return;
 
+  // Klick AUSSERHALB → schließen
   closePanelSwitcher();
 });
+
 
 document.getElementById("panelSwitcher").addEventListener("click", (event) => {
   event.stopPropagation();
