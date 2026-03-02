@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 6 <span id="appVersion"></span>
+  Tano – Version 7 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -3357,19 +3357,8 @@ function renderAllTileSettings() {
   });
 }
 
-document.addEventListener("click", (e) => {
-  if (e.target.classList.contains("saveNexusTileSettings")) {
-    const tileName = e.target.dataset.tile;
 
-    const variant = document.querySelector(`.nexusVariant[data-tile="${tileName}"]`).value;
-    const boundary = document.querySelector(`.nexusBoundary[data-tile="${tileName}"]`).value;
-    const intensity = parseFloat(document.querySelector(`.nexusIntensity[data-tile="${tileName}"]`).value);
 
-    saveNexusSettings(tileName, { variant, boundary, intensity });
-
-    alert(`Einstellungen für "${tileName}" gespeichert.`);
-  }
-});
 
 
   
@@ -6171,8 +6160,8 @@ function openPanelSwitcher(currentTile) {
       item.textContent = tile.name;
 
       item.onclick = () => {
-        openTile(tile.id);
         closePanelSwitcher();
+        openTile(tile.id);
       };
 
       list.appendChild(item);
@@ -6187,6 +6176,7 @@ function closePanelSwitcher() {
   if (!switcher) return;
   switcher.classList.remove("open");
 }
+
 
 
  function closePanelSwitcher() {
@@ -6602,7 +6592,20 @@ document.getElementById("panelSwitcher").addEventListener("click", (event) => {
   event.stopPropagation();
 });
 
+document.addEventListener("click", (e) => {
+  if (!e.target.classList.contains("saveNexusTileSettings")) return;
 
+  const tileName = e.target.dataset.tile;
+  const variant = document.querySelector(`.nexusVariant[data-tile="${tileName}"]`).value;
+  const boundary = document.querySelector(`.nexusBoundary[data-tile="${tileName}"]`).value;
+  const intensity = parseFloat(document.querySelector(`.nexusIntensity[data-tile="${tileName}"]`).value);
+
+  saveNexusSettings(tileName, { variant, boundary, intensity });
+
+  setTimeout(() => {
+    alert(`Einstellungen für "${tileName}" gespeichert.`);
+  }, 150);
+});
   
 </script>
 
