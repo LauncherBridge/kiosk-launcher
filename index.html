@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 9 <span id="appVersion"></span>
+  Tano – Version 1 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -2636,13 +2636,24 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 }
 
 #smartHomePanelDynamicTitle {
-  padding: 10px 20px;
-  min-width: 120px;
-  min-height: 32px;
-  display: inline-flex;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 26px;
+  font-weight: 600;
+  color: white;
+  z-index: 1004;
+  pointer-events: auto;
+
+  /* WICHTIG: Klickfläche erzwingen */
+  min-width: 140px;
+  min-height: 40px;
+  display: flex;
   align-items: center;
   justify-content: center;
 }
+
 #smartHomePanelDynamicTitle {
   background: rgba(255,0,0,0.2);
 }
