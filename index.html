@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 1 <span id="appVersion"></span>
+  Tano – Version 6 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1183,13 +1183,11 @@ opacity: 1; /* inaktiver Zustand */
     <div class="header-time"></div>
    
 </div>
-  
-/* 
-<div id="panelSwitcher" class="panel-switcher">
+
+<div id="panelSwitcher" class="panel-switcher hidden">
   <div id="panelSwitcherList"></div>
 </div>
- */
-  
+
   <style>
 
 /* ============================================
@@ -2568,7 +2566,7 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 
 .panel-switcher {
   position: fixed;
-top: calc(50px + 4vh);
+  top: 120px;
   left: 50%;
   transform: translate(-50%, 0) scale(0.98);   /* ruhiger Ausgangszustand */
   z-index: 99998;
@@ -6162,33 +6160,41 @@ function openPanelSwitcher(currentTile) {
 
   list.innerHTML = "";
 
+  // WICHTIG: Nur die Tiles verwenden
   tiles
     .filter(t => t.id !== currentTile.id)
     .forEach(tile => {
       const item = document.createElement("div");
       item.className = "panel-switcher-item";
+
+      // Der echte Name des Tiles
       item.textContent = tile.name;
 
       item.onclick = () => {
-        closePanelSwitcher();
         openTile(tile.id);
+        closePanelSwitcher();
       };
 
       list.appendChild(item);
     });
 
-  switcher.classList.add("open");   // ← MUSS da sein
+  switcher.classList.add("open");
 }
-
 
 
 function closePanelSwitcher() {
   const switcher = document.getElementById("panelSwitcher");
   if (!switcher) return;
-
   switcher.classList.remove("open");
 }
 
+
+ function closePanelSwitcher() {
+  document.getElementById("panelSwitcher").classList.add("hidden");
+  switcher.style.opacity = "0";
+switcher.style.transform = "translate(-50%, -10px) scale(0.98)";
+ 
+}
  
 
 function removeAppFromTile(tileName, packageName) {
@@ -6599,9 +6605,7 @@ document.getElementById("panelSwitcher").addEventListener("click", (event) => {
 
   
 </script>
-<div id="panelSwitcher" class="panel-switcher">
-  <div id="panelSwitcherList"></div>
-</div>
+
 
 
 </body>
