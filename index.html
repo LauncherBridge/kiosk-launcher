@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 8 <span id="appVersion"></span>
+  Tano – Version 9 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1184,7 +1184,7 @@ opacity: 1; /* inaktiver Zustand */
    
 </div>
 
-<div id="panelSwitcher" class="panel-switcher hidden">
+<div id="panelSwitcher" class="panel-switcher">
   <div id="panelSwitcherList"></div>
 </div>
 
@@ -6580,9 +6580,10 @@ document.getElementById("importFile").addEventListener("change", (e) => {
 
 
 
-document.getElementById("panelSwitcher").addEventListener("click", (event) => {
+document.getElementById("panelSwitcherList").addEventListener("click", (event) => {
   event.stopPropagation();
 });
+
 
 document.addEventListener("click", (e) => {
   if (!e.target.classList.contains("saveNexusTileSettings")) return;
@@ -6604,10 +6605,17 @@ document.addEventListener("click", (event) => {
   if (!switcher) return;
 
   if (!switcher.classList.contains("open")) return;
+
+  // Klick auf ein Item → NICHT schließen
+  if (event.target.classList.contains("panel-switcher-item")) return;
+
+  // Klick INNEN → NICHT schließen
   if (switcher.contains(event.target)) return;
 
+  // Klick AUSSERHALB → schließen
   closePanelSwitcher();
 });
+
 
 
   
