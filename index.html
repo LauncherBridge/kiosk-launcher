@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 5 <span id="appVersion"></span>
+  Tano – Version 6 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -5568,6 +5568,8 @@ function openSmartHomePanel(tile) {
   currentTile = tile;
 
   const panel = document.getElementById("smartHomePanel");
+  panel.classList.remove("hidden"); // ← THIS FIXES THE CLICK ISSUE 
+  panel.style.display = "flex";
   const titleEl = document.getElementById("smartHomePanelDynamicTitle");
   const title = document.getElementById("smartHomePanelTitle");
   const list = document.getElementById("smartHomeDeviceList");
@@ -5664,6 +5666,8 @@ requestAnimationFrame(() => {
 const closeBtn = document.getElementById("smartHomePanelClose");
 if (closeBtn) {
   closeBtn.onclick = () => {
+    panel.classList.add("hidden"); 
+    panel.style.display = "none";
     const spot = document.querySelector("#smartHomePanelHeader .header-title-spot");
     if (spot) spot.style.opacity = 0;
 
