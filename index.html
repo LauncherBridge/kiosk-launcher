@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 1 <span id="appVersion"></span>
+  Tano – Version 2 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -5562,8 +5562,7 @@ function renderApps(apps) {
 }
 
 
-
-function openSmartHomeAdfunction openSmartHomePanel(tile) {
+function openSmartHomePanel(tile) {
   if (!tile) return;
   currentTile = tile;
 
@@ -5685,7 +5684,6 @@ if (addBtn) {
   // Panel anzeigen
   panel.style.display = "flex";
 
-  
 document.getElementById("smartHomePanelDynamicTitle").onclick = () => {
   openPanelSwitcher(currentTile);
 };
@@ -5722,13 +5720,15 @@ function openSmartHomeAddMenu(tile) {
 }
 
 
-   dMenu(tile) {
-   console.log("SmartHome Menü öffnen für:", tile.name);
+  
+function openSmartHomeAddMenu(tile) {
+  console.log("SmartHome Menü öffnen für:", tile.name);
 
   // Schritt 4: Hier kommt das echte Menü rein
   // Jetzt nur ein Platzhalter:
-   alert("SmartHome: Was möchtest du hinzufügen?\n\n(Raum / Etage / Gerät / Automation …)");
-  }
+  alert("SmartHome: Was möchtest du hinzufügen?\n\n(Raum / Etage / Gerät / Automation …)");
+}
+
 
   
 function openAlarmPanel(tile) {
