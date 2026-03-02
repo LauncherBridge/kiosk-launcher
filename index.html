@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 7 <span id="appVersion"></span>
+  Tano – Version 8 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1184,7 +1184,7 @@ opacity: 1; /* inaktiver Zustand */
    
 </div>
 
-<div id="panelSwitcher" class="panel-switcher hidden">
+<div id="panelSwitcher" class="panel-switcher">
   <div id="panelSwitcherList"></div>
 </div>
 
@@ -6160,14 +6160,11 @@ function openPanelSwitcher(currentTile) {
 
   list.innerHTML = "";
 
-  // WICHTIG: Nur die Tiles verwenden
   tiles
     .filter(t => t.id !== currentTile.id)
     .forEach(tile => {
       const item = document.createElement("div");
       item.className = "panel-switcher-item";
-
-      // Der echte Name des Tiles
       item.textContent = tile.name;
 
       item.onclick = () => {
@@ -6178,8 +6175,9 @@ function openPanelSwitcher(currentTile) {
       list.appendChild(item);
     });
 
-  switcher.classList.add("open");
+  switcher.classList.add("open");   // ← MUSS da sein
 }
+
 
 
 function closePanelSwitcher() {
