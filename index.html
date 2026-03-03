@@ -1158,15 +1158,6 @@ opacity: 1; /* inaktiver Zustand */
   z-index: 1003;
 }
 
-.panel.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
-.panel.open {
-  display: block !important;
-  pointer-events: auto;
-}
-
 
     
   </style>
@@ -1183,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 6 <span id="appVersion"></span>
+  Tano – Version 7 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -5374,10 +5365,26 @@ function openTile(tileId) {
 }
 
 function closeAllPanels() {
-  document.querySelectorAll(".panel").forEach(p => {
-    p.classList.remove("open");
-    p.classList.add("hidden");
-  });
+  // AppsPanel schließen (nutzt inline display:none)
+  const apps = document.getElementById("appsPanel");
+  if (apps) {
+    apps.style.display = "none";
+    apps.classList.remove("open");
+  }
+
+  // SmartHomePanel schließen (nutzt .hidden)
+  const smarthome = document.getElementById("smartHomePanel");
+  if (smarthome) {
+    smarthome.classList.remove("open");
+    smarthome.classList.add("hidden");
+  }
+
+  // AlarmPanel schließen (nutzt .hidden)
+  const alarm = document.getElementById("alarmPanel");
+  if (alarm) {
+    alarm.classList.remove("open");
+    alarm.classList.add("hidden");
+  }
 }
 
 
