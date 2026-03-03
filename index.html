@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 8 <span id="appVersion"></span>
+  Tano – Version 2 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1184,7 +1184,7 @@ opacity: 1; /* inaktiver Zustand */
    
 </div>
 
-<div id="panelSwitcher" class="panel-switcher">
+<div id="panelSwitcher" class="panel-switcher hidden">
   <div id="panelSwitcherList"></div>
 </div>
 
@@ -1670,6 +1670,8 @@ body {
 /* ============================
    FINAL: Apps Panel
    ============================ */
+
+
 #appsPanel {
   position: fixed;
   left: 50%;
@@ -1692,6 +1694,7 @@ box-shadow:
     0 12px 24px rgba(0,0,0,0.40),
     0 4px 10px rgba(0,0,0,0.30);
 
+
   display: none;
   overflow-y: auto;   /* Panel scrollt innen */
   z-index: 999;
@@ -1700,6 +1703,7 @@ box-shadow:
 /* ============================================================
    SMART HOME & ALARM PANEL – VOLLBILD VERSION
    ============================================================ */
+
 #smartHomePanel,
 #alarmPanel {
   position: fixed;
@@ -1724,7 +1728,6 @@ box-shadow:
   background: rgba(0,0,0,0.45);
   backdrop-filter: blur(22px);
   overflow: visible;
-  pointer-events: none;
 }
 
 /* Nexus-Band im Header */
@@ -1760,10 +1763,8 @@ box-shadow:
   font-size: 26px;
   font-weight: 600;
   color: white;
-  z-index: 50000;
-  pointer-events: auto;
-  padding: 10px 20px;
-  isolation: isolate; /* ← erzeugt eigenen Stacking-Context */
+  z-index: 1004;
+
 }
 
 /* Close-Button */
@@ -1785,7 +1786,6 @@ box-shadow:
   cursor: pointer;
   z-index: 1004;
   transition: transform 0.15s ease, background 0.2s ease;
-  pointer-events: auto;
 }
 
 /* Plus-Button */
@@ -1805,7 +1805,6 @@ box-shadow:
   cursor: pointer;
   z-index: 1004;
   transition: transform 0.15s ease, background 0.2s ease;
-  pointer-events: auto;
 }
 
 /* Uhrzeit + Datum im Nexus-Header */
@@ -2636,29 +2635,6 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
   pointer-events: auto !important;
 }
 
-#smartHomePanelDynamicTitle {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 26px;
-  font-weight: 600;
-  color: white;
-  z-index: 1004;
-  pointer-events: auto;
-
-  /* WICHTIG: Klickfläche erzwingen */
-  min-width: 140px;
-  min-height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-#smartHomePanelDynamicTitle {
-  background: rgba(255,0,0,0.2);
-}
-
 
 
     
@@ -2750,110 +2726,6 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 </div>
 </div> <!-- AppsPanel schließen -->
 
-<div id="smartHomePanel" class="panel hidden">
-
-  <div id="smartHomePanelHeader">
-    <div class="header-nexus"></div>
-    <div class="header-progress"></div>
-    <div class="header-title-spot"></div>
-
-    <!-- Plus-Symbol im Header -->
-    <div id="smartHomePanelAddButton" class="header-add-btn"></div>
-    <!-- Titel im Header -->
-    <div id="smartHomePanelDynamicTitle"></div>
-
-    <!-- Floating Close Button -->
-    <div id="smartHomePanelClose" class="panel-close-btn">×</div>    
-      <div class="header-clock">
-        <div class="clock"></div>
-        <div class="date"></div>
-      </div>
-
-  </div>
-
-  <div class="panel-content" id="smartHomeDeviceList"></div>
-</div>
-
-
-<div id="alarmPanel" class="panel hidden">
-
-  <div id="alarmPanelHeader">
-    <div class="header-nexus"></div>
-    <div class="header-progress"></div>
-    <div class="header-title-spot"></div>
-    
-    <!-- Plus-Symbol im Header -->
-    <div id="alarmPanelAddButton" class="header-add-btn"></div>
-    <!-- Titel im Header -->
-    <div id="alarmPanelDynamicTitle"></div>
-
-    <!-- Floating Close Button -->
-    <div id="alarmPanelClose" class="panel-close-btn">×</div>
-      <div class="header-clock">
-        <div class="clock"></div>
-        <div class="date"></div>
-      </div>
-  </div>
-
-  <div class="panel-content" id="alarmZoneList"></div>
-</div>
-
-
-
-  <!--  
-<div id="appPicker" class="panel hidden">
-
-  <div class="panel-header">
-    <span id="appPickerTitle">App auswählen</span>
-    <span id="appPickerClose" class="panel-add">×</span>
-  </div>
-
-  <div class="panel-content">
-    <div id="appPickerGrid" class="app-picker-grid"></div>
-  </div>
-
-</div>
--->
-
-  
-<div id="devicePicker" class="panel hidden">
-
-  <div class="panel-header">
-    <span id="devicePickerTitle">Gerät auswählen</span>
-    <span id="devicePickerClose" class="panel-add">×</span>
-  </div>
-
-  <div class="panel-content">
-    <div id="devicePickerGrid" class="app-picker-grid"></div>
-  </div>
-
-</div>
-  
-<div id="zonePicker" class="panel hidden">
-
-  <div class="panel-header">
-    <span id="zonePickerTitle">Zone auswählen</span>
-    <span id="zonePickerClose" class="panel-add">×</span>
-  </div>
-
-  <div class="panel-content">
-    <div id="zonePickerGrid" class="app-picker-grid"></div>
-  </div>
-
-</div>
-
-<!-- ============================================================
-     UNIVERSAL ADD-MENU (für SmartHome & Alarm)
-============================================================ -->
-<div id="addMenuOverlay" class="add-menu-overlay">
-  <div id="addMenu" class="add-menu">
-    <div id="addMenuTitle" class="add-menu-title"></div>
-
-    <div id="addMenuList" class="add-menu-list"></div>
-
-    <div id="addMenuClose" class="add-menu-close">×</div>
-  </div>
-</div>
 
 
 
@@ -3166,7 +3038,112 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 
 
 
+
   
+<div id="smartHomePanel" class="panel hidden">
+
+  <div id="smartHomePanelHeader">
+    <div class="header-nexus"></div>
+    <div class="header-progress"></div>
+    <div class="header-title-spot"></div>
+
+    <!-- Plus-Symbol im Header -->
+    <div id="smartHomePanelAddButton" class="header-add-btn"></div>
+    <!-- Titel im Header -->
+    <div id="smartHomePanelDynamicTitle"></div>
+
+    <!-- Floating Close Button -->
+    <div id="smartHomePanelClose" class="panel-close-btn">×</div>    
+      <div class="header-clock">
+        <div class="clock"></div>
+        <div class="date"></div>
+      </div>
+
+  </div>
+
+  <div class="panel-content" id="smartHomeDeviceList"></div>
+</div>
+
+
+<div id="alarmPanel" class="panel hidden">
+
+  <div id="alarmPanelHeader">
+    <div class="header-nexus"></div>
+    <div class="header-progress"></div>
+    <div class="header-title-spot"></div>
+    
+    <!-- Plus-Symbol im Header -->
+    <div id="alarmPanelAddButton" class="header-add-btn"></div>
+    <!-- Titel im Header -->
+    <div id="alarmPanelDynamicTitle"></div>
+
+    <!-- Floating Close Button -->
+    <div id="alarmPanelClose" class="panel-close-btn">×</div>
+      <div class="header-clock">
+        <div class="clock"></div>
+        <div class="date"></div>
+      </div>
+  </div>
+
+  <div class="panel-content" id="alarmZoneList"></div>
+</div>
+
+
+
+  <!--  
+<div id="appPicker" class="panel hidden">
+
+  <div class="panel-header">
+    <span id="appPickerTitle">App auswählen</span>
+    <span id="appPickerClose" class="panel-add">×</span>
+  </div>
+
+  <div class="panel-content">
+    <div id="appPickerGrid" class="app-picker-grid"></div>
+  </div>
+
+</div>
+-->
+
+  
+<div id="devicePicker" class="panel hidden">
+
+  <div class="panel-header">
+    <span id="devicePickerTitle">Gerät auswählen</span>
+    <span id="devicePickerClose" class="panel-add">×</span>
+  </div>
+
+  <div class="panel-content">
+    <div id="devicePickerGrid" class="app-picker-grid"></div>
+  </div>
+
+</div>
+  
+<div id="zonePicker" class="panel hidden">
+
+  <div class="panel-header">
+    <span id="zonePickerTitle">Zone auswählen</span>
+    <span id="zonePickerClose" class="panel-add">×</span>
+  </div>
+
+  <div class="panel-content">
+    <div id="zonePickerGrid" class="app-picker-grid"></div>
+  </div>
+
+</div>
+
+<!-- ============================================================
+     UNIVERSAL ADD-MENU (für SmartHome & Alarm)
+============================================================ -->
+<div id="addMenuOverlay" class="add-menu-overlay">
+  <div id="addMenu" class="add-menu">
+    <div id="addMenuTitle" class="add-menu-title"></div>
+
+    <div id="addMenuList" class="add-menu-list"></div>
+
+    <div id="addMenuClose" class="add-menu-close">×</div>
+  </div>
+</div>
 
   
   
@@ -5360,8 +5337,6 @@ renderTiles();
 let currentTile = null; // falls noch nicht global vorhanden
 
 function openTile(tileId) {
-
-
   const tile = tiles.find(t => t.id === tileId);
   if (!tile) return;
 
@@ -5403,7 +5378,6 @@ function resetAppsPanelHeader() {
   isPointerDown = false;
 }
 
-  // ----------------------------------------------------------------------------------------------------------------------------
 
 function openAppsPanel(tile) {
   resetAppsPanelHeader();
@@ -5589,20 +5563,16 @@ function renderApps(apps) {
 
 
 function openSmartHomePanel(tile) {
-
   if (!tile) return;
-  currentTile = tile;
 
   const panel = document.getElementById("smartHomePanel");
-  panel.classList.remove("hidden"); // ← THIS FIXES THE CLICK ISSUE 
-  panel.style.display = "flex";
-  const titleEl = document.getElementById("smartHomePanelDynamicTitle");
   const title = document.getElementById("smartHomePanelTitle");
   const list = document.getElementById("smartHomeDeviceList");
 
 // ---------------------------------------------------------
 // 1) Titel setzen
 // ---------------------------------------------------------
+const titleEl = document.getElementById("smartHomePanelDynamicTitle");
 titleEl.textContent = tile.name;
 
 const spot = document.querySelector("#smartHomePanelHeader .header-title-spot");
@@ -5692,8 +5662,6 @@ requestAnimationFrame(() => {
 const closeBtn = document.getElementById("smartHomePanelClose");
 if (closeBtn) {
   closeBtn.onclick = () => {
-    panel.classList.add("hidden"); 
-    panel.style.display = "none";
     const spot = document.querySelector("#smartHomePanelHeader .header-title-spot");
     if (spot) spot.style.opacity = 0;
 
@@ -5718,7 +5686,7 @@ if (addBtn) {
 document.getElementById("smartHomePanelDynamicTitle").onclick = () => {
   openPanelSwitcher(currentTile);
 };
-
+ 
 }
 
 function openSmartHomeAddMenu(tile) {
@@ -5764,7 +5732,6 @@ function openSmartHomeAddMenu(tile) {
   
 function openAlarmPanel(tile) {
   if (!tile) return;
-  currentTile = tile;
 
   const panel = document.getElementById("alarmPanel");
   const title = document.getElementById("alarmPanelTitle");
@@ -6184,14 +6151,12 @@ item.onclick = () => {
   
 function closeAppsPanel() {
   document.getElementById("appsPanel").classList.remove("open");
-  //document.querySelector("#tile-apps").classList.remove("tile-active");  active deaktiv.
+  //document.querySelector("#tile-apps").classList.remove("tile-active"); Tano active deaktiv.
  // currentTile.classList.remove("tile-active");
 }
 
 
 function openPanelSwitcher(currentTile) {
-  console.log(">>> SWITCH PANEL OPEN");
-
   const switcher = document.getElementById("panelSwitcher");
   const list = document.getElementById("panelSwitcherList");
   if (!switcher || !list || !currentTile) return;
@@ -6217,17 +6182,13 @@ function openPanelSwitcher(currentTile) {
     });
 
   switcher.classList.add("open");
-  
-
 }
 
 
 function closePanelSwitcher() {
-  console.log(">>> SWITCH PANEL CLOSE");
   const switcher = document.getElementById("panelSwitcher");
   if (!switcher) return;
   switcher.classList.remove("open");
-  
 }
 
 
@@ -6614,12 +6575,11 @@ document.addEventListener("click", (event) => {
   if (!switcher.classList.contains("open")) return;
 
   // Wenn der Klick der Öffnen-Button war → NICHT schließen
-if (event.target.closest(".panel-dynamic-title")) return;
-
-  // Wenn der Klick der Öffnen-Button war → NICHT schließen
-if (event.target.closest("#appsPanelDynamicTitle")) return;
-if (event.target.closest("#smartHomePanelDynamicTitle")) return;
-if (event.target.closest("#alarmPanelDynamicTitle")) return;
+    if (event.target.closest("#appsPanelDynamicTitle")) return;
+    if (event.target.closest("#smartHomePanelDynamicTitle")) return;
+    if (event.target.closest("#alarmPanelDynamicTitle")) return;
+  // Wenn Klick auf ein Item → NICHT schließen
+  if (event.target.classList.contains("panel-switcher-item")) return;
 
   // Wenn Klick INNEN → NICHT schließen
   if (switcher.contains(event.target)) return;
