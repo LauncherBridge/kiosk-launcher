@@ -1145,9 +1145,13 @@ opacity: 1; /* inaktiver Zustand */
 
 .tile:hover,
 .tile.hovered {
-  background-color: var(--tile-hover-color, rgba(255,255,255,0.15));
-  transition: background-color 0.25s ease;
+  background: color-mix(in srgb, var(--tile-hover-color) 25%, rgba(255,255,255,0.12));
+  box-shadow: 0 0 14px var(--tile-hover-color);
+  transform: translateY(-1px);
+  transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+  cursor: pointer;
 }
+
 
 #appsPanelHeader .header-progress {
   position: absolute;
@@ -1178,7 +1182,7 @@ opacity: 1; /* inaktiver Zustand */
   
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 5 <span id="appVersion"></span>
+  Tano – Version 6 <span id="appVersion"></span>
 </div>
 
   <div class="header">
