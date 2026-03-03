@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 3 <span id="appVersion"></span>
+  Tano – Version 4 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -5589,6 +5589,7 @@ function renderApps(apps) {
 
 
 function openSmartHomePanel(tile) {
+
   if (!tile) return;
   currentTile = tile;
 
@@ -5717,7 +5718,7 @@ if (addBtn) {
 document.getElementById("smartHomePanelDynamicTitle").onclick = () => {
   openPanelSwitcher(currentTile);
 };
- 
+
 }
 
 function openSmartHomeAddMenu(tile) {
@@ -6189,6 +6190,8 @@ function closeAppsPanel() {
 
 
 function openPanelSwitcher(currentTile) {
+  console.log(">>> SWITCH PANEL OPEN");
+
   const switcher = document.getElementById("panelSwitcher");
   const list = document.getElementById("panelSwitcherList");
   if (!switcher || !list || !currentTile) return;
@@ -6214,6 +6217,8 @@ function openPanelSwitcher(currentTile) {
     });
 
   switcher.classList.add("open");
+  console.log(">>> SWITCH PANEL CLOSE");
+
 }
 
 
