@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 7 <span id="appVersion"></span>
+  Tano – Version 8 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -5372,18 +5372,14 @@ function closeAllPanels() {
     apps.classList.remove("open");
   }
 
-  // SmartHomePanel schließen (nutzt .hidden)
-  const smarthome = document.getElementById("smartHomePanel");
-  if (smarthome) {
-    smarthome.classList.remove("open");
-    smarthome.classList.add("hidden");
+  // SmartHomePanel schließen (nutzt eigene JS-Logik)
+  if (typeof closeSmartHomePanel === "function") {
+    closeSmartHomePanel();
   }
 
-  // AlarmPanel schließen (nutzt .hidden)
-  const alarm = document.getElementById("alarmPanel");
-  if (alarm) {
-    alarm.classList.remove("open");
-    alarm.classList.add("hidden");
+  // AlarmPanel schließen (nutzt eigene JS-Logik)
+  if (typeof closeAlarmPanel === "function") {
+    closeAlarmPanel();
   }
 }
 
