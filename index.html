@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 2 <span id="appVersion"></span>
+  Tano – Version 3 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -5337,6 +5337,7 @@ renderTiles();
 let currentTile = null; // falls noch nicht global vorhanden
 
 function openTile(tileId) {
+  closeAllPanels();
   const tile = tiles.find(t => t.id === tileId);
   if (!tile) return;
 
@@ -5360,6 +5361,12 @@ function openTile(tileId) {
   }
 }
 
+function closeAllPanels() {
+  document.querySelectorAll(".panel").forEach(p => {
+    p.classList.remove("open");
+    p.classList.add("hidden");
+  });
+}
 
 
 
