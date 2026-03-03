@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 5 <span id="appVersion"></span>
+  Tano – Version 6 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -6614,7 +6614,7 @@ document.addEventListener("click", (event) => {
   if (!switcher.classList.contains("open")) return;
 
   // Wenn der Klick der Öffnen-Button war → NICHT schließen
-  if (event.target.closest("#appsPanelDynamicTitle")) return;
+if (event.target.closest(".panel-dynamic-title")) return;
 
   // Wenn Klick auf ein Item → NICHT schließen
   if (event.target.classList.contains("panel-switcher-item")) return;
