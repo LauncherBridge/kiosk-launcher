@@ -1158,6 +1158,10 @@ opacity: 1; /* inaktiver Zustand */
   z-index: 1003;
 }
 
+.panel.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
 
     
   </style>
@@ -1174,7 +1178,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 3 <span id="appVersion"></span>
+  Tano – Version 4 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1188,6 +1192,9 @@ opacity: 1; /* inaktiver Zustand */
   <div id="panelSwitcherList"></div>
 </div>
 
+
+
+  
   <style>
 
 /* ============================================
@@ -5367,6 +5374,7 @@ function closeAllPanels() {
     p.classList.add("hidden");
   });
 }
+
 
 
 
