@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 3 <span id="appVersion"></span>
+  Tano – Version 4 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -2720,8 +2720,11 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
       <!-- Floating Close Button -->
       <div id="appsPanelClose" class="panel-close-btn">×</div>
 
-      <!-- Abstand -->
-      <div style="padding-bottom: 40px;"></div>
+      <!-- Uhr + Datum (richtige Position!) -->
+      <div class="header-clock">
+          <div class="clock"></div>
+          <div class="date"></div>
+      </div>
 
     </div> <!-- Ende Header -->
 
@@ -2730,6 +2733,7 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
     </div>
 
 </div> <!-- Ende AppsPanel -->
+
 
 
 
