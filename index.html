@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 7 <span id="appVersion"></span>
+  Tano – Version 8 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -6617,7 +6617,9 @@ document.addEventListener("click", (event) => {
 if (event.target.closest(".panel-dynamic-title")) return;
 
   // Wenn der Klick der Öffnen-Button war → NICHT schließen
-  if (event.target.closest("#appsPanelDynamicTitle")) return;
+if (event.target.closest("#appsPanelDynamicTitle")) return;
+if (event.target.closest("#smartHomePanelDynamicTitle")) return;
+if (event.target.closest("#alarmPanelDynamicTitle")) return;
 
   // Wenn Klick INNEN → NICHT schließen
   if (switcher.contains(event.target)) return;
