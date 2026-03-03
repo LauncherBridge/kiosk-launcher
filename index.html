@@ -1175,7 +1175,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 7 <span id="appVersion"></span>
+  Tano – Version 8 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -5344,6 +5344,14 @@ renderTiles();
   
 let currentTile = null; // falls noch nicht global vorhanden
 
+// Mapping: Tile-Typ → Panel-Header-ID
+const PANEL_HEADERS = {
+  "apps": "appsPanelHeader",
+  "smart_home": "smartHomePanelHeader",
+  "alarm_system": "alarmPanelHeader"
+};
+
+  
 function openTile(tileId) {
   closeAllPanels();
   const tile = tiles.find(t => t.id === tileId);
@@ -6182,15 +6190,18 @@ function openPanelSwitcher(currentTile) {
   const list = document.getElementById("panelSwitcherList");
   if (!switcher || !list || !currentTile) return;
 
-  // Dynamische Positionierung abhängig vom Header
-  const header = document.querySelector(`#${currentTile.panelId}Header`);
+  // 1. Header-ID anhand des Tile-Typs bestimmen
+  const headerId = PANEL_HEADERS[currentTile.type];
+  const header = document.getElementById(headerId);
+
+  // 2. Position des Headers auslesen und SwitchPanel darunter setzen
   if (header) {
     const rect = header.getBoundingClientRect();
-    switcher.style.top = (rect.bottom + 10) + "px"; // 10px Abstand unter dem Header
+    switcher.style.top = `${rect.bottom + 10}px`; // 10px Abstand
   }
 
+  // 3. Liste aufbauen
   list.innerHTML = "";
-
   tiles
     .filter(t => t.id !== currentTile.id)
     .forEach(tile => {
@@ -6204,8 +6215,10 @@ function openPanelSwitcher(currentTile) {
       list.appendChild(item);
     });
 
+  // 4. Öffnen
   switcher.classList.add("open");
 }
+
 
 
 
