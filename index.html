@@ -1182,7 +1182,7 @@ opacity: 1; /* inaktiver Zustand */
   
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 6 <span id="appVersion"></span>
+  Tano – Version 1 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1652,6 +1652,17 @@ body {
   100% { opacity: 0; }
 }
 
+.nexusSettingsGroup {
+  transition: opacity 0.25s ease;
+}
+
+.nexusSettingsGroup[style*="display: none"] {
+  opacity: 0;
+}
+
+.nexusSettingsGroup[style*="display: block"] {
+  opacity: 1;
+}
 
 
 .app-row {
