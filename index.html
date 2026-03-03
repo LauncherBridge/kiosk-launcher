@@ -1903,49 +1903,12 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
 /* ---------------------------------------------------------
    NEXUS-BAND: Maskenlogik + Position + Puls-Animation
 --------------------------------------------------------- */
-/* ============================================
-   FINALER HEADER-NEXUS BLOCK (DYNAMISCHE MASKE)
-   ============================================ */
-.header-title-spot {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-transform: translate(-50%, -50%);
-  
-  width: var(--spot-width, 240px);
-  height: var(--spot-height, 70px);
+/* ============================================================
+   NEXUS-MODUS – KOMPLETTER BLOCK (1:1 aus deinem Projekt)
+   ============================================================ */
 
-  border-radius: 999px;
-
-  /* Weiches, nicht-glühendes Feather-Oval */
-background: radial-gradient(
-  ellipse at center,
-  rgba(0, 0, 0, 0.99) 30%,     /* kleiner Kern */
-  rgba(0, 0, 0, 0.55) 55%,    /* sehr früher Übergang */
-  rgba(0, 0, 0, 0.20) 70%,    /* weicher Fade */
-  rgba(0, 0, 0, 0.05) 85%,    /* noch weicher */
-  rgba(0, 0, 0, 0.00) 100%    /* komplett ausfaden */
-
-);
-
-
-
-  pointer-events: none;
-
-  /* Wichtig: über Nexus (999), unter Titel */
-  z-index: 1000;
-
-  opacity: 0;
-  transition: opacity 0.25s ease;
-  pointer-events: none;
-}
-
-
-
-
-
-.header-nexus {
-    --mask-center-x: 50%;
+.panel-header.nexus-mode .header-nexus {
+  --mask-center-x: 50%;
   --mask-center-y: 50%;
   --mask-hole-radius: 40px;
   position: absolute;
@@ -1960,9 +1923,6 @@ background: radial-gradient(
   --mask-height: calc(100% - 20px);
   --mask-corner-radius: 22px;
 
-  /* ============================
-     MASKEN: RECHTECK + LOCH
-     ============================ */
   -webkit-mask-image:
     radial-gradient(
       circle at var(--mask-center-x) var(--mask-center-y),
@@ -1997,31 +1957,23 @@ background: radial-gradient(
   -webkit-mask-composite: xor;
   mask-composite: exclude;
 
-  /* WICHTIG: KEIN BLUR HIER! */
   opacity: var(--nexus-intensity);
   transition: opacity 0.3s ease;
   pointer-events: none;
 }
-.header-nexus::before {
+
+.panel-header.nexus-mode .header-nexus::before {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
-
-  /* Hier kommen die Nexus-Varianten rein */
   background: transparent;
-
   filter: blur(40px);
   opacity: inherit;
   transition: inherit;
 }
 
-
-
-
-
-
-/* ---------------------------------------------------------
+ /* ---------------------------------------------------------
    Pulsierende Maskenform
 --------------------------------------------------------- */
 @keyframes nexusPulse {
@@ -2040,17 +1992,35 @@ background: radial-gradient(
     --mask-height: calc(var(--mask-height-base) * 1.00);
     --mask-corner-radius: calc(var(--mask-corner-base) * 1.00);
   }
+}   
+
+/* Titel-Spot */
+.panel-header.nexus-mode .header-title-spot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: var(--spot-width, 240px);
+  height: var(--spot-height, 70px);
+  border-radius: 999px;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, 0.99) 30%,
+    rgba(0, 0, 0, 0.55) 55%,
+    rgba(0, 0, 0, 0.20) 70%,
+    rgba(0, 0, 0, 0.05) 85%,
+    rgba(0, 0, 0, 0.00) 100%
+  );
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.25s ease;
 }
 
-
-
 /* -----------------------------------------------------------
-   VARIANTE 1 – SOFT FOG (Ultra-Weich)
+   VARIANTE 1 – SOFT FOG
 ----------------------------------------------------------- */
-/* -----------------------------------------------------------
-   VARIANTE 1 – SOFT FOG (Neu, sichtbar, kompatibel)
------------------------------------------------------------ */
-.header-nexus.nexus-soft::before {
+.panel-header.nexus-mode .header-nexus.nexus-soft::before {
   background:
     radial-gradient(
       circle at 30% 40%,
@@ -2065,18 +2035,16 @@ background: radial-gradient(
     );
 }
 
-
 @keyframes softFogDrift {
   0%   { background-position: 0% 0%; }
   50%  { background-position: 120% 80%; }
   100% { background-position: 0% 0%; }
 }
 
-
 /* -----------------------------------------------------------
-   VARIANTE 2 – AURORA (Mehrfarbig, Nordlicht)
+   VARIANTE 2 – AURORA
 ----------------------------------------------------------- */
-.header-nexus.nexus-aurora {
+.panel-header.nexus-mode .header-nexus.nexus-aurora {
   background:
     linear-gradient(90deg, var(--nexus-color-left), var(--nexus-color-right)),
     linear-gradient(
@@ -2091,13 +2059,10 @@ background: radial-gradient(
       rgba(255,255,255,0.10) 3px,
       rgba(255,255,255,0.02) 6px
     );
-
   filter: blur(45px);
   opacity: var(--nexus-intensity);
   animation: auroraWave 22s ease-in-out infinite;
 }
-
-
 
 @keyframes auroraWave {
   0%   { background-position: 0% 0%; }
@@ -2106,36 +2071,28 @@ background: radial-gradient(
 }
 
 /* -----------------------------------------------------------
-   VARIANTE 3 – HOLOGRAMM (Sci-Fi HUD)
+   VARIANTE 3 – HOLOGRAMM
 ----------------------------------------------------------- */
-/* -----------------------------------------------------------
-   VARIANTE 3 – HOLOGRAMM (Sci‑Fi HUD, neu & sichtbar)
------------------------------------------------------------ */
-.header-nexus.nexus-hologram {
+.panel-header.nexus-mode .header-nexus.nexus-hologram {
   background:
-    /* horizontale Scan-Linien */
     repeating-linear-gradient(
       to bottom,
       rgba(0, 255, 255, 0.35) 0px,
       rgba(0, 255, 255, 0.35) 1px,
       rgba(0, 255, 255, 0) 2px
     ),
-    /* Cyan-Glow */
     linear-gradient(
       90deg,
       rgba(0, 200, 255, 0.35),
       rgba(0, 120, 255, 0.35)
     ),
-    /* Farbanpassung durch Tile */
     linear-gradient(
       90deg,
       color-mix(in srgb, var(--nexus-color-left) 40%, transparent),
       color-mix(in srgb, var(--nexus-color-right) 40%, transparent)
     );
-
   filter: blur(32px);
   opacity: var(--nexus-intensity);
-
   animation: holoScanDrift 14s linear infinite;
 }
 
@@ -2145,38 +2102,29 @@ background: radial-gradient(
   100% { background-position: 0 0, 0 0, 0 0; }
 }
 
-
 /* -----------------------------------------------------------
-   VARIANTE 4 – PLASMA (Energieband)
+   VARIANTE 4 – PLASMA
 ----------------------------------------------------------- */
-/* -----------------------------------------------------------
-   VARIANTE 4 – PLASMA (Energieband, neu & maskenfrei)
------------------------------------------------------------ */
-.header-nexus.nexus-plasma {
+.panel-header.nexus-mode .header-nexus.nexus-plasma {
   background:
-    /* Energetische Plasma-Welle */
     linear-gradient(
       90deg,
       rgba(255, 80, 0, 0.45),
       rgba(255, 0, 150, 0.45)
     ),
-    /* Tieferer Energie-Glow */
     radial-gradient(
       circle at 50% 50%,
       rgba(255, 120, 80, 0.35),
       rgba(255, 0, 120, 0.05) 60%,
       transparent 100%
     ),
-    /* Farbanpassung durch Tile */
     linear-gradient(
       90deg,
       color-mix(in srgb, var(--nexus-color-left) 35%, transparent),
       color-mix(in srgb, var(--nexus-color-right) 35%, transparent)
     );
-
   filter: blur(45px);
   opacity: var(--nexus-intensity);
-
   animation: plasmaFlowNew 14s ease-in-out infinite;
 }
 
@@ -2186,14 +2134,11 @@ background: radial-gradient(
   100% { background-position: 0% 50%, 0% 0%, 0% 0%; }
 }
 
-
-
 /* -----------------------------------------------------------
-   VARIANTE 5 – NEBULA (kräftig, energiereich, neu & sichtbar)
+   VARIANTE 5 – NEBULA
 ----------------------------------------------------------- */
-.header-nexus.nexus-nebula {
+.panel-header.nexus-mode .header-nexus.nexus-nebula {
   background:
-    /* Energetische Farbwellen */
     radial-gradient(
       circle at 20% 30%,
       rgba(255, 80, 200, 0.45),
@@ -2206,16 +2151,13 @@ background: radial-gradient(
       rgba(0, 150, 255, 0.05) 60%,
       transparent 100%
     ),
-    /* Farbanpassung durch Tile */
     linear-gradient(
       90deg,
       color-mix(in srgb, var(--nexus-color-left) 35%, transparent),
       color-mix(in srgb, var(--nexus-color-right) 35%, transparent)
     );
-
   filter: blur(50px);
   opacity: var(--nexus-intensity);
-
   animation: nebulaPulse 20s ease-in-out infinite;
 }
 
@@ -2225,12 +2167,10 @@ background: radial-gradient(
   100% { background-position: 0% 0%, 0% 0%, 0% 0%; }
 }
 
-
-/* ============================================================
-   NEXUS GLOBAL BOUNDARY SYSTEM
-   ============================================================ */
-
-.header-nexus.nexus-bounded {
+/* -----------------------------------------------------------
+   BOUNDARY SYSTEM
+----------------------------------------------------------- */
+.panel-header.nexus-mode .header-nexus.nexus-bounded {
   mask-image: linear-gradient(black, black);
   -webkit-mask-image: linear-gradient(black, black);
   mask-size: 100% 100%;
@@ -2239,16 +2179,42 @@ background: radial-gradient(
   -webkit-mask-position: center;
 }
 
-.header-nexus.nexus-glow {
+.panel-header.nexus-mode .header-nexus.nexus-glow {
   mask-image: none !important;
   -webkit-mask-image: none !important;
 }
-
-
-
-
+/* -----------------------------------------------------------
+   BASIS HEADER
+----------------------------------------------------------- */
+.panel-header {
+  position: relative;
+  overflow: visible;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(22px);
+}
+#appsPanelHeader.panel-header {
+  height: 64px;
+  min-height: 64px;
+}
+#smartHomePanelHeader.panel-header,
+#alarmPanelHeader.panel-header {
+  height: 90px;
+  min-height: 90px;
+}
 
     
+ /* ============================================
+   TILE MODUS
+   ============================================ */   
+.panel-header.tile-mode {
+  backdrop-filter: blur(12px);
+  background: rgba(255,255,255,0.08);
+  box-shadow: 0 0 14px var(--tile-hover-color);
+  transition: background 0.25s ease, box-shadow 0.25s ease;
+}
+
+    
+
 
 #appsPanelHeader .header-progress {
   position: absolute;
@@ -2718,10 +2684,9 @@ background: color-mix(in srgb, var(--switch-hover-color) 35%, rgba(255,255,255,0
 
 </div>
 
-
 <div id="appsPanel" class="panel" style="display:none;">
 
-    <div id="appsPanelHeader" class="panel-header">
+    <div id="appsPanelHeader" class="panel-header nexus-mode">
       
       <div class="header-nexus"></div>
       <div class="header-progress"></div>
@@ -2743,6 +2708,7 @@ background: color-mix(in srgb, var(--switch-hover-color) 35%, rgba(255,255,255,0
     </div>
 
 </div>
+
 
 
 
@@ -3056,29 +3022,21 @@ background: color-mix(in srgb, var(--switch-hover-color) 35%, rgba(255,255,255,0
   </div>
 
 
-
-
-
-  
 <div id="smartHomePanel" class="panel hidden">
 
-  <div id="smartHomePanelHeader">
+  <div id="smartHomePanelHeader" class="panel-header nexus-mode">
     <div class="header-nexus"></div>
     <div class="header-progress"></div>
     <div class="header-title-spot"></div>
 
-    <!-- Plus-Symbol im Header -->
     <div id="smartHomePanelAddButton" class="header-add-btn"></div>
-    <!-- Titel im Header -->
     <div id="smartHomePanelDynamicTitle"></div>
+    <div id="smartHomePanelClose" class="panel-close-btn">×</div>
 
-    <!-- Floating Close Button -->
-    <div id="smartHomePanelClose" class="panel-close-btn">×</div>    
-      <div class="header-clock">
-        <div class="clock"></div>
-        <div class="date"></div>
-      </div>
-
+    <div class="header-clock">
+      <div class="clock"></div>
+      <div class="date"></div>
+    </div>
   </div>
 
   <div class="panel-content" id="smartHomeDeviceList"></div>
@@ -3087,26 +3045,24 @@ background: color-mix(in srgb, var(--switch-hover-color) 35%, rgba(255,255,255,0
 
 <div id="alarmPanel" class="panel hidden">
 
-  <div id="alarmPanelHeader">
+  <div id="alarmPanelHeader" class="panel-header nexus-mode">
     <div class="header-nexus"></div>
     <div class="header-progress"></div>
     <div class="header-title-spot"></div>
-    
-    <!-- Plus-Symbol im Header -->
-    <div id="alarmPanelAddButton" class="header-add-btn"></div>
-    <!-- Titel im Header -->
-    <div id="alarmPanelDynamicTitle"></div>
 
-    <!-- Floating Close Button -->
+    <div id="alarmPanelAddButton" class="header-add-btn"></div>
+    <div id="alarmPanelDynamicTitle"></div>
     <div id="alarmPanelClose" class="panel-close-btn">×</div>
-      <div class="header-clock">
-        <div class="clock"></div>
-        <div class="date"></div>
-      </div>
+
+    <div class="header-clock">
+      <div class="clock"></div>
+      <div class="date"></div>
+    </div>
   </div>
 
   <div class="panel-content" id="alarmZoneList"></div>
 </div>
+
 
 
 
@@ -3277,6 +3233,21 @@ if (buildVersion > appVersion) {
   updateVersionDisplay();
 }
 
+// =============================================
+// Panel-Header-Stile (pro Panel, persistent)
+// =============================================
+let headerStyleSettings = JSON.parse(localStorage.getItem("headerStyleSettings") || "{}");
+
+function saveHeaderStyleSettings() {
+  localStorage.setItem("headerStyleSettings", JSON.stringify(headerStyleSettings));
+}
+
+function loadHeaderStyle(panelName) {
+  return headerStyleSettings[panelName] || "nexus"; // Default: Nexus-Design
+}
+
+
+  
  /* ============================================================
    UNIVERSAL ADD-MENU LOGIC
 ============================================================ */
@@ -3348,23 +3319,31 @@ function renderAllTileSettings() {
       <label>Farbe:</label>
       <div class="settings-value">${tile.color || "Standard"}</div>
 
-      <label>Variante:</label>
-      <select class="nexusVariant" data-tile="${tile.name}">
-        <option value="soft">Soft Fog</option>
-        <option value="aurora">Aurora</option>
-        <option value="hologram">Hologramm</option>
-        <option value="plasma">Plasma</option>
-        <option value="nebula">Nebula</option>
+      <label>Header‑Design:</label>
+      <select class="panelHeaderMode" data-tile="${tile.name}">
+        <option value="nexus">Nexus‑Design</option>
+        <option value="tile">Kacheldesign</option>
       </select>
 
-      <label>Effektbereich:</label>
-      <select class="nexusBoundary" data-tile="${tile.name}">
-        <option value="glow">Glow (strahlt nach unten)</option>
-        <option value="bounded">Begrenzt (nur im Header)</option>
-      </select>
+      <div class="nexusSettingsGroup" data-tile="${tile.name}">
+        <label>Variante:</label>
+        <select class="nexusVariant" data-tile="${tile.name}">
+          <option value="soft">Soft Fog</option>
+          <option value="aurora">Aurora</option>
+          <option value="hologram">Hologramm</option>
+          <option value="plasma">Plasma</option>
+          <option value="nebula">Nebula</option>
+        </select>
 
-      <label>Intensität:</label>
-      <input type="range" class="nexusIntensity" data-tile="${tile.name}" min="0" max="1" step="0.01">
+        <label>Effektbereich:</label>
+        <select class="nexusBoundary" data-tile="${tile.name}">
+          <option value="glow">Glow (strahlt nach unten)</option>
+          <option value="bounded">Begrenzt (nur im Header)</option>
+        </select>
+
+        <label>Intensität:</label>
+        <input type="range" class="nexusIntensity" data-tile="${tile.name}" min="0" max="1" step="0.01">
+      </div>
 
       <button class="saveNexusTileSettings" data-tile="${tile.name}">
         Speichern
@@ -3373,12 +3352,41 @@ function renderAllTileSettings() {
 
     container.appendChild(block);
 
-    // Werte setzen
+    // Nexus-Werte setzen
     block.querySelector(".nexusVariant").value = nx.variant;
     block.querySelector(".nexusBoundary").value = nx.boundary;
     block.querySelector(".nexusIntensity").value = nx.intensity;
+
+    // Header-Design setzen
+    const mode = loadHeaderStyle(tile.name);
+    block.querySelector(".panelHeaderMode").value = mode;
+
+    // Nexus-Gruppe ein-/ausblenden
+    const nexusGroup = block.querySelector(".nexusSettingsGroup");
+    nexusGroup.style.display = (mode === "nexus") ? "block" : "none";
+  });
+
+  // ---------------------------------------------
+  // Header-Design speichern + Nexus-Gruppe toggeln
+  // ---------------------------------------------
+  container.querySelectorAll(".panelHeaderMode").forEach(select => {
+    select.addEventListener("change", (e) => {
+      const tileName = e.target.dataset.tile;
+      const mode = e.target.value;
+
+      headerStyleSettings[tileName] = mode;
+      saveHeaderStyleSettings();
+
+      // Nexus-Gruppe ein-/ausblenden
+      const nexusGroup = container.querySelector(`.nexusSettingsGroup[data-tile="${tileName}"]`);
+      if (nexusGroup) {
+        nexusGroup.style.display = (mode === "nexus") ? "block" : "none";
+      }
+    });
   });
 }
+
+
 
 document.addEventListener("click", (e) => {
   if (e.target.classList.contains("saveNexusTileSettings")) {
@@ -5420,6 +5428,24 @@ function resetAppsPanelHeader() {
 }
 
 
+function applyHeaderStyle(header, tile, panelName) {
+  const mode = loadHeaderStyle(panelName); // "nexus" oder "tile"
+
+  // Farbe der Kachel in den Header übernehmen
+  header.style.setProperty("--tile-hover-color", tile.color);
+
+  if (mode === "tile") {
+    header.classList.add("tile-mode");
+    header.classList.remove("nexus-mode");
+  } else {
+    header.classList.add("nexus-mode");
+    header.classList.remove("tile-mode");
+  }
+}
+
+
+  
+
 function openAppsPanel(tile) {
   resetAppsPanelHeader();
 
@@ -5427,6 +5453,7 @@ function openAppsPanel(tile) {
   currentTile = tile;
 
   const panel    = document.getElementById("appsPanel");
+  const header = document.getElementById("appsPanelHeader"); // ← NEU
   const titleEl  = document.getElementById("appsPanelDynamicTitle");
   const list     = document.getElementById("appsList");
   const closeBtn = document.getElementById("appsPanelClose");
@@ -5436,7 +5463,8 @@ function openAppsPanel(tile) {
     console.warn("AppsPanel: benötigte Elemente nicht gefunden");
     return;
   }
-
+  applyHeaderStyle(header, tile, "apps");
+  
   // Panel jetzt korrekt sichtbar machen
   panel.style.display = "flex";
 
@@ -5606,129 +5634,132 @@ function renderApps(apps) {
 function openSmartHomePanel(tile) {
   if (!tile) return;
 
-  const panel = document.getElementById("smartHomePanel");
-  const title = document.getElementById("smartHomePanelTitle");
-  const list = document.getElementById("smartHomeDeviceList");
+  const panel    = document.getElementById("smartHomePanel");
+  const header   = document.getElementById("smartHomePanelHeader");
+  const titleEl  = document.getElementById("smartHomePanelDynamicTitle");
+  const list     = document.getElementById("smartHomeDeviceList");
+  const closeBtn = document.getElementById("smartHomePanelClose");
+  const addBtn   = document.getElementById("smartHomePanelAddButton");
+  const nexus    = document.querySelector("#smartHomePanelHeader .header-nexus");
+  const spot     = document.querySelector("#smartHomePanelHeader .header-title-spot");
 
-// ---------------------------------------------------------
-// 1) Titel setzen
-// ---------------------------------------------------------
-const titleEl = document.getElementById("smartHomePanelDynamicTitle");
-titleEl.textContent = tile.name;
+  // ---------------------------------------------------------
+  // Header-Modus (Tile oder Nexus)
+  // ---------------------------------------------------------
+  applyHeaderStyle(header, tile, "smartHome");
 
-const spot = document.querySelector("#smartHomePanelHeader .header-title-spot");
+  // ---------------------------------------------------------
+  // 1) Titel setzen
+  // ---------------------------------------------------------
+  titleEl.textContent = tile.name;
 
-requestAnimationFrame(() => {
-  const titleWidth  = titleEl.offsetWidth;
-  const titleHeight = titleEl.offsetHeight;
+  requestAnimationFrame(() => {
+    const titleWidth  = titleEl.offsetWidth;
+    const titleHeight = titleEl.offsetHeight;
 
-  const spotW = titleWidth + 60;
-  const spotH = titleHeight + 15;
+    const spotW = titleWidth + 60;
+    const spotH = titleHeight + 15;
 
-  spot.style.setProperty("--spot-width",  spotW + "px");
-  spot.style.setProperty("--spot-height", spotH + "px");
+    spot.style.setProperty("--spot-width",  spotW + "px");
+    spot.style.setProperty("--spot-height", spotH + "px");
+    spot.style.opacity = 1;
+  });
 
-  spot.style.opacity = 1;
-});
+  // ---------------------------------------------------------
+  // 2) Nexus‑Band initialisieren
+  // ---------------------------------------------------------
+  requestAnimationFrame(() => {
+    if (!nexus) return;
 
-// ---------------------------------------------------------
-// 2) Nexus‑Band initialisieren
-// ---------------------------------------------------------
-const nexus = document.querySelector("#smartHomePanelHeader .header-nexus");
+    const titleWidth  = titleEl.offsetWidth;
+    const titleHeight = titleEl.offsetHeight;
 
-requestAnimationFrame(() => {
-  if (!nexus) return;
+    const maskW = titleWidth + 40;
+    const maskH = titleHeight + 20;
 
-  const titleWidth  = titleEl.offsetWidth;
-  const titleHeight = titleEl.offsetHeight;
+    nexus.style.setProperty("--mask-width-base",  maskW + "px");
+    nexus.style.setProperty("--mask-height-base", maskH + "px");
+    nexus.style.setProperty("--mask-corner-base", "22px");
 
-  const maskW = titleWidth + 40;
-  const maskH = titleHeight + 20;
+    nexus.style.setProperty("--mask-width",  maskW + "px");
+    nexus.style.setProperty("--mask-height", maskH + "px");
+    nexus.style.setProperty("--mask-corner-radius", "22px");
 
-  nexus.style.setProperty("--mask-width-base",  maskW + "px");
-  nexus.style.setProperty("--mask-height-base", maskH + "px");
-  nexus.style.setProperty("--mask-corner-base", "22px");
+    const holeRadius = Math.max(maskW, maskH) * 0.45;
+    nexus.style.setProperty("--mask-center-x", "50%");
+    nexus.style.setProperty("--mask-center-y", "50%");
+    nexus.style.setProperty("--mask-hole-radius", holeRadius + "px");
 
-  nexus.style.setProperty("--mask-width",  maskW + "px");
-  nexus.style.setProperty("--mask-height", maskH + "px");
-  nexus.style.setProperty("--mask-corner-radius", "22px");
+    const tileAlpha = "D9";
+    nexus.style.setProperty("--nexus-color-left",  tile.color + tileAlpha);
+    nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
 
-  const holeRadius = Math.max(maskW, maskH) * 0.45;
-  nexus.style.setProperty("--mask-center-x", "50%");
-  nexus.style.setProperty("--mask-center-y", "50%");
-  nexus.style.setProperty("--mask-hole-radius", holeRadius + "px");
+    const nx = loadNexusSettings(tile.name);
+    nexus.style.setProperty("--nexus-intensity", nx.intensity);
 
-  // Tile‑Farbe
-  const tileAlpha = "D9";
-  nexus.style.setProperty("--nexus-color-left",  tile.color + tileAlpha);
-  nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
+    nexus.classList.remove(
+      "nexus-soft",
+      "nexus-aurora",
+      "nexus-hologram",
+      "nexus-plasma",
+      "nexus-nebula"
+    );
+    void nexus.offsetWidth;
+    nexus.classList.add("nexus-" + nx.variant);
 
-  // Nexus‑Settings pro Tile
-  const nx = loadNexusSettings(tile.name);
-  nexus.style.setProperty("--nexus-intensity", nx.intensity);
+    nexus.classList.remove("nexus-glow", "nexus-bounded");
+    nexus.classList.add(nx.boundary === "bounded" ? "nexus-bounded" : "nexus-glow");
+  });
 
-  nexus.classList.remove(
-    "nexus-soft",
-    "nexus-aurora",
-    "nexus-hologram",
-    "nexus-plasma",
-    "nexus-nebula"
-  );
-  void nexus.offsetWidth;
-  nexus.classList.add("nexus-" + nx.variant);
-
-  nexus.classList.remove("nexus-glow", "nexus-bounded");
-  nexus.classList.add(nx.boundary === "bounded" ? "nexus-bounded" : "nexus-glow");
-});
-
-  // Liste leeren
+  // ---------------------------------------------------------
+  // 3) Liste leeren und Geräte einfügen
+  // ---------------------------------------------------------
   list.innerHTML = "";
 
-  // Geräte rendern
   tile.devices.forEach(device => {
     const btn = document.createElement("button");
-    btn.className = "app-button"; // wir nutzen das gleiche Button-Design
+    btn.className = "app-button";
     btn.textContent = device.label;
 
     btn.onclick = () => {
-      // später: Gerät steuern
       console.log("Gerät öffnen:", device.id);
     };
 
     list.appendChild(btn);
   });
-// ---------------------------------------------------------
-// 3) Close‑Button
-// ---------------------------------------------------------
-const closeBtn = document.getElementById("smartHomePanelClose");
-if (closeBtn) {
-  closeBtn.onclick = () => {
-    const spot = document.querySelector("#smartHomePanelHeader .header-title-spot");
-    if (spot) spot.style.opacity = 0;
 
-    document.getElementById("smartHomePanel").style.display = "none";
-  };
-}
+  // ---------------------------------------------------------
+  // 4) Close‑Button
+  // ---------------------------------------------------------
+  if (closeBtn) {
+    closeBtn.onclick = () => {
+      if (spot) spot.style.opacity = 0;
+      panel.style.display = "none";
+    };
+  }
 
-// ---------------------------------------------------------
-// 4) Plus‑Button → öffnet später das Auswahlmenü
-// ---------------------------------------------------------
-const addBtn = document.getElementById("smartHomePanelAddButton");
-if (addBtn) {
-  addBtn.onclick = () => {
-    openSmartHomeAddMenu(tile);
-  };
-}
+  // ---------------------------------------------------------
+  // 5) Plus‑Button
+  // ---------------------------------------------------------
+  if (addBtn) {
+    addBtn.onclick = () => {
+      openSmartHomeAddMenu(tile);
+    };
+  }
 
-
-  // Panel anzeigen
+  // ---------------------------------------------------------
+  // 6) Panel anzeigen
+  // ---------------------------------------------------------
   panel.style.display = "flex";
 
-document.getElementById("smartHomePanelDynamicTitle").onclick = () => {
-  openPanelSwitcher(currentTile);
-};
- 
+  // ---------------------------------------------------------
+  // 7) Titel → SwitchPanel
+  // ---------------------------------------------------------
+  titleEl.onclick = () => {
+    openPanelSwitcher(currentTile);
+  };
 }
+
 
 function openSmartHomeAddMenu(tile) {
   const items = [
@@ -5774,81 +5805,86 @@ function openSmartHomeAddMenu(tile) {
 function openAlarmPanel(tile) {
   if (!tile) return;
 
-  const panel = document.getElementById("alarmPanel");
-  const title = document.getElementById("alarmPanelTitle");
-  const list = document.getElementById("alarmZoneList");
+  const panel    = document.getElementById("alarmPanel");
+  const header   = document.getElementById("alarmPanelHeader");
+  const titleEl  = document.getElementById("alarmPanelDynamicTitle");
+  const list     = document.getElementById("alarmZoneList");
+  const closeBtn = document.getElementById("alarmPanelClose");
+  const addBtn   = document.getElementById("alarmPanelAddButton");
+  const nexus    = document.querySelector("#alarmPanelHeader .header-nexus");
+  const spot     = document.querySelector("#alarmPanelHeader .header-title-spot");
 
- // ---------------------------------------------------------
-// 1) Titel setzen
-// ---------------------------------------------------------
-const titleEl = document.getElementById("alarmPanelDynamicTitle");
-titleEl.textContent = tile.name;
+  // ---------------------------------------------------------
+  // Header-Modus (Tile oder Nexus)
+  // ---------------------------------------------------------
+  applyHeaderStyle(header, tile, "alarm");
 
-const spot = document.querySelector("#alarmPanelHeader .header-title-spot");
+  // ---------------------------------------------------------
+  // 1) Titel setzen
+  // ---------------------------------------------------------
+  titleEl.textContent = tile.name;
 
-requestAnimationFrame(() => {
-  const titleWidth  = titleEl.offsetWidth;
-  const titleHeight = titleEl.offsetHeight;
+  requestAnimationFrame(() => {
+    const titleWidth  = titleEl.offsetWidth;
+    const titleHeight = titleEl.offsetHeight;
 
-  const spotW = titleWidth + 60;
-  const spotH = titleHeight + 15;
+    const spotW = titleWidth + 60;
+    const spotH = titleHeight + 15;
 
-  spot.style.setProperty("--spot-width",  spotW + "px");
-  spot.style.setProperty("--spot-height", spotH + "px");
+    spot.style.setProperty("--spot-width",  spotW + "px");
+    spot.style.setProperty("--spot-height", spotH + "px");
+    spot.style.opacity = 1;
+  });
 
-  spot.style.opacity = 1;
-});
+  // ---------------------------------------------------------
+  // 2) Nexus‑Band initialisieren
+  // ---------------------------------------------------------
+  requestAnimationFrame(() => {
+    if (!nexus) return;
 
-// ---------------------------------------------------------
-// 2) Nexus‑Band initialisieren
-// ---------------------------------------------------------
-const nexus = document.querySelector("#alarmPanelHeader .header-nexus");
+    const titleWidth  = titleEl.offsetWidth;
+    const titleHeight = titleEl.offsetHeight;
 
-requestAnimationFrame(() => {
-  if (!nexus) return;
+    const maskW = titleWidth + 40;
+    const maskH = titleHeight + 20;
 
-  const titleWidth  = titleEl.offsetWidth;
-  const titleHeight = titleEl.offsetHeight;
+    nexus.style.setProperty("--mask-width-base",  maskW + "px");
+    nexus.style.setProperty("--mask-height-base", maskH + "px");
+    nexus.style.setProperty("--mask-corner-base", "22px");
 
-  const maskW = titleWidth + 40;
-  const maskH = titleHeight + 20;
+    nexus.style.setProperty("--mask-width",  maskW + "px");
+    nexus.style.setProperty("--mask-height", maskH + "px");
+    nexus.style.setProperty("--mask-corner-radius", "22px");
 
-  nexus.style.setProperty("--mask-width-base",  maskW + "px");
-  nexus.style.setProperty("--mask-height-base", maskH + "px");
-  nexus.style.setProperty("--mask-corner-base", "22px");
+    const holeRadius = Math.max(maskW, maskH) * 0.45;
+    nexus.style.setProperty("--mask-center-x", "50%");
+    nexus.style.setProperty("--mask-center-y", "50%");
+    nexus.style.setProperty("--mask-hole-radius", holeRadius + "px");
 
-  nexus.style.setProperty("--mask-width",  maskW + "px");
-  nexus.style.setProperty("--mask-height", maskH + "px");
-  nexus.style.setProperty("--mask-corner-radius", "22px");
+    const tileAlpha = "D9";
+    nexus.style.setProperty("--nexus-color-left",  tile.color + tileAlpha);
+    nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
 
-  const holeRadius = Math.max(maskW, maskH) * 0.45;
-  nexus.style.setProperty("--mask-center-x", "50%");
-  nexus.style.setProperty("--mask-center-y", "50%");
-  nexus.style.setProperty("--mask-hole-radius", holeRadius + "px");
+    const nx = loadNexusSettings(tile.name);
+    nexus.style.setProperty("--nexus-intensity", nx.intensity);
 
-  // Tile‑Farbe
-  const tileAlpha = "D9";
-  nexus.style.setProperty("--nexus-color-left",  tile.color + tileAlpha);
-  nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
+    nexus.classList.remove(
+      "nexus-soft",
+      "nexus-aurora",
+      "nexus-hologram",
+      "nexus-plasma",
+      "nexus-nebula"
+    );
+    void nexus.offsetWidth;
+    nexus.classList.add("nexus-" + nx.variant);
 
-  // Nexus‑Settings pro Tile
-  const nx = loadNexusSettings(tile.name);
-  nexus.style.setProperty("--nexus-intensity", nx.intensity);
+    nexus.classList.remove("nexus-glow", "nexus-bounded");
+    nexus.classList.add(nx.boundary === "bounded" ? "nexus-bounded" : "nexus-glow");
+  });
 
-  nexus.classList.remove(
-    "nexus-soft",
-    "nexus-aurora",
-    "nexus-hologram",
-    "nexus-plasma",
-    "nexus-nebula"
-  );
-  void nexus.offsetWidth;
-  nexus.classList.add("nexus-" + nx.variant);
-
-  nexus.classList.remove("nexus-glow", "nexus-bounded");
-  nexus.classList.add(nx.boundary === "bounded" ? "nexus-bounded" : "nexus-glow");
-});
-
+  // ---------------------------------------------------------
+  // 3) Liste leeren und Zonen einfügen
+  // ---------------------------------------------------------
   list.innerHTML = "";
 
   (tile.zones || []).forEach(zone => {
@@ -5862,38 +5898,39 @@ requestAnimationFrame(() => {
 
     list.appendChild(btn);
   });
-// ---------------------------------------------------------
-// 3) Close‑Button
-// ---------------------------------------------------------
-const closeBtn = document.getElementById("alarmPanelClose");
-if (closeBtn) {
-  closeBtn.onclick = () => {
-    const spot = document.querySelector("#alarmPanelHeader .header-title-spot");
-    if (spot) spot.style.opacity = 0;
 
-    document.getElementById("alarmPanel").style.display = "none";
-  };
-}
+  // ---------------------------------------------------------
+  // 4) Close‑Button
+  // ---------------------------------------------------------
+  if (closeBtn) {
+    closeBtn.onclick = () => {
+      if (spot) spot.style.opacity = 0;
+      panel.style.display = "none";
+    };
+  }
 
-// ---------------------------------------------------------
-// 4) Plus‑Button → öffnet später das Auswahlmenü
-// ---------------------------------------------------------
-const addBtn = document.getElementById("alarmPanelAddButton");
-if (addBtn) {
-  addBtn.onclick = () => {
-    openAlarmAddMenu(tile);
-  };
-}
+  // ---------------------------------------------------------
+  // 5) Plus‑Button
+  // ---------------------------------------------------------
+  if (addBtn) {
+    addBtn.onclick = () => {
+      openAlarmAddMenu(tile);
+    };
+  }
 
-
+  // ---------------------------------------------------------
+  // 6) Panel anzeigen
+  // ---------------------------------------------------------
   panel.style.display = "flex";
 
-document.getElementById("alarmPanelDynamicTitle").onclick = () => {
-  openPanelSwitcher(currentTile);
-};
-
-  
+  // ---------------------------------------------------------
+  // 7) Titel → SwitchPanel
+  // ---------------------------------------------------------
+  titleEl.onclick = () => {
+    openPanelSwitcher(currentTile);
+  };
 }
+
 
 function openAlarmAddMenu(tile) {
   const items = [
