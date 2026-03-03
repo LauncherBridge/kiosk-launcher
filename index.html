@@ -1182,7 +1182,7 @@ opacity: 1; /* inaktiver Zustand */
   
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 1 <span id="appVersion"></span>
+  Tano – Version 2 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1653,8 +1653,19 @@ body {
 }
 
 .nexusSettingsGroup {
-  transition: opacity 0.25s ease;
+  overflow: hidden;
+  max-height: 500px;       /* genug Platz für alle Elemente */
+  opacity: 1;
+  transition: 
+    max-height 0.25s ease,
+    opacity 0.25s ease;
 }
+
+.nexusSettingsGroup.hidden {
+  max-height: 0;
+  opacity: 0;
+}
+
 
 .nexusSettingsGroup[style*="display: none"] {
   opacity: 0;
@@ -3374,7 +3385,11 @@ function renderAllTileSettings() {
 
     // Nexus-Gruppe ein-/ausblenden
     const nexusGroup = block.querySelector(".nexusSettingsGroup");
-    nexusGroup.style.display = (mode === "nexus") ? "block" : "none";
+if (mode === "nexus") {
+  nexusGroup.classList.remove("hidden");
+} else {
+  nexusGroup.classList.add("hidden");
+}
   });
 
   // ---------------------------------------------
@@ -3391,7 +3406,13 @@ function renderAllTileSettings() {
       // Nexus-Gruppe ein-/ausblenden
       const nexusGroup = container.querySelector(`.nexusSettingsGroup[data-tile="${tileName}"]`);
       if (nexusGroup) {
-        nexusGroup.style.display = (mode === "nexus") ? "block" : "none";
+if (nexusGroup) {
+  if (mode === "nexus") {
+    nexusGroup.classList.remove("hidden");
+  } else {
+    nexusGroup.classList.add("hidden");
+  }
+}
       }
     });
   });
@@ -5440,9 +5461,8 @@ function resetAppsPanelHeader() {
 
 
 function applyHeaderStyle(header, tile, panelName) {
-  const mode = loadHeaderStyle(panelName); // "nexus" oder "tile"
+  const mode = loadHeaderStyle(panelName);
 
-  // Farbe der Kachel in den Header übernehmen
   header.style.setProperty("--tile-hover-color", tile.color);
 
   if (mode === "tile") {
@@ -5474,7 +5494,7 @@ function openAppsPanel(tile) {
     console.warn("AppsPanel: benötigte Elemente nicht gefunden");
     return;
   }
-  applyHeaderStyle(header, tile, "apps");
+applyHeaderStyle(header, tile, tile.name);
   
   // Panel jetzt korrekt sichtbar machen
   panel.style.display = "flex";
@@ -5657,7 +5677,7 @@ function openSmartHomePanel(tile) {
   // ---------------------------------------------------------
   // Header-Modus (Tile oder Nexus)
   // ---------------------------------------------------------
-  applyHeaderStyle(header, tile, "smartHome");
+applyHeaderStyle(header, tile, tile.name);
 
   // ---------------------------------------------------------
   // 1) Titel setzen
@@ -5828,7 +5848,7 @@ function openAlarmPanel(tile) {
   // ---------------------------------------------------------
   // Header-Modus (Tile oder Nexus)
   // ---------------------------------------------------------
-  applyHeaderStyle(header, tile, "alarm");
+applyHeaderStyle(header, tile, tile.name);
 
   // ---------------------------------------------------------
   // 1) Titel setzen
