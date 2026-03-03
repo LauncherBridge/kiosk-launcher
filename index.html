@@ -1174,7 +1174,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 4 <span id="appVersion"></span>
+  Tano – Version 5 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -6217,15 +6217,17 @@ function openPanelSwitcher(currentTile) {
     });
 
   switcher.classList.add("open");
-  console.log(">>> SWITCH PANEL CLOSE");
+  
 
 }
 
 
 function closePanelSwitcher() {
+  console.log(">>> SWITCH PANEL CLOSE");
   const switcher = document.getElementById("panelSwitcher");
   if (!switcher) return;
   switcher.classList.remove("open");
+  
 }
 
 
