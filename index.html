@@ -1176,7 +1176,7 @@ opacity: 1; /* inaktiver Zustand */
 
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 8 <span id="appVersion"></span>
+  Tano – Version 1 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -2624,10 +2624,14 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
   border-bottom: none;
 }
 
+    
 .panel-switcher-item:hover {
-  background: rgba(255,255,255,0.10);
+  background: color-mix(in srgb, var(--switch-hover-color) 25%, rgba(255,255,255,0.12));
+  box-shadow: 0 0 14px var(--switch-hover-color);
   transform: translateY(-1px);
 }
+
+
 
 .panel-switcher-item:active {
   transform: scale(0.97);
@@ -6189,6 +6193,7 @@ function closeAppsPanel() {
 function openPanelSwitcher(currentTile) {
   const switcher = document.getElementById("panelSwitcher");
   const list = document.getElementById("panelSwitcherList");
+
   if (!switcher || !list || !currentTile) return;
 
   // 1. Header-ID anhand des Tile-Typs bestimmen
@@ -6209,6 +6214,8 @@ function openPanelSwitcher(currentTile) {
       const item = document.createElement("div");
       item.className = "panel-switcher-item";
       item.textContent = tile.name;
+      item.style.setProperty("--switch-hover-color", tile.color);
+
       item.onclick = () => {
         openTile(tile.id);
         closePanelSwitcher();
