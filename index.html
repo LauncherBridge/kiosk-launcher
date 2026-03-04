@@ -872,7 +872,12 @@ opacity: 1; /* inaktiver Zustand */
   position: relative;
   height: 80px;
   box-sizing: border-box;
+
+  /* WICHTIG: Keine Farbe, kein Blur */
+  background: none;
+  backdrop-filter: none;
 }
+
 .panel-header.nexus-mode {
   background: rgba(0, 0, 0, 0.25);
   backdrop-filter: blur(10px);
@@ -1191,7 +1196,7 @@ opacity: 1; /* inaktiver Zustand */
   
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 3 <span id="appVersion"></span>
+  Tano – Version 4 <span id="appVersion"></span>
 </div>
 
   <div class="header">
