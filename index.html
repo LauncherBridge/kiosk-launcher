@@ -5481,7 +5481,6 @@ function applyHeaderStyle(header, tile, panelName) {
     header.classList.add("tile-mode");
     header.classList.remove("nexus-mode");
 
-    // Kachel-Farbe in den Header schieben
     header.style.setProperty("--tile-header-bg", tile.color || "#444");
   } else {
     header.classList.add("nexus-mode");
