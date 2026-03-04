@@ -1205,7 +1205,7 @@ opacity: 1; /* inaktiver Zustand */
   
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 4 <span id="appVersion"></span>
+  Tano – Version 5 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -2387,6 +2387,49 @@ transform: translate(-50%, -50%) scale(1.1) rotate(var(--plus-rotate-v));
 }
 
 
+.add-menu-dropdown {
+  position: fixed;
+  display: none;
+  flex-direction: column;
+  background: rgba(30,30,30,0.85);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 10px;
+  z-index: 99999;
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.add-menu-dropdown.open {
+  display: flex;
+  opacity: 1;
+  transform: scale(1);
+}
+
+.add-menu-item {
+  padding: 12px 16px;
+  color: white;
+  font-size: 16px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.06);
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+/* Keine Hover-Farbe */
+.add-menu-item:hover {
+  background: rgba(255,255,255,0.06);
+}
+
+.add-menu-item:last-child {
+  margin-bottom: 0;
+}
+
+
+
+    
 
 .panel-close-btn {
   position: absolute;
@@ -2757,6 +2800,9 @@ background: color-mix(in srgb, var(--switch-hover-color) 35%, rgba(255,255,255,0
 </div>
 
 
+<div id="addMenu" class="add-menu-dropdown">
+  <div class="add-menu-list"></div>
+</div>
 
 
 
@@ -3174,6 +3220,21 @@ background: color-mix(in srgb, var(--switch-hover-color) 35%, rgba(255,255,255,0
 
 // --- Kontextmenü-Blockierung ---
 let contextMenuBlocked = false;
+
+const addMenuItems = {
+  appsPanel: [
+    { label: "Neue App hinzufügen", action: () => console.log("App hinzufügen") },
+    { label: "Ordner erstellen", action: () => console.log("Ordner erstellen") }
+  ],
+  smartHomePanel: [
+    { label: "Neues Gerät koppeln", action: () => console.log("Gerät koppeln") },
+    { label: "Raum hinzufügen", action: () => console.log("Raum hinzufügen") }
+  ],
+  alarmPanel: [
+    { label: "Neue Zone", action: () => console.log("Zone hinzufügen") },
+    { label: "Sensor koppeln", action: () => console.log("Sensor koppeln") }
+  ]
+};
 
 
 function initUIListeners() {
@@ -6682,7 +6743,52 @@ function cancelLongPress() {
   isPointerDown = false;
 }
 
+function openAddDropdown(button, panelId) {
+  const menu = document.getElementById("addMenu");
+  const list = menu.querySelector(".add-menu-list");
 
+  list.innerHTML = "";
+
+  addMenuItems[panelId].forEach(item => {
+    const div = document.createElement("div");
+    div.className = "add-menu-item";
+    div.textContent = item.label;
+    div.onclick = () => {
+      item.action();
+      closeAddDropdown();
+    };
+    list.appendChild(div);
+  });
+
+  const rect = button.getBoundingClientRect();
+  menu.style.left = rect.left + "px";
+  menu.style.top = rect.bottom + 8 + "px";
+
+  menu.classList.add("open");
+}
+
+function closeAddDropdown() {
+  document.getElementById("addMenu").classList.remove("open");
+}
+document.addEventListener("click", (e) => {
+  const menu = document.getElementById("addMenu");
+  if (!menu.contains(e.target) && !e.target.classList.contains("header-add-btn")) {
+    closeAddDropdown();
+  }
+});
+
+document.getElementById("appsPanelAddButton").addEventListener("click", (e) => {
+  e.stopPropagation();
+  openAddDropdown(e.currentTarget, "appsPanel");
+});
+document.getElementById("smartHomePanelAddButton").addEventListener("click", (e) => {
+  e.stopPropagation();
+  openAddDropdown(e.currentTarget, "smartHomePanel");
+});
+document.getElementById("alarmPanelAddButton").addEventListener("click", (e) => {
+  e.stopPropagation();
+  openAddDropdown(e.currentTarget, "alarmPanel");
+});
 
   
 function autoDailyBackup() {
@@ -6742,6 +6848,9 @@ document.getElementById("panelSwitcher").addEventListener("click", (event) => {
   event.stopPropagation();
 });
 
+appsPanelAddButton.onclick = (e) => openAddDropdown(e.currentTarget, "appsPanel");
+smartHomePanelAddButton.onclick = (e) => openAddDropdown(e.currentTarget, "smartHomePanel");
+alarmPanelAddButton.onclick = (e) => openAddDropdown(e.currentTarget, "alarmPanel");
 
   
 </script>
