@@ -867,24 +867,10 @@ opacity: 1; /* inaktiver Zustand */
   justify-content: space-between;
   align-items: center;
   padding: 18px 24px;
-  font-size: 28px;
-  font-weight: 600;
-  position: relative;
-  height: 80px;
-  box-sizing: border-box;
-
-  /* WICHTIG: Keine Farbe, kein Blur */
-  background: none;
-  backdrop-filter: none;
-}
-
-.panel-header.nexus-mode {
   background: rgba(0, 0, 0, 0.25);
   backdrop-filter: blur(10px);
-}
-.panel-header.tile-mode {
-  background: var(--tile-header-bg);
-  backdrop-filter: none;
+  font-size: 28px;
+  font-weight: 600;
 }
 
 
@@ -1196,7 +1182,7 @@ opacity: 1; /* inaktiver Zustand */
   
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 4 <span id="appVersion"></span>
+  Tano – Version 2 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -5477,19 +5463,16 @@ function resetAppsPanelHeader() {
 function applyHeaderStyle(header, tile, panelName) {
   const mode = loadHeaderStyle(panelName);
 
+  header.style.setProperty("--tile-hover-color", tile.color);
+
   if (mode === "tile") {
     header.classList.add("tile-mode");
     header.classList.remove("nexus-mode");
-
-    header.style.setProperty("--tile-header-bg", tile.color || "#444");
   } else {
     header.classList.add("nexus-mode");
     header.classList.remove("tile-mode");
-
-    header.style.removeProperty("--tile-header-bg");
   }
 }
-
 
 
   
