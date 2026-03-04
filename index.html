@@ -1205,7 +1205,7 @@ opacity: 1; /* inaktiver Zustand */
   
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 6 <span id="appVersion"></span>
+  Tano – Version 7 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -1923,11 +1923,7 @@ font-size: 12px !important;
   height: 64px;
   min-height: 64px; /* doppelte Sicherheit */
  /* overflow: hidden;*/
-  overflow: visible;
 
-  /* Der dunkle Balken, der vorher da war */
-  background: rgba(0,0,0,0.45);
-  backdrop-filter: blur(22px);
 }
 
 const tileAlpha = "D9"; // 85% Deckkraft
@@ -2231,12 +2227,7 @@ nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
 /* -----------------------------------------------------------
    BASIS HEADER
 ----------------------------------------------------------- */
-.panel-header {
-  position: relative;
-  overflow: visible;
-  background: rgba(0,0,0,0.45);
-  backdrop-filter: blur(22px);
-}
+
 #appsPanelHeader.panel-header {
   height: 64px;
   min-height: 64px;
