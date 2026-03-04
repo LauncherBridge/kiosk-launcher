@@ -1201,7 +1201,7 @@ opacity: 1; /* inaktiver Zustand */
   
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 4 <span id="appVersion"></span>
+  Tano – Version 5 <span id="appVersion"></span>
 </div>
 
   <div class="header">
@@ -5482,7 +5482,11 @@ function resetAppsPanelHeader() {
 function applyHeaderStyle(header, tile, panelName) {
   const mode = loadHeaderStyle(panelName);
 
+  // Farbe für Glow
   header.style.setProperty("--tile-hover-color", tile.color);
+
+  // Farbe für Header-Hintergrund (entscheidend!)
+  header.style.setProperty("--tile-header-bg", tile.color);
 
   if (mode === "tile") {
     header.classList.add("tile-mode");
