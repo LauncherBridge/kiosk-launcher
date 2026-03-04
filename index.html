@@ -884,19 +884,25 @@ opacity: 1; /* inaktiver Zustand */
 }
 
 .panel-header.tile-mode {
-  background: color-mix(in srgb, var(--tile-header-bg) 75%, rgba(0,0,0,0.35));
+  /* Grundmaterial – wie die Kachel */
+  background: color-mix(in srgb, var(--tile-header-bg) 80%, rgba(0,0,0,0.35));
   backdrop-filter: blur(10px);
 
+  /* Rundung oben – wie eine horizontale Kachel */
   border-radius: 20px 20px 0 0;
 
+  /* Tiefe – wie die Kachel */
   box-shadow:
-    0 8px 20px rgba(0,0,0,0.5),
-    0 0 22px var(--tile-hover-color),
-    inset 0 1px 0 rgba(255,255,255,0.25),
-    inset 0 -2px 6px rgba(0,0,0,0.35);
+    0 8px 20px rgba(0,0,0,0.5), /* gleiche Tiefe wie .tile */
+    0 0 22px var(--tile-hover-color), /* Glow */
+    0 0 12px color-mix(in srgb, var(--tile-hover-color) 70%, transparent),
+    inset 0 1px 0 rgba(255,255,255,0.25), /* Lichtkante oben */
+    inset 0 -2px 6px rgba(0,0,0,0.35); /* Materialtiefe unten */
 
+  /* Abgrenzung zum Panel-Content */
   border-bottom: 2px solid rgba(255,255,255,0.15);
 
+  /* Animation */
   transition: background 0.25s ease, box-shadow 0.25s ease;
 }
 
@@ -1217,7 +1223,7 @@ opacity: 1; /* inaktiver Zustand */
   
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 2 <span id="appVersion"></span>
+  Tano – Version 3 <span id="appVersion"></span>
 </div>
 
   <div class="header">
