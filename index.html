@@ -873,18 +873,21 @@ opacity: 1; /* inaktiver Zustand */
   height: 80px;
   box-sizing: border-box;
 
-  background: none;
-  backdrop-filter: none;
+  background: none;        /* ← WICHTIG */
+  backdrop-filter: none;   /* ← WICHTIG */
 }
+
 .panel-header.nexus-mode {
   background: rgba(0, 0, 0, 0.25);
   backdrop-filter: blur(10px);
 }
+
 .panel-header.tile-mode {
   background: var(--tile-header-bg);
   backdrop-filter: none;
   box-shadow: 0 0 14px var(--tile-hover-color);
 }
+
 
 
 
@@ -1195,7 +1198,7 @@ opacity: 1; /* inaktiver Zustand */
   
   
 <div id="cacheStatus" class="cache-status">
-  Tano – Version 2 <span id="appVersion"></span>
+  Tano – Version 3 <span id="appVersion"></span>
 </div>
 
   <div class="header">
