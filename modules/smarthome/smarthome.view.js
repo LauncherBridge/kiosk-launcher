@@ -31,9 +31,63 @@ window.SmartHomeView = {
         const ctx = this.ctx;
         if (!ctx) return;
 
-        ctx.fillStyle = "#FFFFFF22";
-        ctx.font = "20px sans-serif";
-        ctx.fillText("Rendering Engine aktiv (Schritt 2)", 20, 40);
+        // Hintergrund leicht abdunkeln (optional)
+        ctx.fillStyle = "#00000033";
+        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // Dummy-Räume (Polygone)
+        const rooms = [
+            {
+                name: "Wohnzimmer",
+                color: "#3A3A3A",
+                points: [
+                    { x: 100, y: 100 },
+                    { x: 400, y: 100 },
+                    { x: 400, y: 300 },
+                    { x: 100, y: 300 }
+                ]
+            },
+            {
+                name: "Küche",
+                color: "#4A4A4A",
+                points: [
+                    { x: 420, y: 100 },
+                    { x: 650, y: 100 },
+                    { x: 650, y: 250 },
+                    { x: 420, y: 250 }
+                ]
+            },
+            {
+                name: "Flur",
+                color: "#2F2F2F",
+                points: [
+                    { x: 100, y: 320 },
+                    { x: 650, y: 320 },
+                    { x: 650, y: 420 },
+                    { x: 100, y: 420 }
+                ]
+            }
+        ];
+
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        rooms.forEach(room => {
+            ctx.fillStyle = room.color;
+            ctx.beginPath();
+            ctx.moveTo(room.points[0].x, room.points[0].y);
+
+            for (let i = 1; i < room.points.length; i++) {
+                ctx.lineTo(room.points[i].x, room.points[i].y);
+            }
+
+            ctx.closePath();
+            ctx.fill();
+
+            // Raum-Label
+            ctx.fillStyle = "#FFFFFF";
+            ctx.font = "18px sans-serif";
+            ctx.fillText(room.name, room.points[0].x + 10, room.points[0].y + 25);
+        });
     }
 };
 
