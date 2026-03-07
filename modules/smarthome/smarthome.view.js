@@ -94,17 +94,14 @@ window.SmartHomeView = {
             x = (x - this.offsetX) / this.scale;
             y = (y - this.offsetY) / this.scale;
 
-            // Geräte-Klick
-            for (const device of SmartHomeData.devices) {
-                const room = SmartHomeData.getRoom(device.room);
-                if (!room) continue;
-
-                const dx = device.position.x;
-                const dy = device.position.y;
+            // Container-Klick
+            for (const container of SmartHomeData.containers) {
+                const dx = container.position.x;
+                const dy = container.position.y;
 
                 const dist = Math.hypot(x - dx, y - dy);
                 if (dist < 20) {
-                    console.log("Gerät geklickt:", device);
+                    console.log("Container geklickt:", container);
                     return;
                 }
             }
@@ -254,16 +251,16 @@ window.SmartHomeView = {
                 ctx.fill();
             });
 
-            // Geräte rendern
-            SmartHomeData.devices.forEach(device => {
-                if (device.room !== room.id) return;
+            // Container rendern
+            SmartHomeData.containers.forEach(container => {
+                if (container.room !== room.id) return;
 
-                const dtype = SmartHomeData.deviceTypes[device.type];
-                const icon = dtype?.icon || device.icon;
-                const color = dtype?.color || "#FFFFFF";
+                const ctype = SmartHomeData.deviceTypes[container.type];
+                const icon = ctype?.icon || "device_unknown";
+                const color = ctype?.color || "#FFFFFF";
 
-                const dx = device.position.x;
-                const dy = device.position.y;
+                const dx = container.position.x;
+                const dy = container.position.y;
 
                 ctx.fillStyle = color;
                 ctx.font = "26px MaterialIcons";
@@ -345,19 +342,19 @@ window.SmartHomeView = {
                 ctx.fillRect(mx - 2, my - 2, 4, 4);
             });
 
-            // Geräte rendern (Mini‑Map)
-            SmartHomeData.devices.forEach(device => {
-                if (device.room !== r.id) return;
+            // Container rendern (Mini‑Map)
+            SmartHomeData.containers.forEach(container => {
+                if (container.room !== r.id) return;
 
-                const dtype = SmartHomeData.deviceTypes[device.type];
-                const icon = dtype?.icon || device.icon;
-                const color = dtype?.color || "#FFFFFF";
+                const ctype = SmartHomeData.deviceTypes[container.type];
+                const icon = ctype?.icon || "device_unknown";
+                const color = ctype?.color || "#FFFFFF";
 
                 const scaleX = r.w / (r.polygon[1].x - r.polygon[0].x);
                 const scaleY = r.h / (r.polygon[2].y - r.polygon[1].y);
 
-                const mx = r.x + (device.position.x - r.polygon[0].x) * scaleX;
-                const my = r.y + (device.position.y - r.polygon[0].y) * scaleY;
+                const mx = r.x + (container.position.x - r.polygon[0].x) * scaleX;
+                const my = r.y + (container.position.y - r.polygon[0].y) * scaleY;
 
                 ctx.fillStyle = color;
                 ctx.font = "12px MaterialIcons";
