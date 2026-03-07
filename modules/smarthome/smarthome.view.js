@@ -94,6 +94,22 @@ window.SmartHomeView = {
             x = (x - this.offsetX) / this.scale;
             y = (y - this.offsetY) / this.scale;
 
+            // Geräte-Klick
+            for (const device of SmartHomeData.devices) {
+                const room = SmartHomeData.getRoom(device.room);
+                if (!room) continue;
+
+                const dx = device.position.x;
+                const dy = device.position.y;
+
+                const dist = Math.hypot(x - dx, y - dy);
+                if (dist < 20) {
+                    console.log("Gerät geklickt:", device);
+                    return;
+                }
+            }
+
+            // Raum-Klick
             for (const room of SmartHomeData.rooms) {
                 if (this._pointInPolygon({ x, y }, room.polygon)) {
                     this._goToRoom(room.id);
@@ -237,6 +253,29 @@ window.SmartHomeView = {
                 ctx.arc(d.x, d.y, 6, 0, Math.PI * 2);
                 ctx.fill();
             });
+
+            // Geräte rendern
+            SmartHomeData.devices.forEach(device => {
+                if (device.room !== room.id) return;
+
+                const dtype = SmartHomeData.deviceTypes[device.type];
+                const icon = dtype?.icon || device.icon;
+                const color = dtype?.color || "#FFFFFF";
+
+                const dx = device.position.x;
+                const dy = device.position.y;
+
+                ctx.fillStyle = color;
+                ctx.font = "26px MaterialIcons";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(icon, dx, dy);
+
+                ctx.fillStyle = "#FFFFFF";
+                ctx.beginPath();
+                ctx.arc(dx, dy + 18, 3, 0, Math.PI * 2);
+                ctx.fill();
+            });
         });
 
         ctx.restore();
@@ -304,6 +343,27 @@ window.SmartHomeView = {
 
                 ctx.fillStyle = "#FFD28A";
                 ctx.fillRect(mx - 2, my - 2, 4, 4);
+            });
+
+            // Geräte rendern (Mini‑Map)
+            SmartHomeData.devices.forEach(device => {
+                if (device.room !== r.id) return;
+
+                const dtype = SmartHomeData.deviceTypes[device.type];
+                const icon = dtype?.icon || device.icon;
+                const color = dtype?.color || "#FFFFFF";
+
+                const scaleX = r.w / (r.polygon[1].x - r.polygon[0].x);
+                const scaleY = r.h / (r.polygon[2].y - r.polygon[1].y);
+
+                const mx = r.x + (device.position.x - r.polygon[0].x) * scaleX;
+                const my = r.y + (device.position.y - r.polygon[0].y) * scaleY;
+
+                ctx.fillStyle = color;
+                ctx.font = "12px MaterialIcons";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(icon, mx, my);
             });
         });
 
