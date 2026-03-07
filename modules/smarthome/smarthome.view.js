@@ -12,6 +12,15 @@ window.SmartHomeView = {
     rooms: [],
     minimapRooms: [],
 
+    // Zoom & Pan State
+    scale: 1,
+    offsetX: 0,
+    offsetY: 0,
+
+    isPanning: false,
+    panStartX: 0,
+    panStartY: 0,
+
     init() {
         // Main canvas + overlay
         this.canvas = document.getElementById("smarthome-canvas");
@@ -55,11 +64,17 @@ window.SmartHomeView = {
     },
 
     _bindEvents() {
+        // -------------------------
         // Klick auf Haupt‑Canvas
+        // -------------------------
         this.canvas.addEventListener("click", (ev) => {
             const rect = this.canvas.getBoundingClientRect();
-            const x = ev.clientX - rect.left;
-            const y = ev.clientY - rect.top;
+            let x = ev.clientX - rect.left;
+            let y = ev.clientY - rect.top;
+
+            // Transformation rückgängig machen
+            x = (x - this.offsetX) / this.scale;
+            y = (y - this.offsetY) / this.scale;
 
             for (const room of this.rooms) {
                 if (this._pointInPolygon({ x, y }, room.points)) {
@@ -71,7 +86,9 @@ window.SmartHomeView = {
             }
         });
 
+        // -------------------------
         // Klick auf Mini‑Map
+        // -------------------------
         this.minimapCanvas.addEventListener("click", (ev) => {
             const rect = this.minimapCanvas.getBoundingClientRect();
             const x = ev.clientX - rect.left;
@@ -86,11 +103,71 @@ window.SmartHomeView = {
                 }
             }
         });
+
+        // -------------------------
+        // Zoom (Mausrad)
+        // -------------------------
+        this.canvas.addEventListener("wheel", (ev) => {
+            ev.preventDefault();
+
+            const zoomIntensity = 0.1;
+            const oldScale = this.scale;
+
+            if (ev.deltaY < 0) {
+                this.scale *= (1 + zoomIntensity);
+            } else {
+                this.scale *= (1 - zoomIntensity);
+            }
+
+            // Begrenzen
+            this.scale = Math.max(0.3, Math.min(3, this.scale));
+
+            // Zoom auf Cursor zentrieren
+            const rect = this.canvas.getBoundingClientRect();
+            const mx = ev.clientX - rect.left;
+            const my = ev.clientY - rect.top;
+
+            this.offsetX = mx - (mx - this.offsetX) * (this.scale / oldScale);
+            this.offsetY = my - (my - this.offsetY) * (this.scale / oldScale);
+
+            this._drawPlaceholder();
+            this._drawMiniMap();
+        }, { passive: false });
+
+        // -------------------------
+        // Pan (ziehen)
+        // -------------------------
+        this.canvas.addEventListener("mousedown", (ev) => {
+            this.isPanning = true;
+            this.panStartX = ev.clientX - this.offsetX;
+            this.panStartY = ev.clientY - this.offsetY;
+        });
+
+        window.addEventListener("mousemove", (ev) => {
+            if (!this.isPanning) return;
+
+            this.offsetX = ev.clientX - this.panStartX;
+            this.offsetY = ev.clientY - this.panStartY;
+
+            this._drawPlaceholder();
+            this._drawMiniMap();
+        });
+
+        window.addEventListener("mouseup", () => {
+            this.isPanning = false;
+        });
     },
 
     _drawPlaceholder() {
         const ctx = this.ctx;
         if (!ctx) return;
+
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // Transformation aktivieren
+        ctx.save();
+        ctx.translate(this.offsetX, this.offsetY);
+        ctx.scale(this.scale, this.scale);
 
         // Hintergrund leicht abdunkeln
         ctx.fillStyle = "#00000033";
@@ -133,8 +210,6 @@ window.SmartHomeView = {
             }
         ];
 
-        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
         this.rooms.forEach(room => {
             // Highlight oder normal
             ctx.fillStyle = (this.activeRoom === room.id)
@@ -157,6 +232,8 @@ window.SmartHomeView = {
             ctx.textBaseline = "top";
             ctx.fillText(room.name, room.points[0].x + 12, room.points[0].y + 12);
         });
+
+        ctx.restore();
     },
 
     _drawMiniMap() {
