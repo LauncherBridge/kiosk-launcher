@@ -14,12 +14,21 @@ window.SmartHomeView = {
 
     // Zoom & Pan State
     scale: 1,
+    targetScale: 1,
     offsetX: 0,
     offsetY: 0,
+    targetOffsetX: 0,
+    targetOffsetY: 0,
 
     isPanning: false,
     panStartX: 0,
     panStartY: 0,
+
+    // Highlight animation
+    highlightAlpha: 0,
+    targetHighlightAlpha: 0,
+
+    animationFrame: null,
 
     init() {
         // Main canvas + overlay
@@ -46,9 +55,8 @@ window.SmartHomeView = {
         // Events aktivieren
         this._bindEvents();
 
-        // Draw initial content
-        this._drawPlaceholder();
-        this._drawMiniMap();
+        // Start animation loop
+        this._startRenderLoop();
     },
 
     _resize() {
@@ -61,6 +69,28 @@ window.SmartHomeView = {
             this.minimapCanvas.width = this.minimapCanvas.offsetWidth;
             this.minimapCanvas.height = this.minimapCanvas.offsetHeight;
         }
+    },
+
+    _startRenderLoop() {
+        const loop = () => {
+            this._animate();
+            this._drawPlaceholder();
+            this._drawMiniMap();
+            this.animationFrame = requestAnimationFrame(loop);
+        };
+        loop();
+    },
+
+    _animate() {
+        // Smooth zoom
+        this.scale += (this.targetScale - this.scale) * 0.15;
+
+        // Smooth pan
+        this.offsetX += (this.targetOffsetX - this.offsetX) * 0.15;
+        this.offsetY += (this.targetOffsetY - this.offsetY) * 0.15;
+
+        // Smooth highlight
+        this.highlightAlpha += (this.targetHighlightAlpha - this.highlightAlpha) * 0.15;
     },
 
     _bindEvents() {
@@ -79,11 +109,13 @@ window.SmartHomeView = {
             for (const room of this.rooms) {
                 if (this._pointInPolygon({ x, y }, room.points)) {
                     this.activeRoom = room.id;
-                    this._drawPlaceholder();
-                    this._drawMiniMap();
-                    break;
+                    this.targetHighlightAlpha = 1;
+                    return;
                 }
             }
+
+            this.activeRoom = null;
+            this.targetHighlightAlpha = 0;
         });
 
         // -------------------------
@@ -97,11 +129,13 @@ window.SmartHomeView = {
             for (const r of this.minimapRooms) {
                 if (x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h) {
                     this.activeRoom = r.id;
-                    this._drawPlaceholder();
-                    this._drawMiniMap();
-                    break;
+                    this.targetHighlightAlpha = 1;
+                    return;
                 }
             }
+
+            this.activeRoom = null;
+            this.targetHighlightAlpha = 0;
         });
 
         // -------------------------
@@ -111,27 +145,24 @@ window.SmartHomeView = {
             ev.preventDefault();
 
             const zoomIntensity = 0.1;
-            const oldScale = this.scale;
+            const oldScale = this.targetScale;
 
             if (ev.deltaY < 0) {
-                this.scale *= (1 + zoomIntensity);
+                this.targetScale *= (1 + zoomIntensity);
             } else {
-                this.scale *= (1 - zoomIntensity);
+                this.targetScale *= (1 - zoomIntensity);
             }
 
             // Begrenzen
-            this.scale = Math.max(0.3, Math.min(3, this.scale));
+            this.targetScale = Math.max(0.3, Math.min(3, this.targetScale));
 
             // Zoom auf Cursor zentrieren
             const rect = this.canvas.getBoundingClientRect();
             const mx = ev.clientX - rect.left;
             const my = ev.clientY - rect.top;
 
-            this.offsetX = mx - (mx - this.offsetX) * (this.scale / oldScale);
-            this.offsetY = my - (my - this.offsetY) * (this.scale / oldScale);
-
-            this._drawPlaceholder();
-            this._drawMiniMap();
+            this.targetOffsetX = mx - (mx - this.targetOffsetX) * (this.targetScale / oldScale);
+            this.targetOffsetY = my - (my - this.targetOffsetY) * (this.targetScale / oldScale);
         }, { passive: false });
 
         // -------------------------
@@ -139,18 +170,15 @@ window.SmartHomeView = {
         // -------------------------
         this.canvas.addEventListener("mousedown", (ev) => {
             this.isPanning = true;
-            this.panStartX = ev.clientX - this.offsetX;
-            this.panStartY = ev.clientY - this.offsetY;
+            this.panStartX = ev.clientX - this.targetOffsetX;
+            this.panStartY = ev.clientY - this.targetOffsetY;
         });
 
         window.addEventListener("mousemove", (ev) => {
             if (!this.isPanning) return;
 
-            this.offsetX = ev.clientX - this.panStartX;
-            this.offsetY = ev.clientY - this.panStartY;
-
-            this._drawPlaceholder();
-            this._drawMiniMap();
+            this.targetOffsetX = ev.clientX - this.panStartX;
+            this.targetOffsetY = ev.clientY - this.panStartY;
         });
 
         window.addEventListener("mouseup", () => {
@@ -168,10 +196,6 @@ window.SmartHomeView = {
         ctx.save();
         ctx.translate(this.offsetX, this.offsetY);
         ctx.scale(this.scale, this.scale);
-
-        // Hintergrund leicht abdunkeln
-        ctx.fillStyle = "#00000033";
-        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
         // Dummy-Räume (Polygone)
         this.rooms = [
@@ -212,9 +236,11 @@ window.SmartHomeView = {
 
         this.rooms.forEach(room => {
             // Highlight oder normal
-            ctx.fillStyle = (this.activeRoom === room.id)
-                ? "#FFB86C55"
-                : room.color;
+            if (this.activeRoom === room.id) {
+                ctx.fillStyle = `rgba(255, 184, 108, ${0.3 + this.highlightAlpha * 0.4})`;
+            } else {
+                ctx.fillStyle = room.color;
+            }
 
             ctx.beginPath();
             ctx.moveTo(room.points[0].x, room.points[0].y);
@@ -254,7 +280,7 @@ window.SmartHomeView = {
 
         this.minimapRooms.forEach(r => {
             ctx.fillStyle = (this.activeRoom === r.id)
-                ? "#FFB86C55"
+                ? `rgba(255, 184, 108, ${0.3 + this.highlightAlpha * 0.4})`
                 : r.color;
 
             ctx.fillRect(r.x, r.y, r.w, r.h);
