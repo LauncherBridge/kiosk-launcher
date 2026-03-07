@@ -34,7 +34,7 @@ window.SmartHomeData = {
         }
     },
 
-    // SmartDeviceContainer (Schritt 3.5)
+    // SmartDeviceContainer (Schritt 3.5 + 4.2.1 Statusmodell)
     containers: [
         {
             id: "wz_lampe_1",
@@ -42,6 +42,20 @@ window.SmartHomeData = {
             type: "light",
             room: "wohnzimmer",
             position: { x: 180, y: 220 },
+
+            // 4.2.1 Statusmodell
+            state: {
+                on: false,
+                brightness: 100,
+                color: null,
+                sensor: {
+                    temperature: null,
+                    humidity: null,
+                    motion: null
+                },
+                reachable: true,
+                lastUpdate: null
+            },
 
             devices: [
                 {
@@ -67,6 +81,20 @@ window.SmartHomeData = {
             room: "kueche",
             position: { x: 520, y: 160 },
 
+            // 4.2.1 Statusmodell
+            state: {
+                on: false,
+                brightness: 100,
+                color: null,
+                sensor: {
+                    temperature: null,
+                    humidity: null,
+                    motion: null
+                },
+                reachable: true,
+                lastUpdate: null
+            },
+
             devices: [
                 {
                     id: "shellyplus1pm-KUECHE",
@@ -90,6 +118,20 @@ window.SmartHomeData = {
             type: "sensor",
             room: "flur",
             position: { x: 350, y: 360 },
+
+            // 4.2.1 Statusmodell
+            state: {
+                on: false,
+                brightness: 100,
+                color: null,
+                sensor: {
+                    temperature: null,
+                    humidity: null,
+                    motion: null
+                },
+                reachable: true,
+                lastUpdate: null
+            },
 
             devices: [
                 {
@@ -209,5 +251,9 @@ window.SmartHomeData = {
 
     getRoom(roomId) {
         return this.rooms.find(r => r.id === roomId) || null;
+    },
+
+    getContainer(containerId) {
+        return this.containers.find(c => c.id === containerId) || null;
     }
 };
