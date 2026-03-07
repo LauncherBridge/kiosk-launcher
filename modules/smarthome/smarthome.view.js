@@ -60,11 +60,9 @@ window.SmartHomeView = {
     },
 
     _resize() {
-        // Main canvas
         this.canvas.width = this.canvas.offsetWidth;
         this.canvas.height = this.canvas.offsetHeight;
 
-        // Mini‑Map canvas
         if (this.minimapCanvas) {
             this.minimapCanvas.width = this.minimapCanvas.offsetWidth;
             this.minimapCanvas.height = this.minimapCanvas.offsetHeight;
@@ -74,7 +72,7 @@ window.SmartHomeView = {
     _startRenderLoop() {
         const loop = () => {
             this._animate();
-            this._drawPlaceholder();
+            this._drawMainView();
             this._drawMiniMap();
             this.animationFrame = requestAnimationFrame(loop);
         };
@@ -82,14 +80,9 @@ window.SmartHomeView = {
     },
 
     _animate() {
-        // Smooth zoom
         this.scale += (this.targetScale - this.scale) * 0.15;
-
-        // Smooth pan
         this.offsetX += (this.targetOffsetX - this.offsetX) * 0.15;
         this.offsetY += (this.targetOffsetY - this.offsetY) * 0.15;
-
-        // Smooth highlight
         this.highlightAlpha += (this.targetHighlightAlpha - this.highlightAlpha) * 0.15;
     },
 
@@ -106,8 +99,8 @@ window.SmartHomeView = {
             x = (x - this.offsetX) / this.scale;
             y = (y - this.offsetY) / this.scale;
 
-            for (const room of this.rooms) {
-                if (this._pointInPolygon({ x, y }, room.points)) {
+            for (const room of SmartHomeData.rooms) {
+                if (this._pointInPolygon({ x, y }, room.polygon)) {
                     this.activeRoom = room.id;
                     this.targetHighlightAlpha = 1;
                     return;
@@ -153,10 +146,8 @@ window.SmartHomeView = {
                 this.targetScale *= (1 - zoomIntensity);
             }
 
-            // Begrenzen
             this.targetScale = Math.max(0.3, Math.min(3, this.targetScale));
 
-            // Zoom auf Cursor zentrieren
             const rect = this.canvas.getBoundingClientRect();
             const mx = ev.clientX - rect.left;
             const my = ev.clientY - rect.top;
@@ -186,56 +177,19 @@ window.SmartHomeView = {
         });
     },
 
-    _drawPlaceholder() {
+    _drawMainView() {
         const ctx = this.ctx;
         if (!ctx) return;
 
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // Transformation aktivieren
         ctx.save();
         ctx.translate(this.offsetX, this.offsetY);
         ctx.scale(this.scale, this.scale);
 
-        // Dummy-Räume (Polygone)
-        this.rooms = [
-            {
-                id: "wohnzimmer",
-                name: "Wohnzimmer",
-                color: "#3A3A3A",
-                points: [
-                    { x: 100, y: 100 },
-                    { x: 400, y: 100 },
-                    { x: 400, y: 300 },
-                    { x: 100, y: 300 }
-                ]
-            },
-            {
-                id: "kueche",
-                name: "Küche",
-                color: "#4A4A4A",
-                points: [
-                    { x: 420, y: 100 },
-                    { x: 650, y: 100 },
-                    { x: 650, y: 250 },
-                    { x: 420, y: 250 }
-                ]
-            },
-            {
-                id: "flur",
-                name: "Flur",
-                color: "#2F2F2F",
-                points: [
-                    { x: 100, y: 320 },
-                    { x: 650, y: 320 },
-                    { x: 650, y: 420 },
-                    { x: 100, y: 420 }
-                ]
-            }
-        ];
+        this.rooms = SmartHomeData.rooms;
 
         this.rooms.forEach(room => {
-            // Highlight oder normal
             if (this.activeRoom === room.id) {
                 ctx.fillStyle = `rgba(255, 184, 108, ${0.3 + this.highlightAlpha * 0.4})`;
             } else {
@@ -243,20 +197,19 @@ window.SmartHomeView = {
             }
 
             ctx.beginPath();
-            ctx.moveTo(room.points[0].x, room.points[0].y);
+            ctx.moveTo(room.polygon[0].x, room.polygon[0].y);
 
-            for (let i = 1; i < room.points.length; i++) {
-                ctx.lineTo(room.points[i].x, room.points[i].y);
+            for (let i = 1; i < room.polygon.length; i++) {
+                ctx.lineTo(room.polygon[i].x, room.polygon[i].y);
             }
 
             ctx.closePath();
             ctx.fill();
 
-            // Raum-Label
             ctx.fillStyle = "var(--sh-text)";
             ctx.font = "20px sans-serif";
             ctx.textBaseline = "top";
-            ctx.fillText(room.name, room.points[0].x + 12, room.points[0].y + 12);
+            ctx.fillText(room.name, room.polygon[0].x + 12, room.polygon[0].y + 12);
         });
 
         ctx.restore();
@@ -271,12 +224,15 @@ window.SmartHomeView = {
 
         ctx.clearRect(0, 0, w, h);
 
-        // Dummy-Räume für Mini-Map
-        this.minimapRooms = [
-            { id: "wohnzimmer", x: 10, y: 10, w: 60, h: 60, color: "#3A3A3A", label: "WZ" },
-            { id: "kueche",     x: 75, y: 10, w: 50, h: 40, color: "#4A4A4A", label: "K"  },
-            { id: "flur",       x: 10, y: 75, w: 115, h: 30, color: "#2F2F2F", label: "F"  }
-        ];
+        this.minimapRooms = SmartHomeData.rooms.map(r => ({
+            id: r.id,
+            x: r.minimap.x,
+            y: r.minimap.y,
+            w: r.minimap.w,
+            h: r.minimap.h,
+            label: r.minimap.label,
+            color: r.color
+        }));
 
         this.minimapRooms.forEach(r => {
             ctx.fillStyle = (this.activeRoom === r.id)
@@ -291,7 +247,6 @@ window.SmartHomeView = {
             ctx.fillText(r.label, r.x + 5, r.y + 5);
         });
 
-        // Rahmen
         ctx.strokeStyle = "#FFFFFF55";
         ctx.lineWidth = 2;
         ctx.strokeRect(0, 0, w, h);
