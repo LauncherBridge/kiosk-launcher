@@ -52,6 +52,12 @@ window.SmartHomeView = {
 
         this._bindEvents();
         this._startRenderLoop();
+
+        // Popup Close Button
+        const closeBtn = document.getElementById("sh-popup-close");
+        if (closeBtn) {
+            closeBtn.addEventListener("click", () => this.closePopup());
+        }
     },
 
     _resize() {
@@ -101,7 +107,7 @@ window.SmartHomeView = {
 
                 const dist = Math.hypot(x - dx, y - dy);
                 if (dist < 20) {
-                    console.log("Container geklickt:", container);
+                    SmartHomeView.openContainerPopup(container);
                     return;
                 }
             }
@@ -381,32 +387,35 @@ window.SmartHomeView = {
             if (intersect) inside = !inside;
         }
         return inside;
-    }
+    },
+
+    // ---------------------------------------------------------
+    // 4.1 – Popup‑System
+    // ---------------------------------------------------------
 
     openContainerPopup(container) {
-    const popup = document.getElementById("smarthome-popup");
-    const title = document.getElementById("sh-popup-title");
-    const icon = document.getElementById("sh-popup-icon");
-    const body = document.getElementById("sh-popup-body");
+        const popup = document.getElementById("smarthome-popup");
+        const title = document.getElementById("sh-popup-title");
+        const icon = document.getElementById("sh-popup-icon");
+        const body = document.getElementById("sh-popup-body");
 
-    const type = SmartHomeData.deviceTypes[container.type];
+        const type = SmartHomeData.deviceTypes[container.type];
 
-    title.textContent = container.name;
-    icon.textContent = type?.icon || "device_unknown";
+        title.textContent = container.name;
+        icon.textContent = type?.icon || "device_unknown";
 
-    body.innerHTML = `
-        <div>
-            <strong>Typ:</strong> ${container.type}<br>
-            <strong>Raum:</strong> ${container.room}<br>
-            <strong>Gerät:</strong> ${container.devices?.[0]?.model || "Kein Gerät"}<br>
-        </div>
-    `;
+        body.innerHTML = `
+            <div>
+                <strong>Typ:</strong> ${container.type}<br>
+                <strong>Raum:</strong> ${container.room}<br>
+                <strong>Gerät:</strong> ${container.devices?.[0]?.model || "Kein Gerät"}<br>
+            </div>
+        `;
 
-    popup.classList.remove("hidden");
-},
+        popup.classList.remove("hidden");
+    },
 
-closePopup() {
-    document.getElementById("smarthome-popup").classList.add("hidden");
-}
-
+    closePopup() {
+        document.getElementById("smarthome-popup").classList.add("hidden");
+    }
 };
