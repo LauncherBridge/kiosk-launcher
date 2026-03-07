@@ -36,6 +36,7 @@ window.SmartHome = {
             .then(res => res.text())
             .then(html => {
                 container.innerHTML = html;
+                SmartHomeView.init();
             });
     },
 
