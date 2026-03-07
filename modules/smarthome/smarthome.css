@@ -80,3 +80,68 @@
     height: 100%;
 }
 
+.sh-popup {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 5000;
+}
+
+.sh-popup.hidden {
+    display: none;
+}
+
+.sh-popup-content {
+    width: 90%;
+    max-width: 600px;
+    background: #1e1e1e;
+    border-radius: 18px;
+    padding: 20px;
+    color: white;
+    box-shadow: 0 0 30px rgba(0,0,0,0.4);
+}
+
+.sh-popup-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.sh-popup-header .material-icons {
+    font-size: 36px;
+}
+
+.sh-popup-close {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 32px;
+    padding: 10px;
+}
+
+.sh-popup-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.sh-popup-tabs button {
+    flex: 1;
+    padding: 14px;
+    background: #333;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-size: 16px;
+}
+
+.sh-popup-body {
+    min-height: 150px;
+    font-size: 18px;
+}
+
