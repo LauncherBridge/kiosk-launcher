@@ -5,7 +5,11 @@ window.SmartHomeView = {
     ctx: null,
     overlay: null,
 
+    minimapCanvas: null,
+    minimapCtx: null,
+
     init() {
+        // Main canvas + overlay
         this.canvas = document.getElementById("smarthome-canvas");
         this.overlay = document.getElementById("smarthome-overlay");
 
@@ -16,22 +20,38 @@ window.SmartHomeView = {
 
         this.ctx = this.canvas.getContext("2d");
 
+        // Mini‑Map
+        this.minimapCanvas = document.getElementById("smarthome-minimap-canvas");
+        if (this.minimapCanvas) {
+            this.minimapCtx = this.minimapCanvas.getContext("2d");
+        }
+
+        // Initial sizing
         this._resize();
         window.addEventListener("resize", () => this._resize());
 
+        // Draw initial content
         this._drawPlaceholder();
+        this._drawMiniMap();
     },
 
     _resize() {
+        // Main canvas
         this.canvas.width = this.canvas.offsetWidth;
         this.canvas.height = this.canvas.offsetHeight;
+
+        // Mini‑Map canvas
+        if (this.minimapCanvas) {
+            this.minimapCanvas.width = this.minimapCanvas.offsetWidth;
+            this.minimapCanvas.height = this.minimapCanvas.offsetHeight;
+        }
     },
 
     _drawPlaceholder() {
         const ctx = this.ctx;
         if (!ctx) return;
 
-        // Hintergrund leicht abdunkeln (optional)
+        // Hintergrund leicht abdunkeln
         ctx.fillStyle = "#00000033";
         ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
@@ -88,6 +108,32 @@ window.SmartHomeView = {
             ctx.font = "18px sans-serif";
             ctx.fillText(room.name, room.points[0].x + 10, room.points[0].y + 25);
         });
+    },
+
+    _drawMiniMap() {
+        const ctx = this.minimapCtx;
+        if (!ctx) return;
+
+        const w = this.minimapCanvas.width;
+        const h = this.minimapCanvas.height;
+
+        ctx.clearRect(0, 0, w, h);
+
+        // Dummy-Räume für Mini-Map (vereinfachte Version)
+        const rooms = [
+            { x: 10, y: 10, w: 60, h: 60, color: "#3A3A3A" },   // Wohnzimmer
+            { x: 75, y: 10, w: 50, h: 40, color: "#4A4A4A" },   // Küche
+            { x: 10, y: 75, w: 115, h: 30, color: "#2F2F2F" }   // Flur
+        ];
+
+        rooms.forEach(r => {
+            ctx.fillStyle = r.color;
+            ctx.fillRect(r.x, r.y, r.w, r.h);
+        });
+
+        // Rahmen
+        ctx.strokeStyle = "#FFFFFF55";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(0, 0, w, h);
     }
 };
-
