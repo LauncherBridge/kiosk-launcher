@@ -1,1 +1,19 @@
+/* SmartHome Base Theme */
+
+#smartHomePanel {
+    background: var(--sh-bg);
+    color: var(--sh-text);
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    font-family: sans-serif;
+}
+
+#smarthome-root {
+    flex: 1;
+    background: var(--sh-surface);
+    padding: 20px;
+}
 
