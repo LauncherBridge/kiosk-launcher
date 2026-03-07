@@ -189,11 +189,14 @@ window.SmartHomeView = {
         this.rooms = SmartHomeData.rooms;
 
         this.rooms.forEach(room => {
+            const type = SmartHomeData.roomTypes[room.type];
+            const fillColor = type?.color || "#444";
+
             // Highlight
             if (this.activeRoom === room.id) {
                 ctx.fillStyle = `rgba(255, 184, 108, ${0.3 + this.highlightAlpha * 0.4})`;
             } else {
-                ctx.fillStyle = room.color;
+                ctx.fillStyle = fillColor;
             }
 
             // Raum zeichnen
@@ -212,6 +215,19 @@ window.SmartHomeView = {
             ctx.font = "20px sans-serif";
             ctx.textBaseline = "top";
             ctx.fillText(room.name, room.polygon[0].x + 12, room.polygon[0].y + 12);
+
+            // Icon (zentriert)
+            if (type?.icon) {
+                ctx.fillStyle = "var(--sh-text)";
+                ctx.font = "28px MaterialIcons";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+
+                const cx = (room.polygon[0].x + room.polygon[2].x) / 2;
+                const cy = (room.polygon[0].y + room.polygon[2].y) / 2;
+
+                ctx.fillText(type.icon, cx, cy);
+            }
 
             // Türen rendern
             room.doors?.forEach(door => {
@@ -242,22 +258,39 @@ window.SmartHomeView = {
             w: r.minimap.w,
             h: r.minimap.h,
             label: r.minimap.label,
-            color: r.color,
             polygon: r.polygon,
-            doors: r.doors
+            doors: r.doors,
+            type: r.type
         }));
 
         this.minimapRooms.forEach(r => {
+            const type = SmartHomeData.roomTypes[r.type];
+            const fillColor = type?.color || "#444";
+
             ctx.fillStyle = (this.activeRoom === r.id)
                 ? `rgba(255, 184, 108, ${0.3 + this.highlightAlpha * 0.4})`
-                : r.color;
+                : fillColor;
 
             ctx.fillRect(r.x, r.y, r.w, r.h);
 
+            // Label
             ctx.fillStyle = "#FFFFFF";
             ctx.font = "12px sans-serif";
             ctx.textBaseline = "top";
             ctx.fillText(r.label, r.x + 5, r.y + 5);
+
+            // Icon
+            if (type?.icon) {
+                ctx.fillStyle = "#FFFFFF";
+                ctx.font = "14px MaterialIcons";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+
+                const cx = r.x + r.w / 2;
+                const cy = r.y + r.h / 2;
+
+                ctx.fillText(type.icon, cx, cy);
+            }
 
             // Türen rendern (Mini‑Map)
             r.doors?.forEach(door => {
