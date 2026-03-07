@@ -18,11 +18,26 @@ window.SmartHomeData = {
         }
     },
 
+    // Gerätetypen (Schritt 3.4)
+    deviceTypes: {
+        light: {
+            icon: "lightbulb",
+            color: "#FFD28A"
+        },
+        sensor: {
+            icon: "sensors",
+            color: "#6CE0FF"
+        },
+        switch: {
+            icon: "toggle_on",
+            color: "#A0FF6C"
+        }
+    },
+
     rooms: [
         {
             id: "wohnzimmer",
             name: "Wohnzimmer",
-
             type: "living",
 
             polygon: [
@@ -55,7 +70,6 @@ window.SmartHomeData = {
         {
             id: "kueche",
             name: "Küche",
-
             type: "kitchen",
 
             polygon: [
@@ -84,7 +98,6 @@ window.SmartHomeData = {
         {
             id: "flur",
             name: "Flur",
-
             type: "hallway",
 
             polygon: [
@@ -108,6 +121,34 @@ window.SmartHomeData = {
                     position: { x: 250, y: 320 }
                 }
             ]
+        }
+    ],
+
+    // Geräte (Schritt 3.4)
+    devices: [
+        {
+            id: "lampe_wz",
+            name: "Stehlampe",
+            type: "light",
+            icon: "lightbulb",
+            room: "wohnzimmer",
+            position: { x: 180, y: 220 }
+        },
+        {
+            id: "kueche_licht",
+            name: "Deckenlicht",
+            type: "light",
+            icon: "lightbulb",
+            room: "kueche",
+            position: { x: 520, y: 160 }
+        },
+        {
+            id: "flur_sensor",
+            name: "Bewegungssensor",
+            type: "sensor",
+            icon: "sensors",
+            room: "flur",
+            position: { x: 350, y: 360 }
         }
     ],
 
