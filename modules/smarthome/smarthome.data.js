@@ -1,11 +1,29 @@
 // SmartHome Data Model
 
 window.SmartHomeData = {
+
+    // Raumtypen (Schritt 3.3)
+    roomTypes: {
+        living: {
+            icon: "sofa",
+            color: "#8F6BFF"
+        },
+        kitchen: {
+            icon: "restaurant",
+            color: "#FFB86C"
+        },
+        hallway: {
+            icon: "meeting_room",
+            color: "#5E5E5E"
+        }
+    },
+
     rooms: [
         {
             id: "wohnzimmer",
             name: "Wohnzimmer",
-            color: "#3A3A3A",
+
+            type: "living",
 
             polygon: [
                 { x: 100, y: 100 },
@@ -37,7 +55,8 @@ window.SmartHomeData = {
         {
             id: "kueche",
             name: "Küche",
-            color: "#4A4A4A",
+
+            type: "kitchen",
 
             polygon: [
                 { x: 420, y: 100 },
@@ -65,7 +84,8 @@ window.SmartHomeData = {
         {
             id: "flur",
             name: "Flur",
-            color: "#2F2F2F",
+
+            type: "hallway",
 
             polygon: [
                 { x: 100, y: 320 },
