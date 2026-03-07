@@ -51,7 +51,6 @@ window.SmartHomeView = {
         const ctx = this.ctx;
         if (!ctx) return;
 
-        // Hintergrund leicht abdunkeln
         ctx.fillStyle = "#00000033";
         ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
@@ -104,9 +103,11 @@ window.SmartHomeView = {
             ctx.fill();
 
             // Raum-Label
-            ctx.fillStyle = "#FFFFFF";
-            ctx.font = "18px sans-serif";
-            ctx.fillText(room.name, room.points[0].x + 10, room.points[0].y + 25);
+            ctx.fillStyle = "var(--sh-text)";
+            ctx.font = "20px sans-serif";
+            ctx.textBaseline = "top";
+            ctx.fillText(room.name, room.points[0].x + 12, room.points[0].y + 12);
+
         });
     },
 
