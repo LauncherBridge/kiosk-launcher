@@ -34,6 +34,82 @@ window.SmartHomeData = {
         }
     },
 
+    // SmartDeviceContainer (Schritt 3.5)
+    containers: [
+        {
+            id: "wz_lampe_1",
+            name: "Stehlampe Wohnzimmer",
+            type: "light",
+            room: "wohnzimmer",
+            position: { x: 180, y: 220 },
+
+            devices: [
+                {
+                    id: "shellyplus1pm-ABC123",
+                    vendor: "shelly",
+                    model: "Plus 1PM",
+                    installedAt: "2026-03-01",
+                    removedAt: null
+                }
+            ],
+
+            history: {
+                energy: [],
+                power: [],
+                events: []
+            }
+        },
+
+        {
+            id: "kueche_licht_1",
+            name: "Deckenlicht Küche",
+            type: "light",
+            room: "kueche",
+            position: { x: 520, y: 160 },
+
+            devices: [
+                {
+                    id: "shellyplus1pm-KUECHE",
+                    vendor: "shelly",
+                    model: "Plus 1PM",
+                    installedAt: "2026-03-01",
+                    removedAt: null
+                }
+            ],
+
+            history: {
+                energy: [],
+                power: [],
+                events: []
+            }
+        },
+
+        {
+            id: "flur_sensor_1",
+            name: "Bewegungssensor Flur",
+            type: "sensor",
+            room: "flur",
+            position: { x: 350, y: 360 },
+
+            devices: [
+                {
+                    id: "shelly-motion-XYZ",
+                    vendor: "shelly",
+                    model: "Motion 2",
+                    installedAt: "2026-03-01",
+                    removedAt: null
+                }
+            ],
+
+            history: {
+                energy: [],
+                power: [],
+                events: []
+            }
+        }
+    ],
+
+    // Räume (aus deiner aktuellen Datei)
     rooms: [
         {
             id: "wohnzimmer",
@@ -121,34 +197,6 @@ window.SmartHomeData = {
                     position: { x: 250, y: 320 }
                 }
             ]
-        }
-    ],
-
-    // Geräte (Schritt 3.4)
-    devices: [
-        {
-            id: "lampe_wz",
-            name: "Stehlampe",
-            type: "light",
-            icon: "lightbulb",
-            room: "wohnzimmer",
-            position: { x: 180, y: 220 }
-        },
-        {
-            id: "kueche_licht",
-            name: "Deckenlicht",
-            type: "light",
-            icon: "lightbulb",
-            room: "kueche",
-            position: { x: 520, y: 160 }
-        },
-        {
-            id: "flur_sensor",
-            name: "Bewegungssensor",
-            type: "sensor",
-            icon: "sensors",
-            room: "flur",
-            position: { x: 350, y: 360 }
         }
     ],
 
