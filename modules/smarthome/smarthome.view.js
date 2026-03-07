@@ -390,32 +390,81 @@ window.SmartHomeView = {
     },
 
     // ---------------------------------------------------------
-    // 4.1 – Popup‑System
+    // 4.1 + 4.2 – Popup‑System + Status‑System
     // ---------------------------------------------------------
 
     openContainerPopup(container) {
         const popup = document.getElementById("smarthome-popup");
         const title = document.getElementById("sh-popup-title");
         const icon = document.getElementById("sh-popup-icon");
-        const body = document.getElementById("sh-popup-body");
 
         const type = SmartHomeData.deviceTypes[container.type];
 
         title.textContent = container.name;
         icon.textContent = type?.icon || "device_unknown";
 
-        body.innerHTML = `
-            <div>
-                <strong>Typ:</strong> ${container.type}<br>
-                <strong>Raum:</strong> ${container.room}<br>
-                <strong>Gerät:</strong> ${container.devices?.[0]?.model || "Kein Gerät"}<br>
-            </div>
-        `;
+        // Tabs aktivieren
+        document.querySelectorAll(".sh-popup-tabs button").forEach(btn => {
+            btn.onclick = () => {
+                this._renderPopupTab(container, btn.dataset.tab);
+            };
+        });
+
+        // Standard-Tab
+        this._renderPopupTab(container, "status");
 
         popup.classList.remove("hidden");
     },
 
     closePopup() {
         document.getElementById("smarthome-popup").classList.add("hidden");
+    },
+
+    // 4.2 – Status‑Rendering
+    _renderPopupTab(container, tab) {
+        const body = document.getElementById("sh-popup-body");
+
+        if (tab === "status") {
+            const s = container.state;
+
+            body.innerHTML = `
+                <div class="sh-status-block">
+                    <div><strong>Status:</strong> ${s.reachable ? "Online" : "Offline"}</div>
+                    <div><strong>Power:</strong> ${s.on ? "An" : "Aus"}</div>
+                    <div><strong>Helligkeit:</strong> ${s.brightness}%</div>
+                </div>
+
+                <div class="sh-status-block">
+                    <div><strong>Temperatur:</strong> ${s.sensor.temperature ?? "-"} °C</div>
+                    <div><strong>Luftfeuchte:</strong> ${s.sensor.humidity ?? "-"} %</div>
+                    <div><strong>Bewegung:</strong> ${s.sensor.motion ? "Ja" : "Nein"}</div>
+                </div>
+            `;
+        }
+
+        if (tab === "actions") {
+            body.innerHTML = `<div>Aktionen kommen in 4.3</div>`;
+        }
+
+        if (tab === "history") {
+            body.innerHTML = `<div>Historie kommt in 4.4</div>`;
+        }
+
+        if (tab === "devices") {
+            body.innerHTML = `<div>Geräteverwaltung kommt in 5.x</div>`;
+        }
+    },
+
+    // Live‑Update für spätere Geräteintegration
+    updateContainerState(containerId, newState) {
+        const c = SmartHomeData.getContainer(containerId);
+        if (!c) return;
+
+        Object.assign(c.state, newState);
+
+        const popup = document.getElementById("smarthome-popup");
+        if (!popup.classList.contains("hidden")) {
+            this._renderPopupTab(c, "status");
+        }
     }
 };
