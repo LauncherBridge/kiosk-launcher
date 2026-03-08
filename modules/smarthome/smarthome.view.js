@@ -235,8 +235,24 @@ window.SmartHomeView = {
     // --- Gruppen-Header füllen ---
 
 // Titel setzen
-document.getElementById("sh-group-title").textContent =
-    eff.group.name || "Gruppe";
+// Dynamischer Gruppen-Titel
+let groupTitle = eff.group.name;
+if (!groupTitle) {
+    const roomNames = eff.group.roomIds
+        .map(rid => SmartHomeData.getRoom(rid)?.name)
+        .filter(Boolean);
+
+    if (roomNames.length === 1) {
+        groupTitle = roomNames[0];
+    } else if (roomNames.length === 2) {
+        groupTitle = `${roomNames[0]} + ${roomNames[1]}`;
+    } else {
+        groupTitle = `${roomNames[0]} + ${roomNames.length - 1} weitere`;
+    }
+}
+
+document.getElementById("sh-group-title").textContent = groupTitle;
+
 
 // Räume einfügen
 const roomsEl = document.getElementById("sh-group-rooms");
