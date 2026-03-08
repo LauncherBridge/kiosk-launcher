@@ -299,42 +299,67 @@ eff.group.roomIds.forEach(rid => {
     roomsEl.appendChild(div);
 });
 
-    // ⭐ HIER EINSETZEN ⭐
-    // ---------------------------------------------------------
-    // 4.3.F.10 – Automatischer Gruppen-Zoom
-    // ---------------------------------------------------------
-    
-    // Bounding Box der Gruppe berechnen
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    
-    eff.group.roomIds.forEach(rid => {
-        const room = SmartHomeData.getRoom(rid);
-        if (!room) return;
-    
+
+// ⭐⭐⭐ NEU: 4.3.F.11 – Leichter Zoom auf aktiven Raum ⭐⭐⭐
+if (this.activeRoom) {
+    const room = SmartHomeData.getRoom(this.activeRoom);
+    if (room) {
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
         room.polygon.forEach(p => {
             minX = Math.min(minX, p.x);
             minY = Math.min(minY, p.y);
             maxX = Math.max(maxX, p.x);
             maxY = Math.max(maxY, p.y);
         });
+
+        const centerX = (minX + maxX) / 2;
+        const centerY = (minY + maxY) / 2;
+
+        // Leichter Zoom
+        const zoomFactor = 1.15;
+        this.targetScale *= zoomFactor;
+
+        this.targetOffsetX = this.canvas.width / 2 - centerX * this.targetScale;
+        this.targetOffsetY = this.canvas.height / 2 - centerY * this.targetScale;
+    }
+}
+
+
+// ⭐⭐⭐ BESTEHEND: 4.3.F.10 – Automatischer Gruppen-Zoom ⭐⭐⭐
+
+// Bounding Box der Gruppe berechnen
+let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+eff.group.roomIds.forEach(rid => {
+    const room = SmartHomeData.getRoom(rid);
+    if (!room) return;
+
+    room.polygon.forEach(p => {
+        minX = Math.min(minX, p.x);
+        minY = Math.min(minY, p.y);
+        maxX = Math.max(maxX, p.x);
+        maxY = Math.max(maxY, p.y);
     });
-    
-    // Mittelpunkt der Gruppe
-    const centerX = (minX + maxX) / 2;
-    const centerY = (minY + maxY) / 2;
-    
-    // Ziel-Offset setzen (smooth durch _animate)
-    this.targetOffsetX = this.canvas.width / 2 - centerX * this.scale;
-    this.targetOffsetY = this.canvas.height / 2 - centerY * this.scale;
-    
-    // Zoom-Level bestimmen
-    const groupWidth = maxX - minX;
-    const groupHeight = maxY - minY;
-    
-    const scaleX = this.canvas.width / (groupWidth * 1.4);
-    const scaleY = this.canvas.height / (groupHeight * 1.4);
-    
-    this.targetScale = Math.min(scaleX, scaleY);
+});
+
+// Mittelpunkt der Gruppe
+const centerX = (minX + maxX) / 2;
+const centerY = (minY + maxY) / 2;
+
+// Ziel-Offset setzen
+this.targetOffsetX = this.canvas.width / 2 - centerX * this.scale;
+this.targetOffsetY = this.canvas.height / 2 - centerY * this.scale;
+
+// Zoom-Level bestimmen
+const groupWidth = maxX - minX;
+const groupHeight = maxY - minY;
+
+const scaleX = this.canvas.width / (groupWidth * 1.4);
+const scaleY = this.canvas.height / (groupHeight * 1.4);
+
+this.targetScale = Math.min(scaleX, scaleY);
+
     
 // ---------------------------------------------------------    
 }
