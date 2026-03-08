@@ -196,25 +196,33 @@ window.SmartHomeView = {
     // 4.3.D – Gruppenfähige Navigation
     // ---------------------------------------------------------
     _goToRoom(roomId) {
-        const eff = SmartHomeGroups.getEffectiveGroupForRoom(roomId);
+    const eff = SmartHomeGroups.getEffectiveGroupForRoom(roomId);
 
-        // Einzelraum
-        if (eff.type === "single") {
-            this.activeRoom = roomId;
-            this.activeGroup = null;
-            this.targetHighlightAlpha = 1;
-            return;
-        }
-
-        // Gruppe (manuell oder automatisch)
-        this.activeRoom = null;
-        this.activeGroup = {
-            type: eff.type,
-            id: eff.group.id,
-            roomIds: [...eff.group.roomIds]
-        };
+    // Einzelraum
+    if (eff.type === "single") {
+        this.activeRoom = roomId;
+        this.activeGroup = null;
         this.targetHighlightAlpha = 1;
-    },
+
+        // Gruppen-Header ausblenden
+        document.getElementById("sh-group-header").classList.add("hidden");
+
+        return;
+    }
+
+    // Gruppe (manuell oder automatisch)
+    this.activeRoom = null;
+    this.activeGroup = {
+        type: eff.type,
+        id: eff.group.id,
+        roomIds: [...eff.group.roomIds]
+    };
+    this.targetHighlightAlpha = 1;
+
+    // Gruppen-Header einblenden
+    document.getElementById("sh-group-header").classList.remove("hidden");
+}
+,
 
     // ---------------------------------------------------------
     // Haupt‑Rendering
