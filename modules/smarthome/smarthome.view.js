@@ -59,6 +59,17 @@ window.SmartHomeView = {
         if (closeBtn) {
             closeBtn.addEventListener("click", () => this.closePopup());
         }
+        // Gruppen-Zurück-Button
+        const backBtn = document.getElementById("sh-group-back");
+        if (backBtn) {
+            backBtn.addEventListener("click", () => {
+                if (this.activeGroup) {
+                    // zurück zum ersten Raum der Gruppe
+                    const firstRoom = this.activeGroup.roomIds[0];
+                    this._goToRoom(firstRoom);
+                }
+            });
+        }
     },
 
     _resize() {
@@ -221,6 +232,30 @@ window.SmartHomeView = {
 
     // Gruppen-Header einblenden
     document.getElementById("sh-group-header").classList.remove("hidden");
+    // --- Gruppen-Header füllen ---
+
+// Titel setzen
+document.getElementById("sh-group-title").textContent =
+    eff.group.name || "Gruppe";
+
+// Räume einfügen
+const roomsEl = document.getElementById("sh-group-rooms");
+roomsEl.innerHTML = "";
+
+eff.group.roomIds.forEach(rid => {
+    const room = SmartHomeData.getRoom(rid);
+    if (!room) return;
+
+    const div = document.createElement("div");
+    div.textContent = room.name;
+
+    div.onclick = () => {
+        this._goToRoom(rid);
+    };
+
+    roomsEl.appendChild(div);
+});
+    
 }
 ,
 
