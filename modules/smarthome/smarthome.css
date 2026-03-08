@@ -145,3 +145,59 @@
     font-size: 18px;
 }
 
+/* ---------------------------------------------------------
+   4.3.F – Gruppen-Header
+--------------------------------------------------------- */
+
+#sh-group-header {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 50;
+
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    background: rgba(0, 0, 0, 0.55);
+    padding: 8px 14px;
+    border-radius: 8px;
+    backdrop-filter: blur(6px);
+
+    color: #fff;
+    font-size: 16px;
+
+    transition: opacity 0.25s ease;
+}
+
+#sh-group-header.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+#sh-group-back {
+    cursor: pointer;
+    font-size: 20px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+#sh-group-title {
+    font-weight: 600;
+    margin-right: 10px;
+}
+
+#sh-group-rooms {
+    display: flex;
+    gap: 6px;
+}
+
+#sh-group-rooms div {
+    padding: 3px 8px;
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+}
