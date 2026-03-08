@@ -217,12 +217,16 @@ window.SmartHomeView = {
 
         // Gruppen-Header ausblenden
         document.getElementById("sh-group-header").classList.add("hidden");
+        // Zurück-Button ausblenden
+        document.getElementById("sh-group-back").classList.add("hidden");
 
         return;
     }
 
     // Gruppe (manuell oder automatisch)
-    this.activeRoom = null;
+    // Wenn der Nutzer einen Raum innerhalb der Gruppe anklickt,
+    // soll dieser Raum als aktiv markiert werden.
+    this.activeRoom = roomId;
     this.activeGroup = {
         type: eff.type,
         id: eff.group.id,
@@ -233,6 +237,8 @@ window.SmartHomeView = {
     // Gruppen-Header einblenden
     document.getElementById("sh-group-header").classList.remove("hidden");
     // --- Gruppen-Header füllen ---
+    // Zurück-Button sichtbar machen
+    document.getElementById("sh-group-back").classList.remove("hidden");
 
 // Titel setzen
 // Dynamischer Gruppen-Titel
