@@ -1,25 +1,24 @@
 // modules/smarthome/smarthome.groups.js
-// 4.3.A – Automatische Gruppen (Raumcluster über offene Durchgänge)
+// 4.3 – Gruppenlogik (automatisch + manuell + Priorisierung)
 
 window.SmartHomeGroups = {
-    // Ergebnisstruktur:
-    // autoGroups: [{ id, roomIds: [], label }]
+    // Automatische Gruppen (aus offenen Durchgängen)
     autoGroups: [],
-    // später: manualGroups: [], priority-Logik etc.
+
+    // Manuelle Gruppen (Editor)
+    // Struktur:
+    // { id, name, roomIds: [] }
+    manualGroups: [],
 
     init() {
         this._buildAutoGroups();
+        this._loadManualGroups();
     },
 
-    /**
-     * Berechnet automatische Gruppen basierend auf "offenen Durchgängen"
-     * Annahme:
-     * - SmartHomeData.rooms[*].passages = [
-     *      { to: "roomIdB" },
-     *      { to: "roomIdC" }
-     *   ]
-     * - Durchgänge sind bidirektional gedacht (A <-> B)
-     */
+    // ---------------------------------------------------------
+    // 4.3.A – Automatische Gruppen
+    // ---------------------------------------------------------
+
     _buildAutoGroups() {
         this.autoGroups = [];
 
@@ -72,10 +71,6 @@ window.SmartHomeGroups = {
         }
     },
 
-    /**
-     * Erzeugt einen einfachen Label-Text für eine automatische Gruppe,
-     * z. B. "Wohnbereich" oder "Gruppe: Küche + Essen + Wohnen"
-     */
     _buildAutoGroupLabel(roomIds) {
         const names = roomIds
             .map(id => SmartHomeData.getRoom(id))
@@ -83,20 +78,11 @@ window.SmartHomeGroups = {
             .map(r => r.name);
 
         if (names.length === 0) return "Gruppe";
-
         if (names.length === 1) return names[0];
-
-        if (names.length === 2) {
-            return `${names[0]} + ${names[1]}`;
-        }
-
-        // Mehr als 2 Räume: ersten 2 nennen, Rest als "..."
+        if (names.length === 2) return `${names[0]} + ${names[1]}`;
         return `${names[0]} + ${names[1]} + …`;
     },
 
-    /**
-     * Liefert die automatische Gruppe, zu der ein Raum gehört (oder null).
-     */
     getAutoGroupForRoom(roomId) {
         for (const g of this.autoGroups) {
             if (g.roomIds.includes(roomId)) {
@@ -106,15 +92,109 @@ window.SmartHomeGroups = {
         return null;
     },
 
-    /**
-     * Liefert alle Räume einer Gruppe (auto), als Room-Objekte.
-     */
     getRoomsOfAutoGroup(groupId) {
         const g = this.autoGroups.find(x => x.id === groupId);
         if (!g) return [];
         return g.roomIds
             .map(id => SmartHomeData.getRoom(id))
             .filter(r => !!r);
+    },
+
+    // ---------------------------------------------------------
+    // 4.3.B – Manuelle Gruppen (Editor)
+    // ---------------------------------------------------------
+
+    _loadManualGroups() {
+        try {
+            const raw = localStorage.getItem("smarthome_manual_groups");
+            if (!raw) {
+                this.manualGroups = [];
+                return;
+            }
+            this.manualGroups = JSON.parse(raw);
+        } catch (e) {
+            console.error("SmartHomeGroups: Fehler beim Laden der manuellen Gruppen:", e);
+            this.manualGroups = [];
+        }
+    },
+
+    _saveManualGroups() {
+        try {
+            localStorage.setItem("smarthome_manual_groups", JSON.stringify(this.manualGroups));
+        } catch (e) {
+            console.error("SmartHomeGroups: Fehler beim Speichern der manuellen Gruppen:", e);
+        }
+    },
+
+    createManualGroup(name, roomIds) {
+        const id = `manual_${Date.now()}`;
+        const group = { id, name, roomIds: [...roomIds] };
+        this.manualGroups.push(group);
+        this._saveManualGroups();
+        return group;
+    },
+
+    deleteManualGroup(groupId) {
+        this.manualGroups = this.manualGroups.filter(g => g.id !== groupId);
+        this._saveManualGroups();
+    },
+
+    getManualGroupForRoom(roomId) {
+        for (const g of this.manualGroups) {
+            if (g.roomIds.includes(roomId)) {
+                return g;
+            }
+        }
+        return null;
+    },
+
+    getRoomsOfManualGroup(groupId) {
+        const g = this.manualGroups.find(x => x.id === groupId);
+        if (!g) return [];
+        return g.roomIds
+            .map(id => SmartHomeData.getRoom(id))
+            .filter(r => !!r);
+    },
+
+    // ---------------------------------------------------------
+    // 4.3.C – Priorisierung (manuell > automatisch > Einzelraum)
+    // ---------------------------------------------------------
+
+    /**
+     * Liefert die effektive Gruppe eines Raums:
+     * 1. Manuelle Gruppe (höchste Priorität)
+     * 2. Automatische Gruppe
+     * 3. null (Einzelraum)
+     *
+     * Rückgabeformat:
+     * {
+     *   type: "manual" | "auto" | "single",
+     *   group: { id, name?, roomIds: [] } | null
+     * }
+     */
+    getEffectiveGroupForRoom(roomId) {
+        // 1. Manuelle Gruppe gewinnt immer
+        const manual = this.getManualGroupForRoom(roomId);
+        if (manual) {
+            return {
+                type: "manual",
+                group: manual
+            };
+        }
+
+        // 2. Automatische Gruppe
+        const auto = this.getAutoGroupForRoom(roomId);
+        if (auto) {
+            return {
+                type: "auto",
+                group: auto
+            };
+        }
+
+        // 3. Einzelraum
+        return {
+            type: "single",
+            group: null
+        };
     }
 };
-
