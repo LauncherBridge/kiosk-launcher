@@ -206,7 +206,7 @@ window.SmartHomeView = {
     // ---------------------------------------------------------
     // 4.3.D – Gruppenfähige Navigation
     // ---------------------------------------------------------
-    _goToRoom(roomId) {
+_goToRoom(roomId) {
     const eff = SmartHomeGroups.getEffectiveGroupForRoom(roomId);
 
     // Einzelraum
@@ -215,18 +215,13 @@ window.SmartHomeView = {
         this.activeGroup = null;
         this.targetHighlightAlpha = 1;
 
-        // Gruppen-Header ausblenden
         document.getElementById("sh-group-header").classList.add("hidden");
-        // Zurück-Button ausblenden
         document.getElementById("sh-group-back").classList.add("hidden");
-
         return;
     }
 
-    // Gruppe (manuell oder automatisch)
-    // Wenn der Nutzer einen Raum innerhalb der Gruppe anklickt,
-    // soll dieser Raum als aktiv markiert werden.
-    this.activeRoom = roomId;
+    // Gruppe
+    this.activeRoom = roomId; // aktiver Raum innerhalb der Gruppe
     this.activeGroup = {
         type: eff.type,
         id: eff.group.id,
@@ -234,77 +229,77 @@ window.SmartHomeView = {
     };
     this.targetHighlightAlpha = 1;
 
-    // Gruppen-Header einblenden
+    // Header anzeigen
     document.getElementById("sh-group-header").classList.remove("hidden");
-    // --- Gruppen-Header füllen ---
-    // Zurück-Button sichtbar machen
     document.getElementById("sh-group-back").classList.remove("hidden");
 
-// Titel setzen
-// Dynamischer Gruppen-Titel
-let groupTitle = eff.group.name;
-if (!groupTitle) {
-    const roomNames = eff.group.roomIds
-        .map(rid => SmartHomeData.getRoom(rid)?.name)
-        .filter(Boolean);
+    // Dynamischer Titel
+    let groupTitle = eff.group.name;
+    if (!groupTitle) {
+        const roomNames = eff.group.roomIds
+            .map(rid => SmartHomeData.getRoom(rid)?.name)
+            .filter(Boolean);
 
-    if (roomNames.length === 1) {
-        groupTitle = roomNames[0];
-    } else if (roomNames.length === 2) {
-        groupTitle = `${roomNames[0]} + ${roomNames[1]}`;
-    } else {
-        groupTitle = `${roomNames[0]} + ${roomNames.length - 1} weitere`;
+        if (roomNames.length === 1) groupTitle = roomNames[0];
+        else if (roomNames.length === 2) groupTitle = `${roomNames[0]} + ${roomNames[1]}`;
+        else groupTitle = `${roomNames[0]} + ${roomNames.length - 1} weitere`;
     }
-}
+    document.getElementById("sh-group-title").textContent = groupTitle;
 
-document.getElementById("sh-group-title").textContent = groupTitle;
+    // Räume einfügen (SORTIERT!)
+    const roomsEl = document.getElementById("sh-group-rooms");
+    roomsEl.innerHTML = "";
 
+    const sortedRoomIds = [...eff.group.roomIds].sort((a, b) => {
+        const ra = SmartHomeData.getRoom(a)?.name || "";
+        const rb = SmartHomeData.getRoom(b)?.name || "";
+        return ra.localeCompare(rb);
+    });
 
-// Räume einfügen
-const roomsEl = document.getElementById("sh-group-rooms");
-roomsEl.innerHTML = "";
+    sortedRoomIds.forEach(rid => {
+        const room = SmartHomeData.getRoom(rid);
+        if (!room) return;
 
-eff.group.roomIds.forEach(rid => {
-    const room = SmartHomeData.getRoom(rid);
-    if (!room) return;
+        const div = document.createElement("div");
+        div.textContent = room.name;
 
-    const div = document.createElement("div");
-    div.textContent = room.name;
-    
-    if (rid === this.activeRoom) div.classList.add("active-room");
+        if (rid === this.activeRoom) div.classList.add("active-room");
 
-    div.onclick = () => {
-        this._goToRoom(rid);
-    };
+        div.onclick = () => this._goToRoom(rid);
 
-    roomsEl.appendChild(div);
-});
-// Räume einfügen
-const roomsEl = document.getElementById("sh-group-rooms");
-roomsEl.innerHTML = "";
+        roomsEl.appendChild(div);
+    });
 
-eff.group.roomIds.forEach(rid => {
-    const room = SmartHomeData.getRoom(rid);
-    if (!room) return;
+    // 4.3.F.11 – Leichter Zoom auf aktiven Raum
+    if (this.activeRoom) {
+        const room = SmartHomeData.getRoom(this.activeRoom);
+        if (room) {
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
 
-    const div = document.createElement("div");
-    div.textContent = room.name;
+            room.polygon.forEach(p => {
+                minX = Math.min(minX, p.x);
+                minY = Math.min(minY, p.y);
+                maxX = Math.max(maxX, p.x);
+                maxY = Math.max(maxY, p.y);
+            });
 
-    if (rid === this.activeRoom) div.classList.add("active-room");
+            const centerX = (minX + maxX) / 2;
+            const centerY = (minY + maxY) / 2;
 
-    div.onclick = () => {
-        this._goToRoom(rid);
-    };
+            const zoomFactor = 1.15;
+            this.targetScale *= zoomFactor;
 
-    roomsEl.appendChild(div);
-});
+            this.targetOffsetX = this.canvas.width / 2 - centerX * this.targetScale;
+            this.targetOffsetY = this.canvas.height / 2 - centerY * this.targetScale;
+        }
+    }
 
+    // 4.3.F.10 – Automatischer Gruppen-Zoom
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
 
-// ⭐⭐⭐ NEU: 4.3.F.11 – Leichter Zoom auf aktiven Raum ⭐⭐⭐
-if (this.activeRoom) {
-    const room = SmartHomeData.getRoom(this.activeRoom);
-    if (room) {
-        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    eff.group.roomIds.forEach(rid => {
+        const room = SmartHomeData.getRoom(rid);
+        if (!room) return;
 
         room.polygon.forEach(p => {
             minX = Math.min(minX, p.x);
@@ -312,57 +307,23 @@ if (this.activeRoom) {
             maxX = Math.max(maxX, p.x);
             maxY = Math.max(maxY, p.y);
         });
-
-        const centerX = (minX + maxX) / 2;
-        const centerY = (minY + maxY) / 2;
-
-        // Leichter Zoom
-        const zoomFactor = 1.15;
-        this.targetScale *= zoomFactor;
-
-        this.targetOffsetX = this.canvas.width / 2 - centerX * this.targetScale;
-        this.targetOffsetY = this.canvas.height / 2 - centerY * this.targetScale;
-    }
-}
-
-
-// ⭐⭐⭐ BESTEHEND: 4.3.F.10 – Automatischer Gruppen-Zoom ⭐⭐⭐
-
-// Bounding Box der Gruppe berechnen
-let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-
-eff.group.roomIds.forEach(rid => {
-    const room = SmartHomeData.getRoom(rid);
-    if (!room) return;
-
-    room.polygon.forEach(p => {
-        minX = Math.min(minX, p.x);
-        minY = Math.min(minY, p.y);
-        maxX = Math.max(maxX, p.x);
-        maxY = Math.max(maxY, p.y);
     });
-});
 
-// Mittelpunkt der Gruppe
-const centerX = (minX + maxX) / 2;
-const centerY = (minY + maxY) / 2;
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
 
-// Ziel-Offset setzen
-this.targetOffsetX = this.canvas.width / 2 - centerX * this.scale;
-this.targetOffsetY = this.canvas.height / 2 - centerY * this.scale;
+    this.targetOffsetX = this.canvas.width / 2 - centerX * this.scale;
+    this.targetOffsetY = this.canvas.height / 2 - centerY * this.scale;
 
-// Zoom-Level bestimmen
-const groupWidth = maxX - minX;
-const groupHeight = maxY - minY;
+    const groupWidth = maxX - minX;
+    const groupHeight = maxY - minY;
 
-const scaleX = this.canvas.width / (groupWidth * 1.4);
-const scaleY = this.canvas.height / (groupHeight * 1.4);
+    const scaleX = this.canvas.width / (groupWidth * 1.4);
+    const scaleY = this.canvas.height / (groupHeight * 1.4);
 
-this.targetScale = Math.min(scaleX, scaleY);
-
-    
-// ---------------------------------------------------------    
+    this.targetScale = Math.min(scaleX, scaleY);
 }
+
 ,
 
     // ---------------------------------------------------------
@@ -603,8 +564,9 @@ this.targetScale = Math.min(scaleX, scaleY);
 
     openContainerPopup(container) {
         const popup = document.getElementById("smarthome-popup");
-        the title = document.getElementById("sh-popup-title");
+        const title = document.getElementById("sh-popup-title");
         const icon = document.getElementById("sh-popup-icon");
+
 
         const type = SmartHomeData.deviceTypes[container.type];
 
