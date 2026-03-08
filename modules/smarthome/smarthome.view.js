@@ -248,6 +248,8 @@ eff.group.roomIds.forEach(rid => {
 
     const div = document.createElement("div");
     div.textContent = room.name;
+    
+    if (rid === this.activeRoom) div.classList.add("active-room");
 
     div.onclick = () => {
         this._goToRoom(rid);
