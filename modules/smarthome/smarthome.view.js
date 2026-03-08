@@ -246,29 +246,51 @@ _goToRoom(roomId) {
     }
     document.getElementById("sh-group-title").textContent = groupTitle;
 
-    // Räume einfügen (SORTIERT!)
-    const roomsEl = document.getElementById("sh-group-rooms");
-    roomsEl.innerHTML = "";
+// Räume einfügen (Gruppiert nach Typ + alphabetisch)
+const roomsEl = document.getElementById("sh-group-rooms");
+roomsEl.innerHTML = "";
 
-    const sortedRoomIds = [...eff.group.roomIds].sort((a, b) => {
-        const ra = SmartHomeData.getRoom(a)?.name || "";
-        const rb = SmartHomeData.getRoom(b)?.name || "";
-        return ra.localeCompare(rb);
-    });
+// 1. Räume nach Typ gruppieren
+const groupsByType = {};
+eff.group.roomIds.forEach(rid => {
+    const room = SmartHomeData.getRoom(rid);
+    if (!room) return;
 
-    sortedRoomIds.forEach(rid => {
-        const room = SmartHomeData.getRoom(rid);
-        if (!room) return;
+    const type = SmartHomeData.roomTypes[room.type]?.group || "Andere";
 
+    if (!groupsByType[type]) groupsByType[type] = [];
+    groupsByType[type].push(room);
+});
+
+// 2. Typ‑Gruppen alphabetisch sortieren
+const sortedTypes = Object.keys(groupsByType).sort();
+
+// 3. Innerhalb jeder Gruppe alphabetisch sortieren
+sortedTypes.forEach(typeName => {
+    const rooms = groupsByType[typeName].sort((a, b) =>
+        a.name.localeCompare(b.name)
+    );
+
+    // Optional: Typ‑Überschrift
+    const header = document.createElement("div");
+    header.className = "sh-group-type-header";
+    header.textContent = typeName;
+    roomsEl.appendChild(header);
+
+    // Räume der Gruppe einfügen
+    rooms.forEach(room => {
         const div = document.createElement("div");
         div.textContent = room.name;
+        div.classList.add("sh-group-room");
 
-        if (rid === this.activeRoom) div.classList.add("active-room");
+        if (room.id === this.activeRoom) div.classList.add("active-room");
 
-        div.onclick = () => this._goToRoom(rid);
+        div.onclick = () => this._goToRoom(room.id);
 
         roomsEl.appendChild(div);
     });
+});
+
 
     // 4.3.F.11 – Leichter Zoom auf aktiven Raum
     if (this.activeRoom) {
