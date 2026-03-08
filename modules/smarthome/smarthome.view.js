@@ -246,7 +246,7 @@ _goToRoom(roomId) {
     }
     document.getElementById("sh-group-title").textContent = groupTitle;
 
-// Räume einfügen (Gruppiert nach Typ + alphabetisch)
+// Räume einfügen (Gruppiert nach Typ, eine Zeile pro Gruppe)
 const roomsEl = document.getElementById("sh-group-rooms");
 roomsEl.innerHTML = "";
 
@@ -265,31 +265,45 @@ eff.group.roomIds.forEach(rid => {
 // 2. Typ‑Gruppen alphabetisch sortieren
 const sortedTypes = Object.keys(groupsByType).sort();
 
-// 3. Innerhalb jeder Gruppe alphabetisch sortieren
+// 3. Innerhalb jeder Gruppe alphabetisch sortieren und eine Zeile erzeugen
 sortedTypes.forEach(typeName => {
     const rooms = groupsByType[typeName].sort((a, b) =>
         a.name.localeCompare(b.name)
     );
 
-    // Optional: Typ‑Überschrift
-    const header = document.createElement("div");
-    header.className = "sh-group-type-header";
-    header.textContent = typeName;
-    roomsEl.appendChild(header);
+    // Zeile erstellen
+    const line = document.createElement("div");
+    line.className = "sh-group-line";
 
-    // Räume der Gruppe einfügen
-    rooms.forEach(room => {
-        const div = document.createElement("div");
-        div.textContent = room.name;
-        div.classList.add("sh-group-room");
+    // Fett: Gruppenname
+    const strong = document.createElement("strong");
+    strong.textContent = typeName + " – ";
+    line.appendChild(strong);
 
-        if (room.id === this.activeRoom) div.classList.add("active-room");
+    // Räume kommasepariert
+    rooms.forEach((room, index) => {
+        const span = document.createElement("span");
+        span.textContent = room.name;
+        span.classList.add("sh-group-room-inline");
 
-        div.onclick = () => this._goToRoom(room.id);
+        if (room.id === this.activeRoom) {
+            span.classList.add("active-room");
+        }
 
-        roomsEl.appendChild(div);
+        span.onclick = () => this._goToRoom(room.id);
+
+        line.appendChild(span);
+
+        if (index < rooms.length - 1) {
+            const comma = document.createElement("span");
+            comma.textContent = ", ";
+            line.appendChild(comma);
+        }
     });
+
+    roomsEl.appendChild(line);
 });
+
 
 
     // 4.3.F.11 – Leichter Zoom auf aktiven Raum
