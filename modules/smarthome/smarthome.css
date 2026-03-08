@@ -226,3 +226,18 @@
 .sh-group-room {
     margin-left: 8px;
 }
+
+.sh-group-line {
+    margin: 4px 0;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.sh-group-room-inline {
+    cursor: pointer;
+}
+
+.sh-group-room-inline.active-room {
+    font-weight: bold;
+    text-decoration: underline;
+}
