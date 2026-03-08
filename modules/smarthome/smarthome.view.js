@@ -9,6 +9,7 @@ window.SmartHomeView = {
     minimapCtx: null,
 
     activeRoom: null,
+    activeGroup: null, // Gruppenfähig
     rooms: [],
     minimapRooms: [],
 
@@ -121,6 +122,7 @@ window.SmartHomeView = {
             }
 
             this.activeRoom = null;
+            this.activeGroup = null;
             this.targetHighlightAlpha = 0;
         });
 
@@ -140,6 +142,7 @@ window.SmartHomeView = {
             }
 
             this.activeRoom = null;
+            this.activeGroup = null;
             this.targetHighlightAlpha = 0;
         });
 
@@ -189,12 +192,33 @@ window.SmartHomeView = {
         });
     },
 
+    // ---------------------------------------------------------
+    // 4.3.D – Gruppenfähige Navigation
+    // ---------------------------------------------------------
     _goToRoom(roomId) {
-        if (!SmartHomeData.getRoom(roomId)) return;
-        this.activeRoom = roomId;
+        const eff = SmartHomeGroups.getEffectiveGroupForRoom(roomId);
+
+        // Einzelraum
+        if (eff.type === "single") {
+            this.activeRoom = roomId;
+            this.activeGroup = null;
+            this.targetHighlightAlpha = 1;
+            return;
+        }
+
+        // Gruppe (manuell oder automatisch)
+        this.activeRoom = null;
+        this.activeGroup = {
+            type: eff.type,
+            id: eff.group.id,
+            roomIds: [...eff.group.roomIds]
+        };
         this.targetHighlightAlpha = 1;
     },
 
+    // ---------------------------------------------------------
+    // Haupt‑Rendering
+    // ---------------------------------------------------------
     _drawMainView() {
         const ctx = this.ctx;
         if (!ctx) return;
@@ -207,11 +231,15 @@ window.SmartHomeView = {
 
         this.rooms = SmartHomeData.rooms;
 
+        const activeGroup = this.activeGroup ? this.activeGroup.roomIds : null;
+
         this.rooms.forEach(room => {
             const type = SmartHomeData.roomTypes[room.type];
             const fillColor = type?.color || "#444";
 
-            // Highlight
+            const isInGroup = activeGroup && activeGroup.includes(room.id);
+
+            // Highlight Einzelraum
             if (this.activeRoom === room.id) {
                 ctx.fillStyle = `rgba(255, 184, 108, ${0.3 + this.highlightAlpha * 0.4})`;
             } else {
@@ -228,6 +256,20 @@ window.SmartHomeView = {
 
             ctx.closePath();
             ctx.fill();
+
+            // --- Gruppen‑Highlight ---
+            if (isInGroup) {
+                ctx.save();
+                ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
+                ctx.fill();
+                ctx.restore();
+
+                ctx.save();
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
+                ctx.stroke();
+                ctx.restore();
+            }
 
             // Label
             ctx.fillStyle = "var(--sh-text)";
@@ -284,6 +326,9 @@ window.SmartHomeView = {
         ctx.restore();
     },
 
+    // ---------------------------------------------------------
+    // Mini‑Map Rendering
+    // ---------------------------------------------------------
     _drawMiniMap() {
         const ctx = this.minimapCtx;
         if (!ctx) return;
@@ -305,15 +350,29 @@ window.SmartHomeView = {
             type: r.type
         }));
 
+        const activeGroup = this.activeGroup ? this.activeGroup.roomIds : null;
+
         this.minimapRooms.forEach(r => {
             const type = SmartHomeData.roomTypes[r.type];
             const fillColor = type?.color || "#444";
+
+            const isInGroup = activeGroup && activeGroup.includes(r.id);
 
             ctx.fillStyle = (this.activeRoom === r.id)
                 ? `rgba(255, 184, 108, ${0.3 + this.highlightAlpha * 0.4})`
                 : fillColor;
 
             ctx.fillRect(r.x, r.y, r.w, r.h);
+
+            // Gruppen‑Highlight Mini‑Map
+            if (isInGroup) {
+                ctx.fillStyle = "rgba(255, 255, 255, 0.15)";
+                ctx.fillRect(r.x, r.y, r.w, r.h);
+
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
+                ctx.lineWidth = 2;
+                ctx.strokeRect(r.x, r.y, r.w, r.h);
+            }
 
             // Label
             ctx.fillStyle = "#FFFFFF";
@@ -395,7 +454,7 @@ window.SmartHomeView = {
 
     openContainerPopup(container) {
         const popup = document.getElementById("smarthome-popup");
-        const title = document.getElementById("sh-popup-title");
+        the title = document.getElementById("sh-popup-title");
         const icon = document.getElementById("sh-popup-icon");
 
         const type = SmartHomeData.deviceTypes[container.type];
