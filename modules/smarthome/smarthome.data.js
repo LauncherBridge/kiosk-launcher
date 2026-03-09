@@ -43,7 +43,6 @@ window.SmartHomeData = {
             room: "wohnzimmer",
             position: { x: 180, y: 220 },
 
-            // 4.2.1 Statusmodell
             state: {
                 on: false,
                 brightness: 100,
@@ -81,7 +80,6 @@ window.SmartHomeData = {
             room: "kueche",
             position: { x: 520, y: 160 },
 
-            // 4.2.1 Statusmodell
             state: {
                 on: false,
                 brightness: 100,
@@ -119,7 +117,6 @@ window.SmartHomeData = {
             room: "flur",
             position: { x: 350, y: 360 },
 
-            // 4.2.1 Statusmodell
             state: {
                 on: false,
                 brightness: 100,
@@ -151,7 +148,7 @@ window.SmartHomeData = {
         }
     ],
 
-    // Räume (aus deiner aktuellen Datei)
+    // Räume
     rooms: [
         {
             id: "wohnzimmer",
@@ -255,5 +252,44 @@ window.SmartHomeData = {
 
     getContainer(containerId) {
         return this.containers.find(c => c.id === containerId) || null;
+    },
+
+    // ---------------------------------------------------------
+    // STATUSBERECHNUNG PRO RAUM
+    // ---------------------------------------------------------
+    getRoomStatus(roomId) {
+        const containers = this.containers.filter(c => c.room === roomId);
+        if (containers.length === 0) return "gray";
+
+        const total = containers.length;
+        const reachable = containers.filter(c => c.state?.reachable).length;
+
+        if (reachable === total) return "green";
+        if (reachable === 0) return "red";
+        return "yellow";
+    },
+
+    // ---------------------------------------------------------
+    // STATUSBERECHNUNG PRO ETAGE (KUMULIERT)
+    // ---------------------------------------------------------
+    getFloorStatus(floorId) {
+        const floor = this.floors?.find(f => f.id === floorId);
+        if (!floor) return "gray";
+
+        let allContainers = [];
+
+        floor.rooms.forEach(roomId => {
+            const roomContainers = this.containers.filter(c => c.room === roomId);
+            allContainers.push(...roomContainers);
+        });
+
+        if (allContainers.length === 0) return "gray";
+
+        const total = allContainers.length;
+        const reachable = allContainers.filter(c => c.state?.reachable).length;
+
+        if (reachable === total) return "green";
+        if (reachable === 0) return "red";
+        return "yellow";
     }
 };
