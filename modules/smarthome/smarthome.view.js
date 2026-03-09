@@ -117,7 +117,7 @@ window.SmartHomeView = {
             if (!item) return;
 
             const floorId = Number(item.dataset.floor);
-            console.log("Etage geklickt:", floorId);
+            this.setActiveFloor(floorId);
 
             // später: SmartHomeView.setActiveFloor(floorId);
         });
