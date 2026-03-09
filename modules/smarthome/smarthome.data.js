@@ -2,7 +2,56 @@
 
 window.SmartHomeData = {
 
+    // ---------------------------------------------------------
+    // ETAGEN (4.12 – automatisch abgeleitet)
+    // ---------------------------------------------------------
+    floors: [],
+
+    deriveFloorsFromRooms() {
+        const floors = new Map();
+
+        this.rooms.forEach(room => {
+            if (room.floor === undefined || room.floor === null) return;
+
+            const id = Number(room.floor);
+
+            if (!floors.has(id)) {
+                floors.set(id, {
+                    id,
+                    alias: null,
+                    rooms: []
+                });
+            }
+
+            floors.get(id).rooms.push(room.id);
+        });
+
+        // Sortieren: höchste Etage zuerst
+        this.floors = [...floors.values()].sort((a, b) => b.id - a.id);
+    },
+
+    setFloorAlias(floorId, alias) {
+        const f = this.floors.find(x => x.id === floorId);
+        if (!f) return;
+        f.alias = alias;
+    },
+
+    getFloorDisplayName(floorId) {
+        const f = this.floors.find(x => x.id === floorId);
+        if (!f) return String(floorId);
+
+        return f.alias || this._defaultFloorName(floorId);
+    },
+
+    _defaultFloorName(id) {
+        if (id === 0) return "Erdgeschoss";
+        if (id > 0) return `${id}. Obergeschoss`;
+        return `${Math.abs(id)}. Untergeschoss`;
+    },
+
+    // ---------------------------------------------------------
     // Raumtypen (Schritt 3.3)
+    // ---------------------------------------------------------
     roomTypes: {
         living: {
             icon: "sofa",
@@ -18,7 +67,9 @@ window.SmartHomeData = {
         }
     },
 
+    // ---------------------------------------------------------
     // Gerätetypen (Schritt 3.4)
+    // ---------------------------------------------------------
     deviceTypes: {
         light: {
             icon: "lightbulb",
@@ -34,7 +85,9 @@ window.SmartHomeData = {
         }
     },
 
+    // ---------------------------------------------------------
     // SmartDeviceContainer (Schritt 3.5 + 4.2.1 Statusmodell)
+    // ---------------------------------------------------------
     containers: [
         {
             id: "wz_lampe_1",
@@ -148,12 +201,15 @@ window.SmartHomeData = {
         }
     ],
 
+    // ---------------------------------------------------------
     // Räume
+    // ---------------------------------------------------------
     rooms: [
         {
             id: "wohnzimmer",
             name: "Wohnzimmer",
             type: "living",
+            floor: 0,
 
             polygon: [
                 { x: 100, y: 100 },
@@ -186,6 +242,7 @@ window.SmartHomeData = {
             id: "kueche",
             name: "Küche",
             type: "kitchen",
+            floor: 0,
 
             polygon: [
                 { x: 420, y: 100 },
@@ -214,6 +271,7 @@ window.SmartHomeData = {
             id: "flur",
             name: "Flur",
             type: "hallway",
+            floor: 0,
 
             polygon: [
                 { x: 100, y: 320 },
@@ -239,7 +297,9 @@ window.SmartHomeData = {
         }
     ],
 
+    // ---------------------------------------------------------
     // Navigation‑Graph Helper
+    // ---------------------------------------------------------
     getNeighbors(roomId) {
         const room = this.rooms.find(r => r.id === roomId);
         if (!room) return [];
@@ -293,3 +353,8 @@ window.SmartHomeData = {
         return "yellow";
     }
 };
+
+// ---------------------------------------------------------
+// Automatische Etagen-Ableitung direkt nach Laden der Räume
+// ---------------------------------------------------------
+window.SmartHomeData.deriveFloorsFromRooms();
