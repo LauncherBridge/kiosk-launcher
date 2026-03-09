@@ -80,29 +80,33 @@ window.SmartHomeView = {
     renderFloorList() {
         const el = document.getElementById("sh-floor-list");
         if (!el) return;
-
+    
         const floors = SmartHomeData.floors;
         if (!floors || floors.length === 0) {
             el.innerHTML = "";
             return;
         }
-
+    
         let html = "";
-
+    
         floors.forEach(floor => {
             const status = SmartHomeData.getFloorStatus(floor.id);
             const name = SmartHomeData.getFloorDisplayName(floor.id);
-
+    
+            // Active‑Klasse setzen
+            const activeClass = (this.activeFloor === floor.id) ? "active" : "";
+    
             html += `
-                <div class="sh-floor-item" data-floor="${floor.id}">
+                <div class="sh-floor-item ${activeClass}" data-floor="${floor.id}">
                     <div class="sh-floor-status ${status}"></div>
                     <div class="sh-floor-name">${name}</div>
                 </div>
             `;
         });
-
+    
         el.innerHTML = html;
     },
+
 
     bindFloorListEvents() {
         const el = document.getElementById("sh-floor-list");
@@ -119,6 +123,20 @@ window.SmartHomeView = {
         });
     },
 
+    setActiveFloor(floorId) {
+        this.activeFloor = floorId;
+    
+        // Active‑Klasse setzen
+        const items = document.querySelectorAll(".sh-floor-item");
+        items.forEach(item => {
+            const id = Number(item.dataset.floor);
+            item.classList.toggle("active", id === floorId);
+        });
+    
+        this._scrollActiveFloorIntoView();
+    },
+
+    
     _resize() {
         this.canvas.width = this.canvas.offsetWidth;
         this.canvas.height = this.canvas.offsetHeight;
@@ -419,6 +437,17 @@ window.SmartHomeView = {
             inline: "center"
         });
     },
+
+    _scrollActiveFloorIntoView() {
+        const active = document.querySelector(".sh-floor-item.active");
+        if (!active) return;
+    
+        active.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest"
+        });
+    }
+
 
     // ---------------------------------------------------------
     // Haupt‑Rendering
