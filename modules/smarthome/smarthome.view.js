@@ -57,12 +57,12 @@ window.SmartHomeView = {
         if (closeBtn) {
             closeBtn.addEventListener("click", () => this.closePopup());
         }
-
         // Gruppen-Zurück-Button
         const backBtn = document.getElementById("sh-group-back");
         if (backBtn) {
             backBtn.addEventListener("click", () => {
                 if (this.activeGroup) {
+                    // zurück zum ersten Raum der Gruppe
                     const firstRoom = this.activeGroup.roomIds[0];
                     this._goToRoom(firstRoom);
                 }
@@ -98,12 +98,15 @@ window.SmartHomeView = {
     },
 
     _bindEvents() {
+        // -------------------------
         // Klick auf Haupt‑Canvas
+        // -------------------------
         this.canvas.addEventListener("click", (ev) => {
             const rect = this.canvas.getBoundingClientRect();
             let x = ev.clientX - rect.left;
             let y = ev.clientY - rect.top;
 
+            // Transformation rückgängig machen
             x = (x - this.offsetX) / this.scale;
             y = (y - this.offsetY) / this.scale;
 
@@ -132,7 +135,9 @@ window.SmartHomeView = {
             this.targetHighlightAlpha = 0;
         });
 
+        // -------------------------
         // Klick auf Mini‑Map
+        // -------------------------
         this.minimapCanvas.addEventListener("click", (ev) => {
             const rect = this.minimapCanvas.getBoundingClientRect();
             const x = ev.clientX - rect.left;
@@ -150,7 +155,9 @@ window.SmartHomeView = {
             this.targetHighlightAlpha = 0;
         });
 
+        // -------------------------
         // Zoom (Mausrad)
+        // -------------------------
         this.canvas.addEventListener("wheel", (ev) => {
             ev.preventDefault();
 
@@ -173,7 +180,9 @@ window.SmartHomeView = {
             this.targetOffsetY = my - (my - this.targetOffsetY) * (this.targetScale / oldScale);
         }, { passive: false });
 
+        // -------------------------
         // Pan (ziehen)
+        // -------------------------
         this.canvas.addEventListener("mousedown", (ev) => {
             this.isPanning = true;
             this.panStartX = ev.clientX - this.targetOffsetX;
@@ -192,7 +201,9 @@ window.SmartHomeView = {
         });
     },
 
+    // ---------------------------------------------------------
     // 4.3.D – Gruppenfähige Navigation
+    // ---------------------------------------------------------
     _goToRoom(roomId) {
         const eff = SmartHomeGroups.getEffectiveGroupForRoom(roomId);
 
@@ -208,7 +219,7 @@ window.SmartHomeView = {
         }
 
         // Gruppe
-        this.activeRoom = roomId;
+        this.activeRoom = roomId; // aktiver Raum innerhalb der Gruppe
         this.activeGroup = {
             type: eff.type,
             id: eff.group.id,
@@ -216,9 +227,11 @@ window.SmartHomeView = {
         };
         this.targetHighlightAlpha = 1;
 
+        // Header anzeigen
         document.getElementById("sh-group-header").classList.remove("hidden");
         document.getElementById("sh-group-back").classList.remove("hidden");
 
+        // Dynamischer Titel
         let groupTitle = eff.group.name;
         if (!groupTitle) {
             const roomNames = eff.group.roomIds
@@ -231,9 +244,11 @@ window.SmartHomeView = {
         }
         document.getElementById("sh-group-title").textContent = groupTitle;
 
+        // Räume einfügen (Gruppiert nach Typ, eine Zeile pro Gruppe)
         const roomsEl = document.getElementById("sh-group-rooms");
         roomsEl.innerHTML = "";
 
+        // 1. Räume nach Typ gruppieren
         const groupsByType = {};
         eff.group.roomIds.forEach(rid => {
             const room = SmartHomeData.getRoom(rid);
@@ -245,20 +260,25 @@ window.SmartHomeView = {
             groupsByType[type].push(room);
         });
 
+        // 2. Typ‑Gruppen alphabetisch sortieren
         const sortedTypes = Object.keys(groupsByType).sort();
 
+        // 3. Innerhalb jeder Gruppe alphabetisch sortieren und eine Zeile erzeugen
         sortedTypes.forEach(typeName => {
             const rooms = groupsByType[typeName].sort((a, b) =>
                 a.name.localeCompare(b.name)
             );
 
+            // Zeile erstellen
             const line = document.createElement("div");
             line.className = "sh-group-line";
 
+            // Fett: Gruppenname
             const strong = document.createElement("strong");
             strong.textContent = typeName + " – ";
             line.appendChild(strong);
 
+            // Räume kommasepariert
             rooms.forEach((room, index) => {
                 const span = document.createElement("span");
                 span.textContent = room.name;
@@ -281,6 +301,9 @@ window.SmartHomeView = {
 
             roomsEl.appendChild(line);
         });
+
+        // 4.11 – Auto‑Scroll zum aktiven Raum
+        this._scrollActiveRoomIntoView();
 
         // 4.3.F.11 – Leichter Zoom auf aktiven Raum
         if (this.activeRoom) {
@@ -336,7 +359,21 @@ window.SmartHomeView = {
         this.targetScale = Math.min(scaleX, scaleY);
     },
 
+    // 4.11 – Auto‑Scroll zum aktiven Raum
+    _scrollActiveRoomIntoView() {
+        const active = document.querySelector("#sh-group-rooms .active-room");
+        if (!active) return;
+
+        active.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest",
+            inline: "center"
+        });
+    },
+
+    // ---------------------------------------------------------
     // Haupt‑Rendering
+    // ---------------------------------------------------------
     _drawMainView() {
         const ctx = this.ctx;
         if (!ctx) return;
@@ -357,12 +394,14 @@ window.SmartHomeView = {
 
             const isInGroup = activeGroup && activeGroup.includes(room.id);
 
+            // Highlight Einzelraum
             if (this.activeRoom === room.id) {
                 ctx.fillStyle = `rgba(255, 184, 108, ${0.3 + this.highlightAlpha * 0.4})`;
             } else {
                 ctx.fillStyle = fillColor;
             }
 
+            // Raum zeichnen
             ctx.beginPath();
             ctx.moveTo(room.polygon[0].x, room.polygon[0].y);
 
@@ -373,6 +412,7 @@ window.SmartHomeView = {
             ctx.closePath();
             ctx.fill();
 
+            // --- Gruppen‑Highlight ---
             if (isInGroup) {
                 ctx.save();
                 ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
@@ -386,11 +426,13 @@ window.SmartHomeView = {
                 ctx.restore();
             }
 
+            // Label
             ctx.fillStyle = "var(--sh-text)";
             ctx.font = "20px sans-serif";
             ctx.textBaseline = "top";
             ctx.fillText(room.name, room.polygon[0].x + 12, room.polygon[0].y + 12);
 
+            // Icon (zentriert)
             if (type?.icon) {
                 ctx.fillStyle = "var(--sh-text)";
                 ctx.font = "28px MaterialIcons";
@@ -403,6 +445,7 @@ window.SmartHomeView = {
                 ctx.fillText(type.icon, cx, cy);
             }
 
+            // Türen rendern
             room.doors?.forEach(door => {
                 const d = door.position;
                 ctx.fillStyle = "#FFD28A";
@@ -411,6 +454,7 @@ window.SmartHomeView = {
                 ctx.fill();
             });
 
+            // Container rendern
             SmartHomeData.containers.forEach(container => {
                 if (container.room !== room.id) return;
 
@@ -437,7 +481,9 @@ window.SmartHomeView = {
         ctx.restore();
     },
 
+    // ---------------------------------------------------------
     // Mini‑Map Rendering
+    // ---------------------------------------------------------
     _drawMiniMap() {
         const ctx = this.minimapCtx;
         if (!ctx) return;
@@ -473,6 +519,7 @@ window.SmartHomeView = {
 
             ctx.fillRect(r.x, r.y, r.w, r.h);
 
+            // Gruppen‑Highlight Mini‑Map
             if (isInGroup) {
                 ctx.fillStyle = "rgba(255, 255, 255, 0.15)";
                 ctx.fillRect(r.x, r.y, r.w, r.h);
@@ -482,11 +529,13 @@ window.SmartHomeView = {
                 ctx.strokeRect(r.x, r.y, r.w, r.h);
             }
 
+            // Label
             ctx.fillStyle = "#FFFFFF";
             ctx.font = "12px sans-serif";
             ctx.textBaseline = "top";
             ctx.fillText(r.label, r.x + 5, r.y + 5);
 
+            // Icon
             if (type?.icon) {
                 ctx.fillStyle = "#FFFFFF";
                 ctx.font = "14px MaterialIcons";
@@ -499,6 +548,7 @@ window.SmartHomeView = {
                 ctx.fillText(type.icon, cx, cy);
             }
 
+            // Türen rendern (Mini‑Map)
             r.doors?.forEach(door => {
                 const d = door.position;
 
@@ -512,6 +562,7 @@ window.SmartHomeView = {
                 ctx.fillRect(mx - 2, my - 2, 4, 4);
             });
 
+            // Container rendern (Mini‑Map)
             SmartHomeData.containers.forEach(container => {
                 if (container.room !== r.id) return;
 
@@ -552,7 +603,10 @@ window.SmartHomeView = {
         return inside;
     },
 
-    // Popup‑System + Status‑System
+    // ---------------------------------------------------------
+    // 4.1 + 4.2 – Popup‑System + Status‑System
+    // ---------------------------------------------------------
+
     openContainerPopup(container) {
         const popup = document.getElementById("smarthome-popup");
         const title = document.getElementById("sh-popup-title");
@@ -563,12 +617,14 @@ window.SmartHomeView = {
         title.textContent = container.name;
         icon.textContent = type?.icon || "device_unknown";
 
+        // Tabs aktivieren
         document.querySelectorAll(".sh-popup-tabs button").forEach(btn => {
             btn.onclick = () => {
                 this._renderPopupTab(container, btn.dataset.tab);
             };
         });
 
+        // Standard-Tab
         this._renderPopupTab(container, "status");
 
         popup.classList.remove("hidden");
@@ -578,6 +634,7 @@ window.SmartHomeView = {
         document.getElementById("smarthome-popup").classList.add("hidden");
     },
 
+    // 4.2 – Status‑Rendering
     _renderPopupTab(container, tab) {
         const body = document.getElementById("sh-popup-body");
 
@@ -612,6 +669,7 @@ window.SmartHomeView = {
         }
     },
 
+    // Live‑Update für spätere Geräteintegration
     updateContainerState(containerId, newState) {
         const c = SmartHomeData.getContainer(containerId);
         if (!c) return;
