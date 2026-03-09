@@ -57,6 +57,54 @@ window.SmartHomeData = {
     },
 
     // ---------------------------------------------------------
+    // Persistente Etagen-Metadaten (Aliase)
+    // ---------------------------------------------------------
+    floorMeta: {},
+
+    loadFloorMeta() {
+        try {
+            const raw = localStorage.getItem("smarthome_floor_meta");
+            this.floorMeta = raw ? JSON.parse(raw) : {};
+        } catch (e) {
+            console.error("SmartHomeData: Fehler beim Laden der Etagen-Metadaten:", e);
+            this.floorMeta = {};
+        }
+    },
+
+    saveFloorMeta() {
+        try {
+            localStorage.setItem("smarthome_floor_meta", JSON.stringify(this.floorMeta));
+        } catch (e) {
+            console.error("SmartHomeData: Fehler beim Speichern der Etagen-Metadaten:", e);
+        }
+    },
+
+    applyFloorMeta() {
+        this.floors.forEach(floor => {
+            if (this.floorMeta[floor.id]?.alias) {
+                floor.alias = this.floorMeta[floor.id].alias;
+            }
+        });
+    },
+
+    setFloorAlias(floorId, alias) {
+        if (!this.floorMeta[floorId]) {
+            this.floorMeta[floorId] = {};
+        }
+        this.floorMeta[floorId].alias = alias;
+        this.saveFloorMeta();
+        this.refreshFloors();
+    },
+
+    refreshFloors() {
+        this.deriveFloorsFromRooms();
+        this.applyFloorMeta();
+        // später: Events für View, Minimap, Canvas
+    },
+
+    
+    
+    // ---------------------------------------------------------
     // Raumtypen (Schritt 3.3)
     // ---------------------------------------------------------
     roomTypes: {
