@@ -241,3 +241,49 @@
     font-weight: bold;
     text-decoration: underline;
 }
+
+/* ---------------------------------------------------------
+   4.10 – Statuspunkte (Online / Offline / Teilweise / Leer)
+   --------------------------------------------------------- */
+
+/* Raum‑Statuspunkt (Gruppenliste) */
+.sh-status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-left: 6px;
+    flex-shrink: 0;
+}
+
+/* Etagen‑Statuspunkt (größer, besser sichtbar beim Scrollen) */
+.sh-status-dot-floor {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    margin-left: 8px;
+    flex-shrink: 0;
+}
+
+/* Farben – bewusst leicht gedimmt für Dark‑UI */
+.sh-status-green  { background-color: #4CAF50; }   /* alles erreichbar */
+.sh-status-yellow { background-color: #FFC107; }   /* teilweise erreichbar */
+.sh-status-red    { background-color: #F44336; }   /* komplett offline / Fehler */
+.sh-status-gray   { background-color: #757575; }   /* keine Geräte */
+
+/* Gruppenliste – Raumzeile */
+.sh-group-room-inline {
+    display: inline-flex;
+    align-items: center;
+}
+
+/* Etagenliste – Etagenzeile */
+.sh-floor-entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+}
+
+.sh-floor-entry.highlighted {
+    font-weight: 600;
+}
