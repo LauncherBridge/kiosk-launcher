@@ -57,17 +57,66 @@ window.SmartHomeView = {
         if (closeBtn) {
             closeBtn.addEventListener("click", () => this.closePopup());
         }
+
         // Gruppen-Zurück-Button
         const backBtn = document.getElementById("sh-group-back");
         if (backBtn) {
             backBtn.addEventListener("click", () => {
                 if (this.activeGroup) {
-                    // zurück zum ersten Raum der Gruppe
                     const firstRoom = this.activeGroup.roomIds[0];
                     this._goToRoom(firstRoom);
                 }
             });
         }
+
+        // 4.12 – Etagenliste initial rendern
+        this.renderFloorList();
+        this.bindFloorListEvents();
+    },
+
+    // ---------------------------------------------------------
+    // 4.12 – Etagenliste Rendering
+    // ---------------------------------------------------------
+    renderFloorList() {
+        const el = document.getElementById("sh-floor-list");
+        if (!el) return;
+
+        const floors = SmartHomeData.floors;
+        if (!floors || floors.length === 0) {
+            el.innerHTML = "";
+            return;
+        }
+
+        let html = "";
+
+        floors.forEach(floor => {
+            const status = SmartHomeData.getFloorStatus(floor.id);
+            const name = SmartHomeData.getFloorDisplayName(floor.id);
+
+            html += `
+                <div class="sh-floor-item" data-floor="${floor.id}">
+                    <div class="sh-floor-status ${status}"></div>
+                    <div class="sh-floor-name">${name}</div>
+                </div>
+            `;
+        });
+
+        el.innerHTML = html;
+    },
+
+    bindFloorListEvents() {
+        const el = document.getElementById("sh-floor-list");
+        if (!el) return;
+
+        el.addEventListener("click", (ev) => {
+            const item = ev.target.closest(".sh-floor-item");
+            if (!item) return;
+
+            const floorId = Number(item.dataset.floor);
+            console.log("Etage geklickt:", floorId);
+
+            // später: SmartHomeView.setActiveFloor(floorId);
+        });
     },
 
     _resize() {
