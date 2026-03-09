@@ -29,6 +29,13 @@ window.SmartHomeData = {
         // Sortieren: höchste Etage zuerst
         this.floors = [...floors.values()].sort((a, b) => b.id - a.id);
     },
+    
+    refreshFloors() {
+        this.deriveFloorsFromRooms();
+    
+        // später: Events für View, Minimap, Canvas
+        // z.B. SmartHomeEvents.emit("floorsChanged");
+    },
 
     setFloorAlias(floorId, alias) {
         const f = this.floors.find(x => x.id === floorId);
