@@ -7,58 +7,6 @@ window.SmartHomeData = {
     // ---------------------------------------------------------
     floors: [],
 
-    deriveFloorsFromRooms() {
-        const floors = new Map();
-
-        this.rooms.forEach(room => {
-            if (room.floor === undefined || room.floor === null) return;
-
-            const id = Number(room.floor);
-
-            if (!floors.has(id)) {
-                floors.set(id, {
-                    id,
-                    alias: null,
-                    rooms: []
-                });
-            }
-
-            floors.get(id).rooms.push(room.id);
-        });
-
-        // Sortieren: höchste Etage zuerst
-        this.floors = [...floors.values()].sort((a, b) => b.id - a.id);
-    },
-    
-    refreshFloors() {
-        this.deriveFloorsFromRooms();
-    
-        // später: Events für View, Minimap, Canvas
-        // z.B. SmartHomeEvents.emit("floorsChanged");
-    },
-
-    setFloorAlias(floorId, alias) {
-        const f = this.floors.find(x => x.id === floorId);
-        if (!f) return;
-        f.alias = alias;
-    },
-
-    getFloorDisplayName(floorId) {
-        const f = this.floors.find(x => x.id === floorId);
-        if (!f) return String(floorId);
-
-        return f.alias || this._defaultFloorName(floorId);
-    },
-
-    _defaultFloorName(id) {
-        if (id === 0) return "Erdgeschoss";
-        if (id > 0) return `${id}. Obergeschoss`;
-        return `${Math.abs(id)}. Untergeschoss`;
-    },
-
-    // ---------------------------------------------------------
-    // Persistente Etagen-Metadaten (Aliase)
-    // ---------------------------------------------------------
     floorMeta: {},
 
     loadFloorMeta() {
@@ -79,12 +27,48 @@ window.SmartHomeData = {
         }
     },
 
+    deriveFloorsFromRooms() {
+        const floors = new Map();
+
+        this.rooms.forEach(room => {
+            if (room.floor === undefined || room.floor === null) return;
+
+            const id = Number(room.floor);
+            if (isNaN(id)) return; // ungültige Etage ignorieren
+
+            if (!floors.has(id)) {
+                floors.set(id, {
+                    id,
+                    alias: null,
+                    rooms: []
+                });
+            }
+
+            floors.get(id).rooms.push(room.id);
+        });
+
+        // Leere Etagen entfernen
+        for (const [id, floor] of floors.entries()) {
+            if (floor.rooms.length === 0) {
+                floors.delete(id);
+            }
+        }
+
+        // Sortieren: höchste Etage zuerst
+        this.floors = [...floors.values()].sort((a, b) => b.id - a.id);
+    },
+
     applyFloorMeta() {
         this.floors.forEach(floor => {
             if (this.floorMeta[floor.id]?.alias) {
                 floor.alias = this.floorMeta[floor.id].alias;
             }
         });
+    },
+
+    refreshFloors() {
+        this.deriveFloorsFromRooms();
+        this.applyFloorMeta();
     },
 
     setFloorAlias(floorId, alias) {
@@ -96,14 +80,18 @@ window.SmartHomeData = {
         this.refreshFloors();
     },
 
-    refreshFloors() {
-        this.deriveFloorsFromRooms();
-        this.applyFloorMeta();
-        // später: Events für View, Minimap, Canvas
+    getFloorDisplayName(floorId) {
+        const f = this.floors.find(x => x.id === floorId);
+        if (!f) return String(floorId);
+        return f.alias || this._defaultFloorName(floorId);
     },
 
-    
-    
+    _defaultFloorName(id) {
+        if (id === 0) return "Erdgeschoss";
+        if (id > 0) return `${id}. Obergeschoss`;
+        return `${Math.abs(id)}. Untergeschoss`;
+    },
+
     // ---------------------------------------------------------
     // Raumtypen (Schritt 3.3)
     // ---------------------------------------------------------
@@ -410,6 +398,7 @@ window.SmartHomeData = {
 };
 
 // ---------------------------------------------------------
-// Automatische Etagen-Ableitung direkt nach Laden der Räume
+// Initialisierung
 // ---------------------------------------------------------
-window.SmartHomeData.deriveFloorsFromRooms();
+window.SmartHomeData.loadFloorMeta();
+window.SmartHomeData.refreshFloors();
