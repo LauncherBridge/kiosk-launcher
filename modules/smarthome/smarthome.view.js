@@ -431,6 +431,16 @@ window.SmartHomeView = {
 
             document.getElementById("sh-group-header").classList.add("hidden");
             document.getElementById("sh-group-back").classList.add("hidden");
+                // 3.1 – Auto‑Zentrierung für Einzelraum
+            const room = SmartHomeData.getRoom(roomId);
+            if (room) {
+                const bounds = this._getRoomBounds(room);
+                const t = this._computeFocusTransform(bounds);
+        
+                this.targetScale = t.targetScale;
+                this.targetOffsetX = t.targetOffsetX;
+                this.targetOffsetY = t.targetOffsetY;
+            }
             return;
         }
 
