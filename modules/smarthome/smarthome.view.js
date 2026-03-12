@@ -37,6 +37,15 @@ window.SmartHomeView = {
 
     animationFrame: null,
 
+    // 3.0 – Navigations-Config
+    nav: {
+        minScale: 0.3,
+        maxScale: 3,
+        focusPadding: 80,   // px Rand um fokussierte Räume
+        zoomLerp: 0.15,     // Zoom-Interpolation
+        panLerp: 0.15       // Pan-Interpolation
+    },
+
     init() {
         this.canvas = document.getElementById("smarthome-canvas");
         this.overlay = document.getElementById("smarthome-overlay");
@@ -251,10 +260,48 @@ window.SmartHomeView = {
     },
 
     _animate() {
-        this.scale += (this.targetScale - this.scale) * 0.15;
-        this.offsetX += (this.targetOffsetX - this.offsetX) * 0.15;
-        this.offsetY += (this.targetOffsetY - this.offsetY) * 0.15;
+        const { zoomLerp, panLerp } = this.nav;
+
+        this.scale += (this.targetScale - this.scale) * zoomLerp;
+        this.offsetX += (this.targetOffsetX - this.offsetX) * panLerp;
+        this.offsetY += (this.targetOffsetY - this.offsetY) * panLerp;
         this.highlightAlpha += (this.targetHighlightAlpha - this.highlightAlpha) * 0.15;
+    },
+
+    // 3.0 – Basis-Helfer für Raum-Fokus
+    _getRoomBounds(room) {
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+        room.polygon.forEach(p => {
+            minX = Math.min(minX, p.x);
+            minY = Math.min(minY, p.y);
+            maxX = Math.max(maxX, p.x);
+            maxY = Math.max(maxY, p.y);
+        });
+
+        return { minX, minY, maxX, maxY };
+    },
+
+    _computeFocusTransform(bounds) {
+        const { minX, minY, maxX, maxY } = bounds;
+        const padding = this.nav.focusPadding;
+
+        const roomWidth = maxX - minX;
+        const roomHeight = maxY - minY;
+
+        const scaleX = this.canvas.width / (roomWidth + padding * 2);
+        const scaleY = this.canvas.height / (roomHeight + padding * 2);
+
+        let targetScale = Math.min(scaleX, scaleY);
+        targetScale = Math.max(this.nav.minScale, Math.min(this.nav.maxScale, targetScale));
+
+        const centerX = (minX + maxX) / 2;
+        const centerY = (minY + maxY) / 2;
+
+        const targetOffsetX = this.canvas.width / 2 - centerX * targetScale;
+        const targetOffsetY = this.canvas.height / 2 - centerY * targetScale;
+
+        return { targetScale, targetOffsetX, targetOffsetY };
     },
 
     _bindEvents() {
@@ -332,7 +379,8 @@ window.SmartHomeView = {
                 this.targetScale *= (1 - zoomIntensity);
             }
 
-            this.targetScale = Math.max(0.3, Math.min(3, this.targetScale));
+            // Clamping über nav-Config
+            this.targetScale = Math.max(this.nav.minScale, Math.min(this.nav.maxScale, this.targetScale));
 
             const rect = this.canvas.getBoundingClientRect();
             const mx = ev.clientX - rect.left;
