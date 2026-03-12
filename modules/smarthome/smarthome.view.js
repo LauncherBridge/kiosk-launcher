@@ -118,7 +118,6 @@ window.SmartHomeView = {
             const status = SmartHomeData.getFloorStatus(floor.id);
             const name = SmartHomeData.getFloorDisplayName(floor.id);
 
-            // Active‑Klasse setzen
             const activeClass = (this.activeFloor === floor.id) ? "active" : "";
 
             html += `
@@ -136,9 +135,7 @@ window.SmartHomeView = {
         const el = document.getElementById("sh-floor-list");
         if (!el) return;
 
-        // ---------------------------------------------------------
         // Klick auf Etage
-        // ---------------------------------------------------------
         el.addEventListener("click", (ev) => {
             const item = ev.target.closest(".sh-floor-item");
             if (!item) return;
@@ -147,12 +144,9 @@ window.SmartHomeView = {
             this.setActiveFloor(floorId);
         });
 
-        // ---------------------------------------------------------
         // Vorbereitung für Snap‑Scrolling
-        // ---------------------------------------------------------
         const list = el;
 
-        // --- START (Touch + Maus) ---
         const start = (y) => {
             this.floorScroll.lastY = y;
             this.floorScroll.lastTime = performance.now();
@@ -168,7 +162,6 @@ window.SmartHomeView = {
             start(ev.clientY);
         });
 
-        // --- MOVE (Touch + Maus) ---
         const move = (y) => {
             if (!this.floorScroll.isTouching) return;
 
@@ -192,12 +185,11 @@ window.SmartHomeView = {
             move(ev.clientY);
         });
 
-        // --- END (Touch + Maus) ---
         const end = () => {
             if (!this.floorScroll.isTouching) return;
             this.floorScroll.isTouching = false;
 
-            this.onFloorScrollEnd(); // später Snap‑Scrolling
+            this.onFloorScrollEnd();
         };
 
         list.addEventListener("touchend", end);
@@ -233,10 +225,8 @@ window.SmartHomeView = {
         this.offsetX = 0;
         this.offsetY = 0;
 
-        // 2.13.2 – Mini‑Map aktualisieren
+        // Mini‑Map aktualisieren
         this.minimapRooms = [];
-
-        // 5) Canvas‑Update kommt in Schritt 3.x
     },
 
     _resize() {
@@ -329,6 +319,29 @@ window.SmartHomeView = {
                 }
             }
 
+            // 3.2b – Tür-Klick
+            const roomsForDoors = this.activeFloor
+                ? SmartHomeData.rooms.filter(r => r.floor === this.activeFloor)
+                : SmartHomeData.rooms;
+
+            for (const room of roomsForDoors) {
+                if (!room.doors) continue;
+
+                for (const door of room.doors) {
+                    const dx = door.position.x;
+                    const dy = door.position.y;
+
+                    const dist = Math.hypot(x - dx, y - dy);
+                    if (dist < 14) {
+                        const targetRoom = this._findAdjacentRoom(room.id, door);
+                        if (targetRoom) {
+                            this._goToRoom(targetRoom.id);
+                            return;
+                        }
+                    }
+                }
+            }
+
             // Raum-Klick
             for (const room of SmartHomeData.rooms) {
                 if (this._pointInPolygon({ x, y }, room.polygon)) {
@@ -379,7 +392,6 @@ window.SmartHomeView = {
                 this.targetScale *= (1 - zoomIntensity);
             }
 
-            // Clamping über nav-Config
             this.targetScale = Math.max(this.nav.minScale, Math.min(this.nav.maxScale, this.targetScale));
 
             const rect = this.canvas.getBoundingClientRect();
@@ -431,12 +443,13 @@ window.SmartHomeView = {
 
             document.getElementById("sh-group-header").classList.add("hidden");
             document.getElementById("sh-group-back").classList.add("hidden");
-                // 3.1 – Auto‑Zentrierung für Einzelraum
+
+            // 3.1 – Auto‑Zentrierung für Einzelraum
             const room = SmartHomeData.getRoom(roomId);
             if (room) {
                 const bounds = this._getRoomBounds(room);
                 const t = this._computeFocusTransform(bounds);
-        
+
                 this.targetScale = t.targetScale;
                 this.targetOffsetX = t.targetOffsetX;
                 this.targetOffsetY = t.targetOffsetY;
@@ -445,7 +458,7 @@ window.SmartHomeView = {
         }
 
         // Gruppe
-        this.activeRoom = roomId; // aktiver Raum innerhalb der Gruppe
+        this.activeRoom = roomId;
         this.activeGroup = {
             type: eff.type,
             id: eff.group.id,
@@ -474,7 +487,6 @@ window.SmartHomeView = {
         const roomsEl = document.getElementById("sh-group-rooms");
         roomsEl.innerHTML = "";
 
-        // 1. Räume nach Typ gruppieren
         const groupsByType = {};
         eff.group.roomIds.forEach(rid => {
             const room = SmartHomeData.getRoom(rid);
@@ -486,25 +498,20 @@ window.SmartHomeView = {
             groupsByType[type].push(room);
         });
 
-        // 2. Typ‑Gruppen alphabetisch sortieren
         const sortedTypes = Object.keys(groupsByType).sort();
 
-        // 3. Innerhalb jeder Gruppe alphabetisch sortieren und eine Zeile erzeugen
         sortedTypes.forEach(typeName => {
             const rooms = groupsByType[typeName].sort((a, b) =>
                 a.name.localeCompare(b.name)
             );
 
-            // Zeile erstellen
             const line = document.createElement("div");
             line.className = "sh-group-line";
 
-            // Fett: Gruppenname
             const strong = document.createElement("strong");
             strong.textContent = typeName + " – ";
             line.appendChild(strong);
 
-            // Räume kommasepariert
             rooms.forEach((room, index) => {
                 const span = document.createElement("span");
                 span.textContent = room.name;
@@ -528,7 +535,6 @@ window.SmartHomeView = {
             roomsEl.appendChild(line);
         });
 
-        // 4.11 – Auto‑Scroll zum aktiven Raum
         this._scrollActiveRoomIntoView();
 
         // 4.3.F.11 – Leichter Zoom auf aktiven Raum
@@ -608,15 +614,13 @@ window.SmartHomeView = {
     },
 
     onFloorScrollEnd() {
-        // Wenn noch Momentum vorhanden ist → erst auslaufen lassen
         if (Math.abs(this.floorScroll.velocity) > 0.25) {
             this.applyFloorMomentum();
             return;
         }
 
-        // Dead‑Zone: Mini‑Bewegungen ignorieren
         if (Math.abs(this.floorScroll.velocity) < 0.02) {
-            return; // kein Snap, kein Momentum
+            return;
         }
 
         const list = document.getElementById("sh-floor-list");
@@ -625,46 +629,37 @@ window.SmartHomeView = {
         const items = Array.from(list.querySelectorAll(".sh-floor-item"));
         if (items.length === 0) return;
 
-        // 1) Aktuelle Scrollposition
         const scrollTop = list.scrollTop;
         const itemHeight = items[0].offsetHeight;
 
-        // 2) Aktuellen Index bestimmen
         let currentIndex = scrollTop / itemHeight;
 
-        // Richtung berücksichtigen
         if (this.floorScroll.velocity > 0) {
             currentIndex = Math.floor(currentIndex);
         } else {
             currentIndex = Math.ceil(currentIndex);
         }
 
-        // 3) Velocity auswerten (px/ms)
         const v = this.floorScroll.velocity;
 
         let targetIndex = currentIndex;
 
-        // 4) Richtung bestimmen
         if (v > 0.12) {
             targetIndex = currentIndex + 1;
         } else if (v < -0.12) {
             targetIndex = currentIndex - 1;
         }
 
-        // 5) Grenzen + Stabilität
         if (targetIndex < 0) targetIndex = 0;
         if (targetIndex >= items.length) targetIndex = items.length - 1;
 
-        // Wenn Velocity klein → beim aktuellen Floor bleiben
         if (Math.abs(this.floorScroll.velocity) < 0.05) {
             targetIndex = currentIndex;
         }
 
-        // 6) Ziel‑Element
         const targetItem = items[targetIndex];
         if (!targetItem) return;
 
-        // Sanfter Snap‑Start
         setTimeout(() => {
             targetItem.scrollIntoView({
                 behavior: "smooth",
@@ -672,7 +667,6 @@ window.SmartHomeView = {
             });
         }, 20);
 
-        // 8) Etage setzen
         const floorId = Number(targetItem.dataset.floor);
         this.setActiveFloor(floorId);
     },
@@ -682,23 +676,20 @@ window.SmartHomeView = {
         if (!list) return;
 
         let v = this.floorScroll.velocity;
-        // Velocity begrenzen (Clamping)
         v = Math.max(-0.8, Math.min(0.8, v));
 
         if (Math.abs(v) < 0.01) {
-            // Geschwindigkeit zu gering → direkt einrasten
             setTimeout(() => this.onFloorScrollEnd(), 10);
             return;
         }
 
-        const friction = 0.92; // Reibung pro Frame
+        const friction = 0.92;
         const frame = () => {
             v *= friction;
 
-            list.scrollTop += v * 20; // Geschwindigkeit → Pixelbewegung
+            list.scrollTop += v * 20;
 
             if (Math.abs(v) < 0.01) {
-                // Stop → Snap‑Scrolling
                 setTimeout(() => this.onFloorScrollEnd(), 10);
                 return;
             }
@@ -722,7 +713,6 @@ window.SmartHomeView = {
         ctx.translate(this.offsetX, this.offsetY);
         ctx.scale(this.scale, this.scale);
 
-        // Räume nach aktiver Etage filtern (oder alle, wenn keine aktiv)
         this.rooms = this.activeFloor
             ? SmartHomeData.rooms.filter(r => r.floor === this.activeFloor)
             : SmartHomeData.rooms;
@@ -735,14 +725,12 @@ window.SmartHomeView = {
 
             const isInGroup = activeGroup && activeGroup.includes(room.id);
 
-            // Highlight Einzelraum
             if (this.activeRoom === room.id) {
                 ctx.fillStyle = `rgba(255, 184, 108, ${0.3 + this.highlightAlpha * 0.4})`;
             } else {
                 ctx.fillStyle = fillColor;
             }
 
-            // Raum zeichnen
             ctx.beginPath();
             ctx.moveTo(room.polygon[0].x, room.polygon[0].y);
 
@@ -753,7 +741,6 @@ window.SmartHomeView = {
             ctx.closePath();
             ctx.fill();
 
-            // --- Gruppen‑Highlight ---
             if (isInGroup) {
                 ctx.save();
                 ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
@@ -767,13 +754,11 @@ window.SmartHomeView = {
                 ctx.restore();
             }
 
-            // Label
             ctx.fillStyle = "var(--sh-text)";
             ctx.font = "20px sans-serif";
             ctx.textBaseline = "top";
             ctx.fillText(room.name, room.polygon[0].x + 12, room.polygon[0].y + 12);
 
-            // Icon (zentriert)
             if (type?.icon) {
                 ctx.fillStyle = "var(--sh-text)";
                 ctx.font = "28px MaterialIcons";
@@ -834,7 +819,6 @@ window.SmartHomeView = {
 
         ctx.clearRect(0, 0, w, h);
 
-        // Räume nach aktiver Etage filtern (oder alle)
         const rooms = this.activeFloor
             ? SmartHomeData.rooms.filter(r => r.floor === this.activeFloor)
             : SmartHomeData.rooms;
@@ -865,7 +849,6 @@ window.SmartHomeView = {
 
             ctx.fillRect(r.x, r.y, r.w, r.h);
 
-            // Gruppen‑Highlight Mini‑Map
             if (isInGroup) {
                 ctx.fillStyle = "rgba(255, 255, 255, 0.15)";
                 ctx.fillRect(r.x, r.y, r.w, r.h);
@@ -875,13 +858,11 @@ window.SmartHomeView = {
                 ctx.strokeRect(r.x, r.y, r.w, r.h);
             }
 
-            // Label
             ctx.fillStyle = "#FFFFFF";
             ctx.font = "12px sans-serif";
             ctx.textBaseline = "top";
             ctx.fillText(r.label, r.x + 5, r.y + 5);
 
-            // Icon
             if (type?.icon) {
                 ctx.fillStyle = "#FFFFFF";
                 ctx.font = "14px MaterialIcons";
@@ -955,6 +936,16 @@ window.SmartHomeView = {
         return room.floor ?? null;
     },
 
+    // 3.2b – Tür-Nachbarraum bestimmen
+    _findAdjacentRoom(currentRoomId, door) {
+        if (!door) return null;
+
+        const targetId = door.connectsTo;
+        if (!targetId || targetId === currentRoomId) return null;
+
+        return SmartHomeData.getRoom(targetId) || null;
+    },
+
     // ---------------------------------------------------------
     // 4.1 + 4.2 – Popup‑System + Status‑System
     // ---------------------------------------------------------
@@ -968,14 +959,12 @@ window.SmartHomeView = {
         title.textContent = container.name;
         icon.textContent = type?.icon || "device_unknown";
 
-        // Tabs aktivieren
         document.querySelectorAll(".sh-popup-tabs button").forEach(btn => {
             btn.onclick = () => {
                 this._renderPopupTab(container, btn.dataset.tab);
             };
         });
 
-        // Standard-Tab
         this._renderPopupTab(container, "status");
 
         popup.classList.remove("hidden");
@@ -985,7 +974,6 @@ window.SmartHomeView = {
         document.getElementById("smarthome-popup").classList.add("hidden");
     },
 
-    // 4.2 – Status‑Rendering
     _renderPopupTab(container, tab) {
         const body = document.getElementById("sh-popup-body");
 
