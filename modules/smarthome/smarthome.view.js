@@ -10,6 +10,13 @@ window.SmartHomeView = {
     activeGroup: null, // Gruppenfähig
     rooms: [],
     minimapRooms: [],
+    // Floor‑Scroll‑State (für Snap‑Scrolling)
+    floorScroll = {
+        lastY: 0,
+        lastTime: 0,
+        velocity: 0,
+        isTouching: false
+    },
 
     // Zoom & Pan State
     scale: 1,
@@ -72,6 +79,13 @@ window.SmartHomeView = {
         // 4.12 – Etagenliste initial rendern
         this.renderFloorList();
         this.bindFloorListEvents();
+        // Wenn noch keine Etage aktiv ist → erste Etage setzen
+        if (!this.activeFloor && SmartHomeData.floors.length > 0) {
+            this.activeFloor = SmartHomeData.floors[0].id;
+        }
+        // Active‑State in der Liste setzen
+        this.setActiveFloor(this.activeFloor);
+
     },
 
     // ---------------------------------------------------------
@@ -108,42 +122,112 @@ window.SmartHomeView = {
     },
 
 
-    bindFloorListEvents() {
-        const el = document.getElementById("sh-floor-list");
-        if (!el) return;
+ bindFloorListEvents() {
+    const el = document.getElementById("sh-floor-list");
+    if (!el) return;
 
-        el.addEventListener("click", (ev) => {
-            const item = ev.target.closest(".sh-floor-item");
-            if (!item) return;
+    // ---------------------------------------------------------
+    // Klick auf Etage
+    // ---------------------------------------------------------
+    el.addEventListener("click", (ev) => {
+        const item = ev.target.closest(".sh-floor-item");
+        if (!item) return;
 
-            const floorId = Number(item.dataset.floor);
-            this.setActiveFloor(floorId);
+        const floorId = Number(item.dataset.floor);
+        this.setActiveFloor(floorId);
+    });
 
-            // später: SmartHomeView.setActiveFloor(floorId);
-        });
-    },
+    // ---------------------------------------------------------
+    // Vorbereitung für Snap‑Scrolling
+    // ---------------------------------------------------------
+    const list = el;
+
+    // --- START (Touch + Maus) ---
+    const start = (y) => {
+        this.floorScroll.lastY = y;
+        this.floorScroll.lastTime = performance.now();
+        this.floorScroll.velocity = 0;
+        this.floorScroll.isTouching = true;
+    };
+
+    list.addEventListener("touchstart", (ev) => {
+        start(ev.touches[0].clientY);
+    });
+
+    list.addEventListener("mousedown", (ev) => {
+        start(ev.clientY);
+    });
+
+    // --- MOVE (Touch + Maus) ---
+    const move = (y) => {
+        if (!this.floorScroll.isTouching) return;
+
+        const now = performance.now();
+        const dy = y - this.floorScroll.lastY;
+        const dt = now - this.floorScroll.lastTime;
+
+        if (dt > 0) {
+            this.floorScroll.velocity = dy / dt; // px/ms
+        }
+
+        this.floorScroll.lastY = y;
+        this.floorScroll.lastTime = now;
+    };
+
+    list.addEventListener("touchmove", (ev) => {
+        move(ev.touches[0].clientY);
+    });
+
+    window.addEventListener("mousemove", (ev) => {
+        move(ev.clientY);
+    });
+
+    // --- END (Touch + Maus) ---
+    const end = () => {
+        if (!this.floorScroll.isTouching) return;
+        this.floorScroll.isTouching = false;
+
+        this.onFloorScrollEnd(); // später Snap‑Scrolling
+    };
+
+    list.addEventListener("touchend", end);
+    window.addEventListener("mouseup", end);
+},
 
     setActiveFloor(floorId) {
-        this.activeFloor = floorId;
-    
-        // 1) Active‑Klasse in der Liste setzen
-        const items = document.querySelectorAll(".sh-floor-item");
-        items.forEach(item => {
-            const id = Number(item.dataset.floor);
-            item.classList.toggle("active", id === floorId);
-        });
-    
-        // 2) Räume filtern
-        this.filteredRooms = SmartHomeData.rooms.filter(r => r.floor === floorId);
-    
-        // 3) Minimap filtern
-        this.filteredMinimapRooms = this.filteredRooms.map(r => r.id);
-    
-        // 4) Scrollen
-        this._scrollActiveFloorIntoView();
-    
-        // 5) Canvas‑Update kommt in Schritt 3.x
-    },
+    if (this.activeFloor === floorId) return;
+
+    this.activeFloor = floorId;
+
+    // 1) Active‑State in der Liste setzen
+    document.querySelectorAll(".sh-floor-item").forEach(item => {
+        item.classList.toggle("active", Number(item.dataset.floor) === floorId);
+    });
+
+    // 2) Scroll zur aktiven Etage
+    this._scrollActiveFloorIntoView();
+
+    // 3) Raum‑Reset
+    this.activeRoom = null;
+
+    // 4) Canvas‑Reset
+    this.targetScale = 1;
+    this.targetOffsetX = 0;
+    this.targetOffsetY = 0;
+    this.activeRoom = null;
+    this.activeGroup = null;
+    this.targetHighlightAlpha = 0;
+    // Sanfter Übergang
+    this.scale = 1;
+    this.offsetX = 0;
+    this.offsetY = 0;
+
+
+    // 2.13.2 – Mini‑Map aktualisieren
+    this.minimapRooms = [];
+
+    // 5) Canvas‑Update kommt in Schritt 3.x
+},
 
 
     
@@ -464,6 +548,116 @@ window.SmartHomeView = {
         });
     }
 
+onFloorScrollEnd() {
+    // Wenn noch Momentum vorhanden ist → erst auslaufen lassen
+    if (Math.abs(this.floorScroll.velocity) > 0.25) {
+        this.applyFloorMomentum();
+        return;
+    }
+
+    // Dead‑Zone: Mini‑Bewegungen ignorieren
+    if (Math.abs(this.floorScroll.velocity) < 0.02) {
+        return; // kein Snap, kein Momentum
+    }
+
+    const list = document.getElementById("sh-floor-list");
+    if (!list) return;
+
+    const items = Array.from(list.querySelectorAll(".sh-floor-item"));
+    if (items.length === 0) return;
+
+    // 1) Aktuelle Scrollposition
+    const scrollTop = list.scrollTop;
+    const itemHeight = items[0].offsetHeight;
+
+    // 2) Aktuellen Index bestimmen
+    let currentIndex = scrollTop / itemHeight;
+    
+    // Richtung berücksichtigen
+    if (this.floorScroll.velocity > 0) {
+        currentIndex = Math.floor(currentIndex);
+    } else {
+        currentIndex = Math.ceil(currentIndex);
+    }
+
+    // 3) Velocity auswerten (px/ms)
+    const v = this.floorScroll.velocity;
+
+    let targetIndex = currentIndex;
+
+    // 4) Richtung bestimmen
+    if (v > 0.12) {
+        targetIndex = currentIndex + 1;
+    } else if (v < -0.12) {
+        targetIndex = currentIndex - 1;
+    }
+
+
+    // 5) Grenzen einhalten
+    // Grenzen + Stabilität
+    if (targetIndex < 0) targetIndex = 0;
+    if (targetIndex >= items.length) targetIndex = items.length - 1;
+    
+    // Wenn Velocity klein → beim aktuellen Floor bleiben
+    if (Math.abs(this.floorScroll.velocity) < 0.05) {
+        targetIndex = currentIndex;
+    }
+
+    // 6) Ziel‑Element
+    const targetItem = items[targetIndex];
+    if (!targetItem) return;
+
+  
+    // Sanfter Snap‑Start
+    setTimeout(() => {
+        targetItem.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest"
+        });
+    }, 20);
+    
+      // 7) Sanft einrasten
+    targetItem.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest"
+    });
+
+    // 8) Etage setzen
+    const floorId = Number(targetItem.dataset.floor);
+    this.setActiveFloor(floorId);
+},
+
+applyFloorMomentum() {
+    const list = document.getElementById("sh-floor-list");
+    if (!list) return;
+
+    let v = this.floorScroll.velocity;
+    // Velocity begrenzen (Clamping)
+    v = Math.max(-0.8, Math.min(0.8, v));
+
+    if (Math.abs(v) < 0.01) {
+        // Geschwindigkeit zu gering → direkt einrasten
+setTimeout(() => this.onFloorScrollEnd(), 10);
+        return;
+    }
+
+    const friction = 0.92; // Reibung pro Frame
+    const frame = () => {
+        v *= friction;
+
+        list.scrollTop += v * 20; // Geschwindigkeit → Pixelbewegung
+
+        if (Math.abs(v) < 0.01) {
+            // Stop → Snap‑Scrolling
+setTimeout(() => this.onFloorScrollEnd(), 10);
+            return;
+        }
+
+        requestAnimationFrame(frame);
+    };
+
+    requestAnimationFrame(frame);
+},
 
     // ---------------------------------------------------------
     // Haupt‑Rendering
@@ -482,7 +676,7 @@ window.SmartHomeView = {
         this.rooms = this.activeFloor
             ? SmartHomeData.rooms.filter(r => r.floor === this.activeFloor)
             : SmartHomeData.rooms;
-         = SmartHomeData.rooms;
+       
 
         const activeGroup = this.activeGroup ? this.activeGroup.roomIds : null;
 
