@@ -126,15 +126,25 @@ window.SmartHomeView = {
     setActiveFloor(floorId) {
         this.activeFloor = floorId;
     
-        // Active‑Klasse setzen
+        // 1) Active‑Klasse in der Liste setzen
         const items = document.querySelectorAll(".sh-floor-item");
         items.forEach(item => {
             const id = Number(item.dataset.floor);
             item.classList.toggle("active", id === floorId);
         });
     
+        // 2) Räume filtern
+        this.filteredRooms = SmartHomeData.rooms.filter(r => r.floor === floorId);
+    
+        // 3) Minimap filtern
+        this.filteredMinimapRooms = this.filteredRooms.map(r => r.id);
+    
+        // 4) Scrollen
         this._scrollActiveFloorIntoView();
+    
+        // 5) Canvas‑Update kommt in Schritt 3.x
     },
+
 
     
     _resize() {
@@ -272,6 +282,12 @@ window.SmartHomeView = {
     // 4.3.D – Gruppenfähige Navigation
     // ---------------------------------------------------------
     _goToRoom(roomId) {
+        // Etage automatisch setzen
+        const floor = this.getFloorOfRoom(roomId);
+        if (floor !== null && floor !== this.activeFloor) {
+            this.setActiveFloor(floor);
+        }
+
         const eff = SmartHomeGroups.getEffectiveGroupForRoom(roomId);
 
         // Einzelraum
@@ -462,7 +478,11 @@ window.SmartHomeView = {
         ctx.translate(this.offsetX, this.offsetY);
         ctx.scale(this.scale, this.scale);
 
-        this.rooms = SmartHomeData.rooms;
+        // Räume nach aktiver Etage filtern (oder alle, wenn keine aktiv)
+        this.rooms = this.activeFloor
+            ? SmartHomeData.rooms.filter(r => r.floor === this.activeFloor)
+            : SmartHomeData.rooms;
+         = SmartHomeData.rooms;
 
         const activeGroup = this.activeGroup ? this.activeGroup.roomIds : null;
 
@@ -571,7 +591,12 @@ window.SmartHomeView = {
 
         ctx.clearRect(0, 0, w, h);
 
-        this.minimapRooms = SmartHomeData.rooms.map(r => ({
+        // Räume nach aktiver Etage filtern (oder alle)
+        const rooms = this.activeFloor
+            ? SmartHomeData.rooms.filter(r => r.floor === this.activeFloor)
+            : SmartHomeData.rooms;
+        
+        this.minimapRooms = rooms.map(r => ({
             id: r.id,
             x: r.minimap.x,
             y: r.minimap.y,
@@ -681,6 +706,16 @@ window.SmartHomeView = {
         return inside;
     },
 
+
+
+    getFloorOfRoom(roomId) {
+        const room = SmartHomeData.getRoom(roomId);
+        if (!room) return null;
+        return room.floor ?? null;
+    },
+
+
+    
     // ---------------------------------------------------------
     // 4.1 + 4.2 – Popup‑System + Status‑System
     // ---------------------------------------------------------
