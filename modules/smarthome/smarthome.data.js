@@ -34,7 +34,7 @@ window.SmartHomeData = {
             if (room.floor === undefined || room.floor === null) return;
 
             const id = Number(room.floor);
-            if (isNaN(id)) return; // ungültige Etage ignorieren
+            if (isNaN(id)) return;
 
             if (!floors.has(id)) {
                 floors.set(id, {
@@ -47,14 +47,12 @@ window.SmartHomeData = {
             floors.get(id).rooms.push(room.id);
         });
 
-        // Leere Etagen entfernen
         for (const [id, floor] of floors.entries()) {
             if (floor.rooms.length === 0) {
                 floors.delete(id);
             }
         }
 
-        // Sortieren: höchste Etage zuerst
         this.floors = [...floors.values()].sort((a, b) => b.id - a.id);
     },
 
@@ -245,7 +243,7 @@ window.SmartHomeData = {
     ],
 
     // ---------------------------------------------------------
-    // Räume
+    // Räume (mit aktualisiertem Türmodell)
     // ---------------------------------------------------------
     rooms: [
         {
@@ -271,11 +269,13 @@ window.SmartHomeData = {
 
             doors: [
                 {
-                    to: "kueche",
+                    roomId: "wohnzimmer",
+                    connectsTo: "kueche",
                     position: { x: 400, y: 200 }
                 },
                 {
-                    to: "flur",
+                    roomId: "wohnzimmer",
+                    connectsTo: "flur",
                     position: { x: 250, y: 300 }
                 }
             ]
@@ -304,7 +304,8 @@ window.SmartHomeData = {
 
             doors: [
                 {
-                    to: "wohnzimmer",
+                    roomId: "kueche",
+                    connectsTo: "wohnzimmer",
                     position: { x: 420, y: 200 }
                 }
             ]
@@ -333,7 +334,8 @@ window.SmartHomeData = {
 
             doors: [
                 {
-                    to: "wohnzimmer",
+                    roomId: "flur",
+                    connectsTo: "wohnzimmer",
                     position: { x: 250, y: 320 }
                 }
             ]
@@ -346,7 +348,7 @@ window.SmartHomeData = {
     getNeighbors(roomId) {
         const room = this.rooms.find(r => r.id === roomId);
         if (!room) return [];
-        return room.doors.map(d => d.to);
+        return room.doors.map(d => d.connectsTo);
     },
 
     getRoom(roomId) {
