@@ -343,6 +343,82 @@ window.SmartHomeData = {
     ],
 
     // ---------------------------------------------------------
+    // 3.2c – Tür‑Merge‑Logik
+    // ---------------------------------------------------------
+    getMergedDoorsForFloor(floorId) {
+        const rooms = this.rooms.filter(r => r.floor === floorId);
+        const doorPairs = new Map();
+
+        rooms.forEach(room => {
+            room.doors?.forEach(door => {
+                const A = room.id;
+                const B = door.connectsTo;
+
+                const targetRoom = this.getRoom(B);
+                if (!targetRoom || targetRoom.floor !== floorId) return;
+
+                const key = [A, B].sort().join("|");
+
+                if (!doorPairs.has(key)) {
+                    doorPairs.set(key, []);
+                }
+
+                doorPairs.get(key).push({
+                    roomId: A,
+                    connectsTo: B,
+                    position: door.position
+                });
+            });
+        });
+
+        const merged = [];
+
+        doorPairs.forEach(list => {
+            if (list.length < 2) {
+                const d = list[0];
+                merged.push({
+                    roomA: d.roomId,
+                    roomB: d.connectsTo,
+                    posA: d.position,
+                    posB: d.position,
+                    mergedPos: d.position
+                });
+                return;
+            }
+
+            const d1 = list[0];
+            const d2 = list[1];
+
+            const mergedPos = {
+                x: (d1.position.x + d2.position.x) / 2,
+                y: (d1.position.y + d2.position.y) / 2
+            };
+
+            merged.push({
+                roomA: d1.roomId,
+                roomB: d1.connectsTo,
+                posA: d1.position,
+                posB: d2.position,
+                mergedPos
+            });
+        });
+
+        return merged;
+    },
+
+    getMergedDoorsForRoom(roomId) {
+        const room = this.getRoom(roomId);
+        if (!room) return [];
+
+        const floorId = room.floor;
+        const allMerged = this.getMergedDoorsForFloor(floorId);
+
+        return allMerged.filter(d =>
+            d.roomA === roomId || d.roomB === roomId
+        );
+    },
+
+    // ---------------------------------------------------------
     // Navigation‑Graph Helper
     // ---------------------------------------------------------
     getNeighbors(roomId) {
