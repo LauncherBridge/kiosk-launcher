@@ -31,6 +31,14 @@ window.SmartHomeView = {
     panStartX: 0,
     panStartY: 0,
 
+    // Swipe‑State (3.3)
+    swipe: {
+        startX: 0,
+        startY: 0,
+        startTime: 0,
+        isTouching: false
+    },
+
     // Highlight animation
     highlightAlpha: 0,
     targetHighlightAlpha: 0,
@@ -294,6 +302,74 @@ window.SmartHomeView = {
         return { targetScale, targetOffsetX, targetOffsetY };
     },
 
+    // ---------------------------------------------------------
+    // 3.3 – Swipe‑Navigation
+    // ---------------------------------------------------------
+    _handleSwipe(dx, dy) {
+        if (!this.activeRoom) return;
+
+        const minDistance = 30; // px
+        const maxTime = 600;    // ms – wird über startTime geprüft, hier nur Distanz
+        const distance = Math.hypot(dx, dy);
+        if (distance < minDistance) return;
+
+        const room = SmartHomeData.getRoom(this.activeRoom);
+        if (!room || !room.doors || room.doors.length === 0) return;
+
+        // Swipe‑Richtung normalisieren
+        const dirX = dx / distance;
+        const dirY = dy / distance;
+
+        const center = this._getRoomCenter(room);
+
+        let bestDoor = null;
+        let bestDot = -1;
+
+        room.doors.forEach(door => {
+            const vx = door.position.x - center.x;
+            const vy = door.position.y - center.y;
+            const len = Math.hypot(vx, vy);
+            if (len === 0) return;
+
+            const nx = vx / len;
+            const ny = vy / len;
+
+            const dot = nx * dirX + ny * dirY; // Kosinus des Winkels
+            if (dot > bestDot) {
+                bestDot = dot;
+                bestDoor = door;
+            }
+        });
+
+        // Tür muss grob in Swipe‑Richtung liegen (z.B. max 60° → cos ~ 0.5)
+        const DOT_THRESHOLD = 0.5;
+        if (!bestDoor || bestDot < DOT_THRESHOLD) return;
+
+        const targetRoom = this._findAdjacentRoom(room.id, bestDoor);
+        if (!targetRoom) return;
+
+        // Nur innerhalb derselben Etage swipen (Treppen später)
+        if (targetRoom.floor !== this.activeFloor) return;
+
+        this._goToRoom(targetRoom.id);
+    },
+
+    _getRoomCenter(room) {
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+        room.polygon.forEach(p => {
+            minX = Math.min(minX, p.x);
+            minY = Math.min(minY, p.y);
+            maxX = Math.max(maxX, p.x);
+            maxY = Math.max(maxY, p.y);
+        });
+
+        return {
+            x: (minX + maxX) / 2,
+            y: (minY + maxY) / 2
+        };
+    },
+
     _bindEvents() {
         // -------------------------
         // Klick auf Haupt‑Canvas
@@ -403,7 +479,7 @@ window.SmartHomeView = {
         }, { passive: false });
 
         // -------------------------
-        // Pan (ziehen)
+        // Pan (ziehen, Maus)
         // -------------------------
         this.canvas.addEventListener("mousedown", (ev) => {
             this.isPanning = true;
@@ -421,6 +497,33 @@ window.SmartHomeView = {
         window.addEventListener("mouseup", () => {
             this.isPanning = false;
         });
+
+        // -------------------------
+        // Swipe (Touch, 3.3)
+        // -------------------------
+        this.canvas.addEventListener("touchstart", (ev) => {
+            if (ev.touches.length !== 1) return;
+            const t = ev.touches[0];
+            this.swipe.isTouching = true;
+            this.swipe.startX = t.clientX;
+            this.swipe.startY = t.clientY;
+            this.swipe.startTime = performance.now();
+        }, { passive: true });
+
+        this.canvas.addEventListener("touchend", (ev) => {
+            if (!this.swipe.isTouching) return;
+            this.swipe.isTouching = false;
+
+            const endTime = performance.now();
+            const dt = endTime - this.swipe.startTime;
+            if (dt > 600) return; // zu langsam, kein Swipe
+
+            const t = ev.changedTouches[0];
+            const dx = t.clientX - this.swipe.startX;
+            const dy = t.clientY - this.swipe.startY;
+
+            this._handleSwipe(dx, dy);
+        }, { passive: true });
     },
 
     // ---------------------------------------------------------
