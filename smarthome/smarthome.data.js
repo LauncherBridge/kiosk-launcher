@@ -1,5 +1,3 @@
-// SmartHome Data Model
-
 window.SmartHomeData = {
 
     // ---------------------------------------------------------
@@ -278,7 +276,9 @@ window.SmartHomeData = {
                     connectsTo: "flur",
                     position: { x: 250, y: 300 }
                 }
-            ]
+            ],
+
+            // passages werden unten automatisch ergänzt
         },
 
         {
@@ -480,3 +480,12 @@ window.SmartHomeData = {
 // ---------------------------------------------------------
 window.SmartHomeData.loadFloorMeta();
 window.SmartHomeData.refreshFloors();
+
+// ---------------------------------------------------------
+// Fix: passages-Array für jeden Raum sicherstellen
+// ---------------------------------------------------------
+SmartHomeData.rooms.forEach(room => {
+    if (!Array.isArray(room.passages)) {
+        room.passages = [];
+    }
+});
