@@ -3158,13 +3158,21 @@ background: color-mix(in srgb, var(--switch-hover-color) 35%, rgba(255,255,255,0
     </div>
   </div>
 
-  <!-- WICHTIG: Canvas in Container -->
-  <div id="smartHomeCanvasContainer">
-      <canvas id="smartHomeCanvas"></canvas>
+  <!-- WICHTIG: ALLES MUSS IN panel-content -->
+  <div class="panel-content">
+
+      <!-- Canvas-Bereich -->
+      <div id="smartHomeCanvasContainer">
+          <canvas id="smartHomeCanvas"></canvas>
+      </div>
+
+      <!-- Geräte-Liste -->
+      <div id="smartHomeDeviceList"></div>
+
   </div>
 
-  <div class="panel-content" id="smartHomeDeviceList"></div>
 </div>
+
 
 
 
