@@ -1,11 +1,20 @@
 // SmartHome Module Entry Point
 
-window.SmartHome = {
+window.SmartHomeModule = {
     state: {
         panelId: null,
         defaultRoom: null,
         category: null,
         initialized: false
+    },
+
+    init() {
+        // Standard‑Initialisierung, wie vom Kiosk erwartet
+        this.open({
+            panelId: "smarthome-root",
+            defaultRoom: null,
+            category: null
+        });
     },
 
     open(config) {
@@ -17,30 +26,37 @@ window.SmartHome = {
         // Mark as initialized
         this.state.initialized = true;
 
+        // Apply theme if available
         if (window.SmartHomeTheme) {
             SmartHomeTheme.apply();
         }
-        
-        // Inject base HTML template
-        this._loadTemplate();
 
-        // Placeholder: visible confirmation
-        // this._showPlaceholder();
+        // Load HTML template
+        this._loadTemplate();
     },
 
     _loadTemplate() {
         const container = document.getElementById(this.state.panelId);
         if (!container) {
-            console.error("SmartHome: Panel container not found:", this.state.panelId);
+            console.error("SmartHomeModule: Panel container not found:", this.state.panelId);
             return;
         }
 
-        // Load template from smarthome.html (later replaced with real UI)
+        // Load template from smarthome.html
         fetch("modules/smarthome/smarthome.html")
             .then(res => res.text())
             .then(html => {
                 container.innerHTML = html;
-                SmartHomeView.init();
+
+                // Start SmartHomeView after template is injected
+                if (window.SmartHomeView) {
+                    SmartHomeView.init();
+                } else {
+                    console.error("SmartHomeView not found");
+                }
+            })
+            .catch(err => {
+                console.error("SmartHomeModule: Failed to load template:", err);
             });
     },
 
@@ -61,4 +77,3 @@ window.SmartHome = {
         `;
     }
 };
-
