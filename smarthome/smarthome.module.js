@@ -17,11 +17,15 @@ window.SmartHome = {
         // Mark as initialized
         this.state.initialized = true;
 
+        if (window.SmartHomeTheme) {
+            SmartHomeTheme.apply();
+        }
+        
         // Inject base HTML template
         this._loadTemplate();
 
         // Placeholder: visible confirmation
-        this._showPlaceholder();
+        // this._showPlaceholder();
     },
 
     _loadTemplate() {
