@@ -1772,6 +1772,12 @@ box-shadow:
   z-index: 9999;                /* über AppsPanel */
   overflow: hidden;             /* Header fix, Inhalt scrollt */
 }
+#smartHomePanel .panel-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+}
 
 /* Header identisch zum AppsPanel, aber höher */
 #smartHomePanelHeader,
