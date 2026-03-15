@@ -1916,13 +1916,19 @@ font-size: 12px !important;
   padding: 20px;
 }
 
-  #smartHomeCanvasContainer {
-    flex: 1;
+#smartHomeCanvasContainer {
+    flex: 1 1 auto;
     position: relative;
     overflow: hidden;
     width: 100%;
-    height: 100%;
+    height: auto;
+    min-height: 0;
 }
+#smartHomePanel {
+    display: flex;
+    flex-direction: column;
+}
+
 
 #smartHomeCanvas {
     width: 100%;
