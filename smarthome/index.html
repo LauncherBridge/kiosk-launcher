@@ -8,7 +8,7 @@
     <!-- Styles -->
     <link rel="stylesheet" href="smarthome.css">
 
-    <!-- Material Icons (für Popup, Back-Button etc.) -->
+    <!-- Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 
@@ -16,15 +16,12 @@
 
 <!-- SmartHome Base Template -->
 <div id="smarthome-root">
-
-    <!-- Etagenliste -->
     <div id="sh-floor-list"></div>
-
     <canvas id="smarthome-canvas"></canvas>
     <div id="smarthome-overlay"></div>
 </div>
 
-<!-- SmartHome Group Header -->
+<!-- Group Header -->
 <div id="sh-group-header" class="hidden">
     <div id="sh-group-back" class="material-icons">arrow_back</div>
     <div id="sh-group-title"></div>
@@ -34,7 +31,6 @@
 <!-- Popup -->
 <div id="smarthome-popup" class="sh-popup hidden">
     <div class="sh-popup-content">
-        
         <div class="sh-popup-header">
             <span id="sh-popup-icon" class="material-icons"></span>
             <span id="sh-popup-title"></span>
@@ -48,10 +44,7 @@
             <button data-tab="devices">Geräte</button>
         </div>
 
-        <div id="sh-popup-body" class="sh-popup-body">
-            <!-- Inhalt wird dynamisch gesetzt -->
-        </div>
-
+        <div id="sh-popup-body" class="sh-popup-body"></div>
     </div>
 </div>
 
@@ -61,6 +54,19 @@
 </div>
 
 <!-- Scripts (richtige Reihenfolge!) -->
+<script src="smarthome.data.js"></script>
+<script src="smarthome.view.js"></script>
+<script src="smarthome.groups.js"></script>
+<script src="smarthome.theme.js"></script>
+<script src="smarthome.module.js"></script>
+
+<!-- Start -->
+<script>
+    SmartHomeModule.init();
+</script>
+
+</body>
+</html>
 <script src="smarthome.data.js"></script>
 <script src="smarthome.view.js"></script>
 <script src="smarthome.groups.js"></script>
