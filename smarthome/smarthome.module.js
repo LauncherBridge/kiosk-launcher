@@ -43,7 +43,7 @@ window.SmartHomeModule = {
         }
 
         // Load template from smarthome.html
-        fetch("smarthome.html")
+        fetch("index.html")
             .then(res => res.text())
             .then(html => {
                 container.innerHTML = html;
