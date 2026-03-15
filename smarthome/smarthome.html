@@ -1,0 +1,32 @@
+<div id="sh-floor-list"></div>
+<canvas id="smarthome-canvas"></canvas>
+<div id="smarthome-overlay"></div>
+
+<div id="sh-group-header" class="hidden">
+    <div id="sh-group-back" class="material-icons">arrow_back</div>
+    <div id="sh-group-title"></div>
+    <div id="sh-group-rooms"></div>
+</div>
+
+<div id="smarthome-popup" class="sh-popup hidden">
+    <div class="sh-popup-content">
+        <div class="sh-popup-header">
+            <span id="sh-popup-icon" class="material-icons"></span>
+            <span id="sh-popup-title"></span>
+            <button id="sh-popup-close" class="sh-popup-close material-icons">close</button>
+        </div>
+
+        <div class="sh-popup-tabs">
+            <button data-tab="status">Status</button>
+            <button data-tab="actions">Aktionen</button>
+            <button data-tab="history">Historie</button>
+            <button data-tab="devices">Geräte</button>
+        </div>
+
+        <div id="sh-popup-body" class="sh-popup-body"></div>
+    </div>
+</div>
+
+<div id="smarthome-minimap">
+    <canvas id="smarthome-minimap-canvas"></canvas>
+</div>
