@@ -51,50 +51,87 @@ window.SmartHomeView = {
         panLerp: 0.15
     },
 
-    init() {
-        this.canvas = document.getElementById("smarthome-canvas");
-        this.overlay = document.getElementById("smarthome-overlay");
+init() {
+    this.canvas = document.getElementById("smarthome-canvas");
+    this.overlay = document.getElementById("smarthome-overlay");
 
-        if (!this.canvas) {
-            console.error("SmartHomeView: Canvas not found");
-            return;
-        }
+    if (!this.canvas) {
+        console.error("SmartHomeView: Canvas not found");
+        return;
+    }
 
-        this.ctx = this.canvas.getContext("2d");
+    this.ctx = this.canvas.getContext("2d");
 
-        this.minimapCanvas = document.getElementById("smarthome-minimap-canvas");
-        if (this.minimapCanvas) {
-            this.minimapCtx = this.minimapCanvas.getContext("2d");
-        }
+    this.minimapCanvas = document.getElementById("smarthome-minimap-canvas");
+    if (this.minimapCanvas) {
+        this.minimapCtx = this.minimapCanvas.getContext("2d");
+    }
 
-        this._resize();
-        window.addEventListener("resize", () => this._resize());
+    // ---------------------------------------------------------
+    // INTERNER STATUS (Schritt 7 Fix)
+    // ---------------------------------------------------------
+    this._isDragging = false;
+    this._dragStart = null;
 
-        this._bindEvents();
-        this._startRenderLoop();
+    this.isPanning = false;
+    this.panStartX = 0;
+    this.panStartY = 0;
 
-        const closeBtn = document.getElementById("sh-popup-close");
-        if (closeBtn) closeBtn.addEventListener("click", () => this.closePopup());
+    this.swipe = {
+        isTouching: false,
+        startX: 0,
+        startY: 0,
+        startTime: 0
+    };
 
-        const backBtn = document.getElementById("sh-group-back");
-        if (backBtn) {
-            backBtn.addEventListener("click", () => {
-                if (this.activeGroup) {
-                    const firstRoom = this.activeGroup.roomIds[0];
-                    this._goToRoom(firstRoom);
-                }
-            });
-        }
+    // ---------------------------------------------------------
+    // CANVAS GRÖSSE
+    // ---------------------------------------------------------
+    this._resize();
+    window.addEventListener("resize", () => this._resize());
 
-        this.renderFloorList();
-        this.bindFloorListEvents();
+    // ---------------------------------------------------------
+    // EVENTS BINDEN (benötigt _isDragging!)
+    // ---------------------------------------------------------
+    this._bindEvents();
 
-        if (!this.activeFloor && SmartHomeData.floors.length > 0) {
-            this.activeFloor = SmartHomeData.floors[0].id;
-        }
+    // ---------------------------------------------------------
+    // RENDER LOOP
+    // ---------------------------------------------------------
+    this._startRenderLoop();
 
-        this.setActiveFloor(this.activeFloor);
-    },
+    // ---------------------------------------------------------
+    // POPUP CLOSE
+    // ---------------------------------------------------------
+    const closeBtn = document.getElementById("sh-popup-close");
+    if (closeBtn) closeBtn.addEventListener("click", () => this.closePopup());
+
+    // ---------------------------------------------------------
+    // GROUP BACK BUTTON
+    // ---------------------------------------------------------
+    const backBtn = document.getElementById("sh-group-back");
+    if (backBtn) {
+        backBtn.addEventListener("click", () => {
+            if (this.activeGroup) {
+                const firstRoom = this.activeGroup.roomIds[0];
+                this._goToRoom(firstRoom);
+            }
+        });
+    }
+
+    // ---------------------------------------------------------
+    // FLOOR LIST
+    // ---------------------------------------------------------
+    this.renderFloorList();
+    this.bindFloorListEvents();
+
+    if (!this.activeFloor && SmartHomeData.floors.length > 0) {
+        this.activeFloor = SmartHomeData.floors[0].id;
+    }
+
+    this.setActiveFloor(this.activeFloor);
+}
+
 
     // ---------------------------------------------------------
     // FLOOR LIST
@@ -327,46 +364,73 @@ window.SmartHomeView = {
     // ---------------------------------------------------------
     // EVENTS (with merged door click)
     // ---------------------------------------------------------
-    _bindEvents() {
-        this.canvas.addEventListener("click", (ev) => {
-            const rect = this.canvas.getBoundingClientRect();
-            let x = (ev.clientX - rect.left - this.offsetX) / this.scale;
-            let y = (ev.clientY - rect.top - this.offsetY) / this.scale;
+_bindEvents() {
 
-            // Container click
-            for (const container of SmartHomeData.containers) {
-                const dx = container.position.x;
-                const dy = container.position.y;
-                if (Math.hypot(x - dx, y - dy) < 20) {
-                    SmartHomeView.openContainerPopup(container);
+    // ---------------------------------------------------------
+    // CLICK (nur wenn NICHT gepannt wurde)
+    // ---------------------------------------------------------
+    this.canvas.addEventListener("click", (ev) => {
+        if (this._isDragging) return; // <-- WICHTIGER FIX
+
+        const rect = this.canvas.getBoundingClientRect();
+        let x = (ev.clientX - rect.left - this.offsetX) / this.scale;
+        let y = (ev.clientY - rect.top - this.offsetY) / this.scale;
+
+        // Container click
+        for (const container of SmartHomeData.containers) {
+            const dx = container.position.x;
+            const dy = container.position.y;
+            if (Math.hypot(x - dx, y - dy) < 20) {
+                SmartHomeView.openContainerPopup(container);
+                return;
+            }
+        }
+
+        // MERGED DOOR CLICK
+        const mergedDoors = SmartHomeData.getMergedDoorsForFloor(this.activeFloor);
+        for (const d of mergedDoors) {
+            const dx = x - d.mergedPos.x;
+            const dy = y - d.mergedPos.y;
+            if (Math.hypot(dx, dy) < 14) {
+                let targetRoomId = null;
+
+                if (this.activeRoom === d.roomA) targetRoomId = d.roomB;
+                else if (this.activeRoom === d.roomB) targetRoomId = d.roomA;
+                else targetRoomId = d.roomA;
+
+                const targetRoom = SmartHomeData.getRoom(targetRoomId);
+                if (targetRoom && targetRoom.floor === this.activeFloor) {
+                    this._goToRoom(targetRoom.id);
                     return;
                 }
             }
+        }
 
-            // MERGED DOOR CLICK
-            const mergedDoors = SmartHomeData.getMergedDoorsForFloor(this.activeFloor);
-            for (const d of mergedDoors) {
-                const dx = x - d.mergedPos.x;
-                const dy = y - d.mergedPos.y;
-                if (Math.hypot(dx, dy) < 14) {
-                    let targetRoomId = null;
-
-                    if (this.activeRoom === d.roomA) targetRoomId = d.roomB;
-                    else if (this.activeRoom === d.roomB) targetRoomId = d.roomA;
-                    else targetRoomId = d.roomA;
-
-                    const targetRoom = SmartHomeData.getRoom(targetRoomId);
-                    if (targetRoom && targetRoom.floor === this.activeFloor) {
-                        this._goToRoom(targetRoom.id);
-                        return;
-                    }
-                }
+        // Room click
+        for (const room of SmartHomeData.rooms) {
+            if (this._pointInPolygon({ x, y }, room.polygon)) {
+                this._goToRoom(room.id);
+                return;
             }
+        }
 
-            // Room click
-            for (const room of SmartHomeData.rooms) {
-                if (this._pointInPolygon({ x, y }, room.polygon)) {
-                    this._goToRoom(room.id);
+        this.activeRoom = null;
+        this.activeGroup = null;
+        this.targetHighlightAlpha = 0;
+    });
+
+    // ---------------------------------------------------------
+    // MINIMAP CLICK (unverändert)
+    // ---------------------------------------------------------
+    if (this.minimapCanvas) {
+        this.minimapCanvas.addEventListener("click", (ev) => {
+            const rect = this.minimapCanvas.getBoundingClientRect();
+            const x = ev.clientX - rect.left;
+            const y = ev.clientY - rect.top;
+
+            for (const r of this.minimapRooms) {
+                if (x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h) {
+                    this._goToRoom(r.id);
                     return;
                 }
             }
@@ -375,97 +439,112 @@ window.SmartHomeView = {
             this.activeGroup = null;
             this.targetHighlightAlpha = 0;
         });
+    }
 
-        // Mini‑Map click unchanged
-        if (this.minimapCanvas) {
-            this.minimapCanvas.addEventListener("click", (ev) => {
-                const rect = this.minimapCanvas.getBoundingClientRect();
-                const x = ev.clientX - rect.left;
-                const y = ev.clientY - rect.top;
+    // ---------------------------------------------------------
+    // ZOOM (Schritt 11 – stabiler Zoom ohne Springen)
+    // ---------------------------------------------------------
+    this.canvas.addEventListener("wheel", (ev) => {
+        ev.preventDefault();
+    
+        const zoomIntensity = 0.1;
+        const oldScale = this.scale;
+    
+        // Neue Ziel-Skalierung
+        if (ev.deltaY < 0) this.targetScale *= (1 + zoomIntensity);
+        else this.targetScale *= (1 - zoomIntensity);
+    
+        // Begrenzen
+        this.targetScale = Math.max(this.nav.minScale, Math.min(this.nav.maxScale, this.targetScale));
+    
+        // Mausposition relativ zum Canvas
+        const rect = this.canvas.getBoundingClientRect();
+        const mx = ev.clientX - rect.left;
+        const my = ev.clientY - rect.top;
+    
+        // Verhältnis der Skalierung
+        const scaleFactor = this.targetScale / oldScale;
+    
+        // Offset sofort anpassen (kein Springen mehr)
+        this.offsetX = mx - (mx - this.offsetX) * scaleFactor;
+        this.offsetY = my - (my - this.offsetY) * scaleFactor;
+    
+        // targetOffset synchron halten
+        this.targetOffsetX = this.offsetX;
+        this.targetOffsetY = this.offsetY;
+    
+        // scale sofort aktualisieren
+        this.scale = this.targetScale;
+    }, { passive: false });
 
-                for (const r of this.minimapRooms) {
-                    if (x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h) {
-                        this._goToRoom(r.id);
-                        return;
-                    }
-                }
 
-                this.activeRoom = null;
-                this.activeGroup = null;
-                this.targetHighlightAlpha = 0;
-            });
+    // ---------------------------------------------------------
+    // PAN (Schritt 12 – sofortiges, stabiles Panning)
+    // ---------------------------------------------------------
+    this.canvas.addEventListener("mousedown", (ev) => {
+        this._isDragging = false;
+        this._dragStart = { x: ev.clientX, y: ev.clientY };
+    
+        this.isPanning = true;
+    
+        // Startposition relativ zu den aktuellen Offsets
+        this.panStartX = ev.clientX - this.offsetX;
+        this.panStartY = ev.clientY - this.offsetY;
+    });
+    
+    window.addEventListener("mousemove", (ev) => {
+        if (!this.isPanning) return;
+    
+        const dx = ev.clientX - this._dragStart.x;
+        const dy = ev.clientY - this._dragStart.y;
+    
+        // Drag-Erkennung
+        if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+            this._isDragging = true;
         }
+    
+        // Sofortiges Panning (kein Nachziehen)
+        this.offsetX = ev.clientX - this.panStartX;
+        this.offsetY = ev.clientY - this.panStartY;
+    
+        // targetOffset synchron halten
+        this.targetOffsetX = this.offsetX;
+        this.targetOffsetY = this.offsetY;
+    });
+    
+    window.addEventListener("mouseup", () => {
+        this.isPanning = false;
+        this._dragStart = null;
+        this._isDragging = false; // Schritt 10 Fix bleibt bestehen
+    });
 
-        // Zoom, Pan, Swipe unchanged …
-        // (Ich lasse diese Blöcke unverändert, da du das explizit so wolltest.)
-        // ---------------------------------------------------------
-        // ZOOM
-        // ---------------------------------------------------------
-        this.canvas.addEventListener("wheel", (ev) => {
-            ev.preventDefault();
+    // ---------------------------------------------------------
+    // SWIPE (unverändert)
+    // ---------------------------------------------------------
+    this.canvas.addEventListener("touchstart", (ev) => {
+        if (ev.touches.length !== 1) return;
+        const t = ev.touches[0];
+        this.swipe.isTouching = true;
+        this.swipe.startX = t.clientX;
+        this.swipe.startY = t.clientY;
+        this.swipe.startTime = performance.now();
+    }, { passive: true });
 
-            const zoomIntensity = 0.1;
-            const oldScale = this.targetScale;
+    this.canvas.addEventListener("touchend", (ev) => {
+        if (!this.swipe.isTouching) return;
+        this.swipe.isTouching = false;
 
-            if (ev.deltaY < 0) this.targetScale *= (1 + zoomIntensity);
-            else this.targetScale *= (1 - zoomIntensity);
+        const endTime = performance.now();
+        const dt = endTime - this.swipe.startTime;
+        if (dt > 600) return;
 
-            this.targetScale = Math.max(this.nav.minScale, Math.min(this.nav.maxScale, this.targetScale));
+        const t = ev.changedTouches[0];
+        const dx = t.clientX - this.swipe.startX;
+        const dy = t.clientY - this.swipe.startY;
 
-            const rect = this.canvas.getBoundingClientRect();
-            const mx = ev.clientX - rect.left;
-            const my = ev.clientY - rect.top;
-
-            this.targetOffsetX = mx - (mx - this.targetOffsetX) * (this.targetScale / oldScale);
-            this.targetOffsetY = my - (my - this.targetOffsetY) * (this.targetScale / oldScale);
-        }, { passive: false });
-
-        // ---------------------------------------------------------
-        // PAN
-        // ---------------------------------------------------------
-        this.canvas.addEventListener("mousedown", (ev) => {
-            this.isPanning = true;
-            this.panStartX = ev.clientX - this.targetOffsetX;
-            this.panStartY = ev.clientY - this.targetOffsetY;
-        });
-
-        window.addEventListener("mousemove", (ev) => {
-            if (!this.isPanning) return;
-            this.targetOffsetX = ev.clientX - this.panStartX;
-            this.targetOffsetY = ev.clientY - this.panStartY;
-        });
-
-        window.addEventListener("mouseup", () => {
-            this.isPanning = false;
-        });
-
-        // ---------------------------------------------------------
-        // SWIPE
-        // ---------------------------------------------------------
-        this.canvas.addEventListener("touchstart", (ev) => {
-            if (ev.touches.length !== 1) return;
-            const t = ev.touches[0];
-            this.swipe.isTouching = true;
-            this.swipe.startX = t.clientX;
-            this.swipe.startY = t.clientY;
-            this.swipe.startTime = performance.now();
-        }, { passive: true });
-
-        this.canvas.addEventListener("touchend", (ev) => {
-            if (!this.swipe.isTouching) return;
-            this.swipe.isTouching = false;
-
-            const endTime = performance.now();
-            const dt = endTime - this.swipe.startTime;
-            if (dt > 600) return;
-
-            const t = ev.changedTouches[0];
-            const dx = t.clientX - this.swipe.startX;
-            const dy = t.clientY - this.swipe.startY;
-
-            this._handleSwipe(dx, dy);
-        }, { passive: true });
-    },
+        this._handleSwipe(dx, dy);
+    }, { passive: true });
+},
 
      // ---------------------------------------------------------
     // 4.3.D – Gruppenfähige Navigation
