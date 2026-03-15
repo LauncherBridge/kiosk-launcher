@@ -1,20 +1,37 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartHome</title>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="smarthome.css">
+
+    <!-- Material Icons (für Popup, Back-Button etc.) -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+
+<body>
+
 <!-- SmartHome Base Template -->
 <div id="smarthome-root">
 
-    <!-- ⭐ NEU: Etagenliste (Schritt 2.1) -->
+    <!-- Etagenliste -->
     <div id="sh-floor-list"></div>
 
     <canvas id="smarthome-canvas"></canvas>
     <div id="smarthome-overlay"></div>
 </div>
 
-<!-- SmartHome Group Header (4.3.F.1) -->
+<!-- SmartHome Group Header -->
 <div id="sh-group-header" class="hidden">
-    <div id="sh-group-back">←</div>
+    <div id="sh-group-back" class="material-icons">arrow_back</div>
     <div id="sh-group-title"></div>
     <div id="sh-group-rooms"></div>
 </div>
 
+<!-- Popup -->
 <div id="smarthome-popup" class="sh-popup hidden">
     <div class="sh-popup-content">
         
@@ -38,6 +55,22 @@
     </div>
 </div>
 
+<!-- Minimap -->
 <div id="smarthome-minimap">
     <canvas id="smarthome-minimap-canvas"></canvas>
 </div>
+
+<!-- Scripts (richtige Reihenfolge!) -->
+<script src="smarthome.data.js"></script>
+<script src="smarthome.view.js"></script>
+<script src="smarthome.groups.js"></script>
+<script src="smarthome.theme.js"></script>
+<script src="smarthome.module.js"></script>
+
+<!-- Start -->
+<script>
+    SmartHomeModule.init();
+</script>
+
+</body>
+</html>
