@@ -22,6 +22,10 @@
     color: var(--sh-text-dim);
 }
 
+/* ---------------------------------------------------------
+   PANEL & ROOT
+--------------------------------------------------------- */
+
 #smartHomePanel {
     background: var(--sh-bg);
     color: var(--sh-text);
@@ -33,6 +37,7 @@
     font-family: sans-serif;
 }
 
+/* WICHTIG: nur eine Definition, keine Flex-Höhenbegrenzung */
 #smarthome-root {
     position: relative;
     width: 100%;
@@ -41,6 +46,11 @@
     background: var(--sh-surface);
 }
 
+/* ---------------------------------------------------------
+   CANVAS & OVERLAY
+--------------------------------------------------------- */
+
+/* WICHTIG: ID korrigiert (canvas statt Canvas) */
 #smarthome-canvas {
     position: absolute;
     top: 0;
@@ -56,8 +66,13 @@
     left: 0;
     width: 100%;
     height: 100%;
-    pointer-events: none; /* UI später gezielt aktivieren */
+    pointer-events: none;
+    z-index: 2;
 }
+
+/* ---------------------------------------------------------
+   MINIMAP
+--------------------------------------------------------- */
 
 #smarthome-minimap {
     position: absolute;
@@ -69,12 +84,17 @@
     border-radius: var(--sh-radius-md);
     box-shadow: var(--sh-shadow-soft);
     overflow: hidden;
+    z-index: 30;
 }
 
 #smarthome-minimap-canvas {
     width: 100%;
     height: 100%;
 }
+
+/* ---------------------------------------------------------
+   POPUP
+--------------------------------------------------------- */
 
 .sh-popup {
     position: fixed;
@@ -142,7 +162,7 @@
 }
 
 /* ---------------------------------------------------------
-   4.3.F – Gruppen-Header
+   GRUPPEN-HEADER
 --------------------------------------------------------- */
 
 #sh-group-header {
@@ -198,51 +218,20 @@
     font-size: 14px;
 }
 
-/* 4.3.F.6 – Aktiven Raum hervorheben */
 #sh-group-rooms .active-room {
     background: rgba(255, 255, 255, 0.35);
     font-weight: 600;
 }
 
-/* 4.3.F.8 – Zurück-Button ausblenden */
 #sh-group-back.hidden {
     opacity: 0.4;
     pointer-events: none;
 }
 
-.sh-group-type-header {
-    font-weight: bold;
-    opacity: 0.7;
-    margin-top: 6px;
-    margin-bottom: 2px;
-    padding-left: 4px;
-    font-size: 13px;
-}
-
-.sh-group-room {
-    margin-left: 8px;
-}
-
-.sh-group-line {
-    margin: 4px 0;
-    font-size: 14px;
-    white-space: nowrap;
-}
-
-.sh-group-room-inline {
-    cursor: pointer;
-}
-
-.sh-group-room-inline.active-room {
-    font-weight: bold;
-    text-decoration: underline;
-}
-
 /* ---------------------------------------------------------
-   4.10 – Statuspunkte (Online / Offline / Teilweise / Leer)
-   --------------------------------------------------------- */
+   STATUSPUNKTE
+--------------------------------------------------------- */
 
-/* Raum‑Statuspunkt (Gruppenliste) */
 .sh-status-dot {
     width: 10px;
     height: 10px;
@@ -251,7 +240,6 @@
     flex-shrink: 0;
 }
 
-/* Etagen‑Statuspunkt (größer, besser sichtbar beim Scrollen) */
 .sh-status-dot-floor {
     width: 14px;
     height: 14px;
@@ -260,32 +248,13 @@
     flex-shrink: 0;
 }
 
-/* Farben – bewusst leicht gedimmt für Dark‑UI */
-.sh-status-green  { background-color: #4CAF50; }   /* alles erreichbar */
-.sh-status-yellow { background-color: #FFC107; }   /* teilweise erreichbar */
-.sh-status-red    { background-color: #F44336; }   /* komplett offline / Fehler */
-.sh-status-gray   { background-color: #757575; }   /* keine Geräte */
-
-/* Gruppenliste – Raumzeile */
-.sh-group-room-inline {
-    display: inline-flex;
-    align-items: center;
-}
-
-/* Etagenliste – Etagenzeile */
-.sh-floor-entry {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 6px 0;
-}
-
-.sh-floor-entry.highlighted {
-    font-weight: 600;
-}
+.sh-status-green  { background-color: #4CAF50; }
+.sh-status-yellow { background-color: #FFC107; }
+.sh-status-red    { background-color: #F44336; }
+.sh-status-gray   { background-color: #757575; }
 
 /* ---------------------------------------------------------
-   4.12 – Etagenliste
+   ETAGENLISTE
 --------------------------------------------------------- */
 
 #sh-floor-list {
@@ -298,7 +267,7 @@
     backdrop-filter: blur(6px);
     padding: 10px 0;
     overflow-y: auto;
-    z-index: 20; /* über dem Canvas, unter Popups */
+    z-index: 20;
 }
 
 .sh-floor-item {
