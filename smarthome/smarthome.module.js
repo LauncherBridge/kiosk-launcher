@@ -31,33 +31,23 @@ window.SmartHomeModule = {
             SmartHomeTheme.apply();
         }
 
-        // Load HTML template
-        this._loadTemplate();
+        // Direkt initialisieren – kein Template nachladen
+        this._startView();
     },
 
-    _loadTemplate() {
+    _startView() {
         const container = document.getElementById(this.state.panelId);
         if (!container) {
             console.error("SmartHomeModule: Panel container not found:", this.state.panelId);
             return;
         }
 
-        // Load template from smarthome.html
-        fetch("smarthome.html")
-            .then(res => res.text())
-            .then(html => {
-                container.innerHTML = html;
-
-                // Start SmartHomeView after template is injected
-                if (window.SmartHomeView) {
-                    SmartHomeView.init();
-                } else {
-                    console.error("SmartHomeView not found");
-                }
-            })
-            .catch(err => {
-                console.error("SmartHomeModule: Failed to load template:", err);
-            });
+        // Starte das Rendering
+        if (window.SmartHomeView) {
+            SmartHomeView.init();
+        } else {
+            console.error("SmartHomeView not found");
+        }
     },
 
     _showPlaceholder() {
