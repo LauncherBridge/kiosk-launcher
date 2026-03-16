@@ -34,19 +34,14 @@
 }
 
 #smarthome-root {
-    flex: 1;
-    background: var(--sh-surface);
-    padding: 20px;
-}
-
-#smarthome-root {
     position: relative;
     width: 100%;
     height: 100%;
     overflow: hidden;
+    background: var(--sh-surface);
 }
 
-#smarthome-Canvas {
+#smarthome-canvas {
     position: absolute;
     top: 0;
     left: 0;
