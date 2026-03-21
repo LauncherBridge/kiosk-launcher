@@ -3158,10 +3158,8 @@ function openSmartHomePanel(tile) {
   const nexus    = document.querySelector("#smartHomePanelHeader .header-nexus");
   const spot     = document.querySelector("#smartHomePanelHeader .header-title-spot");
 
-  // Header-Modus (Tile oder Nexus)
   applyHeaderStyle(header, tile, tile.name);
 
-  // 1) Titel setzen
   titleEl.textContent = tile.name;
 
   requestAnimationFrame(() => {
@@ -3176,7 +3174,6 @@ function openSmartHomePanel(tile) {
     spot.style.opacity = 1;
   });
 
-  // 2) Nexus‑Band initialisieren
   requestAnimationFrame(() => {
     if (!nexus) return;
 
@@ -3220,19 +3217,16 @@ function openSmartHomePanel(tile) {
     nexus.classList.add(nx.boundary === "bounded" ? "nexus-bounded" : "nexus-glow");
   });
 
-  // 3) Panel anzeigen
   panel.classList.remove("hidden");
   panel.style.display = "flex";
   panel.setAttribute("tabindex", "-1");
   panel.focus({ preventScroll: true });
   document.body.style.overflow = "hidden";
 
-  // 4) SmartHome-Modul starten
   if (window.SmartHomeModule && typeof SmartHomeModule.init === "function") {
     SmartHomeModule.init();
   }
 
-  // 5) Close‑Button
   if (closeBtn) {
     closeBtn.onclick = () => {
       if (spot) spot.style.opacity = 0;
@@ -3241,19 +3235,16 @@ function openSmartHomePanel(tile) {
     };
   }
 
-  // 6) Plus‑Button
   if (addBtn) {
     addBtn.onclick = () => {
       openSmartHomeAddMenu(tile);
     };
   }
 
-  // 7) Titel → SwitchPanel
   titleEl.onclick = () => {
     openPanelSwitcher(tile);
   };
 }
-
 
 
 
