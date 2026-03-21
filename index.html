@@ -5844,7 +5844,6 @@ function openSmartHomePanel(tile) {
   const panel    = document.getElementById("smartHomePanel");
   const header   = document.getElementById("smartHomePanelHeader");
   const titleEl  = document.getElementById("smartHomePanelDynamicTitle");
-  const list     = document.getElementById("smartHomeDeviceList");
   const closeBtn = document.getElementById("smartHomePanelClose");
   const addBtn   = document.getElementById("smartHomePanelAddButton");
   const nexus    = document.querySelector("#smartHomePanelHeader .header-nexus");
@@ -5919,38 +5918,34 @@ function openSmartHomePanel(tile) {
   });
 
   // ---------------------------------------------------------
-  // 3) Liste leeren und Geräte einfügen
+  // 3) Panel anzeigen
   // ---------------------------------------------------------
-  list.innerHTML = "";
-  list.classList.add("smarthome-ui-device-list");
-
-  tile.devices.forEach(device => {
-    const btn = document.createElement("button");
-    btn.className = "app-button";
-    btn.textContent = device.label;
-
-    btn.onclick = () => {
-      console.log("Gerät öffnen:", device.id);
-    };
-
-    list.appendChild(btn);
-  });
+  panel.style.display = "flex";
+  panel.classList.remove("hidden");
+  panel.setAttribute("tabindex", "-1");
+  panel.focus({ preventScroll: true });
+  document.body.style.overflow = "hidden";
 
   // ---------------------------------------------------------
-  // 4) Close‑Button
+  // 4) SmartHome-Modul starten
+  // ---------------------------------------------------------
+  if (window.SmartHomeModule && typeof SmartHomeModule.init === "function") {
+      SmartHomeModule.init();
+  }
+
+  // ---------------------------------------------------------
+  // 5) Close‑Button
   // ---------------------------------------------------------
   if (closeBtn) {
     closeBtn.onclick = () => {
       if (spot) spot.style.opacity = 0;
       panel.style.display = "none";
       document.body.style.overflow = "";
-
-      SmartHomeView.pause();
     };
   }
 
   // ---------------------------------------------------------
-  // 5) Plus‑Button
+  // 6) Plus‑Button
   // ---------------------------------------------------------
   if (addBtn) {
     addBtn.onclick = () => {
@@ -5959,57 +5954,13 @@ function openSmartHomePanel(tile) {
   }
 
   // ---------------------------------------------------------
-  // 6) Panel anzeigen
-  // ---------------------------------------------------------
-  panel.style.display = "flex";
-
-  panel.setAttribute("tabindex", "-1");
-  panel.focus({ preventScroll: true });
-
-  document.body.style.overflow = "hidden";
-
-  // Engine korrekt setzen (ohne externe Resets!)
-  SmartHomeView.setTile(tile);
-
-  if (!smartHomeInitialized) {
-    SmartHomeView.init();
-    smartHomeInitialized = true;
-  }
-
-  SmartHomeView.resize();
-  SmartHomeView.showCanvas();
-  SmartHomeView.setMode("canvas");
-  SmartHomeView.hideDeviceList();
-  SmartHomeView.resume();
-  SmartHomeView.enableInput();
-
-  // Overlay aktivieren
-  document.getElementById("smarthome-overlay").style.display = "block";
-
-  // Popups schließen
-  SmartHomeView.closeAllPopups();
-
-  // Sichtbarkeit & Z‑Index
-  document.getElementById("smartHomeCanvas").style.display = "block";
-  document.getElementById("smartHomeDeviceList").style.display = "none";
-  document.getElementById("smartHomeDeviceList").scrollTop = 0;
-  document.getElementById("smarthome-overlay").scrollTop = 0;
-  panel.scrollTop = 0;
-
-  document.getElementById("smartHomeCanvas").style.zIndex = 1;
-  document.getElementById("smarthome-overlay").style.zIndex = 2;
-  document.getElementById("smarthome-popups").style.zIndex = 3;
-  document.getElementById("smartHomeDeviceList").style.zIndex = 0;
-
-  SmartHomeView.renderDeviceList(tile.devices);
-
-  // ---------------------------------------------------------
   // 7) Titel → SwitchPanel
   // ---------------------------------------------------------
   titleEl.onclick = () => {
-    openPanelSwitcher(currentTile);
+    openPanelSwitcher(tile);
   };
 }
+
 
 
 
