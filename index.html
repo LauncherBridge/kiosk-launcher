@@ -3147,106 +3147,67 @@ background: color-mix(in srgb, var(--switch-hover-color) 35%, rgba(255,255,255,0
   </div>
 
 
-function openSmartHomePanel(tile) {
-  if (!tile) return;
+<div id="smartHomePanel" class="panel hidden">
 
-  const panel    = document.getElementById("smartHomePanel");
-  const header   = document.getElementById("smartHomePanelHeader");
-  const titleEl  = document.getElementById("smartHomePanelDynamicTitle");
-  const closeBtn = document.getElementById("smartHomePanelClose");
-  const addBtn   = document.getElementById("smartHomePanelAddButton");
-  const nexus    = document.querySelector("#smartHomePanelHeader .header-nexus");
-  const spot     = document.querySelector("#smartHomePanelHeader .header-title-spot");
+  <div id="smartHomePanelHeader" class="panel-header nexus-mode">
+    <div class="header-nexus"></div>
+    <div class="header-progress"></div>
+    <div class="header-title-spot"></div>
 
-  applyHeaderStyle(header, tile, tile.name);
+    <div id="smartHomePanelAddButton" class="header-add-btn"></div>
+    <div id="smartHomePanelDynamicTitle">SmartHome</div>
+    <div id="smartHomePanelClose" class="panel-close-btn">×</div>
 
-  titleEl.textContent = tile.name;
+    <div class="header-clock">
+      <div class="clock"></div>
+      <div class="date"></div>
+    </div>
+  </div>
 
-  requestAnimationFrame(() => {
-    const titleWidth  = titleEl.offsetWidth;
-    const titleHeight = titleEl.offsetHeight;
+  <!-- WICHTIG: ALLES MUSS IN panel-content -->
+  <div class="panel-content">
 
-    const spotW = titleWidth + 60;
-    const spotH = titleHeight + 15;
+      <!-- SmartHome Root -->
+      <div id="smarthome-root">
+          <div id="sh-floor-list"></div>
+          <canvas id="smarthome-canvas"></canvas>
+          <div id="smarthome-overlay"></div>
+      </div>
 
-    spot.style.setProperty("--spot-width",  spotW + "px");
-    spot.style.setProperty("--spot-height", spotH + "px");
-    spot.style.opacity = 1;
-  });
+      <!-- Gruppen-Header -->
+      <div id="sh-group-header" class="hidden">
+          <div id="sh-group-back" class="material-icons">arrow_back</div>
+          <div id="sh-group-title"></div>
+          <div id="sh-group-rooms"></div>
+      </div>
 
-  requestAnimationFrame(() => {
-    if (!nexus) return;
+      <!-- Popup -->
+      <div id="smarthome-popup" class="sh-popup hidden">
+          <div class="sh-popup-content">
+              <div class="sh-popup-header">
+                  <span id="sh-popup-icon" class="material-icons"></span>
+                  <span id="sh-popup-title"></span>
+                  <button id="sh-popup-close" class="sh-popup-close material-icons">close</button>
+              </div>
 
-    const titleWidth  = titleEl.offsetWidth;
-    const titleHeight = titleEl.offsetHeight;
+              <div class="sh-popup-tabs">
+                  <button data-tab="status">Status</button>
+                  <button data-tab="actions">Aktionen</button>
+                  <button data-tab="history">Historie</button>
+                  <button data-tab="devices">Geräte</button>
+              </div>
 
-    const maskW = titleWidth + 40;
-    const maskH = titleHeight + 20;
+              <div id="sh-popup-body" class="sh-popup-body"></div>
+          </div>
+      </div>
 
-    nexus.style.setProperty("--mask-width-base",  maskW + "px");
-    nexus.style.setProperty("--mask-height-base", maskH + "px");
-    nexus.style.setProperty("--mask-corner-base", "22px");
+      <!-- Minimap -->
+      <div id="smarthome-minimap">
+          <canvas id="smarthome-minimap-canvas" width="180" height="180"></canvas>
+      </div>
 
-    nexus.style.setProperty("--mask-width",  maskW + "px");
-    nexus.style.setProperty("--mask-height", maskH + "px");
-    nexus.style.setProperty("--mask-corner-radius", "22px");
-
-    const holeRadius = Math.max(maskW, maskH) * 0.45;
-    nexus.style.setProperty("--mask-center-x", "50%");
-    nexus.style.setProperty("--mask-center-y", "50%");
-    nexus.style.setProperty("--mask-hole-radius", holeRadius + "px");
-
-    const tileAlpha = "D9";
-    nexus.style.setProperty("--nexus-color-left",  tile.color + tileAlpha);
-    nexus.style.setProperty("--nexus-color-right", tile.color + tileAlpha);
-
-    const nx = loadNexusSettings(tile.name);
-    nexus.style.setProperty("--nexus-intensity", nx.intensity);
-
-    nexus.classList.remove(
-      "nexus-soft",
-      "nexus-aurora",
-      "nexus-hologram",
-      "nexus-plasma",
-      "nexus-nebula"
-    );
-    void nexus.offsetWidth;
-    nexus.classList.add("nexus-" + nx.variant);
-
-    nexus.classList.remove("nexus-glow", "nexus-bounded");
-    nexus.classList.add(nx.boundary === "bounded" ? "nexus-bounded" : "nexus-glow");
-  });
-
-  panel.classList.remove("hidden");
-  panel.style.display = "flex";
-  panel.setAttribute("tabindex", "-1");
-  panel.focus({ preventScroll: true });
-  document.body.style.overflow = "hidden";
-
-  if (window.SmartHomeModule && typeof SmartHomeModule.init === "function") {
-    SmartHomeModule.init();
-  }
-
-  if (closeBtn) {
-    closeBtn.onclick = () => {
-      if (spot) spot.style.opacity = 0;
-      panel.style.display = "none";
-      document.body.style.overflow = "";
-    };
-  }
-
-  if (addBtn) {
-    addBtn.onclick = () => {
-      openSmartHomeAddMenu(tile);
-    };
-  }
-
-  titleEl.onclick = () => {
-    openPanelSwitcher(tile);
-  };
-}
-
-
+  </div>
+</div>
 
 
 
@@ -5887,14 +5848,8 @@ function openSmartHomePanel(tile) {
   const nexus    = document.querySelector("#smartHomePanelHeader .header-nexus");
   const spot     = document.querySelector("#smartHomePanelHeader .header-title-spot");
 
-  // ---------------------------------------------------------
-  // Header-Modus (Tile oder Nexus)
-  // ---------------------------------------------------------
   applyHeaderStyle(header, tile, tile.name);
 
-  // ---------------------------------------------------------
-  // 1) Titel setzen
-  // ---------------------------------------------------------
   titleEl.textContent = tile.name;
 
   requestAnimationFrame(() => {
@@ -5909,9 +5864,6 @@ function openSmartHomePanel(tile) {
     spot.style.opacity = 1;
   });
 
-  // ---------------------------------------------------------
-  // 2) Nexus‑Band initialisieren
-  // ---------------------------------------------------------
   requestAnimationFrame(() => {
     if (!nexus) return;
 
@@ -5955,25 +5907,16 @@ function openSmartHomePanel(tile) {
     nexus.classList.add(nx.boundary === "bounded" ? "nexus-bounded" : "nexus-glow");
   });
 
-  // ---------------------------------------------------------
-  // 3) Panel anzeigen
-  // ---------------------------------------------------------
-  panel.style.display = "flex";
   panel.classList.remove("hidden");
+  panel.style.display = "flex";
   panel.setAttribute("tabindex", "-1");
   panel.focus({ preventScroll: true });
   document.body.style.overflow = "hidden";
 
-  // ---------------------------------------------------------
-  // 4) SmartHome-Modul starten
-  // ---------------------------------------------------------
   if (window.SmartHomeModule && typeof SmartHomeModule.init === "function") {
-      SmartHomeModule.init();
+    SmartHomeModule.init();
   }
 
-  // ---------------------------------------------------------
-  // 5) Close‑Button
-  // ---------------------------------------------------------
   if (closeBtn) {
     closeBtn.onclick = () => {
       if (spot) spot.style.opacity = 0;
@@ -5982,22 +5925,17 @@ function openSmartHomePanel(tile) {
     };
   }
 
-  // ---------------------------------------------------------
-  // 6) Plus‑Button
-  // ---------------------------------------------------------
   if (addBtn) {
     addBtn.onclick = () => {
       openSmartHomeAddMenu(tile);
     };
   }
 
-  // ---------------------------------------------------------
-  // 7) Titel → SwitchPanel
-  // ---------------------------------------------------------
   titleEl.onclick = () => {
     openPanelSwitcher(tile);
   };
 }
+
 
 
 
