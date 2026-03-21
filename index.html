@@ -3155,7 +3155,7 @@ background: color-mix(in srgb, var(--switch-hover-color) 35%, rgba(255,255,255,0
     <div class="header-title-spot"></div>
 
     <div id="smartHomePanelAddButton" class="header-add-btn"></div>
-    <div id="smartHomePanelDynamicTitle"></div>
+    <div id="smartHomePanelDynamicTitle">SmartHome</div>
     <div id="smartHomePanelClose" class="panel-close-btn">×</div>
 
     <div class="header-clock">
@@ -3167,16 +3167,46 @@ background: color-mix(in srgb, var(--switch-hover-color) 35%, rgba(255,255,255,0
   <!-- WICHTIG: ALLES MUSS IN panel-content -->
   <div class="panel-content">
 
-      <!-- Canvas-Bereich -->
-      <div id="smartHomeCanvasContainer">
-          <canvas id="smartHomeCanvas"></canvas>
+      <!-- SmartHome Root -->
+      <div id="smarthome-root">
+          <div id="sh-floor-list"></div>
+          <canvas id="smarthome-canvas"></canvas>
+          <div id="smarthome-overlay"></div>
       </div>
 
-      <!-- Geräte-Liste -->
-      <div id="smartHomeDeviceList"></div>
+      <!-- Gruppen-Header -->
+      <div id="sh-group-header" class="hidden">
+          <div id="sh-group-back" class="material-icons">arrow_back</div>
+          <div id="sh-group-title"></div>
+          <div id="sh-group-rooms"></div>
+      </div>
+
+      <!-- Popup -->
+      <div id="smarthome-popup" class="sh-popup hidden">
+          <div class="sh-popup-content">
+              <div class="sh-popup-header">
+                  <span id="sh-popup-icon" class="material-icons"></span>
+                  <span id="sh-popup-title"></span>
+                  <button id="sh-popup-close" class="sh-popup-close material-icons">close</button>
+              </div>
+
+              <div class="sh-popup-tabs">
+                  <button data-tab="status">Status</button>
+                  <button data-tab="actions">Aktionen</button>
+                  <button data-tab="history">Historie</button>
+                  <button data-tab="devices">Geräte</button>
+              </div>
+
+              <div id="sh-popup-body" class="sh-popup-body"></div>
+          </div>
+      </div>
+
+      <!-- Minimap -->
+      <div id="smarthome-minimap">
+          <canvas id="smarthome-minimap-canvas" width="180" height="180"></canvas>
+      </div>
 
   </div>
-
 </div>
 
 
