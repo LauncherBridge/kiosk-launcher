@@ -5918,13 +5918,14 @@ function openSmartHomePanel(tile) {
   panel.focus({ preventScroll: true });
   document.body.style.overflow = "hidden";
 
-if (window.SmartHomeModule && typeof SmartHomeModule.init === "function") {
+if (window.SmartHome && typeof SmartHome.init === "function") {
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      SmartHomeModule.init();
+      SmartHome.init();
     });
   });
 }
+
 
 
   if (closeBtn) {
