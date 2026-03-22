@@ -10,6 +10,8 @@
 
   
   <link href="https://fonts.googleapis.com/css2?family=Cinzel&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
 
 <script src="smarthome/smarthome.data.js"></script>
 <script src="smarthome/smarthome.view.js"></script>
@@ -1993,13 +1995,23 @@ font-size: 12px !important;
 }
 
 #sh-popup-close.material-icons {
-    margin-left: auto !important;
-    cursor: pointer !important;
+    font-family: 'Material Icons' !important;
     font-size: 26px !important;
     background: none !important;
     border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
     color: white !important;
+    cursor: pointer !important;
 }
+#smarthome-popup .sh-popup-content {
+    display: block !important;
+    text-align: left !important;
+    min-height: 260px !important;
+    border-radius: 16px !important;
+    padding: 20px !important;
+}
+
 
 #smarthome-popup .sh-popup-tabs {
     display: flex !important;
