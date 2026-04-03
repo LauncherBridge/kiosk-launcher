@@ -1,18 +1,28 @@
 // ======================================================
-// Raumdesigner – Schritt 4: Punkte verschieben, löschen, Raum schließen
+// Raumdesigner – Schritte 1 bis 5
+// Canvas-Init, Raster, Punkte setzen, verschieben,
+// löschen, Raum schließen, Wände erkennen
 // ======================================================
 
 const RoomDesigner = {
     canvas: null,
     ctx: null,
 
-    points: [],
-    hover: { x: 0, y: 0 },
+    points: [],              // gesetzte Punkte
+    walls: [],               // Wandsegmente
+    hover: { x: 0, y: 0 },   // Mausposition
 
     selectedPoint: null,
     isDragging: false,
+    _initialized: false,
 
+    // --------------------------------------------------
+    // Initialisierung
+    // --------------------------------------------------
     init() {
+        if (this._initialized) return;
+        this._initialized = true;
+
         this.canvas = document.getElementById("roomdesigner");
         if (!this.canvas) {
             console.warn("RoomDesigner: Canvas #roomdesigner nicht gefunden.");
@@ -21,6 +31,7 @@ const RoomDesigner = {
 
         this.ctx = this.canvas.getContext("2d");
 
+        // Events
         window.addEventListener("resize", () => this.resize());
         this.canvas.addEventListener("mousemove", (e) => this.onMove(e));
         this.canvas.addEventListener("mousedown", (e) => this.onDown(e));
@@ -37,9 +48,9 @@ const RoomDesigner = {
         this.render();
     },
 
-    // -------------------------
+    // --------------------------------------------------
     // Eingaben
-    // -------------------------
+    // --------------------------------------------------
     onMove(e) {
         const rect = this.canvas.getBoundingClientRect();
         this.hover.x = e.clientX - rect.left;
@@ -48,6 +59,7 @@ const RoomDesigner = {
         if (this.isDragging && this.selectedPoint) {
             this.selectedPoint.x = this.hover.x;
             this.selectedPoint.y = this.hover.y;
+            this.updateWalls();
         }
 
         this.render();
@@ -79,6 +91,7 @@ const RoomDesigner = {
             if (dist < 15) {
                 // Raum schließen
                 this.points.push({ x: first.x, y: first.y, closed: true });
+                this.updateWalls();
                 this.render();
                 return;
             }
@@ -86,6 +99,7 @@ const RoomDesigner = {
 
         // Neuen Punkt setzen
         this.points.push({ x, y });
+        this.updateWalls();
         this.render();
     },
 
@@ -104,13 +118,14 @@ const RoomDesigner = {
         const hit = this.getPointAt(x, y);
         if (hit) {
             this.points = this.points.filter(p => p !== hit);
+            this.updateWalls();
             this.render();
         }
     },
 
-    // -------------------------
+    // --------------------------------------------------
     // Hilfsfunktionen
-    // -------------------------
+    // --------------------------------------------------
     getPointAt(x, y) {
         return this.points.find(p => {
             const dx = p.x - x;
@@ -119,15 +134,32 @@ const RoomDesigner = {
         });
     },
 
-    // -------------------------
+    updateWalls() {
+        this.walls = [];
+
+        if (this.points.length < 2) return;
+
+        for (let i = 0; i < this.points.length - 1; i++) {
+            const a = this.points[i];
+            const b = this.points[i + 1];
+
+            this.walls.push({
+                x1: a.x, y1: a.y,
+                x2: b.x, y2: b.y
+            });
+        }
+    },
+
+    // --------------------------------------------------
     // Rendering
-    // -------------------------
+    // --------------------------------------------------
     render() {
         const ctx = this.ctx;
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         this.drawGrid();
         this.drawPolygon();
+        this.drawWalls();
         this.drawHoverCross();
     },
 
@@ -180,6 +212,20 @@ const RoomDesigner = {
         }
     },
 
+    drawWalls() {
+        const ctx = this.ctx;
+
+        ctx.strokeStyle = "#ffcc00";
+        ctx.lineWidth = 3;
+
+        for (const w of this.walls) {
+            ctx.beginPath();
+            ctx.moveTo(w.x1, w.y1);
+            ctx.lineTo(w.x2, w.y2);
+            ctx.stroke();
+        }
+    },
+
     drawHoverCross() {
         const ctx = this.ctx;
         const { x, y } = this.hover;
@@ -199,9 +245,13 @@ const RoomDesigner = {
     }
 };
 
+// --------------------------------------------------
+// Automatischer Start
+// --------------------------------------------------
 window.addEventListener("DOMContentLoaded", () => {
     const canvas = document.getElementById("roomdesigner");
     if (canvas) {
         RoomDesigner.init();
     }
 });
+
