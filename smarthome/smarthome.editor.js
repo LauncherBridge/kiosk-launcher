@@ -1,13 +1,16 @@
 // ======================================================
-// Raumdesigner – Schritt 3: Punkte setzen + Linien verbinden
+// Raumdesigner – Schritt 4: Punkte verschieben, löschen, Raum schließen
 // ======================================================
 
 const RoomDesigner = {
     canvas: null,
     ctx: null,
 
-    points: [],        // gesetzte Punkte
-    hover: { x: 0, y: 0 }, // Mausposition
+    points: [],
+    hover: { x: 0, y: 0 },
+
+    selectedPoint: null,
+    isDragging: false,
 
     init() {
         this.canvas = document.getElementById("roomdesigner");
@@ -18,12 +21,12 @@ const RoomDesigner = {
 
         this.ctx = this.canvas.getContext("2d");
 
-        // Events
         window.addEventListener("resize", () => this.resize());
         this.canvas.addEventListener("mousemove", (e) => this.onMove(e));
-        this.canvas.addEventListener("click", (e) => this.onClick(e));
+        this.canvas.addEventListener("mousedown", (e) => this.onDown(e));
+        this.canvas.addEventListener("mouseup", () => this.onUp());
+        this.canvas.addEventListener("contextmenu", (e) => this.onRightClick(e));
 
-        // Initial
         this.resize();
         this.render();
     },
@@ -41,16 +44,79 @@ const RoomDesigner = {
         const rect = this.canvas.getBoundingClientRect();
         this.hover.x = e.clientX - rect.left;
         this.hover.y = e.clientY - rect.top;
+
+        if (this.isDragging && this.selectedPoint) {
+            this.selectedPoint.x = this.hover.x;
+            this.selectedPoint.y = this.hover.y;
+        }
+
         this.render();
     },
 
-    onClick(e) {
+    onDown(e) {
         const rect = this.canvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
 
+        // Rechtsklick wird separat behandelt
+        if (e.button === 2) return;
+
+        // Prüfen, ob ein Punkt getroffen wurde
+        const hit = this.getPointAt(x, y);
+        if (hit) {
+            this.selectedPoint = hit;
+            this.isDragging = true;
+            return;
+        }
+
+        // Prüfen, ob der neue Punkt den Raum schließen soll
+        if (this.points.length > 2) {
+            const first = this.points[0];
+            const dx = x - first.x;
+            const dy = y - first.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < 15) {
+                // Raum schließen
+                this.points.push({ x: first.x, y: first.y, closed: true });
+                this.render();
+                return;
+            }
+        }
+
+        // Neuen Punkt setzen
         this.points.push({ x, y });
         this.render();
+    },
+
+    onUp() {
+        this.isDragging = false;
+        this.selectedPoint = null;
+    },
+
+    onRightClick(e) {
+        e.preventDefault();
+
+        const rect = this.canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        const hit = this.getPointAt(x, y);
+        if (hit) {
+            this.points = this.points.filter(p => p !== hit);
+            this.render();
+        }
+    },
+
+    // -------------------------
+    // Hilfsfunktionen
+    // -------------------------
+    getPointAt(x, y) {
+        return this.points.find(p => {
+            const dx = p.x - x;
+            const dy = p.y - y;
+            return Math.sqrt(dx * dx + dy * dy) < 10;
+        });
     },
 
     // -------------------------
@@ -93,7 +159,6 @@ const RoomDesigner = {
 
         if (pts.length === 0) return;
 
-        // Linien
         ctx.strokeStyle = "#4a90e2";
         ctx.lineWidth = 2;
 
@@ -106,11 +171,11 @@ const RoomDesigner = {
 
         ctx.stroke();
 
-        // Punkte
+        // Punkte zeichnen
         for (const p of pts) {
             ctx.fillStyle = "#ffffff";
             ctx.beginPath();
-            ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+            ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
             ctx.fill();
         }
     },
@@ -134,7 +199,6 @@ const RoomDesigner = {
     }
 };
 
-// Automatisch starten, wenn der Canvas existiert
 window.addEventListener("DOMContentLoaded", () => {
     const canvas = document.getElementById("roomdesigner");
     if (canvas) {
