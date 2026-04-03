@@ -347,6 +347,26 @@ const RoomDesigner = {
     }
 };
 
+// Debug: Editor öffnen
+window.addEventListener("DOMContentLoaded", () => {
+    const openBtn = document.getElementById("btnOpenEditor");
+    if (openBtn) {
+        openBtn.addEventListener("click", () => {
+            // SmartHome-UI ausblenden
+            document.getElementById("smarthome-root").style.display = "none";
+            document.getElementById("sh-group-header").style.display = "none";
+            document.getElementById("smarthome-minimap").style.display = "none";
+
+            // Editor anzeigen
+            document.getElementById("roomdesigner").style.display = "block";
+            document.getElementById("btnDoorMode").style.display = "block";
+
+            RoomDesigner.init();
+        });
+    }
+});
+
+
 // --------------------------------------------------
 // Automatischer Start
 // --------------------------------------------------
