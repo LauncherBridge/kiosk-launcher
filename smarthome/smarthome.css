@@ -316,3 +316,21 @@ html, body {
 .sh-floor-status.yellow { background: #FFC107; }
 .sh-floor-status.red    { background: #F44336; }
 .sh-floor-status.gray   { background: #9E9E9E; }
+
+/* ---------------------------------------------------------
+   SCHRITT 6 – EDITOR BUTTON
+--------------------------------------------------------- */
+
+.editor-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    background: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    z-index: 9999;
+    display: none; /* wird vom Editor sichtbar geschaltet */
+}
