@@ -1,18 +1,18 @@
 // ======================================================
-// Raumdesigner – Schritte 1 bis 5
+// Raumdesigner – Schritte 1 bis 6
 // Canvas-Init, Raster, Punkte setzen, verschieben,
-// löschen, Raum schließen, Wände erkennen
+// löschen, Raum schließen, Wände erkennen, Türen setzen
 // ======================================================
 
 const RoomDesigner = {
     canvas: null,
     ctx: null,
 
-    points: [],              // gesetzte Punkte
-    walls: [],               // Wandsegmente
-    doors: [],          // gespeicherte Türen
-    mode: "points",     // "points" oder "doors"
-    hover: { x: 0, y: 0 },   // Mausposition
+    points: [],
+    walls: [],
+    doors: [],          // Schritt 6
+    mode: "points",     // Schritt 6
+    hover: { x: 0, y: 0 },
 
     selectedPoint: null,
     isDragging: false,
@@ -40,25 +40,12 @@ const RoomDesigner = {
         this.canvas.addEventListener("mouseup", () => this.onUp());
         this.canvas.addEventListener("contextmenu", (e) => this.onRightClick(e));
 
-        this.setupDoorButton();
+        this.setupDoorButton(); // Schritt 6
+
         this.resize();
         this.render();
     },
 
-
-
-    setupDoorButton() {
-    const btn = document.getElementById("btnDoorMode");
-    if (!btn) return;
-
-    btn.addEventListener("click", () => {
-        this.mode = (this.mode === "doors") ? "points" : "doors";
-        btn.style.background = (this.mode === "doors") ? "#e29a4a" : "#4a90e2";
-    });
-},
-
-
-    
     resize() {
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
@@ -87,7 +74,9 @@ const RoomDesigner = {
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
 
-        // Tür-Modus aktiv
+        // --------------------------------------------------
+        // Schritt 6: Tür-Modus aktiv
+        // --------------------------------------------------
         if (this.mode === "doors") {
             const hit = this.getWallAt(x, y);
             if (hit) {
@@ -102,7 +91,6 @@ const RoomDesigner = {
             }
             return;
         }
-
 
         // Rechtsklick wird separat behandelt
         if (e.button === 2) return;
@@ -123,7 +111,6 @@ const RoomDesigner = {
             const dist = Math.sqrt(dx * dx + dy * dy);
 
             if (dist < 15) {
-                // Raum schließen
                 this.points.push({ x: first.x, y: first.y, closed: true });
                 this.updateWalls();
                 this.render();
@@ -168,40 +155,37 @@ const RoomDesigner = {
         });
     },
 
-
     getWallAt(x, y) {
-    for (let i = 0; i < this.walls.length; i++) {
-        const w = this.walls[i];
+        for (let i = 0; i < this.walls.length; i++) {
+            const w = this.walls[i];
 
-        const A = { x: w.x1, y: w.y1 };
-        const B = { x: w.x2, y: w.y2 };
+            const A = { x: w.x1, y: w.y1 };
+            const B = { x: w.x2, y: w.y2 };
 
-        const ABx = B.x - A.x;
-        const ABy = B.y - A.y;
-        const APx = x - A.x;
-        const APy = y - A.y;
+            const ABx = B.x - A.x;
+            const ABy = B.y - A.y;
+            const APx = x - A.x;
+            const APy = y - A.y;
 
-        const abLen = Math.sqrt(ABx * ABx + ABy * ABy);
-        if (abLen === 0) continue;
+            const abLen = Math.sqrt(ABx * ABx + ABy * ABy);
+            if (abLen === 0) continue;
 
-        const t = Math.max(0, Math.min(1, (APx * ABx + APy * ABy) / (abLen * abLen)));
+            const t = Math.max(0, Math.min(1, (APx * ABx + APy * ABy) / (abLen * abLen)));
 
-        const closestX = A.x + t * ABx;
-        const closestY = A.y + t * ABy;
+            const closestX = A.x + t * ABx;
+            const closestY = A.y + t * ABy;
 
-        const dx = x - closestX;
-        const dy = y - closestY;
-        const dist = Math.sqrt(dx * dx + dy * dy);
+            const dx = x - closestX;
+            const dy = y - closestY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
 
-        if (dist < 10) {
-            return { index: i, t, x: closestX, y: closestY };
+            if (dist < 10) {
+                return { index: i, t, x: closestX, y: closestY };
+            }
         }
-    }
-    return null;
-},
+        return null;
+    },
 
-    
-    
     updateWalls() {
         this.walls = [];
 
@@ -228,9 +212,8 @@ const RoomDesigner = {
         this.drawGrid();
         this.drawPolygon();
         this.drawWalls();
+        this.drawDoors(); // Schritt 6
         this.drawHoverCross();
-        this.drawDoors();
-
     },
 
     drawGrid() {
@@ -273,7 +256,6 @@ const RoomDesigner = {
 
         ctx.stroke();
 
-        // Punkte zeichnen
         for (const p of pts) {
             ctx.fillStyle = "#ffffff";
             ctx.beginPath();
@@ -298,27 +280,27 @@ const RoomDesigner = {
 
     drawDoors() {
         const ctx = this.ctx;
-    
+
         ctx.strokeStyle = "#00ffcc";
         ctx.lineWidth = 4;
-    
+
         for (const d of this.doors) {
             const w = this.walls[d.wallIndex];
             if (!w) continue;
-    
+
             const x = d.x;
             const y = d.y;
-    
+
             const dx = w.x2 - w.x1;
             const dy = w.y2 - w.y1;
             const len = Math.sqrt(dx * dx + dy * dy);
             if (len === 0) continue;
-    
+
             const nx = -dy / len;
             const ny = dx / len;
-    
+
             const half = d.width / 2;
-    
+
             ctx.beginPath();
             ctx.moveTo(x - nx * half, y - ny * half);
             ctx.lineTo(x + nx * half, y + ny * half);
@@ -326,8 +308,6 @@ const RoomDesigner = {
         }
     },
 
-
-    
     drawHoverCross() {
         const ctx = this.ctx;
         const { x, y } = this.hover;
@@ -344,20 +324,33 @@ const RoomDesigner = {
         ctx.moveTo(x, y - 10);
         ctx.lineTo(x, y + 10);
         ctx.stroke();
+    },
+
+    // --------------------------------------------------
+    // Schritt 6: Tür-Modus Button
+    // --------------------------------------------------
+    setupDoorButton() {
+        const btn = document.getElementById("btnDoorMode");
+        if (!btn) return;
+
+        btn.addEventListener("click", () => {
+            this.mode = (this.mode === "doors") ? "points" : "doors";
+            btn.style.background = (this.mode === "doors") ? "#e29a4a" : "#4a90e2";
+        });
     }
 };
 
+// --------------------------------------------------
 // Debug: Editor öffnen
+// --------------------------------------------------
 window.addEventListener("DOMContentLoaded", () => {
     const openBtn = document.getElementById("btnOpenEditor");
     if (openBtn) {
         openBtn.addEventListener("click", () => {
-            // SmartHome-UI ausblenden
             document.getElementById("smarthome-root").style.display = "none";
             document.getElementById("sh-group-header").style.display = "none";
             document.getElementById("smarthome-minimap").style.display = "none";
 
-            // Editor anzeigen
             document.getElementById("roomdesigner").style.display = "block";
             document.getElementById("btnDoorMode").style.display = "block";
 
@@ -365,15 +358,3 @@ window.addEventListener("DOMContentLoaded", () => {
         });
     }
 });
-
-
-// --------------------------------------------------
-// Automatischer Start
-// --------------------------------------------------
-window.addEventListener("DOMContentLoaded", () => {
-    const canvas = document.getElementById("roomdesigner");
-    if (canvas) {
-        RoomDesigner.init();
-    }
-});
-
