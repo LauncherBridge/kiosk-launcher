@@ -141,7 +141,6 @@ const RoomDesigner = {
 
         // Fenster-Modus
         if (this.mode === "windows") {
-            // Erst prüfen, ob Fenster getroffen → verschieben
             const winIndex = this.getWindowIndexAt(x, y);
             if (winIndex !== null) {
                 this.draggingWindowIndex = winIndex;
@@ -155,7 +154,7 @@ const RoomDesigner = {
                     t: hit.t,
                     x: hit.x,
                     y: hit.y,
-                    width: 80 // ca. 2m Fenster
+                    width: 80
                 });
                 this.render();
             }
@@ -164,7 +163,7 @@ const RoomDesigner = {
 
         // Tür-Modus
         if (this.mode === "doors") {
-            // Wenn es eine Tür ohne Scharnier gibt → Tap setzt Scharnier, keine neue Tür
+            // Zuerst: existiert eine Tür ohne Scharnier? → Tap setzt Scharnier
             const pendingIndex = this.doors.findIndex(d => !d.hinge);
             if (pendingIndex !== -1) {
                 const d = this.doors[pendingIndex];
@@ -177,7 +176,7 @@ const RoomDesigner = {
                 return;
             }
 
-            // 1) Tür getroffen? → verschieben
+            // Tür getroffen? → verschieben
             const doorIndex = this.getDoorIndexAt(x, y);
             if (doorIndex !== null) {
                 const d = this.doors[doorIndex];
@@ -188,7 +187,7 @@ const RoomDesigner = {
                 return;
             }
 
-            // 2) Keine Tür getroffen → neue Tür auf Wand platzieren
+            // Neue Tür auf Wand platzieren
             const hit = this.getWallAt(x, y);
             if (hit) {
                 this.doors.push({
@@ -196,11 +195,11 @@ const RoomDesigner = {
                     t: hit.t,
                     x: hit.x,
                     y: hit.y,
-                    width: 36,      // ca. 0,9m Türbreite
+                    width: 36,      // ca. 0,9m
                     swing: 90,      // max 90°
-                    direction: 1,   // Öffnungsrichtung
-                    flip: 1,        // Seite der Wand
-                    hinge: null     // "start" | "end" nach Tap
+                    direction: 1,
+                    flip: 1,
+                    hinge: null
                 });
                 this.render();
             }
@@ -209,7 +208,7 @@ const RoomDesigner = {
 
         // Punkt-Modus
 
-        // Prüfen, ob Raum geschlossen werden soll
+        // Raum schließen?
         if (!this.isClosed && this.points.length > 2) {
             const first = this.points[0];
             const dx = x - first.x;
@@ -224,7 +223,7 @@ const RoomDesigner = {
             }
         }
 
-        // Prüfen, ob ein Punkt getroffen wurde
+        // Punkt getroffen?
         const hitPoint = this.getPointAt(x, y);
         if (hitPoint) {
             this.selectedPoint = hitPoint;
@@ -232,7 +231,7 @@ const RoomDesigner = {
             return;
         }
 
-        // Nachträglich Punkt in Wand einfügen (auch bei geschlossenem Raum)
+        // Punkt in Wand einfügen
         const wallHit = this.getWallAt(x, y);
         if (wallHit) {
             const idx = wallHit.index;
@@ -241,7 +240,6 @@ const RoomDesigner = {
             if (idx < this.points.length - 1) {
                 this.points.splice(idx + 1, 0, insertPoint);
             } else {
-                // letzter Wandabschnitt (zwischen letztem und erstem Punkt)
                 this.points.push(insertPoint);
             }
 
@@ -428,7 +426,7 @@ const RoomDesigner = {
         const x2 = cx + tx * half;
         const y2 = cy + ty * half;
 
-        // Welches Ende ist näher am Tap? → Scharnier
+        // Nächstgelegener Endpunkt = Scharnier
         const d1 = Math.hypot(tapX - x1, tapY - y1);
         const d2 = Math.hypot(tapX - x2, tapY - y2);
 
@@ -462,7 +460,7 @@ const RoomDesigner = {
         const ey = oy - hy;
         const baseAngle = Math.atan2(ey, ex);
 
-        door._baseAngle = baseAngle; // optional, falls später gebraucht
+        door._baseAngle = baseAngle;
         door.direction = 1;
     },
 
@@ -562,7 +560,6 @@ const RoomDesigner = {
         }
         ctx.closePath();
 
-        // RE-artiger Boden: dunkles, leicht grünliches Grau
         ctx.fillStyle = "#1b2420";
         ctx.globalAlpha = 0.9;
         ctx.fill();
@@ -685,7 +682,6 @@ const RoomDesigner = {
             ctx.lineTo(x2, y2);
             ctx.stroke();
 
-            // Wenn noch kein Scharnier gesetzt → keinen Bogen zeichnen
             if (!d.hinge) continue;
 
             // Scharnierpunkt + anderes Ende
@@ -707,22 +703,22 @@ const RoomDesigner = {
             const ey = oy - hy;
             const baseAngle = Math.atan2(ey, ex);
 
-            // Bogenradius etwas kleiner als Türbreite
             const radius = d.width * 0.8;
 
-            // Maximal 90° (Viertelkreis)
-            const swingDeg = Math.min(Math.abs(d.swing), 90);
-            const swingRad = swingDeg * Math.PI / 180;
+            // immer Viertelkreis
+            const swingRad = Math.PI / 2;
 
-            // Richtung: immer vom Scharnier in Richtung Türblatt,
-            // flip bestimmt nur die Seite (oben/unten relativ zur Wandnormale)
-            const signed = swingRad * d.flip * d.direction;
+            // Seite bestimmt, ob der Viertelkreis "links" oder "rechts" vom Türblatt liegt
+            const side = d.flip >= 0 ? 1 : -1;
 
             const startAngle = baseAngle;
-            const endAngle = baseAngle + signed;
+            const endAngle = baseAngle + swingRad * side;
 
-            ctx.strokeStyle = "rgba(0,255,200,0.35)";
-            ctx.lineWidth = 1.5;
+            // Canvas-Arc: wir nutzen immer den kürzeren Weg über anticlockwise-Flag
+            const anticlockwise = side < 0;
+
+            ctx.strokeStyle = "rgba(0,255,200,0.25)";
+            ctx.lineWidth = 1.2;
 
             ctx.beginPath();
             ctx.arc(
@@ -730,7 +726,8 @@ const RoomDesigner = {
                 hy,
                 radius,
                 startAngle,
-                endAngle
+                endAngle,
+                anticlockwise
             );
             ctx.stroke();
         }
