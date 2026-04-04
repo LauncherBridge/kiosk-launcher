@@ -674,7 +674,7 @@ drawDoors() {
         const x2 = cx + tx * half;
         const y2 = cy + ty * half;
 
-        // Türsegment
+        // Türblatt
         ctx.strokeStyle = "#00ffcc";
         ctx.lineWidth = 6;
         ctx.beginPath();
@@ -682,53 +682,64 @@ drawDoors() {
         ctx.lineTo(x2, y2);
         ctx.stroke();
 
-        // Kein Scharnier → kein Bogen
         if (!d.hinge) continue;
 
         // Scharnierpunkt + anderes Ende
         let hx, hy, ox, oy;
         if (d.hinge === "start") {
-            hx = x1;
-            hy = y1;
-            ox = x2;
-            oy = y2;
+            hx = x1; hy = y1;
+            ox = x2; oy = y2;
         } else {
-            hx = x2;
-            hy = y2;
-            ox = x1;
-            oy = y1;
+            hx = x2; hy = y2;
+            ox = x1; oy = y1;
         }
 
-        // Basiswinkel: vom Scharnier zum anderen Ende (geschlossene Tür)
+        // Türvektor
         const ex = ox - hx;
         const ey = oy - hy;
-        const baseAngle = Math.atan2(ey, ex);
+        const elen = Math.sqrt(ex*ex + ey*ey);
+        const ux = ex / elen;
+        const uy = ey / elen;
 
-        // Radius etwas kleiner als Türbreite
-        const radius = d.width * 0.8;
+        // Perpendikular (90°)
+        const px = -uy;
+        const py = ux;
 
-        // Immer exakt Viertelkreis
-        const swing = Math.PI / 2; // 90°
+        // Seite bestimmen (Tap-Seite)
+        const side = d.side || 1;
 
-        // Seite: +1 oder -1 → links/rechts vom Türblatt
-        const side = d.flip >= 0 ? 1 : -1;
+        // Anschlag-Strich
+        const hingeLen = d.width * 0.6;
+        const hx2 = hx + px * hingeLen * side;
+        const hy2 = hy + py * hingeLen * side;
 
-        const startAngle = baseAngle;
-        const endAngle = baseAngle + swing * side;
-
-        // Wichtig: immer anticlockwise = false → wir definieren Start/Ende selbst
-        ctx.strokeStyle = "rgba(0,255,200,0.25)";
-        ctx.lineWidth = 1.2;
-
+        ctx.strokeStyle = "rgba(0,255,200,0.4)";
+        ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.arc(
-            hx,
-            hy,
-            radius,
-            startAngle,
-            endAngle,
-            false
-        );
+        ctx.moveTo(hx, hy);
+        ctx.lineTo(hx2, hy2);
+        ctx.stroke();
+
+        // Viertelkreis parametriert
+        const steps = 20;
+        ctx.strokeStyle = "rgba(0,255,200,0.25)";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+
+        for (let i = 0; i <= steps; i++) {
+            const t = i / steps; // 0..1
+            const angle = Math.PI/2 * t * side;
+
+            const rx = Math.cos(angle) * ex - Math.sin(angle) * ey;
+            const ry = Math.sin(angle) * ex + Math.cos(angle) * ey;
+
+            const px = hx + rx;
+            const py = hy + ry;
+
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+        }
+
         ctx.stroke();
     }
 },
