@@ -57,8 +57,25 @@ const RoomDesigner = {
     // --------------------------------------------------
     onMove(e) {
         const rect = this.canvas.getBoundingClientRect();
-        this.hover.x = e.clientX - rect.left;
-        this.hover.y = e.clientY - rect.top;
+       let hx = e.clientX - rect.left;
+let hy = e.clientY - rect.top;
+
+// Magnetisches Einrasten auf ersten Punkt
+if (this.points.length > 0) {
+    const first = this.points[0];
+    const dx = hx - first.x;
+    const dy = hy - first.y;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+
+    if (dist < 20) {   // Magnetradius
+        hx = first.x;
+        hy = first.y;
+    }
+}
+
+this.hover.x = hx;
+this.hover.y = hy;
+
 
         if (this.isDragging && this.selectedPoint) {
             this.selectedPoint.x = this.hover.x;
@@ -105,18 +122,21 @@ const RoomDesigner = {
 
         // Prüfen, ob der neue Punkt den Raum schließen soll
         if (this.points.length > 2) {
-            const first = this.points[0];
-            const dx = x - first.x;
-            const dy = y - first.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
+    const first = this.points[0];
+    const dx = x - first.x;
+    const dy = y - first.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
 
-            if (dist < 15) {
-                this.points.push({ x: first.x, y: first.y, closed: true });
-                this.updateWalls();
-                this.render();
-                return;
-            }
-        }
+    if (dist < 20) {
+        // ECHTES Verschmelzen: letzten Punkt entfernen
+        // und den Pfad mit dem ersten Punkt schließen
+        this.points[this.points.length - 1] = first;
+        this.updateWalls();
+        this.render();
+        return;
+    }
+}
+
 
         // Neuen Punkt setzen
         this.points.push({ x, y });
