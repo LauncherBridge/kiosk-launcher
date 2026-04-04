@@ -648,90 +648,90 @@ const RoomDesigner = {
         }
     },
 
-    drawDoors() {
-        const ctx = this.ctx;
+drawDoors() {
+    const ctx = this.ctx;
 
-        for (const d of this.doors) {
-            const w = this.walls[d.wallIndex];
-            if (!w) continue;
+    for (const d of this.doors) {
+        const w = this.walls[d.wallIndex];
+        if (!w) continue;
 
-            const dx = w.x2 - w.x1;
-            const dy = w.y2 - w.y1;
-            const len = Math.sqrt(dx * dx + dy * dy);
-            if (len === 0) continue;
+        const dx = w.x2 - w.x1;
+        const dy = w.y2 - w.y1;
+        const len = Math.sqrt(dx * dx + dy * dy);
+        if (len === 0) continue;
 
-            const tx = dx / len;
-            const ty = dy / len;
+        const tx = dx / len;
+        const ty = dy / len;
 
-            const cx = d.x;
-            const cy = d.y;
+        const cx = d.x;
+        const cy = d.y;
 
-            const half = d.width / 2;
+        const half = d.width / 2;
 
-            const x1 = cx - tx * half;
-            const y1 = cy - ty * half;
+        const x1 = cx - tx * half;
+        const y1 = cy - ty * half;
 
-            const x2 = cx + tx * half;
-            const y2 = cy + ty * half;
+        const x2 = cx + tx * half;
+        const y2 = cy + ty * half;
 
-            // Türsegment
-            ctx.strokeStyle = "#00ffcc";
-            ctx.lineWidth = 6;
-            ctx.beginPath();
-            ctx.moveTo(x1, y1);
-            ctx.lineTo(x2, y2);
-            ctx.stroke();
+        // Türsegment
+        ctx.strokeStyle = "#00ffcc";
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
 
-            if (!d.hinge) continue;
+        // Kein Scharnier → kein Bogen
+        if (!d.hinge) continue;
 
-            // Scharnierpunkt + anderes Ende
-            let hx, hy, ox, oy;
-            if (d.hinge === "start") {
-                hx = x1;
-                hy = y1;
-                ox = x2;
-                oy = y2;
-            } else {
-                hx = x2;
-                hy = y2;
-                ox = x1;
-                oy = y1;
-            }
-
-            // Basiswinkel: vom Scharnier zum anderen Ende
-            const ex = ox - hx;
-            const ey = oy - hy;
-            const baseAngle = Math.atan2(ey, ex);
-
-            const radius = d.width * 0.8;
-
-            // immer Viertelkreis
-            const swingRad = Math.PI / 2;
-
-            // Seite bestimmt, ob der Viertelkreis "links" oder "rechts" vom Türblatt liegt
-            const side = d.flip >= 0 ? 1 : -1;
-
-            const startAngle = baseAngle;
-            const endAngle = baseAngle + swingRad * side;
-
-            // Canvas-Arc: wir nutzen immer den kürzeren Weg über anticlockwise-Flag
-            const anticlockwise = side < 0;
-
-            ctx.strokeStyle = "rgba(0,255,200,0.25)";
-            ctx.lineWidth = 1.2;
-
-            ctx.beginPath();
-            ctx.arc(
-                hx,
-                hy,
-                radius,
-                startAngle,
-                endAngle,
-                anticlockwise
-            );
-            ctx.stroke();
+        // Scharnierpunkt + anderes Ende
+        let hx, hy, ox, oy;
+        if (d.hinge === "start") {
+            hx = x1;
+            hy = y1;
+            ox = x2;
+            oy = y2;
+        } else {
+            hx = x2;
+            hy = y2;
+            ox = x1;
+            oy = y1;
         }
-    },
+
+        // Basiswinkel: vom Scharnier zum anderen Ende (geschlossene Tür)
+        const ex = ox - hx;
+        const ey = oy - hy;
+        const baseAngle = Math.atan2(ey, ex);
+
+        // Radius etwas kleiner als Türbreite
+        const radius = d.width * 0.8;
+
+        // Immer exakt Viertelkreis
+        const swing = Math.PI / 2; // 90°
+
+        // Seite: +1 oder -1 → links/rechts vom Türblatt
+        const side = d.flip >= 0 ? 1 : -1;
+
+        const startAngle = baseAngle;
+        const endAngle = baseAngle + swing * side;
+
+        // Wichtig: immer anticlockwise = false → wir definieren Start/Ende selbst
+        ctx.strokeStyle = "rgba(0,255,200,0.25)";
+        ctx.lineWidth = 1.2;
+
+        ctx.beginPath();
+        ctx.arc(
+            hx,
+            hy,
+            radius,
+            startAngle,
+            endAngle,
+            false
+        );
+        ctx.stroke();
+    }
+},
 
     drawWindows() {
         const ctx = this.ctx;
