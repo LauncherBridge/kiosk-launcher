@@ -523,14 +523,27 @@ const RoomDesigner = {
         // Winkelanzeige beim Ziehen eines Punktes
         if (this.isDragging && this.selectedPoint) {
             const idx = this.points.indexOf(this.selectedPoint);
-            if (idx > 0 && idx < this.points.length - 1) {
-                this.drawAngleAtPoint(
-                    this.selectedPoint,
-                    this.points[idx - 1],
-                    this.points[idx + 1]
-                );
+        
+            let prev = null;
+            let next = null;
+        
+            if (this.isClosed) {
+                // Geschlossener Raum → zyklische Nachbarn
+                prev = this.points[(idx - 1 + this.points.length) % this.points.length];
+                next = this.points[(idx + 1) % this.points.length];
+            } else {
+                // Offener Raum → nur wenn zwei Nachbarn existieren
+                if (idx > 0 && idx < this.points.length - 1) {
+                    prev = this.points[idx - 1];
+                    next = this.points[idx + 1];
+                }
+            }
+        
+            if (prev && next) {
+                this.drawAngleAtPoint(this.selectedPoint, prev, next);
             }
         }
+
 
         this.drawWindows();
 
