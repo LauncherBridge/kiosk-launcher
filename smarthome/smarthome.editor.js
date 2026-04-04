@@ -3,7 +3,7 @@
 // Canvas-Init, Raster, Punkte setzen, verschieben,
 // löschen (mit Bestätigung), Raum schließen (snappen),
 // Wände, Türen (mit Öffnungsrichtung per Tap),
-// Fenster, Wandlängen in Metern
+// Fenster, Wandlängen in Metern, Punkt-Einfügen
 // ======================================================
 
 const RoomDesigner = {
@@ -154,7 +154,7 @@ const RoomDesigner = {
                     t: hit.t,
                     x: hit.x,
                     y: hit.y,
-                    width: 100
+                    width: 80 // ca. 2m Fenster
                 });
                 this.render();
             }
@@ -163,21 +163,26 @@ const RoomDesigner = {
 
         // Tür-Modus
         if (this.mode === "doors") {
-            // 1) Tür getroffen?
+            // Wenn es eine Tür ohne Scharnier gibt → Tap setzt Scharnier, keine neue Tür
+            const pendingIndex = this.doors.findIndex(d => !d.hinge);
+            if (pendingIndex !== -1) {
+                const d = this.doors[pendingIndex];
+                const w = this.walls[d.wallIndex];
+                if (w) {
+                    this.setDoorHingeFromTap(d, x, y, w);
+                    this.selectedDoorIndex = pendingIndex;
+                    this.render();
+                }
+                return;
+            }
+
+            // 1) Tür getroffen? → verschieben
             const doorIndex = this.getDoorIndexAt(x, y);
             if (doorIndex !== null) {
                 const d = this.doors[doorIndex];
                 const w = this.walls[d.wallIndex];
                 if (w) {
-                    // Wenn noch kein Scharnier definiert → Tap bestimmt Scharnier + Seite
-                    if (!d.hinge) {
-                        this.setDoorHingeFromTap(d, x, y, w);
-                        this.selectedDoorIndex = doorIndex;
-                        this.render();
-                    } else {
-                        // Sonst: Tür entlang der Wand verschieben
-                        this.draggingDoorIndex = doorIndex;
-                    }
+                    this.draggingDoorIndex = doorIndex;
                 }
                 return;
             }
@@ -190,8 +195,8 @@ const RoomDesigner = {
                     t: hit.t,
                     x: hit.x,
                     y: hit.y,
-                    width: 80,
-                    swing: 90,
+                    width: 36,      // ca. 0,9m Türbreite (realistischer)
+                    swing: 90,      // max 90°
                     direction: 1,   // Öffnungsrichtung
                     flip: 1,        // Seite der Wand
                     hinge: null     // "start" | "end" nach Tap
@@ -223,6 +228,24 @@ const RoomDesigner = {
         if (hitPoint) {
             this.selectedPoint = hitPoint;
             this.isDragging = true;
+            return;
+        }
+
+        // Nachträglich Punkt in Wand einfügen (auch bei geschlossenem Raum)
+        const wallHit = this.getWallAt(x, y);
+        if (wallHit) {
+            const idx = wallHit.index;
+            const insertPoint = { x: wallHit.x, y: wallHit.y };
+
+            if (idx < this.points.length - 1) {
+                this.points.splice(idx + 1, 0, insertPoint);
+            } else {
+                // letzter Wandabschnitt (zwischen letztem und erstem Punkt)
+                this.points.push(insertPoint);
+            }
+
+            this.updateWalls();
+            this.render();
             return;
         }
 
@@ -429,7 +452,7 @@ const RoomDesigner = {
         const sideDot = vx * nx + vy * ny;
         door.flip = sideDot >= 0 ? 1 : -1;
 
-        // Öffnungsrichtung lassen wir vorerst 1 (kann später erweitert werden)
+        // Öffnungsrichtung lassen wir 1, Bogen ist immer max. 90°
         door.direction = 1;
     },
 
@@ -462,7 +485,7 @@ const RoomDesigner = {
             const w = this.walls[d.wallIndex];
             if (!w) continue;
             const A = { x: w.x1, y: w.y1 };
-            const B = { x: w.x2, y: w.y2 };
+            const B = { x: w.x2, y: w2 = w.y2 };
             d.x = A.x + (B.x - A.x) * d.t;
             d.y = A.y + (B.y - A.y) * d.t;
         }
@@ -649,8 +672,14 @@ const RoomDesigner = {
             // Bogenradius etwas kleiner als Türbreite
             const radius = d.width * 0.8;
 
-            // Bogenrichtung: flip steuert Seite
-            const sweep = d.flip * d.direction * (d.swing * Math.PI / 180);
+            // Maximal 90° (Viertelkreis)
+            const swingDeg = Math.min(Math.abs(d.swing), 90);
+            const swingRad = swingDeg * Math.PI / 180;
+
+            const signed = swingRad * d.flip * d.direction;
+
+            const startAngle = baseAngle;
+            const endAngle = baseAngle + signed;
 
             ctx.strokeStyle = "rgba(0,255,200,0.7)";
             ctx.lineWidth = 2;
@@ -660,8 +689,8 @@ const RoomDesigner = {
                 hx,
                 hy,
                 radius,
-                baseAngle,
-                baseAngle + sweep
+                startAngle,
+                endAngle
             );
             ctx.stroke();
         }
