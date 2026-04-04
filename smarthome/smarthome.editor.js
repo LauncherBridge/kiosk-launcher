@@ -206,80 +206,91 @@ const RoomDesigner = {
     // --------------------------------------------------
     // Eingaben – Fortsetzung
     // --------------------------------------------------
-    onDown(e) {
-        const rect = this.canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+onDown(e) {
+    const rect = this.canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
 
-        // Rechtsklick → löschen
-        if (e.button === 2) return;
+    // Rechtsklick → löschen
+    if (e.button === 2) return;
 
-        // 1. Prüfen, ob ein existierendes Objekt getroffen wurde
-        const hit = this.hitTestAll(x, y);
+    // --------------------------------------------------
+    // 1. Prüfen, ob ein existierendes Objekt getroffen wurde
+    // --------------------------------------------------
+    const hit = this.hitTestAll(x, y);
 
-        if (hit) {
-            this.selectObject(hit.type, hit.index);
+    if (hit) {
+        this.selectObject(hit.type, hit.index);
 
-            // Dragging aktivieren
-            if (hit.type === "point") {
-                this.isDragging = true;
-            }
+        // Dragging aktivieren
+        if (hit.type === "point") {
+            this.isDragging = true;
+        }
 
-            if (hit.type === "door") {
-                this.draggingDoorIndex = hit.index;
-            }
+        if (hit.type === "door") {
+            this.draggingDoorIndex = hit.index;
+        }
 
-            if (hit.type === "window") {
-                this.draggingWindowIndex = hit.index;
-            }
+        if (hit.type === "window") {
+            this.draggingWindowIndex = hit.index;
+        }
 
+        return;
+    }
+
+    // --------------------------------------------------
+    // 2. Klick ins Leere → alles deselektieren
+    // --------------------------------------------------
+    this.deselectAll();
+
+    // --------------------------------------------------
+    // 3. Modusabhängige Neuerstellung
+    // --------------------------------------------------
+
+    // -------------------------
+    // Fenster setzen
+    // -------------------------
+    if (this.mode === "windows") {
+        const wallHit = this.getWallAt(x, y);
+        if (wallHit) {
+            const newWin = {
+                wallIndex: wallHit.index,
+                t: wallHit.t,
+                x: wallHit.x,
+                y: wallHit.y,
+                width: 80
+            };
+            this.windows.push(newWin);
+            this.selectObject("window", this.windows.length - 1);
             return;
         }
+    }
 
-        // 2. Klick ins Leere → alles deselektieren
-        this.deselectAll();
-
-        // 3. Modusabhängige Neuerstellung
-        // ---------------------------------------------
-
-        // Fenster setzen
-        if (this.mode === "windows") {
-            const wallHit = this.getWallAt(x, y);
-            if (wallHit) {
-                const newWin = {
-                    wallIndex: wallHit.index,
-                    t: wallHit.t,
-                    x: wallHit.x,
-                    y: wallHit.y,
-                    width: 80
-                };
-                this.windows.push(newWin);
-                this.selectObject("window", this.windows.length - 1);
-                return;
-            }
+    // -------------------------
+    // Türen setzen
+    // -------------------------
+    if (this.mode === "doors") {
+        const wallHit = this.getWallAt(x, y);
+        if (wallHit) {
+            this.doors.push({
+                wallIndex: wallHit.index,
+                t: wallHit.t,
+                x: wallHit.x,
+                y: wallHit.y,
+                width: 36,
+                swing: 90,
+                hinge: null,
+                side: 1
+            });
+            this.selectObject("door", this.doors.length - 1);
+            return;
         }
+    }
 
-        // Türen setzen
-        if (this.mode === "doors") {
-            const wallHit = this.getWallAt(x, y);
-            if (wallHit) {
-                this.doors.push({
-                    wallIndex: wallHit.index,
-                    t: wallHit.t,
-                    x: wallHit.x,
-                    y: wallHit.y,
-                    width: 36,
-                    swing: 90,
-                    hinge: null,
-                    side: 1
-                });
-                this.selectObject("door", this.doors.length - 1);
-                return;
-            }
-        }
-
-        // Punktmodus
-        // ---------------------------------------------
+    // -------------------------
+    // Punktmodus
+    // -------------------------
+    if (this.mode === "points") {
 
         // Raum schließen?
         if (!this.isClosed && this.points.length > 2) {
@@ -303,30 +314,32 @@ const RoomDesigner = {
             return;
         }
 
-        // Punkt in Wand einfügen
-        const wallHit = this.getWallAt(x, y);
-        if (wallHit) {
-            const idx = wallHit.index;
-            const insertPoint = { x: wallHit.x, y: wallHit.y };
+        // Punkt in Wand einfügen (nur wenn Wand existiert)
+        if (this.isClosed || this.points.length > 1) {
+            const wallHit = this.getWallAt(x, y);
+            if (wallHit) {
+                const idx = wallHit.index;
+                const insertPoint = { x: wallHit.x, y: wallHit.y };
 
-            if (idx < this.points.length - 1) {
-                this.points.splice(idx + 1, 0, insertPoint);
-            } else {
-                this.points.push(insertPoint);
+                if (idx < this.points.length - 1) {
+                    this.points.splice(idx + 1, 0, insertPoint);
+                } else {
+                    this.points.push(insertPoint);
+                }
+
+                this.updateWalls();
+                this.render();
+                return;
             }
-
-            this.updateWalls();
-            this.render();
-            return;
         }
 
-        // Neuen Punkt setzen
-        if (!this.isClosed) {
-            this.points.push({ x, y });
-            this.updateWalls();
-            this.render();
-        }
-    },
+        // Neuen Punkt setzen (immer möglich, wenn keine Wand getroffen)
+        this.points.push({ x, y });
+        this.updateWalls();
+        this.render();
+        return;
+    }
+},
 
     onUp() {
         this.isDragging = false;
