@@ -694,7 +694,7 @@ drawDoors() {
             ox = x1; oy = y1;
         }
 
-        // Türvektor
+        // Türvektor (geschlossen)
         const ex = ox - hx;
         const ey = oy - hy;
         const elen = Math.sqrt(ex*ex + ey*ey);
@@ -705,19 +705,19 @@ drawDoors() {
         const px = -uy;
         const py = ux;
 
-        // Seite bestimmen (Tap-Seite)
+        // Seite aus Tap
         const side = d.side || 1;
 
         // Anschlag-Strich
         const hingeLen = d.width * 0.6;
-        const hx2 = hx + px * hingeLen * side;
-        const hy2 = hy + py * hingeLen * side;
+        const sx = hx + px * hingeLen * side;
+        const sy = hy + py * hingeLen * side;
 
         ctx.strokeStyle = "rgba(0,255,200,0.4)";
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(hx, hy);
-        ctx.lineTo(hx2, hy2);
+        ctx.lineTo(sx, sy);
         ctx.stroke();
 
         // Viertelkreis parametriert
@@ -728,16 +728,17 @@ drawDoors() {
 
         for (let i = 0; i <= steps; i++) {
             const t = i / steps; // 0..1
-            const angle = Math.PI/2 * t * side;
+            const angle = (Math.PI/2) * t * side;
 
-            const rx = Math.cos(angle) * ex - Math.sin(angle) * ey;
-            const ry = Math.sin(angle) * ex + Math.cos(angle) * ey;
+            // Rotation des Türvektors um 90°
+            const rx = ex * Math.cos(angle) - ey * Math.sin(angle);
+            const ry = ex * Math.sin(angle) + ey * Math.cos(angle);
 
-            const px = hx + rx;
-            const py = hy + ry;
+            const px2 = hx + rx;
+            const py2 = hy + ry;
 
-            if (i === 0) ctx.moveTo(px, py);
-            else ctx.lineTo(px, py);
+            if (i === 0) ctx.moveTo(px2, py2);
+            else ctx.lineTo(px2, py2);
         }
 
         ctx.stroke();
