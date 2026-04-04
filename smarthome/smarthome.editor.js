@@ -520,29 +520,42 @@ const RoomDesigner = {
         this.drawWalls();
         this.drawWallLengths();
 
-        // Winkelanzeige beim Ziehen eines Punktes
+        // Winkelanzeige für alle betroffenen Punkte
         if (this.isDragging && this.selectedPoint) {
             const idx = this.points.indexOf(this.selectedPoint);
         
-            let prev = null;
-            let next = null;
+            // Liste aller Punkte, deren Winkel sich ändern
+            const affected = new Set();
         
+            // Der verschobene Punkt selbst
+            affected.add(idx);
+        
+            // Nachbarn hinzufügen
             if (this.isClosed) {
-                // Geschlossener Raum → zyklische Nachbarn
-                prev = this.points[(idx - 1 + this.points.length) % this.points.length];
-                next = this.points[(idx + 1) % this.points.length];
+                affected.add((idx - 1 + this.points.length) % this.points.length);
+                affected.add((idx + 1) % this.points.length);
             } else {
-                // Offener Raum → nur wenn zwei Nachbarn existieren
-                if (idx > 0 && idx < this.points.length - 1) {
-                    prev = this.points[idx - 1];
-                    next = this.points[idx + 1];
+                if (idx > 0) affected.add(idx - 1);
+                if (idx < this.points.length - 1) affected.add(idx + 1);
+            }
+        
+            // Jetzt für jeden betroffenen Punkt den Winkel zeichnen
+            for (const i of affected) {
+                const prev = this.isClosed
+                    ? this.points[(i - 1 + this.points.length) % this.points.length]
+                    : this.points[i - 1];
+        
+                const next = this.isClosed
+                    ? this.points[(i + 1) % this.points.length]
+                    : this.points[i + 1];
+        
+                // Nur wenn zwei Nachbarn existieren
+                if (prev && next) {
+                    this.drawAngleAtPoint(this.points[i], prev, next);
                 }
             }
-        
-            if (prev && next) {
-                this.drawAngleAtPoint(this.selectedPoint, prev, next);
-            }
         }
+
 
 
         this.drawWindows();
