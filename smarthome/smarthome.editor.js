@@ -952,7 +952,7 @@ const RoomDesigner = {
             this._toastEl.style.display = "none";
         }
         this._toastConfirmFn = null;
-    }
+    },
 
 
     
