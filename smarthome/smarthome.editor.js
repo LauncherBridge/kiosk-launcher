@@ -2,8 +2,9 @@
 // Raumdesigner – kompletter Editor
 // Canvas-Init, Raster, Punkte setzen, verschieben,
 // löschen (mit Bestätigung), Raum schließen (snappen),
-// Wände, Türen (mit Öffnungsrichtung per Tap),
-// Fenster, Wandlängen in Metern, Punkt-Einfügen
+// Wände, Türen (Viertelkreis-Bogen am Scharnier),
+// Fenster, Wandlängen in Metern, Punkt-Einfügen,
+// Bodenfläche (RE-Style)
 // ======================================================
 
 const RoomDesigner = {
@@ -195,7 +196,7 @@ const RoomDesigner = {
                     t: hit.t,
                     x: hit.x,
                     y: hit.y,
-                    width: 36,      // ca. 0,9m Türbreite (realistischer)
+                    width: 36,      // ca. 0,9m Türbreite
                     swing: 90,      // max 90°
                     direction: 1,   // Öffnungsrichtung
                     flip: 1,        // Seite der Wand
@@ -431,15 +432,19 @@ const RoomDesigner = {
         const d1 = Math.hypot(tapX - x1, tapY - y1);
         const d2 = Math.hypot(tapX - x2, tapY - y2);
 
-        let hx, hy;
+        let hx, hy, ox, oy;
         if (d1 <= d2) {
             door.hinge = "start";
             hx = x1;
             hy = y1;
+            ox = x2;
+            oy = y2;
         } else {
             door.hinge = "end";
             hx = x2;
             hy = y2;
+            ox = x1;
+            oy = y1;
         }
 
         // Normale der Wand (für Seite)
@@ -452,7 +457,12 @@ const RoomDesigner = {
         const sideDot = vx * nx + vy * ny;
         door.flip = sideDot >= 0 ? 1 : -1;
 
-        // Öffnungsrichtung lassen wir 1, Bogen ist immer max. 90°
+        // Richtung immer vom Scharnier zum anderen Ende
+        const ex = ox - hx;
+        const ey = oy - hy;
+        const baseAngle = Math.atan2(ey, ex);
+
+        door._baseAngle = baseAngle; // optional, falls später gebraucht
         door.direction = 1;
     },
 
@@ -485,7 +495,7 @@ const RoomDesigner = {
             const w = this.walls[d.wallIndex];
             if (!w) continue;
             const A = { x: w.x1, y: w.y1 };
-            const B = { x: w.x2, y: w2 = w.y2 };
+            const B = { x: w.x2, y: w.y2 };
             d.x = A.x + (B.x - A.x) * d.t;
             d.y = A.y + (B.y - A.y) * d.t;
         }
@@ -508,6 +518,7 @@ const RoomDesigner = {
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         this.drawGrid();
+        this.drawFloor();
         this.drawPolygon();
         this.drawWalls();
         this.drawWallLengths();
@@ -536,6 +547,27 @@ const RoomDesigner = {
             ctx.lineTo(this.canvas.width, y);
             ctx.stroke();
         }
+    },
+
+    drawFloor() {
+        const ctx = this.ctx;
+        const pts = this.points;
+        if (pts.length < 3) return;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(pts[0].x, pts[0].y);
+        for (let i = 1; i < pts.length; i++) {
+            ctx.lineTo(pts[i].x, pts[i].y);
+        }
+        ctx.closePath();
+
+        // RE-artiger Boden: dunkles, leicht grünliches Grau
+        ctx.fillStyle = "#1b2420";
+        ctx.globalAlpha = 0.9;
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+        ctx.restore();
     },
 
     drawPolygon() {
@@ -656,18 +688,24 @@ const RoomDesigner = {
             // Wenn noch kein Scharnier gesetzt → keinen Bogen zeichnen
             if (!d.hinge) continue;
 
-            // Scharnierpunkt
-            let hx, hy;
+            // Scharnierpunkt + anderes Ende
+            let hx, hy, ox, oy;
             if (d.hinge === "start") {
                 hx = x1;
                 hy = y1;
+                ox = x2;
+                oy = y2;
             } else {
                 hx = x2;
                 hy = y2;
+                ox = x1;
+                oy = y1;
             }
 
-            // Wandwinkel
-            const baseAngle = Math.atan2(ty, tx);
+            // Basiswinkel: vom Scharnier zum anderen Ende
+            const ex = ox - hx;
+            const ey = oy - hy;
+            const baseAngle = Math.atan2(ey, ex);
 
             // Bogenradius etwas kleiner als Türbreite
             const radius = d.width * 0.8;
@@ -676,13 +714,15 @@ const RoomDesigner = {
             const swingDeg = Math.min(Math.abs(d.swing), 90);
             const swingRad = swingDeg * Math.PI / 180;
 
+            // Richtung: immer vom Scharnier in Richtung Türblatt,
+            // flip bestimmt nur die Seite (oben/unten relativ zur Wandnormale)
             const signed = swingRad * d.flip * d.direction;
 
             const startAngle = baseAngle;
             const endAngle = baseAngle + signed;
 
-            ctx.strokeStyle = "rgba(0,255,200,0.7)";
-            ctx.lineWidth = 2;
+            ctx.strokeStyle = "rgba(0,255,200,0.35)";
+            ctx.lineWidth = 1.5;
 
             ctx.beginPath();
             ctx.arc(
