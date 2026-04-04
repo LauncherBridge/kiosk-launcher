@@ -3,7 +3,6 @@
 // Selektionssystem, Objekt-Hit-Tests, Vorbereitung Overlay
 // ======================================================
 
-
 const RoomDesigner = {
     canvas: null,
     ctx: null,
