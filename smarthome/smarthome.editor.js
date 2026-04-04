@@ -685,7 +685,7 @@ const RoomDesigner = {
     
         ctx.strokeText(deg + "°", P.x + 12, P.y - 12);
         ctx.fillText(deg + "°", P.x + 12, P.y - 12);
-    },
+    }
 
 
     
