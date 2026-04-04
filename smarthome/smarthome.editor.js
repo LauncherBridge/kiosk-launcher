@@ -141,25 +141,35 @@ const RoomDesigner = {
 
         // Fenster-Modus
         if (this.mode === "windows") {
+        
+            // Fenster getroffen? → Breite ändern Toast öffnen
             const winIndex = this.getWindowIndexAt(x, y);
             if (winIndex !== null) {
-                this.draggingWindowIndex = winIndex;
+                this.selectedWindowIndex = winIndex;
+                this.showWindowWidthToast(this.windows[winIndex]);
                 return;
             }
-
+        
+            // Wenn man woanders tippt → Toast schließen
+            this.hideWindowWidthToast();
+        
+            // Neues Fenster setzen
             const hit = this.getWallAt(x, y);
             if (hit) {
-                this.windows.push({
+                const newWin = {
                     wallIndex: hit.index,
                     t: hit.t,
                     x: hit.x,
                     y: hit.y,
                     width: 80
-                });
+                };
+                this.windows.push(newWin);
+                this.showWindowWidthToast(newWin);
                 this.render();
             }
             return;
         }
+
 
         // Tür-Modus
         if (this.mode === "doors") {
@@ -509,7 +519,21 @@ const RoomDesigner = {
         this.drawPolygon();
         this.drawWalls();
         this.drawWallLengths();
+
+        // Winkelanzeige beim Ziehen eines Punktes
+        if (this.isDragging && this.selectedPoint) {
+            const idx = this.points.indexOf(this.selectedPoint);
+            if (idx > 0 && idx < this.points.length - 1) {
+                this.drawAngleAtPoint(
+                    this.selectedPoint,
+                    this.points[idx - 1],
+                    this.points[idx + 1]
+                );
+            }
+        }
+
         this.drawWindows();
+
         this.drawDoors();
         this.drawHoverCross();
     },
@@ -637,6 +661,34 @@ const RoomDesigner = {
         }
     },
 
+    drawAngleAtPoint(P, A, B) {
+        const ctx = this.ctx;
+    
+        const v1x = A.x - P.x;
+        const v1y = A.y - P.y;
+        const v2x = B.x - P.x;
+        const v2y = B.y - P.y;
+    
+        const dot = v1x * v2x + v1y * v2y;
+        const len1 = Math.sqrt(v1x*v1x + v1y*v1y);
+        const len2 = Math.sqrt(v2x*v2x + v2y*v2y);
+    
+        if (len1 === 0 || len2 === 0) return;
+    
+        const angle = Math.acos(dot / (len1 * len2));
+        const deg = (angle * 180 / Math.PI).toFixed(1);
+    
+        ctx.font = "14px sans-serif";
+        ctx.fillStyle = "white";
+        ctx.strokeStyle = "rgba(0,0,0,0.7)";
+        ctx.lineWidth = 3;
+    
+        ctx.strokeText(deg + "°", P.x + 12, P.y - 12);
+        ctx.fillText(deg + "°", P.x + 12, P.y - 12);
+    },
+
+
+    
     drawDoors() {
         const ctx = this.ctx;
 
@@ -901,6 +953,88 @@ const RoomDesigner = {
         }
         this._toastConfirmFn = null;
     }
+
+
+    
+    // --------------------------------------------------
+    // Fensterbreite-Toast (Plus/Minus)
+    // --------------------------------------------------
+    showWindowWidthToast(windowObj) {
+        this._activeWindowForWidth = windowObj;
+    
+        if (!this._windowToastEl) {
+            const el = document.createElement("div");
+            el.style.position = "fixed";
+            el.style.left = "50%";
+            el.style.bottom = "20px";
+            el.style.transform = "translateX(-50%)";
+            el.style.background = "rgba(0,0,0,0.85)";
+            el.style.color = "#fff";
+            el.style.padding = "16px 20px";
+            el.style.borderRadius = "10px";
+            el.style.display = "flex";
+            el.style.alignItems = "center";
+            el.style.gap = "12px";
+            el.style.zIndex = "10000";
+            el.style.fontSize = "16px";
+    
+            const textSpan = document.createElement("span");
+            textSpan.id = "rd-window-toast-text";
+    
+            const btnPlus = document.createElement("button");
+            btnPlus.textContent = "+ Breiter";
+            btnPlus.style.padding = "10px 16px";
+            btnPlus.style.border = "none";
+            btnPlus.style.borderRadius = "6px";
+            btnPlus.style.background = "#27ae60";
+            btnPlus.style.color = "#fff";
+            btnPlus.style.fontSize = "16px";
+    
+            const btnMinus = document.createElement("button");
+            btnMinus.textContent = "– Schmaler";
+            btnMinus.style.padding = "10px 16px";
+            btnMinus.style.border = "none";
+            btnMinus.style.borderRadius = "6px";
+            btnMinus.style.background = "#c0392b";
+            btnMinus.style.color = "#fff";
+            btnMinus.style.fontSize = "16px";
+    
+            btnPlus.addEventListener("click", () => {
+                if (this._activeWindowForWidth) {
+                    this._activeWindowForWidth.width += 10;
+                    this.render();
+                }
+            });
+    
+            btnMinus.addEventListener("click", () => {
+                if (this._activeWindowForWidth) {
+                    this._activeWindowForWidth.width = Math.max(20, this._activeWindowForWidth.width - 10);
+                    this.render();
+                }
+            });
+    
+            el.appendChild(textSpan);
+            el.appendChild(btnPlus);
+            el.appendChild(btnMinus);
+    
+            document.body.appendChild(el);
+            this._windowToastEl = el;
+        }
+    
+        const textSpan = this._windowToastEl.querySelector("#rd-window-toast-text");
+        if (textSpan) textSpan.textContent = "Fensterbreite anpassen";
+    
+        this._windowToastEl.style.display = "flex";
+    },
+    
+    hideWindowWidthToast() {
+        if (this._windowToastEl) {
+            this._windowToastEl.style.display = "none";
+        }
+        this._activeWindowForWidth = null;
+    }
+
+    
 };
 
 // --------------------------------------------------
