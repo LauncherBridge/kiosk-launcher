@@ -2,7 +2,7 @@
 // Raumdesigner – kompletter Editor
 // Canvas-Init, Raster, Punkte setzen, verschieben,
 // löschen (mit Bestätigung), Raum schließen (snappen),
-// Wände, Türen (Viertelkreis-Bogen am Scharnier),
+// Wände, Türen (Anschlag + Viertelkreis am Scharnier),
 // Fenster, Wandlängen in Metern, Punkt-Einfügen,
 // Bodenfläche (RE-Style)
 // ======================================================
@@ -163,7 +163,7 @@ const RoomDesigner = {
 
         // Tür-Modus
         if (this.mode === "doors") {
-            // Zuerst: existiert eine Tür ohne Scharnier? → Tap setzt Scharnier
+            // Zuerst: existiert eine Tür ohne Scharnier? → Tap setzt Scharnier + Seite
             const pendingIndex = this.doors.findIndex(d => !d.hinge);
             if (pendingIndex !== -1) {
                 const d = this.doors[pendingIndex];
@@ -197,9 +197,8 @@ const RoomDesigner = {
                     y: hit.y,
                     width: 36,      // ca. 0,9m
                     swing: 90,      // max 90°
-                    direction: 1,
-                    flip: 1,
-                    hinge: null
+                    hinge: null,    // "start" | "end"
+                    side: 1         // +1 oder -1, wird aus Tap berechnet
                 });
                 this.render();
             }
@@ -433,35 +432,25 @@ const RoomDesigner = {
         let hx, hy, ox, oy;
         if (d1 <= d2) {
             door.hinge = "start";
-            hx = x1;
-            hy = y1;
-            ox = x2;
-            oy = y2;
+            hx = x1; hy = y1;
+            ox = x2; oy = y2;
         } else {
             door.hinge = "end";
-            hx = x2;
-            hy = y2;
-            ox = x1;
-            oy = y1;
+            hx = x2; hy = y2;
+            ox = x1; oy = y1;
         }
 
-        // Normale der Wand (für Seite)
-        const nx = -ty;
-        const ny = tx;
+        // Türvektor (vom Scharnier zum freien Ende)
+        const ex = ox - hx;
+        const ey = oy - hy;
 
+        // Tap-Vektor (vom Scharnier zum Tap)
         const vx = tapX - hx;
         const vy = tapY - hy;
 
-        const sideDot = vx * nx + vy * ny;
-        door.flip = sideDot >= 0 ? 1 : -1;
-
-        // Richtung immer vom Scharnier zum anderen Ende
-        const ex = ox - hx;
-        const ey = oy - hy;
-        const baseAngle = Math.atan2(ey, ex);
-
-        door._baseAngle = baseAngle;
-        door.direction = 1;
+        // Kreuzprodukt: >0 = Tap links vom Türvektor, <0 = rechts
+        const cross = ex * vy - ey * vx;
+        door.side = cross >= 0 ? 1 : -1;
     },
 
     updateWalls() {
@@ -648,102 +637,111 @@ const RoomDesigner = {
         }
     },
 
-drawDoors() {
-    const ctx = this.ctx;
+    drawDoors() {
+        const ctx = this.ctx;
 
-    for (const d of this.doors) {
-        const w = this.walls[d.wallIndex];
-        if (!w) continue;
+        for (const d of this.doors) {
+            const w = this.walls[d.wallIndex];
+            if (!w) continue;
 
-        const dx = w.x2 - w.x1;
-        const dy = w.y2 - w.y1;
-        const len = Math.sqrt(dx * dx + dy * dy);
-        if (len === 0) continue;
+            const dx = w.x2 - w.x1;
+            const dy = w.y2 - w.y1;
+            const len = Math.sqrt(dx * dx + dy * dy);
+            if (len === 0) continue;
 
-        const tx = dx / len;
-        const ty = dy / len;
+            const tx = dx / len;
+            const ty = dy / len;
 
-        const cx = d.x;
-        const cy = d.y;
+            const cx = d.x;
+            const cy = d.y;
 
-        const half = d.width / 2;
+            const half = d.width / 2;
 
-        const x1 = cx - tx * half;
-        const y1 = cy - ty * half;
+            const x1 = cx - tx * half;
+            const y1 = cy - ty * half;
 
-        const x2 = cx + tx * half;
-        const y2 = cy + ty * half;
+            const x2 = cx + tx * half;
+            const y2 = cy + ty * half;
 
-        // Türblatt
-        ctx.strokeStyle = "#00ffcc";
-        ctx.lineWidth = 6;
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-        ctx.stroke();
+            // Türblatt
+            ctx.strokeStyle = "#00ffcc";
+            ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
 
-        if (!d.hinge) continue;
+            if (!d.hinge) continue;
 
-        // Scharnierpunkt + anderes Ende
-        let hx, hy, ox, oy;
-        if (d.hinge === "start") {
-            hx = x1; hy = y1;
-            ox = x2; oy = y2;
-        } else {
-            hx = x2; hy = y2;
-            ox = x1; oy = y1;
+            // Scharnierpunkt + anderes Ende
+            let hx, hy, ox, oy;
+            if (d.hinge === "start") {
+                hx = x1; hy = y1;
+                ox = x2; oy = y2;
+            } else {
+                hx = x2; hy = y2;
+                ox = x1; oy = y1;
+            }
+
+            // Türvektor (geschlossen)
+            const ex = ox - hx;
+            const ey = oy - hy;
+            const elen = Math.sqrt(ex*ex + ey*ey);
+            if (elen === 0) continue;
+
+            const ux = ex / elen;
+            const uy = ey / elen;
+
+            // Perpendikular (90°)
+            const px = -uy;
+            const py = ux;
+
+            const side = d.side || 1;
+
+            // Anschlag-Strich (kürzer als Tür)
+            const hingeLen = elen * 0.6;
+            const sx = hx + px * hingeLen * side;
+            const sy = hy + py * hingeLen * side;
+
+            ctx.strokeStyle = "rgba(0,255,200,0.4)";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(hx, hy);
+            ctx.lineTo(sx, sy);
+            ctx.stroke();
+
+            // Viertelkreis: von Anschlag-Strich-Ende zum Türende
+            // Kreiszentrum = Scharnier (hx, hy)
+            // Basisvektor = Anschlag-Strich-Richtung, Länge = elen
+            const baseVecX = px * elen * side;
+            const baseVecY = py * elen * side;
+
+            const steps = 24;
+            ctx.strokeStyle = "rgba(0,255,200,0.25)";
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+
+            for (let i = 0; i <= steps; i++) {
+                const t = i / steps; // 0..1
+                // Rotation von Basisvektor in Richtung Türvektor über 90°
+                const angle = -side * (Math.PI / 2) * t;
+
+                const cosA = Math.cos(angle);
+                const sinA = Math.sin(angle);
+
+                const rx = baseVecX * cosA - baseVecY * sinA;
+                const ry = baseVecX * sinA + baseVecY * cosA;
+
+                const px2 = hx + rx;
+                const py2 = hy + ry;
+
+                if (i === 0) ctx.moveTo(px2, py2);
+                else ctx.lineTo(px2, py2);
+            }
+
+            ctx.stroke();
         }
-
-        // Türvektor (geschlossen)
-        const ex = ox - hx;
-        const ey = oy - hy;
-        const elen = Math.sqrt(ex*ex + ey*ey);
-        const ux = ex / elen;
-        const uy = ey / elen;
-
-        // Perpendikular (90°)
-        const px = -uy;
-        const py = ux;
-
-        // Seite aus Tap
-        const side = d.side || 1;
-
-        // Anschlag-Strich
-        const hingeLen = d.width * 0.6;
-        const sx = hx + px * hingeLen * side;
-        const sy = hy + py * hingeLen * side;
-
-        ctx.strokeStyle = "rgba(0,255,200,0.4)";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(hx, hy);
-        ctx.lineTo(sx, sy);
-        ctx.stroke();
-
-        // Viertelkreis parametriert
-        const steps = 20;
-        ctx.strokeStyle = "rgba(0,255,200,0.25)";
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-
-        for (let i = 0; i <= steps; i++) {
-            const t = i / steps; // 0..1
-            const angle = (Math.PI/2) * t * side;
-
-            // Rotation des Türvektors um 90°
-            const rx = ex * Math.cos(angle) - ey * Math.sin(angle);
-            const ry = ex * Math.sin(angle) + ey * Math.cos(angle);
-
-            const px2 = hx + rx;
-            const py2 = hy + ry;
-
-            if (i === 0) ctx.moveTo(px2, py2);
-            else ctx.lineTo(px2, py2);
-        }
-
-        ctx.stroke();
-    }
-},
+    },
 
     drawWindows() {
         const ctx = this.ctx;
