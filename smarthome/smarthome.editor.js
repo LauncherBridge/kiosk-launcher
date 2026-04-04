@@ -299,34 +299,46 @@ this.hover.y = hy;
     },
 
     drawDoors() {
-        const ctx = this.ctx;
+    const ctx = this.ctx;
 
-        ctx.strokeStyle = "#00ffcc";
-        ctx.lineWidth = 4;
+    ctx.strokeStyle = "#00ffcc";
+    ctx.lineWidth = 6; // Türdicke
 
-        for (const d of this.doors) {
-            const w = this.walls[d.wallIndex];
-            if (!w) continue;
+    for (const d of this.doors) {
+        const w = this.walls[d.wallIndex];
+        if (!w) continue;
 
-            const x = d.x;
-            const y = d.y;
+        // Wandvektor
+        const dx = w.x2 - w.x1;
+        const dy = w.y2 - w.y1;
+        const len = Math.sqrt(dx * dx + dy * dy);
+        if (len === 0) continue;
 
-            const dx = w.x2 - w.x1;
-            const dy = w.y2 - w.y1;
-            const len = Math.sqrt(dx * dx + dy * dy);
-            if (len === 0) continue;
+        // Normierter Wandvektor (Tangente)
+        const tx = dx / len;
+        const ty = dy / len;
 
-            const nx = -dy / len;
-            const ny = dx / len;
+        // Türzentrum (bereits berechnet)
+        const cx = d.x;
+        const cy = d.y;
 
-            const half = d.width / 2;
+        // Türhälfte
+        const half = d.width / 2;
 
-            ctx.beginPath();
-            ctx.moveTo(x - nx * half, y - ny * half);
-            ctx.lineTo(x + nx * half, y + ny * half);
-            ctx.stroke();
-        }
-    },
+        // Türendpunkte entlang der Wand
+        const x1 = cx - tx * half;
+        const y1 = cy - ty * half;
+
+        const x2 = cx + tx * half;
+        const y2 = cy + ty * half;
+
+        // Zeichnen
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+    }
+},
 
     drawHoverCross() {
         const ctx = this.ctx;
