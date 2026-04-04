@@ -698,8 +698,9 @@ const RoomDesigner = {
 
             const side = d.side || 1;
 
-            // Anschlag-Strich (kürzer als Tür)
-            const hingeLen = elen * 0.6;
+            // Anschlag-Strich (gleich lang wie Tür)
+            const hingeLen = elen;
+
             const sx = hx + px * hingeLen * side;
             const sy = hy + py * hingeLen * side;
 
