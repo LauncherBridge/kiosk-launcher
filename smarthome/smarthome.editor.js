@@ -535,6 +535,85 @@ onDown(e) {
             win.y = A.y + (B.y - A.y) * win.t;
         }
     },
+  
+        // --------------------------------------------------
+    // Rendering
+    // --------------------------------------------------
+    render() {
+        const ctx = this.ctx;
+        if (!ctx || !this.canvas) return;
+
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        this.drawGrid();
+        this.drawFloor();
+        this.drawPolygon();
+        this.drawWalls();
+        this.drawWallLengths();
+
+        // Winkelanzeige beim Draggen eines Punktes
+        if (this.isDragging && this.selectedPoint) {
+            const idx = this.points.indexOf(this.selectedPoint);
+            const affected = new Set([idx]);
+
+            if (this.isClosed) {
+                affected.add((idx - 1 + this.points.length) % this.points.length);
+                affected.add((idx + 1) % this.points.length);
+            } else {
+                if (idx > 0) affected.add(idx - 1);
+                if (idx < this.points.length - 1) affected.add(idx + 1);
+            }
+
+            for (const i of affected) {
+                const prev = this.isClosed
+                    ? this.points[(i - 1 + this.points.length) % this.points.length]
+                    : this.points[i - 1];
+
+                const next = this.isClosed
+                    ? this.points[(i + 1) % this.points.length]
+                    : this.points[i + 1];
+
+                if (prev && next) {
+                    this.drawAngleAtPoint(this.points[i], prev, next);
+                }
+            }
+        }
+
+        this.drawWindows();
+        this.drawDoors();
+        this.drawHoverCross();
+    },
+
+    // --------------------------------------------------
+    // Grid
+    // --------------------------------------------------
+    drawGrid() {
+        const ctx = this.ctx;
+        if (!ctx || !this.canvas) return;
+
+        ctx.strokeStyle = "rgba(255,255,255,0.05)";
+        ctx.lineWidth = 1;
+
+        const grid = 40;
+
+        for (let x = 0; x < this.canvas.width; x += grid) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, this.canvas.height);
+            ctx.stroke();
+        }
+
+        for (let y = 0; y < this.canvas.height; y += grid) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(this.canvas.width, y);
+            ctx.stroke();
+        }
+    },
+
+    
+    
+    
     // --------------------------------------------------
     // Boden zeichnen
     // --------------------------------------------------
