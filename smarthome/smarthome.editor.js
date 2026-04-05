@@ -637,42 +637,91 @@ getWallAt(x, y) {
     // --------------------------------------------------
     // Wände aktualisieren
     // --------------------------------------------------
-    updateWalls() {
-        this.walls = [];
+updateWalls() {
+    this.walls = [];
 
-        if (this.points.length < 2) return;
+    if (this.points.length < 2) return;
 
-        for (let i = 0; i < this.points.length - 1; i++) {
-            const a = this.points[i];
-            const b = this.points[i + 1];
-            this.walls.push({ x1: a.x, y1: a.y, x2: b.x, y2: b.y });
+    // --------------------------------------------------
+    // Wände neu aufbauen
+    // --------------------------------------------------
+    for (let i = 0; i < this.points.length - 1; i++) {
+        const a = this.points[i];
+        const b = this.points[i + 1];
+        this.walls.push({ x1: a.x, y1: a.y, x2: b.x, y2: b.y });
+    }
+
+    if (this.isClosed && this.points.length > 2) {
+        const last = this.points[this.points.length - 1];
+        const first = this.points[0];
+        this.walls.push({ x1: last.x, y1: last.y, x2: first.x, y2: first.y });
+    }
+
+    // --------------------------------------------------
+    // Türen neu zuordnen (robust gegen Punkt-Einfügen)
+    // --------------------------------------------------
+    for (const d of this.doors) {
+        let bestWall = null;
+        let bestDist = Infinity;
+        let bestT = 0;
+
+        for (let i = 0; i < this.walls.length; i++) {
+            const w = this.walls[i];
+            const proj = this.projectOnWall(d.x, d.y, w);
+            const dist = Math.hypot(d.x - proj.x, d.y - proj.y);
+
+            if (dist < bestDist) {
+                bestDist = dist;
+                bestWall = i;
+                bestT = proj.t;
+            }
         }
 
-        if (this.isClosed && this.points.length > 2) {
-            const last = this.points[this.points.length - 1];
-            const first = this.points[0];
-            this.walls.push({ x1: last.x, y1: last.y, x2: first.x, y2: first.y });
-        }
+        if (bestWall !== null) {
+            d.wallIndex = bestWall;
+            d.t = bestT;
 
-        // Türen/Fenster mitwandern lassen
-        for (const d of this.doors) {
-            const w = this.walls[d.wallIndex];
-            if (!w) continue;
+            const w = this.walls[bestWall];
             const A = { x: w.x1, y: w.y1 };
             const B = { x: w.x2, y: w.y2 };
             d.x = A.x + (B.x - A.x) * d.t;
             d.y = A.y + (B.y - A.y) * d.t;
         }
+    }
 
-        for (const win of this.windows) {
-            const w = this.walls[win.wallIndex];
-            if (!w) continue;
+    // --------------------------------------------------
+    // Fenster neu zuordnen
+    // --------------------------------------------------
+    for (const win of this.windows) {
+        let bestWall = null;
+        let bestDist = Infinity;
+        let bestT = 0;
+
+        for (let i = 0; i < this.walls.length; i++) {
+            const w = this.walls[i];
+            const proj = this.projectOnWall(win.x, win.y, w);
+            const dist = Math.hypot(win.x - proj.x, win.y - proj.y);
+
+            if (dist < bestDist) {
+                bestDist = dist;
+                bestWall = i;
+                bestT = proj.t;
+            }
+        }
+
+        if (bestWall !== null) {
+            win.wallIndex = bestWall;
+            win.t = bestT;
+
+            const w = this.walls[bestWall];
             const A = { x: w.x1, y: w.y1 };
             const B = { x: w.x2, y: w.y2 };
             win.x = A.x + (B.x - A.x) * win.t;
             win.y = A.y + (B.y - A.y) * win.t;
         }
-    },
+    }
+}
+,
   
         // --------------------------------------------------
     // Rendering
