@@ -123,27 +123,31 @@ hideContextMenu() {
             });
         }
 
-        if (type === "door" || type === "window") {
-            const arr = type === "door" ? this.doors : this.windows;
+if (type === "door" || type === "window") {
+    const arr = type === "door" ? this.doors : this.windows;
 
-            this.addContextButton("＋", () => {
-                arr[index].width += 10;
-                this.updateWalls();
-                this.render();
-            });
+    // PLUS → Menü bleibt offen
+    this.addContextButton("＋", () => {
+        arr[index].width += 10;
+        this.updateWalls();
+        this.render();
+    }, false);
 
-            this.addContextButton("－", () => {
-                arr[index].width = Math.max(20, arr[index].width - 10);
-                this.updateWalls();
-                this.render();
-            });
+    // MINUS → Menü bleibt offen
+    this.addContextButton("－", () => {
+        arr[index].width = Math.max(20, arr[index].width - 10);
+        this.updateWalls();
+        this.render();
+    }, false);
 
-            this.addContextButton("🗑", () => {
-                arr.splice(index, 1);          
-                this.hideContextMenu();
-                this.render();
-            });
-        }
+    // DELETE → Menü schließt sich
+    this.addContextButton("🗑", () => {
+        arr.splice(index, 1);
+        this.updateWalls();
+        this.render();
+    }, true);
+}
+
 
 menu.style.display = "flex";
 
@@ -179,7 +183,7 @@ menu.style.top = top + "px";
 
     },
 
-addContextButton(label, fn) {
+addContextButton(label, fn, closeMenu = false) {
     const btn = document.createElement("button");
     btn.textContent = label;
     btn.style.width = "32px";
@@ -192,13 +196,18 @@ addContextButton(label, fn) {
     btn.style.cursor = "pointer";
 
     btn.addEventListener("click", () => {
-        this._closingByButton = true;
-        try {
+
+        // PLUS / MINUS → Menü bleibt offen
+        if (!closeMenu) {
             fn && fn();
-            this.hideContextMenu();
-        } finally {
-            this._closingByButton = false;
+            return;
         }
+
+        // DELETE → Menü schließen
+        this._closingByButton = true;
+        fn && fn();
+        this.hideContextMenu();
+        this._closingByButton = false;
     });
 
     this.contextMenuEl.appendChild(btn);
