@@ -20,6 +20,7 @@ const RoomDesigner = {
     isDragging: false,
     _initialized: false,
 
+    _closingByButton: false,
     _contextJustClosed: false,
 
     mode: "points",   // "points" | "doors" | "windows"
@@ -88,7 +89,6 @@ const RoomDesigner = {
         el.style.padding = "6px";
         el.style.borderRadius = "6px";
         el.style.zIndex = "20000";
-        el.style.display = "flex";
         el.style.gap = "6px";
 
         document.body.appendChild(el);
@@ -98,10 +98,10 @@ const RoomDesigner = {
 hideContextMenu() {
     if (!this.contextMenuEl) return;
 
-if (this.contextMenuEl.style.display === "flex") {
-    this._contextJustClosed = true;
-}
-
+    // Nur wenn das Menü wirklich offen ist UND nicht durch Button geschlossen wird
+    if (this.contextMenuEl.style.display === "flex" && !this._closingByButton) {
+        this._contextJustClosed = true;
+    }
 
     this.contextMenuEl.style.display = "none";
     this.contextTarget = null;
@@ -139,11 +139,7 @@ if (this.contextMenuEl.style.display === "flex") {
             });
 
             this.addContextButton("🗑", () => {
-                arr.splice(index, 1);
-            
-                // WICHTIG: Flag zurücksetzen, damit der nächste Klick nicht ignoriert wird
-                this._contextJustClosed = false;
-            
+                arr.splice(index, 1);          
                 this.hideContextMenu();
                 this.render();
             });
@@ -183,20 +179,30 @@ menu.style.top = top + "px";
 
     },
 
-    addContextButton(label, fn) {
-        const btn = document.createElement("button");
-        btn.textContent = label;
-        btn.style.width = "32px";
-        btn.style.height = "32px";
-        btn.style.fontSize = "18px";
-        btn.style.border = "none";
-        btn.style.borderRadius = "4px";
-        btn.style.background = "#444";
-        btn.style.color = "#fff";
-        btn.style.cursor = "pointer";
-        btn.addEventListener("click", fn);
-        this.contextMenuEl.appendChild(btn);
-    },
+addContextButton(label, fn) {
+    const btn = document.createElement("button");
+    btn.textContent = label;
+    btn.style.width = "32px";
+    btn.style.height = "32px";
+    btn.style.fontSize = "18px";
+    btn.style.border = "none";
+    btn.style.borderRadius = "4px";
+    btn.style.background = "#444";
+    btn.style.color = "#fff";
+    btn.style.cursor = "pointer";
+
+    btn.addEventListener("click", () => {
+        this._closingByButton = true;
+        try {
+            fn && fn();
+            this.hideContextMenu();
+        } finally {
+            this._closingByButton = false;
+        }
+    });
+
+    this.contextMenuEl.appendChild(btn);
+},
 
     // --------------------------------------------------
     // Eingaben
