@@ -1,6 +1,6 @@
 // ======================================================
 // Raumdesigner – kompletter Editor (überarbeitet)
-// Selektionssystem, Objekt-Hit-Tests, Vorbereitung Overlay
+// Selektionssystem, Objekt-Hit-Tests, Overlay, Dragging
 // ======================================================
 
 const RoomDesigner = {
@@ -206,80 +206,39 @@ const RoomDesigner = {
     // --------------------------------------------------
     // Eingaben – Fortsetzung
     // --------------------------------------------------
-    onDown(e) {
-        const rect = this.canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+// --------------------------------------------------
+// Eingaben – kompletter Block mit Fix
+// --------------------------------------------------
+onDown(e) {
+    const rect = this.canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
 
-        // Rechtsklick → löschen
-        if (e.button === 2) return;
+    // Rechtsklick → löschen
+    if (e.button === 2) return;
 
-        // 1. Prüfen, ob ein existierendes Objekt getroffen wurde
-        const hit = this.hitTestAll(x, y);
+    // 1. Prüfen, ob ein existierendes Objekt getroffen wurde
+    const hit = this.hitTestAll(x, y);
 
-        if (hit) {
-            this.selectObject(hit.type, hit.index);
+    if (hit) {
+        this.selectObject(hit.type, hit.index);
 
-            // Dragging aktivieren
-            if (hit.type === "point") {
-                this.isDragging = true;
-            }
+        if (hit.type === "point") this.isDragging = true;
+        if (hit.type === "door") this.draggingDoorIndex = hit.index;
+        if (hit.type === "window") this.draggingWindowIndex = hit.index;
 
-            if (hit.type === "door") {
-                this.draggingDoorIndex = hit.index;
-            }
+        return;
+    }
 
-            if (hit.type === "window") {
-                this.draggingWindowIndex = hit.index;
-            }
+    // --------------------------------------------------
+    // WICHTIGER FIX:
+    // Wir DESELEKTIEREN NICHT SOFORT.
+    // Erst prüfen wir, ob wir im Punktmodus sind
+    // und ob wir einen Punkt setzen wollen.
+    // --------------------------------------------------
 
-            return;
-        }
-
-        // 2. Klick ins Leere → alles deselektieren
-        this.deselectAll();
-
-        // 3. Modusabhängige Neuerstellung
-        // ---------------------------------------------
-
-        // Fenster setzen
-        if (this.mode === "windows") {
-            const wallHit = this.getWallAt(x, y);
-            if (wallHit) {
-                const newWin = {
-                    wallIndex: wallHit.index,
-                    t: wallHit.t,
-                    x: wallHit.x,
-                    y: wallHit.y,
-                    width: 80
-                };
-                this.windows.push(newWin);
-                this.selectObject("window", this.windows.length - 1);
-                return;
-            }
-        }
-
-        // Türen setzen
-        if (this.mode === "doors") {
-            const wallHit = this.getWallAt(x, y);
-            if (wallHit) {
-                this.doors.push({
-                    wallIndex: wallHit.index,
-                    t: wallHit.t,
-                    x: wallHit.x,
-                    y: wallHit.y,
-                    width: 36,
-                    swing: 90,
-                    hinge: null,
-                    side: 1
-                });
-                this.selectObject("door", this.doors.length - 1);
-                return;
-            }
-        }
-
-        // Punktmodus
-        // ---------------------------------------------
+    // 2. Punktmodus
+    if (this.mode === "points") {
 
         // Raum schließen?
         if (!this.isClosed && this.points.length > 2) {
@@ -304,29 +263,193 @@ const RoomDesigner = {
         }
 
         // Punkt in Wand einfügen
+        if (this.isClosed || this.points.length > 1) {
+            const wallHit = this.getWallAt(x, y);
+            if (wallHit) {
+                const idx = wallHit.index;
+                const insertPoint = { x: wallHit.x, y: wallHit.y };
+
+                if (idx < this.points.length - 1) {
+                    this.points.splice(idx + 1, 0, insertPoint);
+                } else {
+                    this.points.push(insertPoint);
+                }
+
+                this.updateWalls();
+                this.render();
+                return;
+            }
+        }
+
+        // Neuen Punkt setzen (immer möglich)
+        this.points.push({ x, y });
+        this.updateWalls();
+        this.render();
+        return;
+    }
+
+    // --------------------------------------------------
+    // 3. Fenster setzen
+    // --------------------------------------------------
+    if (this.mode === "windows") {
         const wallHit = this.getWallAt(x, y);
         if (wallHit) {
-            const idx = wallHit.index;
-            const insertPoint = { x: wallHit.x, y: wallHit.y };
-
-            if (idx < this.points.length - 1) {
-                this.points.splice(idx + 1, 0, insertPoint);
-            } else {
-                this.points.push(insertPoint);
-            }
-
-            this.updateWalls();
-            this.render();
+            const newWin = {
+                wallIndex: wallHit.index,
+                t: wallHit.t,
+                x: wallHit.x,
+                y: wallHit.y,
+                width: 80
+            };
+            this.windows.push(newWin);
+            this.selectObject("window", this.windows.length - 1);
             return;
         }
+    }
 
-        // Neuen Punkt setzen
-        if (!this.isClosed) {
-            this.points.push({ x, y });
-            this.updateWalls();
-            this.render();
+    // --------------------------------------------------
+    // 4. Türen setzen
+    // --------------------------------------------------
+    if (this.mode === "doors") {
+        const wallHit = this.getWallAt(x, y);
+        if (wallHit) {
+            this.doors.push({
+                wallIndex: wallHit.index,
+                t: wallHit.t,
+                x: wallHit.x,
+                y: wallHit.y,
+                width: 36,
+                swing: 90,
+                hinge: null,
+                side: 1
+            });
+            this.selectObject("door", this.doors.length - 1);
+            return;
         }
-    },
+    }
+
+    // --------------------------------------------------
+    // 5. Wenn wir hier sind → wirklich ins Leere geklickt
+    // Jetzt darf deselektiert werden
+    // --------------------------------------------------
+    this.deselectAll();
+},
+
+onUp() {
+    this.isDragging = false;
+    this.draggingDoorIndex = null;
+    this.draggingWindowIndex = null;
+},
+
+onRightClick(e) {
+    e.preventDefault();
+
+    const rect = this.canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // Tür löschen
+    const doorHit = this.getDoorAt(x, y);
+    if (doorHit) {
+        this.doors = this.doors.filter(d => d !== doorHit);
+        this.render();
+        return;
+    }
+
+    // Fenster löschen
+    const windowHit = this.getWindowAt(x, y);
+    if (windowHit) {
+        this.windows = this.windows.filter(w => w !== windowHit);
+        this.render();
+        return;
+    }
+
+    // Punkt löschen
+    const hit = this.getPointAt(x, y);
+    if (hit) {
+        this.points = this.points.filter(p => p !== hit);
+        if (this.points.length < 3) {
+            this.isClosed = false;
+        }
+        this.updateWalls();
+        this.render();
+    }
+},
+
+// --------------------------------------------------
+// Hilfsfunktionen
+// --------------------------------------------------
+getPointAt(x, y) {
+    return this.points.find(p => Math.hypot(p.x - x, p.y - y) < 10) || null;
+},
+
+getDoorIndexAt(x, y) {
+    return this.doors.findIndex(d => Math.hypot(d.x - x, d.y - y) < 12);
+},
+
+getWindowIndexAt(x, y) {
+    return this.windows.findIndex(w => Math.hypot(w.x - x, w.y - y) < 12);
+},
+
+getDoorAt(x, y) {
+    return this.doors.find(d => Math.hypot(d.x - x, d.y - y) < 12) || null;
+},
+
+getWindowAt(x, y) {
+    return this.windows.find(w => Math.hypot(w.x - x, w.y - y) < 12) || null;
+},
+
+getWallAt(x, y) {
+    for (let i = 0; i < this.walls.length; i++) {
+        const w = this.walls[i];
+        const proj = this.projectOnWall(x, y, w);
+        if (proj.dist < 8 && proj.t >= 0 && proj.t <= 1) {
+            return { index: i, ...proj };
+        }
+    }
+    return null;
+},
+
+projectOnWall(x, y, wall) {
+    const ax = wall.x1;
+    const ay = wall.y1;
+    const bx = wall.x2;
+    const by = wall.y2;
+
+    const abx = bx - ax;
+    const aby = by - ay;
+    const abLenSq = abx * abx + aby * aby;
+
+    if (abLenSq === 0) return { x: ax, y: ay, t: 0, dist: Math.hypot(x - ax, y - ay) };
+
+    const t = ((x - ax) * abx + (y - ay) * aby) / abLenSq;
+
+    const px = ax + abx * t;
+    const py = ay + aby * t;
+
+    const dist = Math.hypot(px - x, py - y);
+
+    return { x: px, y: py, t, dist };
+},
+
+updateWalls() {
+    this.walls = [];
+
+    if (this.points.length < 2) return;
+
+    for (let i = 0; i < this.points.length - 1; i++) {
+        const p1 = this.points[i];
+        const p2 = this.points[i + 1];
+        this.walls.push({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y });
+    }
+
+    if (this.isClosed) {
+        const p1 = this.points[this.points.length - 1];
+        const p2 = this.points[0];
+        this.walls.push({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y });
+    }
+},
+,
 
     onUp() {
         this.isDragging = false;
@@ -366,6 +489,81 @@ const RoomDesigner = {
             }
             this.updateWalls();
             this.render();
+        }
+    },
+
+    // --------------------------------------------------
+    // Hilfsfunktionen (ergänzt)
+    // --------------------------------------------------
+
+    getPointAt(x, y) {
+        return this.points.find(p => Math.hypot(p.x - x, p.y - y) < 10) || null;
+    },
+
+    getDoorIndexAt(x, y) {
+        return this.doors.findIndex(d => Math.hypot(d.x - x, d.y - y) < 12);
+    },
+
+    getWindowIndexAt(x, y) {
+        return this.windows.findIndex(w => Math.hypot(w.x - x, w.y - y) < 12);
+    },
+
+    getDoorAt(x, y) {
+        return this.doors.find(d => Math.hypot(d.x - x, d.y - y) < 12) || null;
+    },
+
+    getWindowAt(x, y) {
+        return this.windows.find(w => Math.hypot(w.x - x, w.y - y) < 12) || null;
+    },
+
+    getWallAt(x, y) {
+        for (let i = 0; i < this.walls.length; i++) {
+            const w = this.walls[i];
+            const proj = this.projectOnWall(x, y, w);
+            if (proj.dist < 8 && proj.t >= 0 && proj.t <= 1) {
+                return { index: i, ...proj };
+            }
+        }
+        return null;
+    },
+
+    projectOnWall(x, y, wall) {
+        const ax = wall.x1;
+        const ay = wall.y1;
+        const bx = wall.x2;
+        const by = wall.y2;
+
+        const abx = bx - ax;
+        const aby = by - ay;
+        const abLenSq = abx * abx + aby * aby;
+
+        if (abLenSq === 0) return { x: ax, y: ay, t: 0, dist: Math.hypot(x - ax, y - ay) };
+
+        const t = ((x - ax) * abx + (y - ay) * aby) / abLenSq;
+
+        const px = ax + abx * t;
+        const py = ay + aby * t;
+
+        const dist = Math.hypot(px - x, py - y);
+
+        return { x: px, y: py, t, dist };
+    },
+
+    updateWalls() {
+        this.walls = [];
+
+        if (this.points.length < 2) return;
+
+        for (let i = 0; i < this.points.length - 1; i++) {
+            const p1 = this.points[i];
+            const p2 = this.points[i + 1];
+            this.walls.push({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y });
+        }
+
+        if (this.isClosed) {
+            const p1 = this.points[this.points.length - 1];
+            const p2 = this.points[0];
+            this.walls.push({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y });
         }
     },
     // --------------------------------------------------
@@ -718,7 +916,6 @@ const RoomDesigner = {
         ctx.lineTo(x, y + 10);
         ctx.stroke();
     },
-
     // --------------------------------------------------
     // Buttons
     // --------------------------------------------------
