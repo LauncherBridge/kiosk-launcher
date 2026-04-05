@@ -22,7 +22,13 @@
 </div>
 
 <!-- Schritt 1: Raumdesigner-Canvas -->
-<canvas id="roomdesigner" style="display:none;"></canvas>
+<canvas id="roomdesigner" style="
+    display:none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 999998; /* über SmartHome */
+"></canvas>
 
 <!-- Schritt 6: Tür-Modus Button -->
 <button id="btnDoorMode" class="editor-btn" style="
@@ -68,7 +74,7 @@
     border: none;
     border-radius: 6px;
     font-size: 16px;
-    z-index: 9999;
+    z-index: 999999;
 ">Editor öffnen</button>
 
 <!-- Group Header -->
