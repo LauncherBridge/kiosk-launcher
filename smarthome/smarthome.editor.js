@@ -139,6 +139,10 @@ hideContextMenu() {
 
             this.addContextButton("🗑", () => {
                 arr.splice(index, 1);
+            
+                // WICHTIG: Flag zurücksetzen, damit der nächste Klick nicht ignoriert wird
+                this._contextJustClosed = false;
+            
                 this.hideContextMenu();
                 this.render();
             });
