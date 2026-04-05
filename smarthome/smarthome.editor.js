@@ -363,7 +363,8 @@ onDown(e) {
         this.hideContextMenu();
         return;
     }
-
+    const menuWasOpen = (this.contextMenuEl && this.contextMenuEl.style.display === "flex");
+    
     this.hideContextMenu();
     // Wenn gerade ein Kontextmenü geschlossen wurde → NICHTS setzen
 // Wenn gerade ein Kontextmenü geschlossen wurde
