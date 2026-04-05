@@ -113,13 +113,48 @@ hideContextMenu() {
         this.contextTarget = { type, index };
 
 if (type === "point") {
-    this.addContextButton("🗑", () => {
-        const p = this.points[index];
-        this.points = this.points.filter(pt => pt !== p);
-        if (this.points.length < 3) this.isClosed = false;
-        this.updateWalls();
-        this.render();
-    }, true); // Menü schließen, aber sauber über addContextButton
+this.addContextButton("🗑", () => {
+
+    // 1. Betroffene Wände bestimmen
+    const prevWall = index - 1;
+    const nextWall = index;
+
+    // 2. Türen/Fenster merken, die auf diesen Wänden liegen
+    const affectedDoors = this.doors.filter(d => d.wallIndex === prevWall || d.wallIndex === nextWall);
+    const affectedWindows = this.windows.filter(w => w.wallIndex === prevWall || w.wallIndex === nextWall);
+
+    // 3. Punkt löschen
+    const p = this.points[index];
+    this.points = this.points.filter(pt => pt !== p);
+    if (this.points.length < 3) this.isClosed = false;
+
+    // 4. Wände neu berechnen
+    this.updateWalls();
+
+    // 5. Türen/Fenster neu auf die neue Wand projizieren
+    for (const d of affectedDoors) {
+        const w = this.walls[d.wallIndex];
+        if (!w) continue;
+        const proj = this.projectOnWall(d.x, d.y, w);
+        d.wallIndex = d.wallIndex; // bleibt gleich
+        d.t = proj.t;
+        d.x = proj.x;
+        d.y = proj.y;
+    }
+
+    for (const win of affectedWindows) {
+        const w = this.walls[win.wallIndex];
+        if (!w) continue;
+        const proj = this.projectOnWall(win.x, win.y, w);
+        win.wallIndex = win.wallIndex;
+        win.t = proj.t;
+        win.x = proj.x;
+        win.y = proj.y;
+    }
+
+    this.render();
+}, true);
+
 }
 
 
