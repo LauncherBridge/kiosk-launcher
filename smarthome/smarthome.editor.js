@@ -68,6 +68,10 @@ const RoomDesigner = {
         this.setupDoorButton();
         this.setupWindowButton();
         this.createContextMenu();
+        this.setupSnapButton();
+        this.setupGridSlider();
+
+
 
         this.resize();
         this.render();
@@ -641,6 +645,14 @@ snap(value) {
     return Math.round(value / this.gridSize) * this.gridSize;
 },
 
+ // --------------------------------------------------
+// Grid-Größe ändern
+// --------------------------------------------------
+setGridSize(size) {
+    this.gridSize = Math.max(5, size); // Mindestgröße
+    this.render();
+},
+   
     
 getWallAt(x, y) {
     // Wände IMMER prüfen – auch wenn der Raum offen ist
@@ -827,10 +839,21 @@ updateWalls() {
             win.y = A.y + (B.y - A.y) * win.t;
         }
     }
-}
-,
+},
   
-        // --------------------------------------------------
+    // --------------------------------------------------
+    // Canvas-Transform (für zukünftigen Zoom/Pan vorbereitet)
+    // --------------------------------------------------
+    applyTransform() {
+        const ctx = this.ctx;
+        if (!ctx) return;
+    
+        // Aktuell kein Zoom/Offset – später hier erweitern
+        // ctx.scale(this.zoom, this.zoom);
+        // ctx.translate(this.offsetX, this.offsetY);
+    },
+
+    // --------------------------------------------------
     // Rendering
     // --------------------------------------------------
     render() {
@@ -838,6 +861,8 @@ updateWalls() {
         if (!ctx || !this.canvas) return;
 
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        this.applyTransform();
 
         this.drawGrid();
         this.drawFloor();
@@ -878,49 +903,53 @@ updateWalls() {
         this.drawHoverCross();
     },
 
+
     // --------------------------------------------------
-    // Grid
+    // Grid (zoomfähig, konfigurierbar, snap-aware)
     // --------------------------------------------------
-// --------------------------------------------------
-// Grid (zoomfähig, konfigurierbar, snap-aware)
-// --------------------------------------------------
-drawGrid() {
-    const ctx = this.ctx;
-    if (!ctx || !this.canvas) return;
-
-    const size = this.gridSize;
-
-    ctx.save();
-
-    // Grid-Farbe abhängig von Snap
-    ctx.strokeStyle = this.gridColor;
-    ctx.globalAlpha = this.snapEnabled ? this.gridAlphaSnap : this.gridAlpha;
-    ctx.lineWidth = 1;
-
-    // Sichtbare Fläche im transformierten Raum
-    const width = this.canvas.width;
-    const height = this.canvas.height;
-
-    // Da du aktuell kein Zoom/Offset nutzt, ist das Grid einfach:
-    for (let x = 0; x < width; x += size) {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, height);
-        ctx.stroke();
-    }
-
-    for (let y = 0; y < height; y += size) {
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(width, y);
-        ctx.stroke();
-    }
-
-    ctx.restore();
-},
-
+    drawGrid() {
+        const ctx = this.ctx;
+        if (!ctx || !this.canvas) return;
+    
+        const size = this.gridSize;
+    
+        ctx.save();
+    
+        // Grid-Farbe abhängig von Snap
+        ctx.strokeStyle = this.gridColor;
+        ctx.globalAlpha = this.snapEnabled ? this.gridAlphaSnap : this.gridAlpha;
+        ctx.lineWidth = 1;
+    
+        // Sichtbare Fläche im transformierten Raum
+        const width = this.canvas.width;
+        const height = this.canvas.height;
+    
+        // Startpunkte am Raster ausrichten
+        const startX = 0;
+        const startY = 0;
+    
+        // Vertikale Linien
+        for (let x = startX; x < width; x += size) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, height);
+            ctx.stroke();
+        }
+    
+        // Horizontale Linien
+        for (let y = startY; y < height; y += size) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(width, y);
+            ctx.stroke();
+        }
+    
+        ctx.restore();
+    },
     
     
+        
+        
     
     // --------------------------------------------------
     // Boden zeichnen
@@ -1238,6 +1267,24 @@ drawGrid() {
             this.mode = "windows";
         });
     },
+
+    // --------------------------------------------------
+    // Snap-Toggle
+    // --------------------------------------------------
+    setupSnapButton() {
+        const btn = document.getElementById("btnSnapToggle");
+        if (!btn) return;
+    
+        btn.addEventListener("click", () => {
+            this.snapEnabled = !this.snapEnabled;
+    
+            // Optional: Button visuell hervorheben
+            btn.style.background = this.snapEnabled ? "#66bb6a" : "#444";
+    
+            this.render();
+        });
+    },
+
     // --------------------------------------------------
     // Delete-Toast
     // --------------------------------------------------
