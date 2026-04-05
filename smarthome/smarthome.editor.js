@@ -33,6 +33,10 @@ const RoomDesigner = {
     draggingDoorIndex: null,
     draggingWindowIndex: null,
     selectedDoorIndex: null,
+    selectedWindowIndex: null,
+
+    _windowToastEl: null,
+    _activeWindowForWidth: null,
 
     PIXELS_PER_METER: 40, // 1 Raster = 1m
 
@@ -169,7 +173,6 @@ const RoomDesigner = {
             }
             return;
         }
-
 
         // Tür-Modus
         if (this.mode === "doors") {
@@ -312,7 +315,6 @@ const RoomDesigner = {
             });
         }
     },
-
     // --------------------------------------------------
     // Hilfsfunktionen
     // --------------------------------------------------
@@ -556,10 +558,7 @@ const RoomDesigner = {
             }
         }
 
-
-
         this.drawWindows();
-
         this.drawDoors();
         this.drawHoverCross();
     },
@@ -649,7 +648,6 @@ const RoomDesigner = {
             ctx.stroke();
         }
     },
-
     drawWallLengths() {
         if (!this.isDragging || !this.selectedPoint) return;
 
@@ -713,8 +711,6 @@ const RoomDesigner = {
         ctx.fillText(deg + "°", P.x + 12, P.y - 12);
     },
 
-
-    
     drawDoors() {
         const ctx = this.ctx;
 
@@ -906,7 +902,6 @@ const RoomDesigner = {
             if (doorBtn) doorBtn.style.background = "#4a90e2";
         });
     },
-
     // --------------------------------------------------
     // Tablet-gerechte Lösch-Bestätigung (Toast)
     // --------------------------------------------------
@@ -980,8 +975,6 @@ const RoomDesigner = {
         this._toastConfirmFn = null;
     },
 
-
-    
     // --------------------------------------------------
     // Fensterbreite-Toast (Plus/Minus)
     // --------------------------------------------------
@@ -1058,9 +1051,8 @@ const RoomDesigner = {
             this._windowToastEl.style.display = "none";
         }
         this._activeWindowForWidth = null;
-    },
-
-    
+        this.selectedWindowIndex = null;
+    }
 };
 
 // --------------------------------------------------
