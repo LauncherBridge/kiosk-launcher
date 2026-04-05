@@ -98,9 +98,10 @@ const RoomDesigner = {
 hideContextMenu() {
     if (!this.contextMenuEl) return;
 
-    if (this.contextMenuEl.style.display !== "none") {
-        this._contextJustClosed = true;   // <--- wichtig
-    }
+if (this.contextMenuEl.style.display === "flex") {
+    this._contextJustClosed = true;
+}
+
 
     this.contextMenuEl.style.display = "none";
     this.contextTarget = null;
