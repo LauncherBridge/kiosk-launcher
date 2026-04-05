@@ -359,22 +359,38 @@ onDown(e) {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
+    // Rechtsklick → Menü schließen, Klick ignorieren
     if (e.button === 2) {
         this.hideContextMenu();
         return;
     }
-    const menuWasOpen = (this.contextMenuEl && this.contextMenuEl.style.display === "flex");
-    
+
+    // Prüfen, ob wir auf ein Objekt klicken
+    const hit = this.hitTest(x, y);
+    const clickingObject =
+        hit.type === "point" ||
+        hit.type === "door" ||
+        hit.type === "window" ||
+        hit.type === "wall";
+
+    const menuWasOpen =
+        this.contextMenuEl &&
+        this.contextMenuEl.style.display === "flex";
+
+    // Menü schließen
     this.hideContextMenu();
-    // Wenn gerade ein Kontextmenü geschlossen wurde → NICHTS setzen
-// Wenn gerade ein Kontextmenü geschlossen wurde
-if (this._contextJustClosed) {
-    this._contextJustClosed = false;
-    return;
-}
 
+    // Wenn Menü offen war und wir NICHT auf ein Objekt klicken → Klick ignorieren
+    if (this._contextJustClosed && !clickingObject) {
+        this._contextJustClosed = false;
+        return;
+    }
 
-
+    // Wenn Menü offen war und wir auf ein Objekt klicken → Klick NICHT ignorieren
+    if (this._contextJustClosed && clickingObject) {
+        this._contextJustClosed = false;
+        // WICHTIG: weiterlaufen lassen!
+    }
 
     // --------------------------------------------------
     // Raum schließen durch Klick auf ersten Punkt
@@ -383,7 +399,6 @@ if (this._contextJustClosed) {
         const first = this.points[0];
         if (Math.hypot(x - first.x, y - first.y) < 20) {
 
-            // Letzten Punkt NICHT ersetzen → stattdessen echten Referenzpunkt anhängen
             this.points.push(first);
 
             this.isClosed = true;
@@ -393,8 +408,8 @@ if (this._contextJustClosed) {
         }
     }
 
-    const hit = this.hitTest(x, y);
-
+    // Hit-Test erneut verwenden
+    // (wir haben oben schon hit berechnet)
     // --------------------------------------------------
     // Fenster-Modus
     // --------------------------------------------------
@@ -461,7 +476,6 @@ if (this._contextJustClosed) {
     // Punkt-Modus
     // --------------------------------------------------
 
-    // Türen/Fenster: Klick-Kandidat, kein Drag
     if (hit.type === "door") {
         this._pendingContext = { x, y, type: "door", index: hit.index };
         return;
@@ -472,14 +486,12 @@ if (this._contextJustClosed) {
         return;
     }
 
-    // Punkt: Klick-Kandidat, kein Drag
     if (hit.type === "point") {
         this._pendingContext = { x, y, type: "point", index: hit.index };
         return;
     }
 
-
-    // Punkt auf Wand einfügen (auch bei offenem Raum erlaubt)
+    // Punkt auf Wand einfügen
     if (hit.type === "wall") {
         const w = hit.data;
         const insertPoint = { x: w.x, y: w.y };
@@ -491,14 +503,15 @@ if (this._contextJustClosed) {
         return;
     }
 
-    // Neuen Punkt setzen (solange nicht geschlossen)
+    // Neuen Punkt setzen
     if (!this.isClosed) {
         this.points.push({ x, y });
         this.updateWalls();
         this.render();
         return;
     }
-},
+}
+,
 
 onUp() {
     if (this.isDragging) {
