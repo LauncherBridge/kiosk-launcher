@@ -870,7 +870,7 @@ const RoomDesigner = {
             btnYes.style.color = "#fff";
             btnYes.style.fontSize = "16px";
 
-            const btnNo = document.createElement("button";
+            const btnNo = document.createElement("button");
             btnNo.textContent = "Abbrechen";
             btnNo.style.padding = "10px 16px";
             btnNo.style.border = "none";
