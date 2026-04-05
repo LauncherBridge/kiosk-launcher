@@ -1,10 +1,5 @@
 // ======================================================
-// Raumdesigner – kompletter Editor
-// Canvas-Init, Raster, Punkte setzen, verschieben,
-// löschen (mit Bestätigung), Raum schließen (snappen),
-// Wände, Türen (Anschlag + Viertelkreis am Scharnier),
-// Fenster, Wandlängen in Metern, Punkt-Einfügen,
-// Bodenfläche (RE-Style)
+// Raumdesigner – kompletter Editor (überarbeitet)
 // ======================================================
 
 const RoomDesigner = {
@@ -19,26 +14,27 @@ const RoomDesigner = {
     hover: { x: 0, y: 0 },
 
     selectedPoint: null,
+    selectedDoorIndex: null,
+    selectedWindowIndex: null,
+
     isDragging: false,
     _initialized: false,
 
     mode: "points",   // "points" | "doors" | "windows"
-    isClosed: false,  // Raum geschlossen?
-
-    windowMode: false,
-
-    _toastEl: null,
-    _toastConfirmFn: null,
+    isClosed: false,
 
     draggingDoorIndex: null,
     draggingWindowIndex: null,
-    selectedDoorIndex: null,
-    selectedWindowIndex: null,
 
-    _windowToastEl: null,
-    _activeWindowForWidth: null,
+    PIXELS_PER_METER: 40,
 
-    PIXELS_PER_METER: 40, // 1 Raster = 1m
+    // Kontext-Menü
+    contextMenuEl: null,
+    contextTarget: null,
+
+    // Delete-Toast
+    _toastEl: null,
+    _toastConfirmFn: null,
 
     // --------------------------------------------------
     // Initialisierung
@@ -48,11 +44,6 @@ const RoomDesigner = {
         this._initialized = true;
 
         this.canvas = document.getElementById("roomdesigner");
-        if (!this.canvas) {
-            console.warn("RoomDesigner: Canvas #roomdesigner nicht gefunden.");
-            return;
-        }
-
         this.ctx = this.canvas.getContext("2d");
 
         window.addEventListener("resize", () => this.resize());
@@ -63,6 +54,7 @@ const RoomDesigner = {
 
         this.setupDoorButton();
         this.setupWindowButton();
+        this.createContextMenu();
 
         this.resize();
         this.render();
@@ -75,6 +67,108 @@ const RoomDesigner = {
     },
 
     // --------------------------------------------------
+    // Kontext-Menü
+    // --------------------------------------------------
+    createContextMenu() {
+        const el = document.createElement("div");
+        el.id = "rd-context-menu";
+        el.style.position = "fixed";
+        el.style.display = "none";
+        el.style.background = "rgba(0,0,0,0.85)";
+        el.style.padding = "6px";
+        el.style.borderRadius = "6px";
+        el.style.zIndex = "20000";
+        el.style.display = "flex";
+        el.style.gap = "6px";
+
+        document.body.appendChild(el);
+        this.contextMenuEl = el;
+    },
+
+    hideContextMenu() {
+        if (!this.contextMenuEl) return;
+        this.contextMenuEl.style.display = "none";
+        this.contextTarget = null;
+    },
+
+    showContextMenu(x, y, type, index) {
+        const menu = this.contextMenuEl;
+        menu.innerHTML = "";
+        this.contextTarget = { type, index };
+
+        // Punkt → nur löschen
+        if (type === "point") {
+            this.addContextButton("🗑", () => {
+                const p = this.points[index];
+                this.points = this.points.filter(pt => pt !== p);
+                if (this.points.length < 3) this.isClosed = false;
+                this.updateWalls();
+                this.hideContextMenu();
+                this.render();
+            });
+        }
+
+        // Tür/Fenster → + / - / löschen
+        if (type === "door" || type === "window") {
+            const arr = type === "door" ? this.doors : this.windows;
+
+            this.addContextButton("＋", () => {
+                arr[index].width += 10;
+                this.updateWalls();
+                this.render();
+            });
+
+            this.addContextButton("－", () => {
+                arr[index].width = Math.max(20, arr[index].width - 10);
+                this.updateWalls();
+                this.render();
+            });
+
+            this.addContextButton("🗑", () => {
+                arr.splice(index, 1);
+                this.hideContextMenu();
+                this.render();
+            });
+        }
+
+        menu.style.display = "flex";
+
+        const rect = menu.getBoundingClientRect();
+        const spaceRight = window.innerWidth - x - rect.width - 10;
+        const spaceTop = y - rect.height - 10;
+        const spaceBottom = window.innerHeight - y - rect.height - 10;
+
+        if (spaceRight > 0) {
+            menu.style.left = (x + 10) + "px";
+            menu.style.top = (y - rect.height / 2) + "px";
+        } else if (spaceTop > 0) {
+            menu.style.left = (x - rect.width / 2) + "px";
+            menu.style.top = (y - rect.height - 10) + "px";
+        } else if (spaceBottom > 0) {
+            menu.style.left = (x - rect.width / 2) + "px";
+            menu.style.top = (y + 10) + "px";
+        } else {
+            menu.style.left = (x - rect.width - 10) + "px";
+            menu.style.top = (y - rect.height / 2) + "px";
+        }
+    },
+
+    addContextButton(label, fn) {
+        const btn = document.createElement("button");
+        btn.textContent = label;
+        btn.style.width = "32px";
+        btn.style.height = "32px";
+        btn.style.fontSize = "18px";
+        btn.style.border = "none";
+        btn.style.borderRadius = "4px";
+        btn.style.background = "#444";
+        btn.style.color = "#fff";
+        btn.style.cursor = "pointer";
+        btn.addEventListener("click", fn);
+        this.contextMenuEl.appendChild(btn);
+    },
+
+    // --------------------------------------------------
     // Eingaben
     // --------------------------------------------------
     onMove(e) {
@@ -82,14 +176,10 @@ const RoomDesigner = {
         let hx = e.clientX - rect.left;
         let hy = e.clientY - rect.top;
 
-        // Magnetisches Einrasten auf ersten Punkt
+        // Magnetisches Einrasten
         if (this.points.length > 0) {
             const first = this.points[0];
-            const dx = hx - first.x;
-            const dy = hy - first.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-
-            if (!this.isClosed && dist < 20) {
+            if (!this.isClosed && Math.hypot(hx - first.x, hy - first.y) < 20) {
                 hx = first.x;
                 hy = first.y;
             }
@@ -98,7 +188,7 @@ const RoomDesigner = {
         this.hover.x = hx;
         this.hover.y = hy;
 
-        // Tür entlang der Wand verschieben
+        // Tür verschieben
         if (this.draggingDoorIndex !== null) {
             const d = this.doors[this.draggingDoorIndex];
             const w = this.walls[d.wallIndex];
@@ -112,7 +202,7 @@ const RoomDesigner = {
             return;
         }
 
-        // Fenster entlang der Wand verschieben
+        // Fenster verschieben
         if (this.draggingWindowIndex !== null) {
             const wObj = this.windows[this.draggingWindowIndex];
             const w = this.walls[wObj.wallIndex];
@@ -126,9 +216,10 @@ const RoomDesigner = {
             return;
         }
 
+        // Punkt ziehen
         if (this.isDragging && this.selectedPoint) {
-            this.selectedPoint.x = this.hover.x;
-            this.selectedPoint.y = this.hover.y;
+            this.selectedPoint.x = hx;
+            this.selectedPoint.y = hy;
             this.updateWalls();
         }
 
@@ -140,67 +231,52 @@ const RoomDesigner = {
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
 
-        // Rechtsklick separat
+        // Rechtsklick → Delete-Toast
         if (e.button === 2) return;
 
-        // Fenster-Modus
+        // Klick ins Leere → Kontext schließen
+        this.hideContextMenu();
+
+        // --------------------------------------------------
+        // EINMALIGER FENSTER-MODUS
+        // --------------------------------------------------
         if (this.mode === "windows") {
-        
-            // Fenster getroffen? → Breite ändern Toast öffnen
+
             const winIndex = this.getWindowIndexAt(x, y);
             if (winIndex !== null) {
-                this.selectedWindowIndex = winIndex;
-                this.showWindowWidthToast(this.windows[winIndex]);
+                this.showContextMenu(x, y, "window", winIndex);
                 return;
             }
-        
-            // Wenn man woanders tippt → Toast schließen
-            this.hideWindowWidthToast();
-        
-            // Neues Fenster setzen
+
             const hit = this.getWallAt(x, y);
             if (hit) {
-                const newWin = {
+                this.windows.push({
                     wallIndex: hit.index,
                     t: hit.t,
                     x: hit.x,
                     y: hit.y,
                     width: 80
-                };
-                this.windows.push(newWin);
-                this.showWindowWidthToast(newWin);
+                });
+                this.updateWalls();
                 this.render();
             }
+
+            // EINMALIG → zurück zu Punkten
+            this.mode = "points";
             return;
         }
 
-        // Tür-Modus
+        // --------------------------------------------------
+        // EINMALIGER TÜR-MODUS
+        // --------------------------------------------------
         if (this.mode === "doors") {
-            // Zuerst: existiert eine Tür ohne Scharnier? → Tap setzt Scharnier + Seite
-            const pendingIndex = this.doors.findIndex(d => !d.hinge);
-            if (pendingIndex !== -1) {
-                const d = this.doors[pendingIndex];
-                const w = this.walls[d.wallIndex];
-                if (w) {
-                    this.setDoorHingeFromTap(d, x, y, w);
-                    this.selectedDoorIndex = pendingIndex;
-                    this.render();
-                }
-                return;
-            }
 
-            // Tür getroffen? → verschieben
             const doorIndex = this.getDoorIndexAt(x, y);
             if (doorIndex !== null) {
-                const d = this.doors[doorIndex];
-                const w = this.walls[d.wallIndex];
-                if (w) {
-                    this.draggingDoorIndex = doorIndex;
-                }
+                this.showContextMenu(x, y, "door", doorIndex);
                 return;
             }
 
-            // Neue Tür auf Wand platzieren
             const hit = this.getWallAt(x, y);
             if (hit) {
                 this.doors.push({
@@ -208,26 +284,26 @@ const RoomDesigner = {
                     t: hit.t,
                     x: hit.x,
                     y: hit.y,
-                    width: 36,      // ca. 0,9m
-                    swing: 90,      // max 90°
-                    hinge: null,    // "start" | "end"
-                    side: 1         // +1 oder -1, wird aus Tap berechnet
+                    width: 36,
+                    hinge: null,
+                    side: 1
                 });
                 this.render();
             }
+
+            // EINMALIG → zurück zu Punkten
+            this.mode = "points";
             return;
         }
 
-        // Punkt-Modus
+        // --------------------------------------------------
+        // PUNKT-MODUS
+        // --------------------------------------------------
 
-        // Raum schließen?
+        // Raum schließen
         if (!this.isClosed && this.points.length > 2) {
             const first = this.points[0];
-            const dx = x - first.x;
-            const dy = y - first.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-
-            if (dist < 20) {
+            if (Math.hypot(x - first.x, y - first.y) < 20) {
                 this.isClosed = true;
                 this.updateWalls();
                 this.render();
@@ -235,11 +311,13 @@ const RoomDesigner = {
             }
         }
 
-        // Punkt getroffen?
+        // Punkt getroffen
         const hitPoint = this.getPointAt(x, y);
         if (hitPoint) {
+            const idx = this.points.indexOf(hitPoint);
             this.selectedPoint = hitPoint;
             this.isDragging = true;
+            this.showContextMenu(x, y, "point", idx);
             return;
         }
 
@@ -260,7 +338,7 @@ const RoomDesigner = {
             return;
         }
 
-        // Neuen Punkt setzen (nur wenn noch nicht geschlossen)
+        // Neuen Punkt setzen
         if (!this.isClosed) {
             this.points.push({ x, y });
             this.updateWalls();
@@ -274,90 +352,33 @@ const RoomDesigner = {
         this.draggingDoorIndex = null;
         this.draggingWindowIndex = null;
     },
-
-    onRightClick(e) {
-        e.preventDefault();
-
-        const rect = this.canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-
-        // Tür getroffen?
-        const doorHit = this.getDoorAt(x, y);
-        if (doorHit) {
-            this.showDeleteToast("Tür löschen?", () => {
-                this.doors = this.doors.filter(d => d !== doorHit);
-                this.render();
-            });
-            return;
-        }
-
-        // Fenster getroffen?
-        const windowHit = this.getWindowAt(x, y);
-        if (windowHit) {
-            this.showDeleteToast("Fenster löschen?", () => {
-                this.windows = this.windows.filter(w => w !== windowHit);
-                this.render();
-            });
-            return;
-        }
-
-        // Punkt getroffen?
-        const hit = this.getPointAt(x, y);
-        if (hit) {
-            this.showDeleteToast("Punkt löschen?", () => {
-                this.points = this.points.filter(p => p !== hit);
-                if (this.points.length < 3) {
-                    this.isClosed = false;
-                }
-                this.updateWalls();
-                this.render();
-            });
-        }
-    },
     // --------------------------------------------------
     // Hilfsfunktionen
     // --------------------------------------------------
     getPointAt(x, y) {
-        return this.points.find(p => {
-            const dx = p.x - x;
-            const dy = p.y - y;
-            return Math.sqrt(dx * dx + dy * dy) < 10;
-        });
+        return this.points.find(p => Math.hypot(p.x - x, p.y - y) < 10);
     },
 
     getDoorAt(x, y) {
-        return this.doors.find(d => {
-            const dx = d.x - x;
-            const dy = d.y - y;
-            return Math.sqrt(dx * dx + dy * dy) < 15;
-        });
+        return this.doors.find(d => Math.hypot(d.x - x, d.y - y) < 15);
     },
 
     getDoorIndexAt(x, y) {
         for (let i = 0; i < this.doors.length; i++) {
             const d = this.doors[i];
-            const dx = d.x - x;
-            const dy = d.y - y;
-            if (Math.sqrt(dx * dx + dy * dy) < 15) return i;
+            if (Math.hypot(d.x - x, d.y - y) < 15) return i;
         }
         return null;
     },
 
     getWindowAt(x, y) {
-        return this.windows.find(w => {
-            const dx = w.x - x;
-            const dy = w.y - y;
-            return Math.sqrt(dx * dx + dy * dy) < 15;
-        });
+        return this.windows.find(w => Math.hypot(w.x - x, w.y - y) < 15);
     },
 
     getWindowIndexAt(x, y) {
         for (let i = 0; i < this.windows.length; i++) {
             const w = this.windows[i];
-            const dx = w.x - x;
-            const dy = w.y - y;
-            if (Math.sqrt(dx * dx + dy * dy) < 15) return i;
+            if (Math.hypot(w.x - x, w.y - y) < 15) return i;
         }
         return null;
     },
@@ -374,20 +395,16 @@ const RoomDesigner = {
             const APx = x - A.x;
             const APy = y - A.y;
 
-            const abLen = Math.sqrt(ABx * ABx + ABy * ABy);
+            const abLen = Math.hypot(ABx, ABy);
             if (abLen === 0) continue;
 
             const t = Math.max(0, Math.min(1, (APx * ABx + APy * ABy) / (abLen * abLen)));
 
-            const closestX = A.x + t * ABx;
-            const closestY = A.y + t * ABy;
+            const cx = A.x + t * ABx;
+            const cy = A.y + t * ABy;
 
-            const dx = x - closestX;
-            const dy = y - closestY;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-
-            if (dist < 10) {
-                return { index: i, t, x: closestX, y: closestY };
+            if (Math.hypot(x - cx, y - cy) < 10) {
+                return { index: i, t, x: cx, y: cy };
             }
         }
         return null;
@@ -403,30 +420,30 @@ const RoomDesigner = {
         const APy = y - A.y;
 
         const abLen2 = ABx * ABx + ABy * ABy;
-        if (abLen2 === 0) {
-            return { t: 0, x: A.x, y: A.y };
-        }
+        if (abLen2 === 0) return { t: 0, x: A.x, y: A.y };
 
         let t = (APx * ABx + APy * ABy) / abLen2;
         t = Math.max(0, Math.min(1, t));
 
-        const px = A.x + t * ABx;
-        const py = A.y + t * ABy;
-
-        return { t, x: px, y: py };
+        return {
+            t,
+            x: A.x + t * ABx,
+            y: A.y + t * ABy
+        };
     },
 
+    // --------------------------------------------------
+    // Tür-Scharnier (UNVERÄNDERT GELASSEN!)
+    // --------------------------------------------------
     setDoorHingeFromTap(door, tapX, tapY, wall) {
-        // Wandvektor
         const dx = wall.x2 - wall.x1;
         const dy = wall.y2 - wall.y1;
-        const len = Math.sqrt(dx * dx + dy * dy);
+        const len = Math.hypot(dx, dy);
         if (len === 0) return;
 
         const tx = dx / len;
         const ty = dy / len;
 
-        // Türendpunkte entlang der Wand
         const half = door.width / 2;
         const cx = door.x;
         const cy = door.y;
@@ -437,7 +454,6 @@ const RoomDesigner = {
         const x2 = cx + tx * half;
         const y2 = cy + ty * half;
 
-        // Nächstgelegener Endpunkt = Scharnier
         const d1 = Math.hypot(tapX - x1, tapY - y1);
         const d2 = Math.hypot(tapX - x2, tapY - y2);
 
@@ -452,19 +468,19 @@ const RoomDesigner = {
             ox = x1; oy = y1;
         }
 
-        // Türvektor (vom Scharnier zum freien Ende)
         const ex = ox - hx;
         const ey = oy - hy;
 
-        // Tap-Vektor (vom Scharnier zum Tap)
         const vx = tapX - hx;
         const vy = tapY - hy;
 
-        // Kreuzprodukt: >0 = Tap links vom Türvektor, <0 = rechts
         const cross = ex * vy - ey * vx;
         door.side = cross >= 0 ? 1 : -1;
     },
 
+    // --------------------------------------------------
+    // Wände aktualisieren
+    // --------------------------------------------------
     updateWalls() {
         this.walls = [];
 
@@ -473,23 +489,16 @@ const RoomDesigner = {
         for (let i = 0; i < this.points.length - 1; i++) {
             const a = this.points[i];
             const b = this.points[i + 1];
-
-            this.walls.push({
-                x1: a.x, y1: a.y,
-                x2: b.x, y2: b.y
-            });
+            this.walls.push({ x1: a.x, y1: a.y, x2: b.x, y2: b.y });
         }
 
         if (this.isClosed && this.points.length > 2) {
             const last = this.points[this.points.length - 1];
             const first = this.points[0];
-            this.walls.push({
-                x1: last.x, y1: last.y,
-                x2: first.x, y2: first.y
-            });
+            this.walls.push({ x1: last.x, y1: last.y, x2: first.x, y2: first.y });
         }
 
-        // Türen/Fenster mit Wänden mitwandern lassen
+        // Türen/Fenster mitwandern lassen
         for (const d of this.doors) {
             const w = this.walls[d.wallIndex];
             if (!w) continue;
@@ -522,17 +531,11 @@ const RoomDesigner = {
         this.drawWalls();
         this.drawWallLengths();
 
-        // Winkelanzeige für alle betroffenen Punkte
+        // Winkelanzeige
         if (this.isDragging && this.selectedPoint) {
             const idx = this.points.indexOf(this.selectedPoint);
-        
-            // Liste aller Punkte, deren Winkel sich ändern
-            const affected = new Set();
-        
-            // Der verschobene Punkt selbst
-            affected.add(idx);
-        
-            // Nachbarn hinzufügen
+            const affected = new Set([idx]);
+
             if (this.isClosed) {
                 affected.add((idx - 1 + this.points.length) % this.points.length);
                 affected.add((idx + 1) % this.points.length);
@@ -540,18 +543,16 @@ const RoomDesigner = {
                 if (idx > 0) affected.add(idx - 1);
                 if (idx < this.points.length - 1) affected.add(idx + 1);
             }
-        
-            // Jetzt für jeden betroffenen Punkt den Winkel zeichnen
+
             for (const i of affected) {
                 const prev = this.isClosed
                     ? this.points[(i - 1 + this.points.length) % this.points.length]
                     : this.points[i - 1];
-        
+
                 const next = this.isClosed
                     ? this.points[(i + 1) % this.points.length]
                     : this.points[i + 1];
-        
-                // Nur wenn zwei Nachbarn existieren
+
                 if (prev && next) {
                     this.drawAngleAtPoint(this.points[i], prev, next);
                 }
@@ -581,70 +582,6 @@ const RoomDesigner = {
             ctx.beginPath();
             ctx.moveTo(0, y);
             ctx.lineTo(this.canvas.width, y);
-            ctx.stroke();
-        }
-    },
-
-    drawFloor() {
-        const ctx = this.ctx;
-        const pts = this.points;
-        if (pts.length < 3) return;
-
-        ctx.save();
-        ctx.beginPath();
-        ctx.moveTo(pts[0].x, pts[0].y);
-        for (let i = 1; i < pts.length; i++) {
-            ctx.lineTo(pts[i].x, pts[i].y);
-        }
-        ctx.closePath();
-
-        ctx.fillStyle = "#1b2420";
-        ctx.globalAlpha = 0.9;
-        ctx.fill();
-        ctx.globalAlpha = 1.0;
-        ctx.restore();
-    },
-
-    drawPolygon() {
-        const ctx = this.ctx;
-        const pts = this.points;
-
-        if (pts.length === 0) return;
-
-        ctx.strokeStyle = "#4a90e2";
-        ctx.lineWidth = 2;
-
-        ctx.beginPath();
-        ctx.moveTo(pts[0].x, pts[0].y);
-
-        for (let i = 1; i < pts.length; i++) {
-            ctx.lineTo(pts[i].x, pts[i].y);
-        }
-
-        if (this.isClosed && pts.length > 2) {
-            ctx.lineTo(pts[0].x, pts[0].y);
-        }
-
-        ctx.stroke();
-
-        for (const p of pts) {
-            ctx.fillStyle = "#ffffff";
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
-            ctx.fill();
-        }
-    },
-
-    drawWalls() {
-        const ctx = this.ctx;
-
-        ctx.strokeStyle = "#ffcc00";
-        ctx.lineWidth = 3;
-
-        for (const w of this.walls) {
-            ctx.beginPath();
-            ctx.moveTo(w.x1, w.y1);
-            ctx.lineTo(w.x2, w.y2);
             ctx.stroke();
         }
     },
@@ -687,30 +624,33 @@ const RoomDesigner = {
 
     drawAngleAtPoint(P, A, B) {
         const ctx = this.ctx;
-    
+
         const v1x = A.x - P.x;
         const v1y = A.y - P.y;
         const v2x = B.x - P.x;
         const v2y = B.y - P.y;
-    
+
         const dot = v1x * v2x + v1y * v2y;
         const len1 = Math.sqrt(v1x*v1x + v1y*v1y);
         const len2 = Math.sqrt(v2x*v2x + v2y*v2y);
-    
+
         if (len1 === 0 || len2 === 0) return;
-    
+
         const angle = Math.acos(dot / (len1 * len2));
         const deg = (angle * 180 / Math.PI).toFixed(1);
-    
+
         ctx.font = "14px sans-serif";
         ctx.fillStyle = "white";
         ctx.strokeStyle = "rgba(0,0,0,0.7)";
         ctx.lineWidth = 3;
-    
+
         ctx.strokeText(deg + "°", P.x + 12, P.y - 12);
         ctx.fillText(deg + "°", P.x + 12, P.y - 12);
     },
 
+    // --------------------------------------------------
+    // Türen zeichnen (Scharnier-Logik UNVERÄNDERT)
+    // --------------------------------------------------
     drawDoors() {
         const ctx = this.ctx;
 
@@ -757,27 +697,20 @@ const RoomDesigner = {
                 ox = x1; oy = y1;
             }
 
-            // Türvektor (geschlossen)
             const ex = ox - hx;
             const ey = oy - hy;
             const elen = Math.sqrt(ex*ex + ey*ey);
             if (elen === 0) continue;
 
-            const ux = ex / elen;
-            const uy = ey / elen;
-
-            // Perpendikular (90°)
-            const px = -uy;
-            const py = ux;
+            const px = -ey / elen;
+            const py = ex / elen;
 
             const side = d.side || 1;
 
-            // Anschlag-Strich (gleich lang wie Tür)
-            const hingeLen = elen;
+            const sx = hx + px * elen * side;
+            const sy = hy + py * elen * side;
 
-            const sx = hx + px * hingeLen * side;
-            const sy = hy + py * hingeLen * side;
-
+            // Anschlag-Strich
             ctx.strokeStyle = "rgba(0,255,200,0.4)";
             ctx.lineWidth = 2;
             ctx.beginPath();
@@ -785,9 +718,7 @@ const RoomDesigner = {
             ctx.lineTo(sx, sy);
             ctx.stroke();
 
-            // Viertelkreis: von Anschlag-Strich-Ende zum Türende
-            // Kreiszentrum = Scharnier (hx, hy)
-            // Basisvektor = Anschlag-Strich-Richtung, Länge = elen
+            // Viertelkreis
             const baseVecX = px * elen * side;
             const baseVecY = py * elen * side;
 
@@ -797,8 +728,7 @@ const RoomDesigner = {
             ctx.beginPath();
 
             for (let i = 0; i <= steps; i++) {
-                const t = i / steps; // 0..1
-                // Rotation von Basisvektor in Richtung Türvektor über 90°
+                const t = i / steps;
                 const angle = -side * (Math.PI / 2) * t;
 
                 const cosA = Math.cos(angle);
@@ -818,6 +748,9 @@ const RoomDesigner = {
         }
     },
 
+    // --------------------------------------------------
+    // Fenster zeichnen
+    // --------------------------------------------------
     drawWindows() {
         const ctx = this.ctx;
 
@@ -854,6 +787,9 @@ const RoomDesigner = {
         }
     },
 
+    // --------------------------------------------------
+    // Hover-Kreuz
+    // --------------------------------------------------
     drawHoverCross() {
         const ctx = this.ctx;
         const { x, y } = this.hover;
@@ -873,16 +809,15 @@ const RoomDesigner = {
     },
 
     // --------------------------------------------------
-    // Buttons
+    // Buttons (Tür/Fenster EINMALIG)
     // --------------------------------------------------
     setupDoorButton() {
         const btn = document.getElementById("btnDoorMode");
         if (!btn) return;
 
         btn.addEventListener("click", () => {
-            this.mode = (this.mode === "doors") ? "points" : "doors";
-            this.windowMode = false;
-            btn.style.background = (this.mode === "doors") ? "#e29a4a" : "#4a90e2";
+            this.mode = "doors";   // EINMALIG
+            btn.style.background = "#e29a4a";
 
             const winBtn = document.getElementById("btnWindowMode");
             if (winBtn) winBtn.style.background = "#3498db";
@@ -894,16 +829,15 @@ const RoomDesigner = {
         if (!btn) return;
 
         btn.addEventListener("click", () => {
-            this.windowMode = !this.windowMode;
-            this.mode = this.windowMode ? "windows" : "points";
-            btn.style.background = this.windowMode ? "#5dade2" : "#3498db";
+            this.mode = "windows"; // EINMALIG
+            btn.style.background = "#5dade2";
 
             const doorBtn = document.getElementById("btnDoorMode");
             if (doorBtn) doorBtn.style.background = "#4a90e2";
         });
     },
     // --------------------------------------------------
-    // Tablet-gerechte Lösch-Bestätigung (Toast)
+    // Delete-Toast (unverändert)
     // --------------------------------------------------
     showDeleteToast(message, onConfirm) {
         this._toastConfirmFn = onConfirm;
@@ -936,7 +870,7 @@ const RoomDesigner = {
             btnYes.style.color = "#fff";
             btnYes.style.fontSize = "16px";
 
-            const btnNo = document.createElement("button");
+            const btnNo = document.createElement("button";
             btnNo.textContent = "Abbrechen";
             btnNo.style.padding = "10px 16px";
             btnNo.style.border = "none";
@@ -973,87 +907,9 @@ const RoomDesigner = {
             this._toastEl.style.display = "none";
         }
         this._toastConfirmFn = null;
-    },
-
-    // --------------------------------------------------
-    // Fensterbreite-Toast (Plus/Minus)
-    // --------------------------------------------------
-    showWindowWidthToast(windowObj) {
-        this._activeWindowForWidth = windowObj;
-    
-        if (!this._windowToastEl) {
-            const el = document.createElement("div");
-            el.style.position = "fixed";
-            el.style.left = "50%";
-            el.style.bottom = "20px";
-            el.style.transform = "translateX(-50%)";
-            el.style.background = "rgba(0,0,0,0.85)";
-            el.style.color = "#fff";
-            el.style.padding = "16px 20px";
-            el.style.borderRadius = "10px";
-            el.style.display = "flex";
-            el.style.alignItems = "center";
-            el.style.gap = "12px";
-            el.style.zIndex = "10000";
-            el.style.fontSize = "16px";
-    
-            const textSpan = document.createElement("span");
-            textSpan.id = "rd-window-toast-text";
-    
-            const btnPlus = document.createElement("button");
-            btnPlus.textContent = "+ Breiter";
-            btnPlus.style.padding = "10px 16px";
-            btnPlus.style.border = "none";
-            btnPlus.style.borderRadius = "6px";
-            btnPlus.style.background = "#27ae60";
-            btnPlus.style.color = "#fff";
-            btnPlus.style.fontSize = "16px";
-    
-            const btnMinus = document.createElement("button");
-            btnMinus.textContent = "– Schmaler";
-            btnMinus.style.padding = "10px 16px";
-            btnMinus.style.border = "none";
-            btnMinus.style.borderRadius = "6px";
-            btnMinus.style.background = "#c0392b";
-            btnMinus.style.color = "#fff";
-            btnMinus.style.fontSize = "16px";
-    
-            btnPlus.addEventListener("click", () => {
-                if (this._activeWindowForWidth) {
-                    this._activeWindowForWidth.width += 10;
-                    this.render();
-                }
-            });
-    
-            btnMinus.addEventListener("click", () => {
-                if (this._activeWindowForWidth) {
-                    this._activeWindowForWidth.width = Math.max(20, this._activeWindowForWidth.width - 10);
-                    this.render();
-                }
-            });
-    
-            el.appendChild(textSpan);
-            el.appendChild(btnPlus);
-            el.appendChild(btnMinus);
-    
-            document.body.appendChild(el);
-            this._windowToastEl = el;
-        }
-    
-        const textSpan = this._windowToastEl.querySelector("#rd-window-toast-text");
-        if (textSpan) textSpan.textContent = "Fensterbreite anpassen";
-    
-        this._windowToastEl.style.display = "flex";
-    },
-    
-    hideWindowWidthToast() {
-        if (this._windowToastEl) {
-            this._windowToastEl.style.display = "none";
-        }
-        this._activeWindowForWidth = null;
-        this.selectedWindowIndex = null;
     }
-};
+}; // Ende RoomDesigner
+
 
 // --------------------------------------------------
 // Debug: Editor öffnen
