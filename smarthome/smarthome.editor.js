@@ -1,10 +1,10 @@
 // ======================================================
-// Raumdesigner – kompletter Editor
+// Raumdesigner – kompletter Editor mit Objektlogik A
 // Canvas-Init, Raster, Punkte setzen, verschieben,
 // löschen (mit Bestätigung), Raum schließen (snappen),
 // Wände, Türen (Anschlag + Viertelkreis am Scharnier),
 // Fenster, Wandlängen in Metern, Punkt-Einfügen,
-// Bodenfläche (RE-Style)
+// Bodenfläche (RE-Style), universelles objects-Array
 // ======================================================
 
 const RoomDesigner = {
@@ -13,8 +13,10 @@ const RoomDesigner = {
 
     points: [],
     walls: [],
-    doors: [],
-    windows: [],
+
+    // Universelles Objekt-Array:
+    // type: "door" | "window" | "furniture" | "device"
+    objects: [],
 
     hover: { x: 0, y: 0 },
 
@@ -30,11 +32,13 @@ const RoomDesigner = {
     _toastEl: null,
     _toastConfirmFn: null,
 
-    draggingDoorIndex: null,
-    draggingWindowIndex: null,
-    selectedDoorIndex: null,
+    draggingObjectIndex: null,
+    selectedObjectIndex: null,
 
     PIXELS_PER_METER: 40, // 1 Raster = 1m
+
+    _activeWindowForWidth: null,
+    _windowToastEl: null,
 
     // --------------------------------------------------
     // Initialisierung
@@ -94,30 +98,23 @@ const RoomDesigner = {
         this.hover.x = hx;
         this.hover.y = hy;
 
-        // Tür entlang der Wand verschieben
-        if (this.draggingDoorIndex !== null) {
-            const d = this.doors[this.draggingDoorIndex];
-            const w = this.walls[d.wallIndex];
-            if (w) {
-                const proj = this.projectOnWall(hx, hy, w);
-                d.t = proj.t;
-                d.x = proj.x;
-                d.y = proj.y;
-            }
-            this.render();
-            return;
-        }
+        // Objekt-Dragging
+        if (this.draggingObjectIndex !== null) {
+            const obj = this.objects[this.draggingObjectIndex];
 
-        // Fenster entlang der Wand verschieben
-        if (this.draggingWindowIndex !== null) {
-            const wObj = this.windows[this.draggingWindowIndex];
-            const w = this.walls[wObj.wallIndex];
-            if (w) {
-                const proj = this.projectOnWall(hx, hy, w);
-                wObj.t = proj.t;
-                wObj.x = proj.x;
-                wObj.y = proj.y;
+            if (obj.type === "door" || obj.type === "window") {
+                const w = this.getWallAt(hx, hy);
+                if (w) {
+                    obj.wallIndex = w.index;
+                    obj.t = w.t;
+                    obj.x = w.x;
+                    obj.y = w.y;
+                }
+            } else {
+                obj.x = hx;
+                obj.y = hy;
             }
+
             this.render();
             return;
         }
@@ -130,7 +127,6 @@ const RoomDesigner = {
 
         this.render();
     },
-
     onDown(e) {
         const rect = this.canvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
@@ -141,58 +137,61 @@ const RoomDesigner = {
 
         // Fenster-Modus
         if (this.mode === "windows") {
-        
+
             // Fenster getroffen? → Breite ändern Toast öffnen
-            const winIndex = this.getWindowIndexAt(x, y);
+            const winIndex = this.getObjectAt(x, y, "window");
             if (winIndex !== null) {
-                this.selectedWindowIndex = winIndex;
-                this.showWindowWidthToast(this.windows[winIndex]);
+                const winObj = this.objects[winIndex];
+                this.selectedObjectIndex = winIndex;
+                this.showWindowWidthToast(winObj);
                 return;
             }
-        
+
             // Wenn man woanders tippt → Toast schließen
             this.hideWindowWidthToast();
-        
+
             // Neues Fenster setzen
             const hit = this.getWallAt(x, y);
             if (hit) {
                 const newWin = {
+                    type: "window",
                     wallIndex: hit.index,
                     t: hit.t,
                     x: hit.x,
                     y: hit.y,
                     width: 80
                 };
-                this.windows.push(newWin);
+                this.objects.push(newWin);
                 this.showWindowWidthToast(newWin);
                 this.render();
             }
             return;
         }
 
-
         // Tür-Modus
         if (this.mode === "doors") {
             // Zuerst: existiert eine Tür ohne Scharnier? → Tap setzt Scharnier + Seite
-            const pendingIndex = this.doors.findIndex(d => !d.hinge);
+            const pendingIndex = this.objects.findIndex(
+                o => o.type === "door" && !o.hinge
+            );
             if (pendingIndex !== -1) {
-                const d = this.doors[pendingIndex];
+                const d = this.objects[pendingIndex];
                 const w = this.walls[d.wallIndex];
                 if (w) {
                     this.setDoorHingeFromTap(d, x, y, w);
-                    this.selectedDoorIndex = pendingIndex;
+                    this.selectedObjectIndex = pendingIndex;
                     this.render();
                 }
                 return;
             }
 
             // Tür getroffen? → verschieben
-            const doorIndex = this.getDoorIndexAt(x, y);
+            const doorIndex = this.getObjectAt(x, y, "door");
             if (doorIndex !== null) {
-                const d = this.doors[doorIndex];
+                const d = this.objects[doorIndex];
                 const w = this.walls[d.wallIndex];
                 if (w) {
-                    this.draggingDoorIndex = doorIndex;
+                    this.draggingObjectIndex = doorIndex;
                 }
                 return;
             }
@@ -200,15 +199,16 @@ const RoomDesigner = {
             // Neue Tür auf Wand platzieren
             const hit = this.getWallAt(x, y);
             if (hit) {
-                this.doors.push({
+                this.objects.push({
+                    type: "door",
                     wallIndex: hit.index,
                     t: hit.t,
                     x: hit.x,
                     y: hit.y,
                     width: 36,      // ca. 0,9m
-                    swing: 90,      // max 90°
                     hinge: null,    // "start" | "end"
-                    side: 1         // +1 oder -1, wird aus Tap berechnet
+                    side: 1,        // +1 oder -1, wird aus Tap berechnet
+                    connectsTo: null
                 });
                 this.render();
             }
@@ -268,8 +268,7 @@ const RoomDesigner = {
     onUp() {
         this.isDragging = false;
         this.selectedPoint = null;
-        this.draggingDoorIndex = null;
-        this.draggingWindowIndex = null;
+        this.draggingObjectIndex = null;
     },
 
     onRightClick(e) {
@@ -279,21 +278,11 @@ const RoomDesigner = {
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
 
-        // Tür getroffen?
-        const doorHit = this.getDoorAt(x, y);
-        if (doorHit) {
-            this.showDeleteToast("Tür löschen?", () => {
-                this.doors = this.doors.filter(d => d !== doorHit);
-                this.render();
-            });
-            return;
-        }
-
-        // Fenster getroffen?
-        const windowHit = this.getWindowAt(x, y);
-        if (windowHit) {
-            this.showDeleteToast("Fenster löschen?", () => {
-                this.windows = this.windows.filter(w => w !== windowHit);
+        // Objekt getroffen?
+        const objIndex = this.getObjectAt(x, y);
+        if (objIndex !== null) {
+            this.showDeleteToast("Objekt löschen?", () => {
+                this.objects.splice(objIndex, 1);
                 this.render();
             });
             return;
@@ -324,42 +313,55 @@ const RoomDesigner = {
         });
     },
 
-    getDoorAt(x, y) {
-        return this.doors.find(d => {
-            const dx = d.x - x;
-            const dy = d.y - y;
-            return Math.sqrt(dx * dx + dy * dy) < 15;
-        });
-    },
+    // typeFilter optional: "door" | "window"
+    getObjectAt(x, y, typeFilter = null) {
+        for (let i = this.objects.length - 1; i >= 0; i--) {
+            const obj = this.objects[i];
 
-    getDoorIndexAt(x, y) {
-        for (let i = 0; i < this.doors.length; i++) {
-            const d = this.doors[i];
-            const dx = d.x - x;
-            const dy = d.y - y;
-            if (Math.sqrt(dx * dx + dy * dy) < 15) return i;
+            if (typeFilter && obj.type !== typeFilter) continue;
+
+            if (obj.type === "door" || obj.type === "window") {
+                const w = this.walls[obj.wallIndex];
+                if (!w) continue;
+
+                const A = { x: w.x1, y: w.y1 };
+                const B = { x: w.x2, y: w.y2 };
+
+                const ABx = B.x - A.x;
+                const ABy = B.y - A.y;
+                const APx = x - A.x;
+                const APy = y - A.y;
+
+                const abLen = Math.sqrt(ABx * ABx + ABy * ABy);
+                if (abLen === 0) continue;
+
+                const t = Math.max(0, Math.min(1, (APx * ABx + APy * ABy) / (abLen * abLen)));
+
+                const closestX = A.x + t * ABx;
+                const closestY = A.y + t * ABy;
+
+                const dx = x - closestX;
+                const dy = y - closestY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist < 15) {
+                    return i;
+                }
+            }
+
+            if (obj.type === "furniture" || obj.type === "device") {
+                const left = obj.x - obj.width / 2;
+                const right = obj.x + obj.width / 2;
+                const top = obj.y - obj.height / 2;
+                const bottom = obj.y + obj.height / 2;
+
+                if (x >= left && x <= right && y >= top && y <= bottom) {
+                    return i;
+                }
+            }
         }
         return null;
     },
-
-    getWindowAt(x, y) {
-        return this.windows.find(w => {
-            const dx = w.x - x;
-            const dy = w.y - y;
-            return Math.sqrt(dx * dx + dy * dy) < 15;
-        });
-    },
-
-    getWindowIndexAt(x, y) {
-        for (let i = 0; i < this.windows.length; i++) {
-            const w = this.windows[i];
-            const dx = w.x - x;
-            const dy = w.y - y;
-            if (Math.sqrt(dx * dx + dy * dy) < 15) return i;
-        }
-        return null;
-    },
-
     getWallAt(x, y) {
         for (let i = 0; i < this.walls.length; i++) {
             const w = this.walls[i];
@@ -488,22 +490,14 @@ const RoomDesigner = {
         }
 
         // Türen/Fenster mit Wänden mitwandern lassen
-        for (const d of this.doors) {
-            const w = this.walls[d.wallIndex];
+        for (const obj of this.objects) {
+            if (obj.type !== "door" && obj.type !== "window") continue;
+            const w = this.walls[obj.wallIndex];
             if (!w) continue;
             const A = { x: w.x1, y: w.y1 };
             const B = { x: w.x2, y: w.y2 };
-            d.x = A.x + (B.x - A.x) * d.t;
-            d.y = A.y + (B.y - A.y) * d.t;
-        }
-
-        for (const win of this.windows) {
-            const w = this.walls[win.wallIndex];
-            if (!w) continue;
-            const A = { x: w.x1, y: w.y1 };
-            const B = { x: w.x2, y: w.y2 };
-            win.x = A.x + (B.x - A.x) * win.t;
-            win.y = A.y + (B.y - A.y) * win.t;
+            obj.x = A.x + (B.x - A.x) * obj.t;
+            obj.y = A.y + (B.y - A.y) * obj.t;
         }
     },
 
@@ -523,13 +517,13 @@ const RoomDesigner = {
         // Winkelanzeige für alle betroffenen Punkte
         if (this.isDragging && this.selectedPoint) {
             const idx = this.points.indexOf(this.selectedPoint);
-        
+
             // Liste aller Punkte, deren Winkel sich ändern
             const affected = new Set();
-        
+
             // Der verschobene Punkt selbst
             affected.add(idx);
-        
+
             // Nachbarn hinzufügen
             if (this.isClosed) {
                 affected.add((idx - 1 + this.points.length) % this.points.length);
@@ -538,17 +532,17 @@ const RoomDesigner = {
                 if (idx > 0) affected.add(idx - 1);
                 if (idx < this.points.length - 1) affected.add(idx + 1);
             }
-        
+
             // Jetzt für jeden betroffenen Punkt den Winkel zeichnen
             for (const i of affected) {
                 const prev = this.isClosed
                     ? this.points[(i - 1 + this.points.length) % this.points.length]
                     : this.points[i - 1];
-        
+
                 const next = this.isClosed
                     ? this.points[(i + 1) % this.points.length]
                     : this.points[i + 1];
-        
+
                 // Nur wenn zwei Nachbarn existieren
                 if (prev && next) {
                     this.drawAngleAtPoint(this.points[i], prev, next);
@@ -556,11 +550,7 @@ const RoomDesigner = {
             }
         }
 
-
-
-        this.drawWindows();
-
-        this.drawDoors();
+        this.renderObjects();
         this.drawHoverCross();
     },
 
@@ -689,173 +679,188 @@ const RoomDesigner = {
 
     drawAngleAtPoint(P, A, B) {
         const ctx = this.ctx;
-    
+
         const v1x = A.x - P.x;
         const v1y = A.y - P.y;
         const v2x = B.x - P.x;
         const v2y = B.y - P.y;
-    
+
         const dot = v1x * v2x + v1y * v2y;
-        const len1 = Math.sqrt(v1x*v1x + v1y*v1y);
-        const len2 = Math.sqrt(v2x*v2x + v2y*v2y);
-    
+        const len1 = Math.sqrt(v1x * v1x + v1y * v1y);
+        const len2 = Math.sqrt(v2x * v2x + v2y * v2y);
+
         if (len1 === 0 || len2 === 0) return;
-    
+
         const angle = Math.acos(dot / (len1 * len2));
         const deg = (angle * 180 / Math.PI).toFixed(1);
-    
+
         ctx.font = "14px sans-serif";
         ctx.fillStyle = "white";
         ctx.strokeStyle = "rgba(0,0,0,0.7)";
         ctx.lineWidth = 3;
-    
+
         ctx.strokeText(deg + "°", P.x + 12, P.y - 12);
         ctx.fillText(deg + "°", P.x + 12, P.y - 12);
     },
-
-
-    
-    drawDoors() {
+    // --------------------------------------------------
+    // Objekte rendern
+    // --------------------------------------------------
+    renderObjects() {
         const ctx = this.ctx;
 
-        for (const d of this.doors) {
-            const w = this.walls[d.wallIndex];
-            if (!w) continue;
-
-            const dx = w.x2 - w.x1;
-            const dy = w.y2 - w.y1;
-            const len = Math.sqrt(dx * dx + dy * dy);
-            if (len === 0) continue;
-
-            const tx = dx / len;
-            const ty = dy / len;
-
-            const cx = d.x;
-            const cy = d.y;
-
-            const half = d.width / 2;
-
-            const x1 = cx - tx * half;
-            const y1 = cy - ty * half;
-
-            const x2 = cx + tx * half;
-            const y2 = cy + ty * half;
-
-            // Türblatt
-            ctx.strokeStyle = "#00ffcc";
-            ctx.lineWidth = 6;
-            ctx.beginPath();
-            ctx.moveTo(x1, y1);
-            ctx.lineTo(x2, y2);
-            ctx.stroke();
-
-            if (!d.hinge) continue;
-
-            // Scharnierpunkt + anderes Ende
-            let hx, hy, ox, oy;
-            if (d.hinge === "start") {
-                hx = x1; hy = y1;
-                ox = x2; oy = y2;
-            } else {
-                hx = x2; hy = y2;
-                ox = x1; oy = y1;
+        for (const obj of this.objects) {
+            if (obj.type === "door") {
+                this.renderDoor(obj);
+            } else if (obj.type === "window") {
+                this.renderWindow(obj);
+            } else if (obj.type === "furniture" || obj.type === "device") {
+                ctx.fillStyle = "#888";
+                ctx.fillRect(
+                    obj.x - obj.width / 2,
+                    obj.y - obj.height / 2,
+                    obj.width,
+                    obj.height
+                );
             }
-
-            // Türvektor (geschlossen)
-            const ex = ox - hx;
-            const ey = oy - hy;
-            const elen = Math.sqrt(ex*ex + ey*ey);
-            if (elen === 0) continue;
-
-            const ux = ex / elen;
-            const uy = ey / elen;
-
-            // Perpendikular (90°)
-            const px = -uy;
-            const py = ux;
-
-            const side = d.side || 1;
-
-            // Anschlag-Strich (gleich lang wie Tür)
-            const hingeLen = elen;
-
-            const sx = hx + px * hingeLen * side;
-            const sy = hy + py * hingeLen * side;
-
-            ctx.strokeStyle = "rgba(0,255,200,0.4)";
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(hx, hy);
-            ctx.lineTo(sx, sy);
-            ctx.stroke();
-
-            // Viertelkreis: von Anschlag-Strich-Ende zum Türende
-            // Kreiszentrum = Scharnier (hx, hy)
-            // Basisvektor = Anschlag-Strich-Richtung, Länge = elen
-            const baseVecX = px * elen * side;
-            const baseVecY = py * elen * side;
-
-            const steps = 24;
-            ctx.strokeStyle = "rgba(0,255,200,0.25)";
-            ctx.lineWidth = 1.5;
-            ctx.beginPath();
-
-            for (let i = 0; i <= steps; i++) {
-                const t = i / steps; // 0..1
-                // Rotation von Basisvektor in Richtung Türvektor über 90°
-                const angle = -side * (Math.PI / 2) * t;
-
-                const cosA = Math.cos(angle);
-                const sinA = Math.sin(angle);
-
-                const rx = baseVecX * cosA - baseVecY * sinA;
-                const ry = baseVecX * sinA + baseVecY * cosA;
-
-                const px2 = hx + rx;
-                const py2 = hy + ry;
-
-                if (i === 0) ctx.moveTo(px2, py2);
-                else ctx.lineTo(px2, py2);
-            }
-
-            ctx.stroke();
         }
     },
 
-    drawWindows() {
+    renderDoor(d) {
         const ctx = this.ctx;
+        const w = this.walls[d.wallIndex];
+        if (!w) return;
+
+        const dx = w.x2 - w.x1;
+        const dy = w.y2 - w.y1;
+        const len = Math.sqrt(dx * dx + dy * dy);
+        if (len === 0) return;
+
+        const tx = dx / len;
+        const ty = dy / len;
+
+        const cx = d.x;
+        const cy = d.y;
+
+        const half = d.width / 2;
+
+        const x1 = cx - tx * half;
+        const y1 = cy - ty * half;
+
+        const x2 = cx + tx * half;
+        const y2 = cy + ty * half;
+
+        // Türblatt
+        ctx.strokeStyle = "#00ffcc";
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+
+        if (!d.hinge) return;
+
+        // Scharnierpunkt + anderes Ende
+        let hx, hy, ox, oy;
+        if (d.hinge === "start") {
+            hx = x1; hy = y1;
+            ox = x2; oy = y2;
+        } else {
+            hx = x2; hy = y2;
+            ox = x1; oy = y1;
+        }
+
+        // Türvektor (geschlossen)
+        const ex = ox - hx;
+        const ey = oy - hy;
+        const elen = Math.sqrt(ex * ex + ey * ey);
+        if (elen === 0) return;
+
+        const ux = ex / elen;
+        const uy = ey / elen;
+
+        // Perpendikular (90°)
+        const px = -uy;
+        const py = ux;
+
+        const side = d.side || 1;
+
+        // Anschlag-Strich (gleich lang wie Tür)
+        const hingeLen = elen;
+
+        const sx = hx + px * hingeLen * side;
+        const sy = hy + py * hingeLen * side;
+
+        ctx.strokeStyle = "rgba(0,255,200,0.4)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(hx, hy);
+        ctx.lineTo(sx, sy);
+        ctx.stroke();
+
+        // Viertelkreis: von Anschlag-Strich-Ende zum Türende
+        // Kreiszentrum = Scharnier (hx, hy)
+        // Basisvektor = Anschlag-Strich-Richtung, Länge = elen
+        const baseVecX = px * elen * side;
+        const baseVecY = py * elen * side;
+
+        const steps = 24;
+        ctx.strokeStyle = "rgba(0,255,200,0.25)";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+
+        for (let i = 0; i <= steps; i++) {
+            const t = i / steps; // 0..1
+            // Rotation von Basisvektor in Richtung Türvektor über 90°
+            const angle = -side * (Math.PI / 2) * t;
+
+            const cosA = Math.cos(angle);
+            const sinA = Math.sin(angle);
+
+            const rx = baseVecX * cosA - baseVecY * sinA;
+            const ry = baseVecX * sinA + baseVecY * cosA;
+
+            const px2 = hx + rx;
+            const py2 = hy + ry;
+
+            if (i === 0) ctx.moveTo(px2, py2);
+            else ctx.lineTo(px2, py2);
+        }
+
+        ctx.stroke();
+    },
+
+    renderWindow(wObj) {
+        const ctx = this.ctx;
+
+        const wall = this.walls[wObj.wallIndex];
+        if (!wall) return;
+
+        const dx = wall.x2 - wall.x1;
+        const dy = wall.y2 - wall.y1;
+        const len = Math.sqrt(dx * dx + dy * dy);
+        if (len === 0) return;
+
+        const tx = dx / len;
+        const ty = dy / len;
+
+        const cx = wObj.x;
+        const cy = wObj.y;
+
+        const half = wObj.width / 2;
+
+        const x1 = cx - tx * half;
+        const y1 = cy - ty * half;
+
+        const x2 = cx + tx * half;
+        const y2 = cy + ty * half;
 
         ctx.strokeStyle = "#5dade2";
         ctx.lineWidth = 4;
 
-        for (const w of this.windows) {
-            const wall = this.walls[w.wallIndex];
-            if (!wall) continue;
-
-            const dx = wall.x2 - wall.x1;
-            const dy = wall.y2 - wall.y1;
-            const len = Math.sqrt(dx * dx + dy * dy);
-            if (len === 0) continue;
-
-            const tx = dx / len;
-            const ty = dy / len;
-
-            const cx = w.x;
-            const cy = w.y;
-
-            const half = w.width / 2;
-
-            const x1 = cx - tx * half;
-            const y1 = cy - ty * half;
-
-            const x2 = cx + tx * half;
-            const y2 = cy + ty * half;
-
-            ctx.beginPath();
-            ctx.moveTo(x1, y1);
-            ctx.lineTo(x2, y2);
-            ctx.stroke();
-        }
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
     },
 
     drawHoverCross() {
@@ -906,7 +911,6 @@ const RoomDesigner = {
             if (doorBtn) doorBtn.style.background = "#4a90e2";
         });
     },
-
     // --------------------------------------------------
     // Tablet-gerechte Lösch-Bestätigung (Toast)
     // --------------------------------------------------
@@ -980,14 +984,12 @@ const RoomDesigner = {
         this._toastConfirmFn = null;
     },
 
-
-    
     // --------------------------------------------------
     // Fensterbreite-Toast (Plus/Minus)
     // --------------------------------------------------
     showWindowWidthToast(windowObj) {
         this._activeWindowForWidth = windowObj;
-    
+
         if (!this._windowToastEl) {
             const el = document.createElement("div");
             el.style.position = "fixed";
@@ -1003,10 +1005,10 @@ const RoomDesigner = {
             el.style.gap = "12px";
             el.style.zIndex = "10000";
             el.style.fontSize = "16px";
-    
+
             const textSpan = document.createElement("span");
             textSpan.id = "rd-window-toast-text";
-    
+
             const btnPlus = document.createElement("button");
             btnPlus.textContent = "+ Breiter";
             btnPlus.style.padding = "10px 16px";
@@ -1015,7 +1017,7 @@ const RoomDesigner = {
             btnPlus.style.background = "#27ae60";
             btnPlus.style.color = "#fff";
             btnPlus.style.fontSize = "16px";
-    
+
             const btnMinus = document.createElement("button");
             btnMinus.textContent = "– Schmaler";
             btnMinus.style.padding = "10px 16px";
@@ -1024,35 +1026,35 @@ const RoomDesigner = {
             btnMinus.style.background = "#c0392b";
             btnMinus.style.color = "#fff";
             btnMinus.style.fontSize = "16px";
-    
+
             btnPlus.addEventListener("click", () => {
                 if (this._activeWindowForWidth) {
                     this._activeWindowForWidth.width += 10;
                     this.render();
                 }
             });
-    
+
             btnMinus.addEventListener("click", () => {
                 if (this._activeWindowForWidth) {
                     this._activeWindowForWidth.width = Math.max(20, this._activeWindowForWidth.width - 10);
                     this.render();
                 }
             });
-    
+
             el.appendChild(textSpan);
             el.appendChild(btnPlus);
             el.appendChild(btnMinus);
-    
+
             document.body.appendChild(el);
             this._windowToastEl = el;
         }
-    
+
         const textSpan = this._windowToastEl.querySelector("#rd-window-toast-text");
         if (textSpan) textSpan.textContent = "Fensterbreite anpassen";
-    
+
         this._windowToastEl.style.display = "flex";
     },
-    
+
     hideWindowWidthToast() {
         if (this._windowToastEl) {
             this._windowToastEl.style.display = "none";
@@ -1060,11 +1062,27 @@ const RoomDesigner = {
         this._activeWindowForWidth = null;
     },
 
-    
+    // --------------------------------------------------
+    // Export / Import (Raum)
+    // --------------------------------------------------
+    exportRoom() {
+        return JSON.stringify({
+            points: this.points,
+            objects: this.objects
+        });
+    },
+
+    importRoom(json) {
+        const data = JSON.parse(json);
+        this.points = data.points || [];
+        this.objects = data.objects || [];
+        this.updateWalls();
+        this.render();
+    }
 };
 
 // --------------------------------------------------
-// Debug: Editor öffnen
+// Editor öffnen
 // --------------------------------------------------
 window.addEventListener("DOMContentLoaded", () => {
     const openBtn = document.getElementById("btnOpenEditor");
