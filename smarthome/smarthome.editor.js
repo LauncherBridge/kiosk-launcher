@@ -20,6 +20,8 @@ const RoomDesigner = {
     isDragging: false,
     _initialized: false,
 
+    _contextJustClosed: false,
+
     mode: "points",   // "points" | "doors" | "windows"
     isClosed: false,
 
@@ -93,11 +95,16 @@ const RoomDesigner = {
         this.contextMenuEl = el;
     },
 
-    hideContextMenu() {
-        if (!this.contextMenuEl) return;
-        this.contextMenuEl.style.display = "none";
-        this.contextTarget = null;
-    },
+hideContextMenu() {
+    if (!this.contextMenuEl) return;
+
+    if (this.contextMenuEl.style.display !== "none") {
+        this._contextJustClosed = true;   // <--- wichtig
+    }
+
+    this.contextMenuEl.style.display = "none";
+    this.contextTarget = null;
+},
 
     showContextMenu(x, y, type, index) {
         const menu = this.contextMenuEl;
@@ -338,6 +345,12 @@ onDown(e) {
     }
 
     this.hideContextMenu();
+    // Wenn gerade ein Kontextmenü geschlossen wurde → NICHTS setzen
+if (this._contextJustClosed) {
+    this._contextJustClosed = false;
+    return;
+}
+
 
     // --------------------------------------------------
     // Raum schließen durch Klick auf ersten Punkt
