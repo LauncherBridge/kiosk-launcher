@@ -288,18 +288,19 @@ onDown(e) {
     this.hideContextMenu();
 
     // --------------------------------------------------
-    // Raum schließen durch Snap auf ersten Punkt
-    // --------------------------------------------------
-    if (!this.isClosed && this.points.length >= 2) {
-        const first = this.points[0];
-        if (Math.hypot(x - first.x, y - first.y) < 20) {
-            this.points.push({ x: first.x, y: first.y });
-            this.isClosed = true;
-            this.updateWalls();
-            this.render();
-            return;
-        }
+// Raum schließen durch Snap
+if (!this.isClosed && this.points.length >= 2) {
+    const first = this.points[0];
+    if (Math.hypot(x - first.x, y - first.y) < 20) {
+        // Letzten Punkt auf den ersten setzen
+        this.points[this.points.length - 1] = first;
+        this.isClosed = true;
+        this.updateWalls();
+        this.render();
+        return;
     }
+}
+
 
     const hit = this.hitTest(x, y);
 
@@ -371,23 +372,27 @@ onDown(e) {
     // --------------------------------------------------
 
     // Türen/Fenster-Kontextmenü
-    if (hit.type === "door") {
-        this.showContextMenu(x, y, "door", hit.index);
-        return;
-    }
+if (hit.type === "door") {
+    this.draggingDoorIndex = hit.index;
+    this._pendingContext = { x, y, type: "door", index: hit.index };
+    return;
+}
 
-    if (hit.type === "window") {
-        this.showContextMenu(x, y, "window", hit.index);
-        return;
-    }
+if (hit.type === "window") {
+    this.draggingWindowIndex = hit.index;
+    this._pendingContext = { x, y, type: "window", index: hit.index };
+    return;
+}
+
 
     // Punkt auswählen (Drag-Kandidat)
-    if (hit.type === "point") {
-        this.selectedPoint = this.points[hit.index];
-        this.isDragging = true;
-        this._pendingContext = { x, y, type: "point", index: hit.index };
-        return;
-    }
+if (hit.type === "point") {
+    this.selectedPoint = this.points[hit.index];
+    this._pendingContext = { x, y, type: "point", index: hit.index };
+    // NICHT isDragging = true!
+    return;
+}
+
 
     // Punkt auf Wand einfügen (nur wenn geschlossen)
     if (hit.type === "wall" && this.isClosed) {
