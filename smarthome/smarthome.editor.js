@@ -247,125 +247,128 @@ const RoomDesigner = {
         return { type: "empty" };
     },
 
-    onDown(e) {
-        const rect = this.canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+onDown(e) {
+    const rect = this.canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
 
-        if (e.button === 2) {
-            this.hideContextMenu();
-            return;
-        }
-
+    if (e.button === 2) {
         this.hideContextMenu();
+        return;
+    }
 
-        const hit = this.hitTest(x, y);
+    this.hideContextMenu();
 
-        // --------------------------------------------------
-        // FENSTER-MODUS (einmalig)
-        // --------------------------------------------------
-        if (this.mode === "windows") {
-            if (hit.type === "window") {
-                this.showContextMenu(x, y, "window", hit.index);
-                return;
-            }
+    // --------------------------------------------------
+    // WICHTIG: Punkte setzen, bevor Hit-Test greift
+    // --------------------------------------------------
+    if (!this.isClosed && this.points.length < 3) {
+        this.points.push({ x, y });
+        this.updateWalls();
+        this.render();
+        return;
+    }
 
-            if (hit.type === "wall") {
-                const w = hit.data;
-                this.windows.push({
-                    wallIndex: w.index,
-                    t: w.t,
-                    x: w.x,
-                    y: w.y,
-                    width: 80
-                });
-                this.updateWalls();
-                this.render();
-            }
+    const hit = this.hitTest(x, y);
 
-            this.mode = "points";
-            return;
-        }
-
-        // --------------------------------------------------
-        // TÜR-MODUS (3-Schritte)
-        // --------------------------------------------------
-        if (this.mode === "doors") {
-
-            // Schritt 2: Tür setzen
-            if (!this._placingDoor) {
-                if (hit.type === "wall") {
-                    const w = hit.data;
-                    this.doors.push({
-                        wallIndex: w.index,
-                        t: w.t,
-                        x: w.x,
-                        y: w.y,
-                        width: 36,
-                        hinge: null,
-                        side: 1
-                    });
-                    this._placingDoor = true;
-                    this.render();
-                    return;
-                }
-            }
-
-            // Schritt 3: Scharnier wählen
-            if (this._placingDoor) {
-                const lastDoor = this.doors[this.doors.length - 1];
-                const w = this.walls[lastDoor.wallIndex];
-                this.setDoorHingeFromTap(lastDoor, x, y, w);
-
-                this._placingDoor = false;
-                this.mode = "points";
-                this.render();
-                return;
-            }
-        }
-
-        // --------------------------------------------------
-        // PUNKT-MODUS
-        // --------------------------------------------------
-        if (hit.type === "door") {
-            this.showContextMenu(x, y, "door", hit.index);
-            return;
-        }
-
+    // --------------------------------------------------
+    // FENSTER-MODUS (einmalig)
+    // --------------------------------------------------
+    if (this.mode === "windows") {
         if (hit.type === "window") {
             this.showContextMenu(x, y, "window", hit.index);
             return;
         }
 
-        if (hit.type === "point") {
-            this.selectedPoint = this.points[hit.index];
-            this.isDragging = true;
-            this.showContextMenu(x, y, "point", hit.index);
-            return;
-        }
-
-        if (hit.type === "wall" && !this.isClosed) {
+        if (hit.type === "wall") {
             const w = hit.data;
-            const insertPoint = { x: w.x, y: w.y };
+            this.windows.push({
+                wallIndex: w.index,
+                t: w.t,
+                x: w.x,
+                y: w.y,
+                width: 80
+            });
+            this.updateWalls();
+            this.render();
+        }
 
-            if (w.index < this.points.length - 1) {
-                this.points.splice(w.index + 1, 0, insertPoint);
-            } else {
-                this.points.push(insertPoint);
+        this.mode = "points";
+        return;
+    }
+
+    // --------------------------------------------------
+    // TÜR-MODUS (3-Schritte)
+    // --------------------------------------------------
+    if (this.mode === "doors") {
+
+        // Schritt 2: Tür setzen
+        if (!this._placingDoor) {
+            if (hit.type === "wall") {
+                const w = hit.data;
+                this.doors.push({
+                    wallIndex: w.index,
+                    t: w.t,
+                    x: w.x,
+                    y: w.y,
+                    width: 36,
+                    hinge: null,
+                    side: 1
+                });
+                this._placingDoor = true;
+                this.render();
+                return;
             }
+        }
 
-            this.updateWalls();
+        // Schritt 3: Scharnier wählen
+        if (this._placingDoor) {
+            const lastDoor = this.doors[this.doors.length - 1];
+            const w = this.walls[lastDoor.wallIndex];
+            this.setDoorHingeFromTap(lastDoor, x, y, w);
+
+            this._placingDoor = false;
+            this.mode = "points";
             this.render();
             return;
         }
+    }
 
-        if (!this.isClosed) {
-            this.points.push({ x, y });
-            this.updateWalls();
-            this.render();
-            return;
+    // --------------------------------------------------
+    // PUNKT-MODUS
+    // --------------------------------------------------
+    if (hit.type === "door") {
+        this.showContextMenu(x, y, "door", hit.index);
+        return;
+    }
+
+    if (hit.type === "window") {
+        this.showContextMenu(x, y, "window", hit.index);
+        return;
+    }
+
+    if (hit.type === "point") {
+        this.selectedPoint = this.points[hit.index];
+        this.isDragging = true;
+        this.showContextMenu(x, y, "point", hit.index);
+        return;
+    }
+
+    if (hit.type === "wall" && !this.isClosed) {
+        const w = hit.data;
+        const insertPoint = { x: w.x, y: w.y };
+
+        if (w.index < this.points.length - 1) {
+            this.points.splice(w.index + 1, 0, insertPoint);
+        } else {
+            this.points.push(insertPoint);
         }
-    },
+
+        this.updateWalls();
+        this.render();
+        return;
+    }
+},
 
     onUp() {
         this.isDragging = false;
