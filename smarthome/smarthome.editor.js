@@ -276,18 +276,6 @@ onMove(e) {
     },
 
 onDown(e) {
-    // Raum schließen durch Snap
-if (!this.isClosed && this.points.length >= 2) {
-    const first = this.points[0];
-    if (Math.hypot(x - first.x, y - first.y) < 20) {
-        this.points.push({ x: first.x, y: first.y });
-        this.isClosed = true;
-        this.updateWalls();
-        this.render();
-        return;
-    }
-}
-
     const rect = this.canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -300,24 +288,17 @@ if (!this.isClosed && this.points.length >= 2) {
     this.hideContextMenu();
 
     // --------------------------------------------------
-    // WICHTIG: Punkte setzen, bevor Hit-Test greift
+    // Raum schließen durch Snap auf ersten Punkt
     // --------------------------------------------------
-    if (!this.isClosed && this.points.length < 3) {
-        // Prüfen, ob letzter Punkt auf ersten gesetzt wird
-                if (!this.isClosed && this.points.length >= 2) {
-                    const first = this.points[0];
-                    if (Math.hypot(x - first.x, y - first.y) < 20) {
-                        this.points.push({ x: first.x, y: first.y });
-                        this.isClosed = true;
-                        this.updateWalls();
-                        this.render();
-                        return;
-                    }
-                }
-        this.points.push({ x, y });
-        this.updateWalls();
-        this.render();
-        return;
+    if (!this.isClosed && this.points.length >= 2) {
+        const first = this.points[0];
+        if (Math.hypot(x - first.x, y - first.y) < 20) {
+            this.points.push({ x: first.x, y: first.y });
+            this.isClosed = true;
+            this.updateWalls();
+            this.render();
+            return;
+        }
     }
 
     const hit = this.hitTest(x, y);
@@ -388,6 +369,8 @@ if (!this.isClosed && this.points.length >= 2) {
     // --------------------------------------------------
     // PUNKT-MODUS
     // --------------------------------------------------
+
+    // Türen/Fenster-Kontextmenü
     if (hit.type === "door") {
         this.showContextMenu(x, y, "door", hit.index);
         return;
@@ -398,6 +381,7 @@ if (!this.isClosed && this.points.length >= 2) {
         return;
     }
 
+    // Punkt auswählen (Drag-Kandidat)
     if (hit.type === "point") {
         this.selectedPoint = this.points[hit.index];
         this.isDragging = true;
@@ -405,7 +389,8 @@ if (!this.isClosed && this.points.length >= 2) {
         return;
     }
 
-    if (hit.type === "wall" && !this.isClosed) {
+    // Punkt auf Wand einfügen (nur wenn geschlossen)
+    if (hit.type === "wall" && this.isClosed) {
         const w = hit.data;
         const insertPoint = { x: w.x, y: w.y };
 
@@ -415,6 +400,14 @@ if (!this.isClosed && this.points.length >= 2) {
             this.points.push(insertPoint);
         }
 
+        this.updateWalls();
+        this.render();
+        return;
+    }
+
+    // Neuen Punkt setzen (solange nicht geschlossen)
+    if (!this.isClosed) {
+        this.points.push({ x, y });
         this.updateWalls();
         this.render();
         return;
