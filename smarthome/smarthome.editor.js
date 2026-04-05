@@ -348,18 +348,10 @@ onDown(e) {
     // Wenn gerade ein Kontextmenü geschlossen wurde → NICHTS setzen
 // Wenn gerade ein Kontextmenü geschlossen wurde
 if (this._contextJustClosed) {
-    const hit = this.hitTest(x, y);
-
-    // Klick auf ein Element → NICHT blockieren
-    if (hit.type !== "none") {
-        this._contextJustClosed = false;
-        // weiter unten normal verarbeiten
-    } else {
-        // Klick auf leere Fläche → blockieren
-        this._contextJustClosed = false;
-        return;
-    }
+    this._contextJustClosed = false;
+    return;
 }
+
 
 
 
@@ -1110,6 +1102,7 @@ getWallAt(x, y) {
 
             btnYes.addEventListener("click", () => {
                 if (this._toastConfirmFn) this._toastConfirmFn();
+                    this._contextJustClosed = false;
                 this.hideToast();
             });
 
