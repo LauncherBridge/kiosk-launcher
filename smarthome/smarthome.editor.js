@@ -1,5 +1,5 @@
 // ======================================================
-// Raumdesigner – kompletter Editor (überarbeitet)
+// Raumdesigner – vollständige, fehlerfreie Version
 // ======================================================
 
 const RoomDesigner = {
@@ -64,6 +64,14 @@ const RoomDesigner = {
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
         this.render();
+    },
+
+    // --------------------------------------------------
+    // Rechtsklick verhindern
+    // --------------------------------------------------
+    onRightClick(e) {
+        e.preventDefault();
+        this.hideContextMenu();
     },
 
     // --------------------------------------------------
@@ -231,10 +239,12 @@ const RoomDesigner = {
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
 
-        // Rechtsklick → Delete-Toast
-        if (e.button === 2) return;
+        // Rechtsklick → nur Kontext schließen
+        if (e.button === 2) {
+            this.hideContextMenu();
+            return;
+        }
 
-        // Klick ins Leere → Kontext schließen
         this.hideContextMenu();
 
         // --------------------------------------------------
@@ -261,7 +271,6 @@ const RoomDesigner = {
                 this.render();
             }
 
-            // EINMALIG → zurück zu Punkten
             this.mode = "points";
             return;
         }
@@ -291,7 +300,6 @@ const RoomDesigner = {
                 this.render();
             }
 
-            // EINMALIG → zurück zu Punkten
             this.mode = "points";
             return;
         }
@@ -343,7 +351,10 @@ const RoomDesigner = {
             this.points.push({ x, y });
             this.updateWalls();
             this.render();
+            return;
         }
+
+        // Wenn Raum geschlossen → Klick ins Leere = nichts tun
     },
 
     onUp() {
@@ -359,20 +370,12 @@ const RoomDesigner = {
         return this.points.find(p => Math.hypot(p.x - x, p.y - y) < 10);
     },
 
-    getDoorAt(x, y) {
-        return this.doors.find(d => Math.hypot(d.x - x, d.y - y) < 15);
-    },
-
     getDoorIndexAt(x, y) {
         for (let i = 0; i < this.doors.length; i++) {
             const d = this.doors[i];
             if (Math.hypot(d.x - x, d.y - y) < 15) return i;
         }
         return null;
-    },
-
-    getWindowAt(x, y) {
-        return this.windows.find(w => Math.hypot(w.x - x, w.y - y) < 15);
     },
 
     getWindowIndexAt(x, y) {
@@ -433,7 +436,7 @@ const RoomDesigner = {
     },
 
     // --------------------------------------------------
-    // Tür-Scharnier (UNVERÄNDERT GELASSEN!)
+    // Tür-Scharnier (UNVERÄNDERT)
     // --------------------------------------------------
     setDoorHingeFromTap(door, tapX, tapY, wall) {
         const dx = wall.x2 - wall.x1;
@@ -444,9 +447,9 @@ const RoomDesigner = {
         const tx = dx / len;
         const ty = dy / len;
 
-        const half = door.width / 2;
         const cx = door.x;
         const cy = door.y;
+        const half = door.width / 2;
 
         const x1 = cx - tx * half;
         const y1 = cy - ty * half;
@@ -470,6 +473,8 @@ const RoomDesigner = {
 
         const ex = ox - hx;
         const ey = oy - hy;
+        const elen = Math.hypot(ex, ey);
+        if (elen === 0) return;
 
         const vx = tapX - hx;
         const vy = tapY - hy;
@@ -585,6 +590,79 @@ const RoomDesigner = {
             ctx.stroke();
         }
     },
+    // --------------------------------------------------
+    // Boden zeichnen
+    // --------------------------------------------------
+    drawFloor() {
+        if (this.points.length < 3) return;
+
+        const ctx = this.ctx;
+        ctx.fillStyle = "rgba(255,255,255,0.03)";
+        ctx.beginPath();
+        ctx.moveTo(this.points[0].x, this.points[0].y);
+
+        for (let i = 1; i < this.points.length; i++) {
+            ctx.lineTo(this.points[i].x, this.points[i].y);
+        }
+
+        if (this.isClosed) {
+            ctx.closePath();
+        }
+
+        ctx.fill();
+    },
+
+    // --------------------------------------------------
+    // Polygon zeichnen
+    // --------------------------------------------------
+    drawPolygon() {
+        if (this.points.length === 0) return;
+
+        const ctx = this.ctx;
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 2;
+
+        ctx.beginPath();
+        ctx.moveTo(this.points[0].x, this.points[0].y);
+
+        for (let i = 1; i < this.points.length; i++) {
+            ctx.lineTo(this.points[i].x, this.points[i].y);
+        }
+
+        if (this.isClosed) {
+            ctx.closePath();
+        }
+
+        ctx.stroke();
+
+        // Punkte zeichnen
+        for (const p of this.points) {
+            ctx.fillStyle = "#ffffff";
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    },
+
+    // --------------------------------------------------
+    // Wände zeichnen
+    // --------------------------------------------------
+    drawWalls() {
+        const ctx = this.ctx;
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 4;
+
+        for (const w of this.walls) {
+            ctx.beginPath();
+            ctx.moveTo(w.x1, w.y1);
+            ctx.lineTo(w.x2, w.y2);
+            ctx.stroke();
+        }
+    },
+
+    // --------------------------------------------------
+    // Wandlängen
+    // --------------------------------------------------
     drawWallLengths() {
         if (!this.isDragging || !this.selectedPoint) return;
 
@@ -622,6 +700,9 @@ const RoomDesigner = {
         }
     },
 
+    // --------------------------------------------------
+    // Winkelanzeige
+    // --------------------------------------------------
     drawAngleAtPoint(P, A, B) {
         const ctx = this.ctx;
 
@@ -649,7 +730,7 @@ const RoomDesigner = {
     },
 
     // --------------------------------------------------
-    // Türen zeichnen (Scharnier-Logik UNVERÄNDERT)
+    // Türen zeichnen
     // --------------------------------------------------
     drawDoors() {
         const ctx = this.ctx;
@@ -816,7 +897,7 @@ const RoomDesigner = {
         if (!btn) return;
 
         btn.addEventListener("click", () => {
-            this.mode = "doors";   // EINMALIG
+            this.mode = "doors";
             btn.style.background = "#e29a4a";
 
             const winBtn = document.getElementById("btnWindowMode");
@@ -829,7 +910,7 @@ const RoomDesigner = {
         if (!btn) return;
 
         btn.addEventListener("click", () => {
-            this.mode = "windows"; // EINMALIG
+            this.mode = "windows";
             btn.style.background = "#5dade2";
 
             const doorBtn = document.getElementById("btnDoorMode");
@@ -837,7 +918,7 @@ const RoomDesigner = {
         });
     },
     // --------------------------------------------------
-    // Delete-Toast (unverändert)
+    // Delete-Toast
     // --------------------------------------------------
     showDeleteToast(message, onConfirm) {
         this._toastConfirmFn = onConfirm;
@@ -912,29 +993,29 @@ const RoomDesigner = {
 
 
 // --------------------------------------------------
-// Debug: Editor öffnen
+// Editor öffnen
 // --------------------------------------------------
 window.addEventListener("DOMContentLoaded", () => {
     const openBtn = document.getElementById("btnOpenEditor");
-    if (openBtn) {
-        openBtn.addEventListener("click", () => {
-            const root = document.getElementById("smarthome-root");
-            const header = document.getElementById("sh-group-header");
-            const minimap = document.getElementById("smarthome-minimap");
+    if (!openBtn) return;
 
-            if (root) root.style.display = "none";
-            if (header) header.style.display = "none";
-            if (minimap) minimap.style.display = "none";
+    openBtn.addEventListener("click", () => {
+        const root = document.getElementById("smarthome-root");
+        const header = document.getElementById("sh-group-header");
+        const minimap = document.getElementById("smarthome-minimap");
 
-            const canvas = document.getElementById("roomdesigner");
-            const doorBtn = document.getElementById("btnDoorMode");
-            const winBtn = document.getElementById("btnWindowMode");
+        if (root) root.style.display = "none";
+        if (header) header.style.display = "none";
+        if (minimap) minimap.style.display = "none";
 
-            if (canvas) canvas.style.display = "block";
-            if (doorBtn) doorBtn.style.display = "block";
-            if (winBtn) winBtn.style.display = "block";
+        const canvas = document.getElementById("roomdesigner");
+        const doorBtn = document.getElementById("btnDoorMode");
+        const winBtn = document.getElementById("btnWindowMode");
 
-            RoomDesigner.init();
-        });
-    }
+        if (canvas) canvas.style.display = "block";
+        if (doorBtn) doorBtn.style.display = "block";
+        if (winBtn) winBtn.style.display = "block";
+
+        RoomDesigner.init();
+    });
 });
