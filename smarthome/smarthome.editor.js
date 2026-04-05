@@ -514,6 +514,8 @@ onDown(e) {
 ,
 
 onUp() {
+
+    // Wenn wir gerade etwas gezogen haben → Drag-Ende
     if (this.isDragging) {
         this.isDragging = false;
         this.selectedPoint = null;
@@ -523,13 +525,19 @@ onUp() {
         return;
     }
 
+    // Wenn ein Kontextkandidat existiert → Kontextmenü öffnen
     if (this._pendingContext) {
         const c = this._pendingContext;
-        this.showContextMenu(c.x, c.y, c.type, c.index);
+
+        // WICHTIG: pendingContext sofort löschen,
+        // damit kein zweites Menü entsteht
         this._pendingContext = null;
+
+        this.showContextMenu(c.x, c.y, c.type, c.index);
         return;
     }
 
+    // Reset aller Drag-/Kontextvariablen
     this.selectedPoint = null;
     this.draggingDoorIndex = null;
     this.draggingWindowIndex = null;
