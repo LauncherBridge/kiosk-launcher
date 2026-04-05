@@ -177,56 +177,74 @@ const RoomDesigner = {
     // --------------------------------------------------
     // Eingaben
     // --------------------------------------------------
-    onMove(e) {
-        const rect = this.canvas.getBoundingClientRect();
-        let hx = e.clientX - rect.left;
-        let hy = e.clientY - rect.top;
+onMove(e) {
+    const rect = this.canvas.getBoundingClientRect();
+    let hx = e.clientX - rect.left;
+    let hy = e.clientY - rect.top;
 
-        if (this.points.length > 0) {
-            const first = this.points[0];
-            if (!this.isClosed && Math.hypot(hx - first.x, hy - first.y) < 20) {
-                hx = first.x;
-                hy = first.y;
-            }
+    // Hover-Snap auf ersten Punkt (nur wenn Raum noch offen)
+    if (!this.isClosed && this.points.length > 0) {
+        const first = this.points[0];
+        if (Math.hypot(hx - first.x, hy - first.y) < 20) {
+            hx = first.x;
+            hy = first.y;
         }
+    }
 
-        this.hover.x = hx;
-        this.hover.y = hy;
+    this.hover.x = hx;
+    this.hover.y = hy;
 
-        if (this.draggingDoorIndex !== null) {
-            const d = this.doors[this.draggingDoorIndex];
-            const w = this.walls[d.wallIndex];
-            if (w) {
-                const proj = this.projectOnWall(hx, hy, w);
-                d.t = proj.t;
-                d.x = proj.x;
-                d.y = proj.y;
-            }
-            this.render();
-            return;
+    // --------------------------------------------------
+    // DRAG: Tür verschieben
+    // --------------------------------------------------
+    if (this.draggingDoorIndex !== null) {
+        this.isDragging = true;
+        const d = this.doors[this.draggingDoorIndex];
+        const w = this.walls[d.wallIndex];
+        if (w) {
+            const proj = this.projectOnWall(hx, hy, w);
+            d.t = proj.t;
+            d.x = proj.x;
+            d.y = proj.y;
         }
-
-        if (this.draggingWindowIndex !== null) {
-            const wObj = this.windows[this.draggingWindowIndex];
-            const w = this.walls[wObj.wallIndex];
-            if (w) {
-                const proj = this.projectOnWall(hx, hy, w);
-                wObj.t = proj.t;
-                wObj.x = proj.x;
-                wObj.y = proj.y;
-            }
-            this.render();
-            return;
-        }
-
-        if (this.isDragging && this.selectedPoint) {
-            this.selectedPoint.x = hx;
-            this.selectedPoint.y = hy;
-            this.updateWalls();
-        }
-
         this.render();
-    },
+        return;
+    }
+
+    // --------------------------------------------------
+    // DRAG: Fenster verschieben
+    // --------------------------------------------------
+    if (this.draggingWindowIndex !== null) {
+        this.isDragging = true;
+        const wObj = this.windows[this.draggingWindowIndex];
+        const w = this.walls[wObj.wallIndex];
+        if (w) {
+            const proj = this.projectOnWall(hx, hy, w);
+            wObj.t = proj.t;
+            wObj.x = proj.x;
+            wObj.y = proj.y;
+        }
+        this.render();
+        return;
+    }
+
+    // --------------------------------------------------
+    // DRAG: Punkt verschieben
+    // --------------------------------------------------
+    if (this.selectedPoint) {
+        this.isDragging = true;
+        this.selectedPoint.x = hx;
+        this.selectedPoint.y = hy;
+        this.updateWalls();
+        this.render();
+        return;
+    }
+
+    // --------------------------------------------------
+    // Kein Drag → nur Hover aktualisieren
+    // --------------------------------------------------
+    this.render();
+},
 
     // --------------------------------------------------
     // HIT-DETECTION REIHENFOLGE (wichtig!)
@@ -263,6 +281,17 @@ onDown(e) {
     // WICHTIG: Punkte setzen, bevor Hit-Test greift
     // --------------------------------------------------
     if (!this.isClosed && this.points.length < 3) {
+        // Prüfen, ob letzter Punkt auf ersten gesetzt wird
+                if (!this.isClosed && this.points.length >= 2) {
+                    const first = this.points[0];
+                    if (Math.hypot(x - first.x, y - first.y) < 20) {
+                        this.points.push({ x: first.x, y: first.y });
+                        this.isClosed = true;
+                        this.updateWalls();
+                        this.render();
+                        return;
+                    }
+                }
         this.points.push({ x, y });
         this.updateWalls();
         this.render();
@@ -350,7 +379,7 @@ onDown(e) {
     if (hit.type === "point") {
         this.selectedPoint = this.points[hit.index];
         this.isDragging = true;
-        this.showContextMenu(x, y, "point", hit.index);
+        this._pendingContext = { x, y, type: "point", index: hit.index };
         return;
     }
 
@@ -370,12 +399,32 @@ onDown(e) {
     }
 },
 
-    onUp() {
-        this.isDragging = false;
-        this.selectedPoint = null;
-        this.draggingDoorIndex = null;
-        this.draggingWindowIndex = null;
-    },
+        onUp() {
+            // Wenn wir gezogen haben → es war ein Drag, KEIN Klick
+            if (this.isDragging) {
+                this.isDragging = false;
+                this.selectedPoint = null;
+                this.draggingDoorIndex = null;
+                this.draggingWindowIndex = null;
+                this._pendingContext = null; // Klick-Kandidat verwerfen
+                return;
+            }
+        
+            // Wenn wir NICHT gezogen haben, aber ein Klick-Kandidat existiert → Kontextmenü öffnen
+            if (this._pendingContext) {
+                const c = this._pendingContext;
+                this.showContextMenu(c.x, c.y, c.type, c.index);
+                this._pendingContext = null;
+                return;
+            }
+        
+            // Fallback: alles zurücksetzen
+            this.isDragging = false;
+            this.selectedPoint = null;
+            this.draggingDoorIndex = null;
+            this.draggingWindowIndex = null;
+            this._pendingContext = null;
+        },
     // --------------------------------------------------
     // Hilfsfunktionen
     // --------------------------------------------------
@@ -399,32 +448,34 @@ onDown(e) {
         return null;
     },
 
-    getWallAt(x, y) {
-        for (let i = 0; i < this.walls.length; i++) {
-            const w = this.walls[i];
+getWallAt(x, y) {
+    if (!this.isClosed) return null; // <<< WICHTIG
 
-            const A = { x: w.x1, y: w.y1 };
-            const B = { x: w.x2, y: w.y2 };
+    for (let i = 0; i < this.walls.length; i++) {
+        const w = this.walls[i];
 
-            const ABx = B.x - A.x;
-            const ABy = B.y - A.y;
-            const APx = x - A.x;
-            const APy = y - A.y;
+        const A = { x: w.x1, y: w.y1 };
+        const B = { x: w.x2, y: w.y2 };
 
-            const abLen = Math.hypot(ABx, ABy);
-            if (abLen === 0) continue;
+        const ABx = B.x - A.x;
+        const ABy = B.y - A.y;
+        const APx = x - A.x;
+        const APy = y - A.y;
 
-            const t = Math.max(0, Math.min(1, (APx * ABx + APy * ABy) / (abLen * abLen)));
+        const abLen = Math.hypot(ABx, ABy);
+        if (abLen === 0) continue;
 
-            const cx = A.x + t * ABx;
-            const cy = A.y + t * ABy;
+        const t = Math.max(0, Math.min(1, (APx * ABx + APy * ABy) / (abLen * abLen)));
 
-            if (Math.hypot(x - cx, y - cy) < 10) {
-                return { index: i, t, x: cx, y: cy };
-            }
+        const cx = A.x + t * ABx;
+        const cy = A.y + t * ABy;
+
+        if (Math.hypot(x - cx, y - cy) < 10) {
+            return { index: i, t, x: cx, y: cy };
         }
-        return null;
-    },
+    }
+    return null;
+},
 
     projectOnWall(x, y, w) {
         const A = { x: w.x1, y: w.y1 };
