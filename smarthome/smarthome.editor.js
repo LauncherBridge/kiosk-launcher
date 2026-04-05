@@ -112,16 +112,16 @@ hideContextMenu() {
         menu.innerHTML = "";
         this.contextTarget = { type, index };
 
-        if (type === "point") {
-            this.addContextButton("🗑", () => {
-                const p = this.points[index];
-                this.points = this.points.filter(pt => pt !== p);
-                if (this.points.length < 3) this.isClosed = false;
-                this.updateWalls();
-                this.hideContextMenu();
-                this.render();
-            });
-        }
+if (type === "point") {
+    this.addContextButton("🗑", () => {
+        const p = this.points[index];
+        this.points = this.points.filter(pt => pt !== p);
+        if (this.points.length < 3) this.isClosed = false;
+        this.updateWalls();
+        this.render();
+    }, true); // Menü schließen, aber sauber über addContextButton
+}
+
 
 if (type === "door" || type === "window") {
     const arr = type === "door" ? this.doors : this.windows;
