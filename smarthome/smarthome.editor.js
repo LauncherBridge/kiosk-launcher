@@ -182,7 +182,7 @@ onMove(e) {
     let hx = e.clientX - rect.left;
     let hy = e.clientY - rect.top;
 
-    // Hover-Snap auf ersten Punkt (nur wenn Raum noch offen)
+    // Snap auf ersten Punkt (nur wenn offen)
     if (!this.isClosed && this.points.length > 0) {
         const first = this.points[0];
         if (Math.hypot(hx - first.x, hy - first.y) < 20) {
@@ -195,10 +195,9 @@ onMove(e) {
     this.hover.y = hy;
 
     // --------------------------------------------------
-    // DRAG: Tür verschieben
+    // DRAG: Tür
     // --------------------------------------------------
     if (this.draggingDoorIndex !== null) {
-        this.isDragging = true;
         const d = this.doors[this.draggingDoorIndex];
         const w = this.walls[d.wallIndex];
         if (w) {
@@ -207,15 +206,15 @@ onMove(e) {
             d.x = proj.x;
             d.y = proj.y;
         }
+        this.isDragging = true;
         this.render();
         return;
     }
 
     // --------------------------------------------------
-    // DRAG: Fenster verschieben
+    // DRAG: Fenster
     // --------------------------------------------------
     if (this.draggingWindowIndex !== null) {
-        this.isDragging = true;
         const wObj = this.windows[this.draggingWindowIndex];
         const w = this.walls[wObj.wallIndex];
         if (w) {
@@ -224,35 +223,72 @@ onMove(e) {
             wObj.x = proj.x;
             wObj.y = proj.y;
         }
+        this.isDragging = true;
         this.render();
         return;
     }
 
     // --------------------------------------------------
-    // DRAG: Punkt verschieben
+    // DRAG: Punkt
     // --------------------------------------------------
     if (this.selectedPoint) {
-    
-        // Abstand zur ursprünglichen Mausposition prüfen
+
         const dx = hx - this.selectedPoint.x;
         const dy = hy - this.selectedPoint.y;
-    
-        // Nur wenn sich die Maus wirklich bewegt → Drag
+
         if (Math.hypot(dx, dy) > 2) {
-            this.isDragging = true;
+
+            // Verschmelzen durch Drag
+            if (!this.isClosed) {
+                const first = this.points[0];
+                if (this.selectedPoint !== first &&
+                    Math.hypot(hx - first.x, hy - first.y) < 20) {
+
+                    this.points[this.points.length - 1] = first;
+                    this.isClosed = true;
+                    this.updateWalls();
+                    this.isDragging = true;
+                    this.render();
+                    return;
+                }
+            }
+
             this.selectedPoint.x = hx;
             this.selectedPoint.y = hy;
             this.updateWalls();
+            this.isDragging = true;
         }
-    
+
         this.render();
         return;
     }
 
+    // --------------------------------------------------
+    // Prüfen, ob ein Klick-Kandidat zum Drag wird
+    // --------------------------------------------------
+    if (this._pendingContext) {
+        const dx = hx - this._pendingContext.x;
+        const dy = hy - this._pendingContext.y;
 
-    // --------------------------------------------------
-    // Kein Drag → nur Hover aktualisieren
-    // --------------------------------------------------
+        if (Math.hypot(dx, dy) > 2) {
+
+            if (this._pendingContext.type === "door") {
+                this.draggingDoorIndex = this._pendingContext.index;
+            }
+
+            if (this._pendingContext.type === "window") {
+                this.draggingWindowIndex = this._pendingContext.index;
+            }
+
+            if (this._pendingContext.type === "point") {
+                this.selectedPoint = this.points[this._pendingContext.index];
+            }
+
+            this._pendingContext = null;
+            this.isDragging = true;
+        }
+    }
+
     this.render();
 },
 
@@ -288,28 +324,31 @@ onDown(e) {
     this.hideContextMenu();
 
     // --------------------------------------------------
-// Raum schließen durch Snap
-if (!this.isClosed && this.points.length >= 2) {
-    const first = this.points[0];
-    if (Math.hypot(x - first.x, y - first.y) < 20) {
-        // Letzten Punkt auf den ersten setzen
-        this.points[this.points.length - 1] = first;
-        this.isClosed = true;
-        this.updateWalls();
-        this.render();
-        return;
-    }
-}
+    // Raum schließen durch Klick auf ersten Punkt
+    // --------------------------------------------------
+    if (!this.isClosed && this.points.length >= 2) {
+        const first = this.points[0];
+        if (Math.hypot(x - first.x, y - first.y) < 20) {
 
+            // Letzten Punkt NICHT ersetzen → stattdessen echten Referenzpunkt anhängen
+            this.points.push(first);
+
+            this.isClosed = true;
+            this.updateWalls();
+            this.render();
+            return;
+        }
+    }
 
     const hit = this.hitTest(x, y);
 
     // --------------------------------------------------
-    // FENSTER-MODUS (einmalig)
+    // Fenster-Modus
     // --------------------------------------------------
     if (this.mode === "windows") {
+
         if (hit.type === "window") {
-            this.showContextMenu(x, y, "window", hit.index);
+            this._pendingContext = { x, y, type: "window", index: hit.index };
             return;
         }
 
@@ -331,11 +370,10 @@ if (!this.isClosed && this.points.length >= 2) {
     }
 
     // --------------------------------------------------
-    // TÜR-MODUS (3-Schritte)
+    // Tür-Modus
     // --------------------------------------------------
     if (this.mode === "doors") {
 
-        // Schritt 2: Tür setzen
         if (!this._placingDoor) {
             if (hit.type === "wall") {
                 const w = hit.data;
@@ -354,7 +392,6 @@ if (!this.isClosed && this.points.length >= 2) {
             }
         }
 
-        // Schritt 3: Scharnier wählen
         if (this._placingDoor) {
             const lastDoor = this.doors[this.doors.length - 1];
             const w = this.walls[lastDoor.wallIndex];
@@ -368,42 +405,33 @@ if (!this.isClosed && this.points.length >= 2) {
     }
 
     // --------------------------------------------------
-    // PUNKT-MODUS
+    // Punkt-Modus
     // --------------------------------------------------
 
-    // Türen/Fenster-Kontextmenü
-if (hit.type === "door") {
-    this.draggingDoorIndex = hit.index;
-    this._pendingContext = { x, y, type: "door", index: hit.index };
-    return;
-}
+    // Türen/Fenster: Klick-Kandidat, kein Drag
+    if (hit.type === "door") {
+        this._pendingContext = { x, y, type: "door", index: hit.index };
+        return;
+    }
 
-if (hit.type === "window") {
-    this.draggingWindowIndex = hit.index;
-    this._pendingContext = { x, y, type: "window", index: hit.index };
-    return;
-}
+    if (hit.type === "window") {
+        this._pendingContext = { x, y, type: "window", index: hit.index };
+        return;
+    }
 
+    // Punkt: Klick-Kandidat, kein Drag
+    if (hit.type === "point") {
+        this.selectedPoint = this.points[hit.index];
+        this._pendingContext = { x, y, type: "point", index: hit.index };
+        return;
+    }
 
-    // Punkt auswählen (Drag-Kandidat)
-if (hit.type === "point") {
-    this.selectedPoint = this.points[hit.index];
-    this._pendingContext = { x, y, type: "point", index: hit.index };
-    // NICHT isDragging = true!
-    return;
-}
-
-
-    // Punkt auf Wand einfügen (nur wenn geschlossen)
-    if (hit.type === "wall" && this.isClosed) {
+    // Punkt auf Wand einfügen (auch bei offenem Raum erlaubt)
+    if (hit.type === "wall") {
         const w = hit.data;
         const insertPoint = { x: w.x, y: w.y };
 
-        if (w.index < this.points.length - 1) {
-            this.points.splice(w.index + 1, 0, insertPoint);
-        } else {
-            this.points.push(insertPoint);
-        }
+        this.points.splice(w.index + 1, 0, insertPoint);
 
         this.updateWalls();
         this.render();
@@ -419,32 +447,28 @@ if (hit.type === "point") {
     }
 },
 
-        onUp() {
-            // Wenn wir gezogen haben → es war ein Drag, KEIN Klick
-            if (this.isDragging) {
-                this.isDragging = false;
-                this.selectedPoint = null;
-                this.draggingDoorIndex = null;
-                this.draggingWindowIndex = null;
-                this._pendingContext = null; // Klick-Kandidat verwerfen
-                return;
-            }
-        
-            // Wenn wir NICHT gezogen haben, aber ein Klick-Kandidat existiert → Kontextmenü öffnen
-            if (this._pendingContext) {
-                const c = this._pendingContext;
-                this.showContextMenu(c.x, c.y, c.type, c.index);
-                this._pendingContext = null;
-                return;
-            }
-        
-            // Fallback: alles zurücksetzen
-            this.isDragging = false;
-            this.selectedPoint = null;
-            this.draggingDoorIndex = null;
-            this.draggingWindowIndex = null;
-            this._pendingContext = null;
-        },
+onUp() {
+    if (this.isDragging) {
+        this.isDragging = false;
+        this.selectedPoint = null;
+        this.draggingDoorIndex = null;
+        this.draggingWindowIndex = null;
+        this._pendingContext = null;
+        return;
+    }
+
+    if (this._pendingContext) {
+        const c = this._pendingContext;
+        this.showContextMenu(c.x, c.y, c.type, c.index);
+        this._pendingContext = null;
+        return;
+    }
+
+    this.selectedPoint = null;
+    this.draggingDoorIndex = null;
+    this.draggingWindowIndex = null;
+    this._pendingContext = null;
+},
     // --------------------------------------------------
     // Hilfsfunktionen
     // --------------------------------------------------
@@ -469,8 +493,7 @@ if (hit.type === "point") {
     },
 
 getWallAt(x, y) {
-    // WICHTIG: Nur prüfen, wenn Raum geschlossen ist
-    if (!this.isClosed) return null;
+    // Wände IMMER prüfen – auch wenn der Raum offen ist
 
     for (let i = 0; i < this.walls.length; i++) {
         const w = this.walls[i];
