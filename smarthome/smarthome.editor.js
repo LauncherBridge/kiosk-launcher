@@ -232,13 +232,23 @@ onMove(e) {
     // DRAG: Punkt verschieben
     // --------------------------------------------------
     if (this.selectedPoint) {
-        this.isDragging = true;
-        this.selectedPoint.x = hx;
-        this.selectedPoint.y = hy;
-        this.updateWalls();
+    
+        // Abstand zur ursprünglichen Mausposition prüfen
+        const dx = hx - this.selectedPoint.x;
+        const dy = hy - this.selectedPoint.y;
+    
+        // Nur wenn sich die Maus wirklich bewegt → Drag
+        if (Math.hypot(dx, dy) > 2) {
+            this.isDragging = true;
+            this.selectedPoint.x = hx;
+            this.selectedPoint.y = hy;
+            this.updateWalls();
+        }
+    
         this.render();
         return;
     }
+
 
     // --------------------------------------------------
     // Kein Drag → nur Hover aktualisieren
@@ -266,6 +276,18 @@ onMove(e) {
     },
 
 onDown(e) {
+    // Raum schließen durch Snap
+if (!this.isClosed && this.points.length >= 2) {
+    const first = this.points[0];
+    if (Math.hypot(x - first.x, y - first.y) < 20) {
+        this.points.push({ x: first.x, y: first.y });
+        this.isClosed = true;
+        this.updateWalls();
+        this.render();
+        return;
+    }
+}
+
     const rect = this.canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -449,7 +471,8 @@ onDown(e) {
     },
 
 getWallAt(x, y) {
-    if (!this.isClosed) return null; // <<< WICHTIG
+    // WICHTIG: Nur prüfen, wenn Raum geschlossen ist
+    if (!this.isClosed) return null;
 
     for (let i = 0; i < this.walls.length; i++) {
         const w = this.walls[i];
