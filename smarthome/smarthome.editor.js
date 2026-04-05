@@ -20,6 +20,16 @@ const RoomDesigner = {
     isDragging: false,
     _initialized: false,
 
+    // --------------------------------------------------
+    // Grid-Konfiguration
+    // --------------------------------------------------
+    gridSize: 40,          // Standard-Rasterweite in Pixeln
+    gridColor: "#444",     // dezentes Grau
+    gridAlpha: 0.25,       // normale Sichtbarkeit
+    gridAlphaSnap: 0.45,   // deutlicher bei aktivem Snap
+    snapEnabled: false,    // Snap zunächst aus
+
+
     _closingByButton: false,
     _contextJustClosed: false,
 
@@ -335,8 +345,14 @@ onMove(e) {
                 }
             }
 
-            this.selectedPoint.x = hx;
-            this.selectedPoint.y = hy;
+if (this.snapEnabled) {
+    this.selectedPoint.x = this.snap(hx);
+    this.selectedPoint.y = this.snap(hy);
+} else {
+    this.selectedPoint.x = hx;
+    this.selectedPoint.y = hy;
+}
+
             this.updateWalls();
             this.isDragging = true;
         }
@@ -548,13 +564,22 @@ onDown(e) {
 
     // Neuen Punkt setzen
     if (!this.isClosed) {
-        this.points.push({ x, y });
+    
+        let px = x;
+        let py = y;
+    
+        if (this.snapEnabled) {
+            px = this.snap(px);
+            py = this.snap(py);
+        }
+    
+        this.points.push({ x: px, y: py });
         this.updateWalls();
         this.render();
         return;
     }
-}
-,
+
+},
 
 onUp() {
 
@@ -609,6 +634,14 @@ onUp() {
         return null;
     },
 
+// --------------------------------------------------
+// Snap auf Grid
+// --------------------------------------------------
+snap(value) {
+    return Math.round(value / this.gridSize) * this.gridSize;
+},
+
+    
 getWallAt(x, y) {
     // Wände IMMER prüfen – auch wenn der Raum offen ist
 
@@ -848,29 +881,43 @@ updateWalls() {
     // --------------------------------------------------
     // Grid
     // --------------------------------------------------
-    drawGrid() {
-        const ctx = this.ctx;
-        if (!ctx || !this.canvas) return;
+// --------------------------------------------------
+// Grid (zoomfähig, konfigurierbar, snap-aware)
+// --------------------------------------------------
+drawGrid() {
+    const ctx = this.ctx;
+    if (!ctx || !this.canvas) return;
 
-        ctx.strokeStyle = "rgba(255,255,255,0.05)";
-        ctx.lineWidth = 1;
+    const size = this.gridSize;
 
-        const grid = 40;
+    ctx.save();
 
-        for (let x = 0; x < this.canvas.width; x += grid) {
-            ctx.beginPath();
-            ctx.moveTo(x, 0);
-            ctx.lineTo(x, this.canvas.height);
-            ctx.stroke();
-        }
+    // Grid-Farbe abhängig von Snap
+    ctx.strokeStyle = this.gridColor;
+    ctx.globalAlpha = this.snapEnabled ? this.gridAlphaSnap : this.gridAlpha;
+    ctx.lineWidth = 1;
 
-        for (let y = 0; y < this.canvas.height; y += grid) {
-            ctx.beginPath();
-            ctx.moveTo(0, y);
-            ctx.lineTo(this.canvas.width, y);
-            ctx.stroke();
-        }
-    },
+    // Sichtbare Fläche im transformierten Raum
+    const width = this.canvas.width;
+    const height = this.canvas.height;
+
+    // Da du aktuell kein Zoom/Offset nutzt, ist das Grid einfach:
+    for (let x = 0; x < width; x += size) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
+    }
+
+    for (let y = 0; y < height; y += size) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+    }
+
+    ctx.restore();
+},
 
     
     
