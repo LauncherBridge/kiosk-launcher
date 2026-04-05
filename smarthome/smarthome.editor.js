@@ -137,26 +137,38 @@ const RoomDesigner = {
             });
         }
 
-        menu.style.display = "flex";
+menu.style.display = "flex";
 
-        const rect = menu.getBoundingClientRect();
-        const spaceRight = window.innerWidth - x - rect.width - 10;
-        const spaceTop = y - rect.height - 10;
-        const spaceBottom = window.innerHeight - y - rect.height - 10;
+const rect = menu.getBoundingClientRect();
+const offset = 20;
 
-        if (spaceRight > 0) {
-            menu.style.left = (x + 10) + "px";
-            menu.style.top = (y - rect.height / 2) + "px";
-        } else if (spaceTop > 0) {
-            menu.style.left = (x - rect.width / 2) + "px";
-            menu.style.top = (y - rect.height - 10) + "px";
-        } else if (spaceBottom > 0) {
-            menu.style.left = (x - rect.width / 2) + "px";
-            menu.style.top = (y + 10) + "px";
-        } else {
-            menu.style.left = (x - rect.width - 10) + "px";
-            menu.style.top = (y - rect.height / 2) + "px";
-        }
+// Standard: rechts unten neben dem Objekt
+let left = x + offset;
+let top = y + offset;
+
+// Falls rechts kein Platz → links
+if (left + rect.width > window.innerWidth) {
+    left = x - rect.width - offset;
+}
+
+// Falls unten kein Platz → oben
+if (top + rect.height > window.innerHeight) {
+    top = y - rect.height - offset;
+}
+
+// Falls links immer noch außerhalb → rechts erzwingen
+if (left < 0) {
+    left = x + offset;
+}
+
+// Falls oben immer noch außerhalb → unten erzwingen
+if (top < 0) {
+    top = y + offset;
+}
+
+menu.style.left = left + "px";
+menu.style.top = top + "px";
+
     },
 
     addContextButton(label, fn) {
@@ -263,31 +275,35 @@ onMove(e) {
         return;
     }
 
-    // --------------------------------------------------
-    // Prüfen, ob ein Klick-Kandidat zum Drag wird
-    // --------------------------------------------------
-    if (this._pendingContext) {
-        const dx = hx - this._pendingContext.x;
-        const dy = hy - this._pendingContext.y;
+// --------------------------------------------------
+// Prüfen, ob ein Klick-Kandidat zum Drag wird
+// --------------------------------------------------
+if (this._pendingContext) {
+    const dx = hx - this._pendingContext.x;
+    const dy = hy - this._pendingContext.y;
 
-        if (Math.hypot(dx, dy) > 2) {
+    if (Math.hypot(dx, dy) > 2) {
 
-            if (this._pendingContext.type === "door") {
-                this.draggingDoorIndex = this._pendingContext.index;
-            }
-
-            if (this._pendingContext.type === "window") {
-                this.draggingWindowIndex = this._pendingContext.index;
-            }
-
-            if (this._pendingContext.type === "point") {
-                this.selectedPoint = this.points[this._pendingContext.index];
-            }
-
-            this._pendingContext = null;
-            this.isDragging = true;
+        // Punkt wird zum Drag
+        if (this._pendingContext.type === "point") {
+            this.selectedPoint = this.points[this._pendingContext.index];
         }
+
+        // Tür wird zum Drag
+        if (this._pendingContext.type === "door") {
+            this.draggingDoorIndex = this._pendingContext.index;
+        }
+
+        // Fenster wird zum Drag
+        if (this._pendingContext.type === "window") {
+            this.draggingWindowIndex = this._pendingContext.index;
+        }
+
+        this._pendingContext = null;
+        this.isDragging = true;
     }
+}
+
 
     this.render();
 },
@@ -421,10 +437,10 @@ onDown(e) {
 
     // Punkt: Klick-Kandidat, kein Drag
     if (hit.type === "point") {
-        this.selectedPoint = this.points[hit.index];
         this._pendingContext = { x, y, type: "point", index: hit.index };
         return;
     }
+
 
     // Punkt auf Wand einfügen (auch bei offenem Raum erlaubt)
     if (hit.type === "wall") {
@@ -1010,6 +1026,7 @@ getWallAt(x, y) {
         if (!btn) return;
 
         btn.addEventListener("click", () => {
+            this.hideContextMenu();
             this.mode = "doors";
             this._placingDoor = false;
         });
@@ -1020,6 +1037,7 @@ getWallAt(x, y) {
         if (!btn) return;
 
         btn.addEventListener("click", () => {
+            this.hideContextMenu();
             this.mode = "windows";
         });
     },
