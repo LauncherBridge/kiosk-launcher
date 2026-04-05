@@ -925,8 +925,15 @@ updateWalls() {
         const height = this.canvas.height;
     
         // Startpunkte am Raster ausrichten
-        const startX = 0;
-        const startY = 0;
+        // Offset + Zoom berücksichtigen
+        const zoom = this.zoom || 1;
+        const offX = this.offsetX || 0;
+        const offY = this.offsetY || 0;
+        
+        // Startpunkte am Raster ausrichten
+        const startX = -((offX / zoom) % size);
+        const startY = -((offY / zoom) % size);
+
     
         // Vertikale Linien
         for (let x = startX; x < width; x += size) {
@@ -1268,6 +1275,19 @@ updateWalls() {
         });
     },
 
+    // --------------------------------------------------
+    // Grid-Size Slider
+    // --------------------------------------------------
+    setupGridSlider() {
+        const slider = document.getElementById("gridSizeSlider");
+        if (!slider) return;
+    
+        slider.addEventListener("input", () => {
+            this.setGridSize(parseInt(slider.value));
+        });
+    },
+
+    
     // --------------------------------------------------
     // Snap-Toggle
     // --------------------------------------------------
