@@ -693,14 +693,12 @@ onWheelZoom(e) {
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
 
-    // Weltkoordinaten vor dem Zoom
+    // Weltkoordinaten unter der Maus vor dem Zoom
     const worldX = (mouseX / this.zoom) - this.offsetX;
     const worldY = (mouseY / this.zoom) - this.offsetY;
 
     // Zoomfaktor
     const zoomFactor = 1.1;
-    const oldZoom = this.zoom;
-
     if (e.deltaY < 0) {
         this.zoom *= zoomFactor;
     } else {
@@ -710,12 +708,13 @@ onWheelZoom(e) {
     // Limits
     this.zoom = Math.max(0.2, Math.min(4.0, this.zoom));
 
-    // Weltpunkt unter der Maus stabil halten
+    // Offset so anpassen, dass der Weltpunkt unter der Maus stabil bleibt
     this.offsetX = (mouseX / this.zoom) - worldX;
     this.offsetY = (mouseY / this.zoom) - worldY;
 
     this.render();
 },
+
 
 
 // --------------------------------------------------
