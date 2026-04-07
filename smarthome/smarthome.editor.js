@@ -39,6 +39,10 @@ const RoomDesigner = {
     isPanning: false,
     lastPanX: 0,
     lastPanY: 0,
+
+    isPanCandidate: false,
+    panStartX: 0,
+    panStartY: 0,
     
     // Touch-Zustand für Pinch-Zoom
     touchState: {
@@ -307,6 +311,20 @@ onMove(e) {
     const worldX = (mouseX / this.zoom) - this.offsetX;
     const worldY = (mouseY / this.zoom) - this.offsetY;
 
+    // PAN STARTEN, wenn wir einen Pan-Kandidaten haben und genug Bewegung erfolgt
+    if (this.isPanCandidate && !this.isPanning) {
+        const dx = mouseX - this.panStartX;
+        const dy = mouseY - this.panStartY;
+    
+        if (Math.hypot(dx, dy) > 6) {   // Schwellwert 6px
+            this.isPanning = true;
+            this.lastPanX = mouseX;
+            this.lastPanY = mouseY;
+            this.isPanCandidate = false;
+        }
+    }
+
+
     let hx = mouseX;
     let hy = mouseY;
 
@@ -499,8 +517,8 @@ onDown(e) {
     const clickingObject =
         hit.type === "point" ||
         hit.type === "door" ||
-        hit.type === "window" ||
-        hit.type === "wall";
+        hit.type === "window";
+
 
     const menuWasOpen =
         this.contextMenuEl &&
@@ -632,21 +650,18 @@ onDown(e) {
         return;
     }
 
-    // PAN = STANDARD
-    if (
-        hit.type === "empty" ||
-        hit.type === "wall" ||
-        hit.type === "none"
-    ) {
-        this.isPanning = true;
-        this.lastPanX = mouseX;
-        this.lastPanY = mouseY;
-    }
+// PAN-Kandidat merken (aber noch NICHT starten)
+if (hit.type === "empty" || hit.type === "wall") {
+    this.isPanCandidate = true;
+    this.panStartX = mouseX;
+    this.panStartY = mouseY;
 },
 
 
 
 onUp() {
+
+    this.isPanCandidate = false;
 
     // PAN END
     if (this.isPanning) {
@@ -721,6 +736,7 @@ onWheelZoom(e) {
 // --------------------------------------------------
 onDoubleClickZoom(e) {
     e.preventDefault();
+    e.stopPropagation(); // verhindert Punktsetzen
 
     const rect = this.canvas.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
@@ -728,8 +744,6 @@ onDoubleClickZoom(e) {
 
     const worldX = (mouseX / this.zoom) - this.offsetX;
     const worldY = (mouseY / this.zoom) - this.offsetY;
-
-    const oldZoom = this.zoom;
 
     if (this.zoom < 1.5) {
         this.zoom *= 1.5;
