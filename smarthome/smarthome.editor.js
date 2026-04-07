@@ -45,6 +45,7 @@ const RoomDesigner = {
     panStartY: 0,
 
     _lastClickTime: 0,
+    _pendingNewPoint: null,
 
     
     // Touch-Zustand für Pinch-Zoom
@@ -324,6 +325,7 @@ onMove(e) {
             this.lastPanX = mouseX;
             this.lastPanY = mouseY;
             this.isPanCandidate = false;
+            this._pendingNewPoint = null; // Punkt-Kandidat verwerfen, wenn es doch Pan wird
         }
     }
 
@@ -646,8 +648,8 @@ this._lastClickTime = now;
         return;
     }
 
-    // Neuen Punkt setzen
-if (!this.isClosed && hit.type === "empty") {
+    // Neuen Punkt-Kandidaten merken (wird in onUp gesetzt, falls kein Pan/Drag)
+    if (!this.isClosed && hit.type === "empty") {
         let px = worldX;
         let py = worldY;
 
@@ -656,11 +658,10 @@ if (!this.isClosed && hit.type === "empty") {
             py = this.snap(py);
         }
 
-        this.points.push({ x: px, y: py });
-        this.updateWalls();
-        this.render();
-        return;
+        this._pendingNewPoint = { x: px, y: py };
+        // kein return → Pan-Kandidat wird unten trotzdem gesetzt
     }
+
 
 // PAN-Kandidat merken (aber noch NICHT starten)
 if (hit.type === "empty" || hit.type === "wall") {
@@ -704,6 +705,18 @@ onUp() {
         return;
     }
 
+    // Wenn kein Pan, kein Drag und ein Punkt-Kandidat existiert → Punkt wirklich setzen
+    if (!this.isClosed && !this.isPanning && !this.isDragging && this._pendingNewPoint) {
+        this.points.push(this._pendingNewPoint);
+        this._pendingNewPoint = null;
+        this.updateWalls();
+        this.render();
+        return;
+    }
+
+    this._pendingNewPoint = null;
+
+    
     this.selectedPoint = null;
     this.draggingDoorIndex = null;
     this.draggingWindowIndex = null;
