@@ -29,6 +29,27 @@ const RoomDesigner = {
     gridAlphaSnap: 0.45,   // deutlicher bei aktivem Snap
     snapEnabled: false,    // Snap zunächst aus
 
+    // --------------------------------------------------
+    // Zoom & Pan
+    // --------------------------------------------------
+    zoom: 1,
+    offsetX: 0,
+    offsetY: 0,
+    
+    isPanning: false,
+    lastPanX: 0,
+    lastPanY: 0,
+    
+    // Touch-Zustand für Pinch-Zoom
+    touchState: {
+        active: false,
+        startDistance: 0,
+        startZoom: 1,
+        lastCenterX: 0,
+        lastCenterY: 0
+    },
+
+
 
     _closingByButton: false,
     _contextJustClosed: false,
@@ -64,7 +85,11 @@ const RoomDesigner = {
         this.canvas.addEventListener("mousedown", (e) => this.onDown(e));
         this.canvas.addEventListener("mouseup", () => this.onUp());
         this.canvas.addEventListener("contextmenu", (e) => this.onRightClick(e));
-
+        this.canvas.addEventListener("wheel", (e) => this.onWheelZoom(e), { passive: false });
+        this.canvas.addEventListener("dblclick", (e) => this.onDoubleClickZoom(e));
+        this.canvas.addEventListener("touchstart", (e) => this.onTouchStart(e), { passive: false });
+        this.canvas.addEventListener("touchmove", (e) => this.onTouchMove(e), { passive: false });
+        this.canvas.addEventListener("touchend", (e) => this.onTouchEnd(e));
         this.setupDoorButton();
         this.setupWindowButton();
         this.createContextMenu();
@@ -289,6 +314,24 @@ onMove(e) {
 
     this.hover.x = hx;
     this.hover.y = hy;
+// --------------------------------------------------
+// PAN MOVE
+// --------------------------------------------------
+if (this.isPanning) {
+    const dx = hx - this.lastPanX;
+    const dy = hy - this.lastPanY;
+
+    this.offsetX += dx / this.zoom;
+    this.offsetY += dy / this.zoom;
+
+    this.lastPanX = hx;
+    this.lastPanY = hy;
+
+    this.render();
+    return;
+}
+
+    
 
     // --------------------------------------------------
     // DRAG: Tür
@@ -583,10 +626,30 @@ onDown(e) {
         return;
     }
 
+    // --------------------------------------------------
+    // PAN START (nur wenn nichts getroffen wurde)
+    // --------------------------------------------------
+    if (hit.type === "empty") {
+        this.isPanning = true;
+        this.lastPanX = x;
+        this.lastPanY = y;
+    }
+
+    
 },
 
 onUp() {
 
+    // --------------------------------------------------
+// PAN END
+// --------------------------------------------------
+if (this.isPanning) {
+    this.isPanning = false;
+    return;
+}
+
+
+    
     // Wenn wir gerade etwas gezogen haben → Drag-Ende
     if (this.isDragging) {
         this.isDragging = false;
@@ -615,6 +678,180 @@ onUp() {
     this.draggingWindowIndex = null;
     this._pendingContext = null;
 },
+
+// --------------------------------------------------
+// Zoom per Mausrad
+// --------------------------------------------------
+onWheelZoom(e) {
+    e.preventDefault();
+
+    const zoomFactor = 1.1;
+    const mouseX = e.offsetX;
+    const mouseY = e.offsetY;
+
+    const oldZoom = this.zoom;
+
+    // Zoom In / Out
+    if (e.deltaY < 0) {
+        this.zoom *= zoomFactor;
+    } else {
+        this.zoom /= zoomFactor;
+    }
+
+    // Zoom-Limits
+    this.zoom = Math.max(0.2, Math.min(4.0, this.zoom));
+
+    // Zoom zur Mausposition
+    const scale = this.zoom / oldZoom;
+
+    this.offsetX = mouseX / oldZoom - (mouseX / this.zoom - this.offsetX);
+    this.offsetY = mouseY / oldZoom - (mouseY / this.zoom - this.offsetY);
+
+    this.render();
+},
+
+// --------------------------------------------------
+// Doppelklick-Zoom (Toggle)
+// --------------------------------------------------
+onDoubleClickZoom(e) {
+    e.preventDefault();
+
+    const mouseX = e.offsetX;
+    const mouseY = e.offsetY;
+
+    const oldZoom = this.zoom;
+
+    // Toggle: wenn nah an 1 → reinzoomen, sonst rauszoomen
+    if (this.zoom < 1.5) {
+        this.zoom *= 1.5;
+    } else {
+        this.zoom /= 1.5;
+    }
+
+    // Zoom-Limits
+    this.zoom = Math.max(0.2, Math.min(4.0, this.zoom));
+
+    // Zoom zur Mausposition
+    const scale = this.zoom / oldZoom;
+
+    this.offsetX = mouseX / oldZoom - (mouseX / this.zoom - this.offsetX);
+    this.offsetY = mouseY / oldZoom - (mouseY / this.zoom - this.offsetY);
+
+    this.render();
+},
+
+// --------------------------------------------------
+// TOUCH START
+// --------------------------------------------------
+onTouchStart(e) {
+    e.preventDefault();
+
+    const touches = e.touches;
+
+    // Ein Finger → Pan
+    if (touches.length === 1) {
+        const rect = this.canvas.getBoundingClientRect();
+        const x = touches[0].clientX - rect.left;
+        const y = touches[0].clientY - rect.top;
+
+        this.isPanning = true;
+        this.lastPanX = x;
+        this.lastPanY = y;
+        return;
+    }
+
+    // Zwei Finger → Pinch-Zoom
+    if (touches.length === 2) {
+        this.touchState.active = true;
+
+        const rect = this.canvas.getBoundingClientRect();
+
+        const x1 = touches[0].clientX - rect.left;
+        const y1 = touches[0].clientY - rect.top;
+        const x2 = touches[1].clientX - rect.left;
+        const y2 = touches[1].clientY - rect.top;
+
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+
+        this.touchState.startDistance = Math.hypot(dx, dy);
+        this.touchState.startZoom = this.zoom;
+
+        this.touchState.lastCenterX = (x1 + x2) / 2;
+        this.touchState.lastCenterY = (y1 + y2) / 2;
+
+        this.isPanning = false;
+    }
+},
+
+
+// --------------------------------------------------
+// TOUCH MOVE
+// --------------------------------------------------
+onTouchMove(e) {
+    e.preventDefault();
+
+    const touches = e.touches;
+    const rect = this.canvas.getBoundingClientRect();
+
+    // Ein Finger → Pan
+    if (touches.length === 1 && !this.touchState.active) {
+        const x = touches[0].clientX - rect.left;
+        const y = touches[0].clientY - rect.top;
+
+        const dx = x - this.lastPanX;
+        const dy = y - this.lastPanY;
+
+        this.offsetX += dx / this.zoom;
+        this.offsetY += dy / this.zoom;
+
+        this.lastPanX = x;
+        this.lastPanY = y;
+
+        this.render();
+        return;
+    }
+
+    // Zwei Finger → Pinch-Zoom
+    if (touches.length === 2) {
+        const x1 = touches[0].clientX - rect.left;
+        const y1 = touches[0].clientY - rect.top;
+        const x2 = touches[1].clientX - rect.left;
+        const y2 = touches[1].clientY - rect.top;
+
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+
+        const newDist = Math.hypot(dx, dy);
+        const centerX = (x1 + x2) / 2;
+        const centerY = (y1 + y2) / 2;
+
+        const oldZoom = this.zoom;
+        this.zoom = this.touchState.startZoom * (newDist / this.touchState.startDistance);
+
+        // Limits
+        this.zoom = Math.max(0.2, Math.min(4.0, this.zoom));
+
+        // Zoom zur Mitte der Finger
+        this.offsetX = centerX / oldZoom - (centerX / this.zoom - this.offsetX);
+        this.offsetY = centerY / oldZoom - (centerY / this.zoom - this.offsetY);
+
+        this.render();
+    }
+},
+
+
+// --------------------------------------------------
+// TOUCH END
+// --------------------------------------------------
+onTouchEnd(e) {
+    if (e.touches.length === 0) {
+        this.isPanning = false;
+        this.touchState.active = false;
+    }
+},
+
+    
     // --------------------------------------------------
     // Hilfsfunktionen
     // --------------------------------------------------
@@ -847,61 +1084,65 @@ updateWalls() {
     applyTransform() {
         const ctx = this.ctx;
         if (!ctx) return;
-    
-        // Aktuell kein Zoom/Offset – später hier erweitern
-        // ctx.scale(this.zoom, this.zoom);
-        // ctx.translate(this.offsetX, this.offsetY);
+        ctx.scale(this.zoom, this.zoom);
+        ctx.translate(this.offsetX, this.offsetY);
     },
 
+   
+    
     // --------------------------------------------------
     // Rendering
     // --------------------------------------------------
-    render() {
-        const ctx = this.ctx;
-        if (!ctx || !this.canvas) return;
+render() {
+    const ctx = this.ctx;
+    if (!ctx || !this.canvas) return;
 
-        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        this.applyTransform();
+    ctx.save();
+    this.applyTransform();   // <--- Zoom + Pan aktiv
 
-        this.drawGrid();
-        this.drawFloor();
-        this.drawPolygon();
-        this.drawWalls();
-        this.drawWallLengths();
+    this.drawGrid();
+    this.drawFloor();
+    this.drawPolygon();
+    this.drawWalls();
+    this.drawWallLengths();
 
-        // Winkelanzeige beim Draggen eines Punktes
-        if (this.isDragging && this.selectedPoint) {
-            const idx = this.points.indexOf(this.selectedPoint);
-            const affected = new Set([idx]);
+    // Winkelanzeige beim Draggen eines Punktes
+    if (this.isDragging && this.selectedPoint) {
+        const idx = this.points.indexOf(this.selectedPoint);
+        const affected = new Set([idx]);
 
-            if (this.isClosed) {
-                affected.add((idx - 1 + this.points.length) % this.points.length);
-                affected.add((idx + 1) % this.points.length);
-            } else {
-                if (idx > 0) affected.add(idx - 1);
-                if (idx < this.points.length - 1) affected.add(idx + 1);
-            }
-
-            for (const i of affected) {
-                const prev = this.isClosed
-                    ? this.points[(i - 1 + this.points.length) % this.points.length]
-                    : this.points[i - 1];
-
-                const next = this.isClosed
-                    ? this.points[(i + 1) % this.points.length]
-                    : this.points[i + 1];
-
-                if (prev && next) {
-                    this.drawAngleAtPoint(this.points[i], prev, next);
-                }
-            }
+        if (this.isClosed) {
+            affected.add((idx - 1 + this.points.length) % this.points.length);
+            affected.add((idx + 1) % this.points.length);
+        } else {
+            if (idx > 0) affected.add(idx - 1);
+            if (idx < this.points.length - 1) affected.add(idx + 1);
         }
 
-        this.drawWindows();
-        this.drawDoors();
-        this.drawHoverCross();
-    },
+        for (const i of affected) {
+            const prev = this.isClosed
+                ? this.points[(i - 1 + this.points.length) % this.points.length]
+                : this.points[i - 1];
+
+            const next = this.isClosed
+                ? this.points[(i + 1) % this.points.length]
+                : this.points[i + 1];
+
+            if (prev && next) {
+                this.drawAngleAtPoint(this.points[i], prev, next);
+            }
+        }
+    }
+
+    this.drawWindows();
+    this.drawDoors();
+    this.drawHoverCross();
+
+    ctx.restore();  // <--- Transform endet hier
+},
+
 
 
     // --------------------------------------------------
