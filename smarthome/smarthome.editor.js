@@ -301,38 +301,45 @@ addContextButton(label, fn, closeMenu = false) {
     // --------------------------------------------------
 onMove(e) {
     const rect = this.canvas.getBoundingClientRect();
-    let hx = e.clientX - rect.left;
-    let hy = e.clientY - rect.top;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    // Weltkoordinaten korrekt berechnen
+    const worldX = (mouseX / this.zoom) - this.offsetX;
+    const worldY = (mouseY / this.zoom) - this.offsetY;
+
+    let hx = mouseX;
+    let hy = mouseY;
 
     // Snap auf ersten Punkt (nur wenn offen)
     if (!this.isClosed && this.points.length > 0) {
         const first = this.points[0];
-        if (Math.hypot(hx - first.x, hy - first.y) < 20) {
-            hx = first.x;
-            hy = first.y;
+        if (Math.hypot(worldX - first.x, worldY - first.y) < 20) {
+            hx = first.x * this.zoom + this.offsetX * this.zoom;
+            hy = first.y * this.zoom + this.offsetY * this.zoom;
         }
     }
 
+    // Hover im Screen-Space
     this.hover.x = hx;
     this.hover.y = hy;
-// --------------------------------------------------
-// PAN MOVE
-// --------------------------------------------------
-if (this.isPanning) {
-    const dx = hx - this.lastPanX;
-    const dy = hy - this.lastPanY;
 
-    this.offsetX += dx / this.zoom;
-    this.offsetY += dy / this.zoom;
+    // --------------------------------------------------
+    // PAN MOVE
+    // --------------------------------------------------
+    if (this.isPanning) {
+        const dx = mouseX - this.lastPanX;
+        const dy = mouseY - this.lastPanY;
 
-    this.lastPanX = hx;
-    this.lastPanY = hy;
+        this.offsetX += dx / this.zoom;
+        this.offsetY += dy / this.zoom;
 
-    this.render();
-    return;
-}
+        this.lastPanX = mouseX;
+        this.lastPanY = mouseY;
 
-    
+        this.render();
+        return;
+    }
 
     // --------------------------------------------------
     // DRAG: Tür
@@ -341,7 +348,7 @@ if (this.isPanning) {
         const d = this.doors[this.draggingDoorIndex];
         const w = this.walls[d.wallIndex];
         if (w) {
-            const proj = this.projectOnWall(hx, hy, w);
+            const proj = this.projectOnWall(worldX, worldY, w);
             d.t = proj.t;
             d.x = proj.x;
             d.y = proj.y;
@@ -358,7 +365,7 @@ if (this.isPanning) {
         const wObj = this.windows[this.draggingWindowIndex];
         const w = this.walls[wObj.wallIndex];
         if (w) {
-            const proj = this.projectOnWall(hx, hy, w);
+            const proj = this.projectOnWall(worldX, worldY, w);
             wObj.t = proj.t;
             wObj.x = proj.x;
             wObj.y = proj.y;
@@ -373,8 +380,8 @@ if (this.isPanning) {
     // --------------------------------------------------
     if (this.selectedPoint) {
 
-        const dx = hx - this.selectedPoint.x;
-        const dy = hy - this.selectedPoint.y;
+        const dx = worldX - this.selectedPoint.x;
+        const dy = worldY - this.selectedPoint.y;
 
         if (Math.hypot(dx, dy) > 2) {
 
@@ -382,7 +389,7 @@ if (this.isPanning) {
             if (!this.isClosed) {
                 const first = this.points[0];
                 if (this.selectedPoint !== first &&
-                    Math.hypot(hx - first.x, hy - first.y) < 20) {
+                    Math.hypot(worldX - first.x, worldY - first.y) < 20) {
 
                     this.points[this.points.length - 1] = first;
                     this.isClosed = true;
@@ -393,13 +400,13 @@ if (this.isPanning) {
                 }
             }
 
-if (this.snapEnabled) {
-    this.selectedPoint.x = this.snap(hx);
-    this.selectedPoint.y = this.snap(hy);
-} else {
-    this.selectedPoint.x = hx;
-    this.selectedPoint.y = hy;
-}
+            if (this.snapEnabled) {
+                this.selectedPoint.x = this.snap(worldX);
+                this.selectedPoint.y = this.snap(worldY);
+            } else {
+                this.selectedPoint.x = worldX;
+                this.selectedPoint.y = worldY;
+            }
 
             this.updateWalls();
             this.isDragging = true;
@@ -409,38 +416,38 @@ if (this.snapEnabled) {
         return;
     }
 
-// --------------------------------------------------
-// Prüfen, ob ein Klick-Kandidat zum Drag wird
-// --------------------------------------------------
-if (this._pendingContext) {
-    const dx = hx - this._pendingContext.x;
-    const dy = hy - this._pendingContext.y;
+    // --------------------------------------------------
+    // Prüfen, ob ein Klick-Kandidat zum Drag wird
+    // --------------------------------------------------
+    if (this._pendingContext) {
+        const dx = worldX - this._pendingContext.x;
+        const dy = worldY - this._pendingContext.y;
 
-    if (Math.hypot(dx, dy) > 2) {
+        if (Math.hypot(dx, dy) > 2) {
 
-        // Punkt wird zum Drag
-        if (this._pendingContext.type === "point") {
-            this.selectedPoint = this.points[this._pendingContext.index];
+            // Punkt wird zum Drag
+            if (this._pendingContext.type === "point") {
+                this.selectedPoint = this.points[this._pendingContext.index];
+            }
+
+            // Tür wird zum Drag
+            if (this._pendingContext.type === "door") {
+                this.draggingDoorIndex = this._pendingContext.index;
+            }
+
+            // Fenster wird zum Drag
+            if (this._pendingContext.type === "window") {
+                this.draggingWindowIndex = this._pendingContext.index;
+            }
+
+            this._pendingContext = null;
+            this.isDragging = true;
         }
-
-        // Tür wird zum Drag
-        if (this._pendingContext.type === "door") {
-            this.draggingDoorIndex = this._pendingContext.index;
-        }
-
-        // Fenster wird zum Drag
-        if (this._pendingContext.type === "window") {
-            this.draggingWindowIndex = this._pendingContext.index;
-        }
-
-        this._pendingContext = null;
-        this.isDragging = true;
     }
-}
-
 
     this.render();
 },
+
 
     // --------------------------------------------------
     // HIT-DETECTION REIHENFOLGE (wichtig!)
@@ -463,8 +470,12 @@ if (this._pendingContext) {
 
 onDown(e) {
     const rect = this.canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    // Weltkoordinaten korrekt berechnen
+    const worldX = (mouseX / this.zoom) - this.offsetX;
+    const worldY = (mouseY / this.zoom) - this.offsetY;
 
     // Rechtsklick → Menü schließen, Klick ignorieren
     if (e.button === 2) {
@@ -472,8 +483,8 @@ onDown(e) {
         return;
     }
 
-    // Prüfen, ob wir auf ein Objekt klicken
-    const hit = this.hitTest(x, y);
+    // Hit-Test im Weltkoordinatenraum
+    const hit = this.hitTest(mouseX, mouseY);
     const clickingObject =
         hit.type === "point" ||
         hit.type === "door" ||
@@ -496,7 +507,7 @@ onDown(e) {
     // Wenn Menü offen war und wir auf ein Objekt klicken → Klick NICHT ignorieren
     if (this._contextJustClosed && clickingObject) {
         this._contextJustClosed = false;
-        // WICHTIG: weiterlaufen lassen!
+        // weiterlaufen lassen
     }
 
     // --------------------------------------------------
@@ -504,7 +515,7 @@ onDown(e) {
     // --------------------------------------------------
     if (!this.isClosed && this.points.length >= 2) {
         const first = this.points[0];
-        if (Math.hypot(x - first.x, y - first.y) < 20) {
+        if (Math.hypot(worldX - first.x, worldY - first.y) < 20) {
 
             this.points.push(first);
 
@@ -515,15 +526,13 @@ onDown(e) {
         }
     }
 
-    // Hit-Test erneut verwenden
-    // (wir haben oben schon hit berechnet)
     // --------------------------------------------------
     // Fenster-Modus
     // --------------------------------------------------
     if (this.mode === "windows") {
 
         if (hit.type === "window") {
-            this._pendingContext = { x, y, type: "window", index: hit.index };
+            this._pendingContext = { x: worldX, y: worldY, type: "window", index: hit.index };
             return;
         }
 
@@ -570,7 +579,7 @@ onDown(e) {
         if (this._placingDoor) {
             const lastDoor = this.doors[this.doors.length - 1];
             const w = this.walls[lastDoor.wallIndex];
-            this.setDoorHingeFromTap(lastDoor, x, y, w);
+            this.setDoorHingeFromTap(lastDoor, worldX, worldY, w);
 
             this._placingDoor = false;
             this.mode = "points";
@@ -584,17 +593,17 @@ onDown(e) {
     // --------------------------------------------------
 
     if (hit.type === "door") {
-        this._pendingContext = { x, y, type: "door", index: hit.index };
+        this._pendingContext = { x: worldX, y: worldY, type: "door", index: hit.index };
         return;
     }
 
     if (hit.type === "window") {
-        this._pendingContext = { x, y, type: "window", index: hit.index };
+        this._pendingContext = { x: worldX, y: worldY, type: "window", index: hit.index };
         return;
     }
 
     if (hit.type === "point") {
-        this._pendingContext = { x, y, type: "point", index: hit.index };
+        this._pendingContext = { x: worldX, y: worldY, type: "point", index: hit.index };
         return;
     }
 
@@ -613,8 +622,8 @@ onDown(e) {
     // Neuen Punkt setzen
     if (!this.isClosed) {
     
-        let px = x;
-        let py = y;
+        let px = worldX;
+        let py = worldY;
     
         if (this.snapEnabled) {
             px = this.snap(px);
@@ -627,34 +636,34 @@ onDown(e) {
         return;
     }
 
-// Pan starten, wenn kein Drag-Kandidat aktiv ist
-if (
-    hit.type === "empty" ||
-    hit.type === "wall" ||
-    hit.type === "none"
-) {
-    this.isPanning = true;
-    this.lastPanX = x;
-    this.lastPanY = y;
-}
-
-
-    
+    // --------------------------------------------------
+    // PAN = STANDARD
+    // --------------------------------------------------
+    if (
+        hit.type === "empty" ||
+        hit.type === "wall" ||
+        hit.type === "none"
+    ) {
+        this.isPanning = true;
+        this.lastPanX = mouseX;
+        this.lastPanY = mouseY;
+    }
 },
+
 
 onUp() {
 
     // --------------------------------------------------
-// PAN END
-// --------------------------------------------------
-if (this.isPanning) {
-    this.isPanning = false;
-    return;
-}
+    // PAN END
+    // --------------------------------------------------
+    if (this.isPanning) {
+        this.isPanning = false;
+        return;
+    }
 
-
-    
-    // Wenn wir gerade etwas gezogen haben → Drag-Ende
+    // --------------------------------------------------
+    // DRAG END
+    // --------------------------------------------------
     if (this.isDragging) {
         this.isDragging = false;
         this.selectedPoint = null;
@@ -664,7 +673,9 @@ if (this.isPanning) {
         return;
     }
 
-    // Wenn ein Kontextkandidat existiert → Kontextmenü öffnen
+    // --------------------------------------------------
+    // KONTEXTMENÜ ÖFFNEN
+    // --------------------------------------------------
     if (this._pendingContext) {
         const c = this._pendingContext;
 
@@ -676,12 +687,15 @@ if (this.isPanning) {
         return;
     }
 
-    // Reset aller Drag-/Kontextvariablen
+    // --------------------------------------------------
+    // RESET aller Drag-/Kontextvariablen
+    // --------------------------------------------------
     this.selectedPoint = null;
     this.draggingDoorIndex = null;
     this.draggingWindowIndex = null;
     this._pendingContext = null;
 },
+
 
 // --------------------------------------------------
 // Zoom per Mausrad
