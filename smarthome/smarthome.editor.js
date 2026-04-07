@@ -504,15 +504,6 @@ getWindowIndexAt(x, y) {
 },
 
 onDown(e) {
-    // Doppelklick verhindern, bevor Punkt gesetzt wird
-const now = performance.now();
-if (now - this._lastClickTime < 250) {
-    // echter Doppelklick → Punkt NICHT setzen
-    this._lastClickTime = now;
-    return;
-}
-this._lastClickTime = now;
-
     const rect = this.canvas.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
