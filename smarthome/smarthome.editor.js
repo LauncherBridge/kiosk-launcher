@@ -656,7 +656,7 @@ if (hit.type === "empty" || hit.type === "wall") {
     this.panStartX = mouseX;
     this.panStartY = mouseY;
 }
-
+}
 
 
 onUp() {
