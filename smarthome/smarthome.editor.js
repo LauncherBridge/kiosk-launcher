@@ -663,7 +663,7 @@ if (hit.type === "empty" || hit.type === "wall") {
 },
 
 
-onUp() {
+onUp(e) {
 
     this.isPanCandidate = false;
 
@@ -696,6 +696,13 @@ onUp() {
         return;
     }
 
+    // ❗ FIX: Beim Doppelklick KEINEN Punkt setzen
+    // e.detail > 1 bedeutet: zweiter Klick eines Doppelklicks
+    if (e.detail > 1) {
+        this._pendingNewPoint = null;
+        return;
+    }
+
     // Wenn kein Pan, kein Drag und ein Punkt-Kandidat existiert → Punkt wirklich setzen
     if (!this.isClosed && !this.isPanning && !this.isDragging && this._pendingNewPoint) {
         this.points.push(this._pendingNewPoint);
@@ -707,12 +714,12 @@ onUp() {
 
     this._pendingNewPoint = null;
 
-    
     this.selectedPoint = null;
     this.draggingDoorIndex = null;
     this.draggingWindowIndex = null;
     this._pendingContext = null;
 },
+
 
 
 
