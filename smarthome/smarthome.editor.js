@@ -1097,7 +1097,7 @@ applyTransform() {
     // Offset in Weltkoordinaten → in Screen: offset * zoom
     ctx.translate(this.offsetX * this.zoom, this.offsetY * this.zoom);
     ctx.scale(this.zoom, this.zoom);
-}
+},
 
 
    
