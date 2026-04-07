@@ -1094,7 +1094,8 @@ applyTransform() {
     const ctx = this.ctx;
     if (!ctx) return;
 
-    // Offset in Weltkoordinaten → in Screen: offset * zoom
+    // Welt → Screen:
+    // screen = (world + offset) * zoom
     ctx.translate(this.offsetX * this.zoom, this.offsetY * this.zoom);
     ctx.scale(this.zoom, this.zoom);
 },
@@ -1111,17 +1112,18 @@ render() {
 
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    // Grid im Screen-Space, aber mit Zoom/Pan berücksichtigt
-    this.drawGrid();
-
     ctx.save();
-    this.applyTransform();   // Welt → Screen
+    this.applyTransform();   // Transform aktiv
 
+    this.drawGrid();         // Grid im Welt-Raum
     this.drawFloor();
     this.drawPolygon();
     this.drawWalls();
     this.drawWallLengths();
+    this.drawWindows();
+    this.drawDoors();
 
+    // Winkelanzeige beim Drag
     if (this.isDragging && this.selectedPoint) {
         const idx = this.points.indexOf(this.selectedPoint);
         const affected = new Set([idx]);
@@ -1149,11 +1151,9 @@ render() {
         }
     }
 
-    this.drawWindows();
-    this.drawDoors();
-
     ctx.restore();
 
+    // Hover-Kreuz im Screen-Space
     this.drawHoverCross();
 },
 
@@ -1166,8 +1166,7 @@ drawGrid() {
     const ctx = this.ctx;
     if (!ctx || !this.canvas) return;
 
-    const width = this.canvas.width;
-    const height = this.canvas.height;
+    const size = this.gridSize;
 
     ctx.save();
 
@@ -1175,31 +1174,34 @@ drawGrid() {
     ctx.globalAlpha = this.snapEnabled ? this.gridAlphaSnap : this.gridAlpha;
     ctx.lineWidth = 1;
 
-    const sizeWorld = this.gridSize;          // Raster im Welt-Raum
-    const sizeScreen = sizeWorld * this.zoom; // Raster im Screen
+    // Sichtbarer Bereich im Welt-Raum
+    const widthWorld = this.canvas.width / this.zoom;
+    const heightWorld = this.canvas.height / this.zoom;
 
-    if (sizeScreen < 4) {
-        ctx.restore();
-        return;
-    }
+    const left = -this.offsetX;
+    const top = -this.offsetY;
+    const right = left + widthWorld;
+    const bottom = top + heightWorld;
 
-    const offXScreen = this.offsetX * this.zoom;
-    const offYScreen = this.offsetY * this.zoom;
+    const startX = Math.floor(left / size) * size;
+    const endX = Math.ceil(right / size) * size;
 
-    const startX = -((offXScreen % sizeScreen + sizeScreen) % sizeScreen);
-    const startY = -((offYScreen % sizeScreen + sizeScreen) % sizeScreen);
+    const startY = Math.floor(top / size) * size;
+    const endY = Math.ceil(bottom / size) * size;
 
-    for (let x = startX; x < width; x += sizeScreen) {
+    // Vertikale Linien
+    for (let x = startX; x <= endX; x += size) {
         ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, height);
+        ctx.moveTo(x, top);
+        ctx.lineTo(x, bottom);
         ctx.stroke();
     }
 
-    for (let y = startY; y < height; y += sizeScreen) {
+    // Horizontale Linien
+    for (let y = startY; y <= endY; y += size) {
         ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(width, y);
+        ctx.moveTo(left, y);
+        ctx.lineTo(right, y);
         ctx.stroke();
     }
 
