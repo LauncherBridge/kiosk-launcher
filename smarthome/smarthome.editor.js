@@ -627,14 +627,17 @@ onDown(e) {
         return;
     }
 
-    // --------------------------------------------------
-    // PAN START (nur wenn nichts getroffen wurde)
-    // --------------------------------------------------
-    if (hit.type === "empty") {
-        this.isPanning = true;
-        this.lastPanX = x;
-        this.lastPanY = y;
-    }
+// Pan starten, wenn kein Drag-Kandidat aktiv ist
+if (
+    hit.type === "empty" ||
+    hit.type === "wall" ||
+    hit.type === "none"
+) {
+    this.isPanning = true;
+    this.lastPanX = x;
+    this.lastPanY = y;
+}
+
 
     
 },
@@ -686,30 +689,34 @@ if (this.isPanning) {
 onWheelZoom(e) {
     e.preventDefault();
 
-    const zoomFactor = 1.1;
-    const mouseX = e.offsetX;
-    const mouseY = e.offsetY;
+    const rect = this.canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
 
+    // Weltkoordinaten vor dem Zoom
+    const worldX = (mouseX / this.zoom) - this.offsetX;
+    const worldY = (mouseY / this.zoom) - this.offsetY;
+
+    // Zoomfaktor
+    const zoomFactor = 1.1;
     const oldZoom = this.zoom;
 
-    // Zoom In / Out
     if (e.deltaY < 0) {
         this.zoom *= zoomFactor;
     } else {
         this.zoom /= zoomFactor;
     }
 
-    // Zoom-Limits
+    // Limits
     this.zoom = Math.max(0.2, Math.min(4.0, this.zoom));
 
-    // Zoom zur Mausposition
-    const scale = this.zoom / oldZoom;
-
-    this.offsetX = mouseX / oldZoom - (mouseX / this.zoom - this.offsetX);
-    this.offsetY = mouseY / oldZoom - (mouseY / this.zoom - this.offsetY);
+    // Weltpunkt unter der Maus stabil halten
+    this.offsetX = (mouseX / this.zoom) - worldX;
+    this.offsetY = (mouseY / this.zoom) - worldY;
 
     this.render();
 },
+
 
 // --------------------------------------------------
 // Doppelklick-Zoom (Toggle)
