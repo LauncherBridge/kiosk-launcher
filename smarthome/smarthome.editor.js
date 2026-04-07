@@ -452,21 +452,48 @@ onMove(e) {
     // --------------------------------------------------
     // HIT-DETECTION REIHENFOLGE (wichtig!)
     // --------------------------------------------------
-    hitTest(x, y) {
-        const doorIndex = this.getDoorIndexAt(x, y);
-        if (doorIndex !== null) return { type: "door", index: doorIndex };
+hitTest(x, y) {
+    // x, y kommen im Moment als Screen-Koordinaten rein
+    const worldX = (x / this.zoom) - this.offsetX;
+    const worldY = (y / this.zoom) - this.offsetY;
 
-        const windowIndex = this.getWindowIndexAt(x, y);
-        if (windowIndex !== null) return { type: "window", index: windowIndex };
+    const doorIndex = this.getDoorIndexAt(worldX, worldY);
+    if (doorIndex !== null) return { type: "door", index: doorIndex };
 
-        const point = this.getPointAt(x, y);
-        if (point) return { type: "point", index: this.points.indexOf(point) };
+    const windowIndex = this.getWindowIndexAt(worldX, worldY);
+    if (windowIndex !== null) return { type: "window", index: windowIndex };
 
-        const wall = this.getWallAt(x, y);
-        if (wall) return { type: "wall", data: wall };
+    const point = this.getPointAt(worldX, worldY);
+    if (point) return { type: "point", index: this.points.indexOf(point) };
 
-        return { type: "empty" };
-    },
+    const wall = this.getWallAt(worldX, worldY);
+    if (wall) return { type: "wall", data: wall };
+
+    return { type: "empty" };
+},
+
+getPointAt(x, y) {
+    // x, y im Welt-Raum
+    return this.points.find(p => Math.hypot(p.x - x, p.y - y) < 10);
+},
+
+getDoorIndexAt(x, y) {
+    // x, y im Welt-Raum
+    for (let i = 0; i < this.doors.length; i++) {
+        const d = this.doors[i];
+        if (Math.hypot(d.x - x, d.y - y) < 15) return i;
+    }
+    return null;
+},
+
+getWindowIndexAt(x, y) {
+    // x, y im Welt-Raum
+    for (let i = 0; i < this.windows.length; i++) {
+        const w = this.windows[i];
+        if (Math.hypot(w.x - x, w.y - y) < 15) return i;
+    }
+    return null;
+},
 
 onDown(e) {
     const rect = this.canvas.getBoundingClientRect();
@@ -1102,12 +1129,14 @@ updateWalls() {
     // --------------------------------------------------
     // Canvas-Transform (für zukünftigen Zoom/Pan vorbereitet)
     // --------------------------------------------------
-    applyTransform() {
-        const ctx = this.ctx;
-        if (!ctx) return;
-        ctx.scale(this.zoom, this.zoom);
-        ctx.translate(this.offsetX, this.offsetY);
-    },
+applyTransform() {
+    const ctx = this.ctx;
+    if (!ctx) return;
+
+    // Offset in Weltkoordinaten, Zoom danach
+    ctx.translate(this.offsetX, this.offsetY);
+    ctx.scale(this.zoom, this.zoom);
+},
 
    
     
@@ -1121,7 +1150,7 @@ render() {
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     ctx.save();
-    this.applyTransform();   // <--- Zoom + Pan aktiv
+    this.applyTransform();   // Welt → Screen
 
     this.drawGrid();
     this.drawFloor();
@@ -1159,10 +1188,11 @@ render() {
 
     this.drawWindows();
     this.drawDoors();
-    ctx.restore();  // <--- Transform endet hier
-    this.drawHoverCross();
 
-   
+    ctx.restore();  // Transform endet hier
+
+    // Fadenkreuz im Screen-Space
+    this.drawHoverCross();
 },
 
 
@@ -1170,52 +1200,51 @@ render() {
     // --------------------------------------------------
     // Grid (zoomfähig, konfigurierbar, snap-aware)
     // --------------------------------------------------
-    drawGrid() {
-        const ctx = this.ctx;
-        if (!ctx || !this.canvas) return;
-    
-        const size = this.gridSize;
-    
-        ctx.save();
-    
-        // Grid-Farbe abhängig von Snap
-        ctx.strokeStyle = this.gridColor;
-        ctx.globalAlpha = this.snapEnabled ? this.gridAlphaSnap : this.gridAlpha;
-        ctx.lineWidth = 1;
-    
-        // Sichtbare Fläche im transformierten Raum
-        const width = this.canvas.width;
-        const height = this.canvas.height;
-    
-        // Startpunkte am Raster ausrichten
-        // Offset + Zoom berücksichtigen
-        const zoom = this.zoom || 1;
-        const offX = this.offsetX || 0;
-        const offY = this.offsetY || 0;
-        
-        // Startpunkte am Raster ausrichten
-        const startX = -((offX / zoom) % size);
-        const startY = -((offY / zoom) % size);
+drawGrid() {
+    const ctx = this.ctx;
+    if (!ctx || !this.canvas) return;
 
-    
-        // Vertikale Linien
-        for (let x = startX; x < width; x += size) {
-            ctx.beginPath();
-            ctx.moveTo(x, 0);
-            ctx.lineTo(x, height);
-            ctx.stroke();
-        }
-    
-        // Horizontale Linien
-        for (let y = startY; y < height; y += size) {
-            ctx.beginPath();
-            ctx.moveTo(0, y);
-            ctx.lineTo(width, y);
-            ctx.stroke();
-        }
-    
-        ctx.restore();
-    },
+    const size = this.gridSize;
+
+    ctx.save();
+
+    ctx.strokeStyle = this.gridColor;
+    ctx.globalAlpha = this.snapEnabled ? this.gridAlphaSnap : this.gridAlpha;
+    ctx.lineWidth = 1;
+
+    // Sichtbarer Bereich im Welt-Raum
+    const widthWorld = this.canvas.width / this.zoom;
+    const heightWorld = this.canvas.height / this.zoom;
+
+    const left = -this.offsetX;
+    const top = -this.offsetY;
+    const right = left + widthWorld;
+    const bottom = top + heightWorld;
+
+    const startX = Math.floor(left / size) * size;
+    const endX = Math.ceil(right / size) * size;
+
+    const startY = Math.floor(top / size) * size;
+    const endY = Math.ceil(bottom / size) * size;
+
+    // Vertikale Linien
+    for (let x = startX; x <= endX; x += size) {
+        ctx.beginPath();
+        ctx.moveTo(x, top);
+        ctx.lineTo(x, bottom);
+        ctx.stroke();
+    }
+
+    // Horizontale Linien
+    for (let y = startY; y <= endY; y += size) {
+        ctx.beginPath();
+        ctx.moveTo(left, y);
+        ctx.lineTo(right, y);
+        ctx.stroke();
+    }
+
+    ctx.restore();
+},
     
     
         
