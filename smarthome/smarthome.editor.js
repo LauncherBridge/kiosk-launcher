@@ -1146,9 +1146,10 @@ render() {
 
     this.drawWindows();
     this.drawDoors();
+    ctx.restore();  // <--- Transform endet hier
     this.drawHoverCross();
 
-    ctx.restore();  // <--- Transform endet hier
+   
 },
 
 
