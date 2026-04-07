@@ -639,8 +639,8 @@ onDown(e) {
         return;
     }
 
-    // Neuen Punkt-Kandidaten merken (wird in onUp gesetzt, falls kein Pan/Drag)
-    if (!this.isClosed && hit.type === "empty") {
+    // Punkt nur setzen, wenn es KEIN Doppelklick ist
+    if (!this.isClosed && hit.type === "empty" && e.detail < 2) {
         let px = worldX;
         let py = worldY;
 
