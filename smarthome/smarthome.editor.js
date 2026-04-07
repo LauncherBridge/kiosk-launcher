@@ -524,7 +524,6 @@ onDown(e) {
         hit.type === "door" ||
         hit.type === "window";
 
-
     const menuWasOpen =
         this.contextMenuEl &&
         this.contextMenuEl.style.display === "flex";
@@ -639,8 +638,10 @@ onDown(e) {
         return;
     }
 
-    // Punkt nur setzen, wenn es KEIN Doppelklick ist
-    if (!this.isClosed && hit.type === "empty" && e.detail < 2) {
+    // ❗ FIX: Punkt nur setzen, wenn es KEIN Doppelklick ist
+    // e.detail === 1 → normaler Klick
+    // e.detail === 2 → zweiter Klick eines Doppelklicks → NICHT setzen
+    if (!this.isClosed && hit.type === "empty" && e.detail === 1) {
         let px = worldX;
         let py = worldY;
 
@@ -653,9 +654,8 @@ onDown(e) {
         // kein return → Pan-Kandidat wird unten trotzdem gesetzt
     }
 
-
     // PAN-Kandidat merken (aber noch NICHT starten)
-if (hit.type === "empty" || hit.type === "wall") {
+    if (hit.type === "empty" || hit.type === "wall") {
         this.isPanCandidate = true;
         this.panStartX = mouseX;
         this.panStartY = mouseY;
