@@ -43,6 +43,9 @@ const RoomDesigner = {
     isPanCandidate: false,
     panStartX: 0,
     panStartY: 0,
+
+    _lastClickTime: 0,
+
     
     // Touch-Zustand für Pinch-Zoom
     touchState: {
@@ -499,6 +502,15 @@ getWindowIndexAt(x, y) {
 },
 
 onDown(e) {
+    // Doppelklick verhindern, bevor Punkt gesetzt wird
+const now = performance.now();
+if (now - this._lastClickTime < 250) {
+    // echter Doppelklick → Punkt NICHT setzen
+    this._lastClickTime = now;
+    return;
+}
+this._lastClickTime = now;
+
     const rect = this.canvas.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
@@ -635,7 +647,7 @@ onDown(e) {
     }
 
     // Neuen Punkt setzen
-    if (!this.isClosed) {
+if (!this.isClosed && hit.type === "empty") {
         let px = worldX;
         let py = worldY;
 
