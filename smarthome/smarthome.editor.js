@@ -655,7 +655,7 @@ onDown(e) {
 
 
     // PAN-Kandidat merken (aber noch NICHT starten)
-    if (this.isClosed && (hit.type === "empty" || hit.type === "wall")) {
+if (hit.type === "empty" || hit.type === "wall") {
         this.isPanCandidate = true;
         this.panStartX = mouseX;
         this.panStartY = mouseY;
