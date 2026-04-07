@@ -95,6 +95,7 @@ const RoomDesigner = {
         this.createContextMenu();
         this.setupSnapButton();
         this.setupGridSlider();
+        this.setupResetButton();
 
 
 
@@ -1546,6 +1547,17 @@ render() {
         });
     },
 
+
+setupResetButton() {
+    const btn = document.getElementById("btnResetView");
+    if (!btn) return;
+
+    btn.addEventListener("click", () => {
+        this.resetView();
+    });
+},
+
+    
     // --------------------------------------------------
     // Delete-Toast
     // --------------------------------------------------
@@ -1613,6 +1625,14 @@ render() {
         this._toastEl.style.display = "flex";
     },
 
+resetView() {
+    this.zoom = 1;
+    this.offsetX = 0;
+    this.offsetY = 0;
+    this.render();
+},
+
+    
     hideToast() {
         if (this._toastEl) {
             this._toastEl.style.display = "none";
