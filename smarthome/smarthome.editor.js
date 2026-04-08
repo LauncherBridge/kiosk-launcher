@@ -367,63 +367,62 @@ onMove(e) {
 
     // Drag bewegen
     if (this.isDragging) {
-if (this.selectedPoint) {
 
-    let px = worldX;
-    let py = worldY;
+        // ------------------------------------------------------
+        // MOVE-SNAP WIE SETZEN (NEUER PUNKT, KEIN GEISTERPUNKT)
+        // ------------------------------------------------------
+        if (this.selectedPoint) {
 
-    // 1) Grid-Snap
-    if (this.snapEnabled) {
-        px = this.snap(px);
-        py = this.snap(py);
-    }
+            let px = worldX;
+            let py = worldY;
 
-// 2) Snap auf ersten Punkt → ECHTES Verschmelzen + DRAG BEENDEN
-if (!this.isClosed && this.points.length > 1) {
-    const first = this.points[0];
+            // Grid-Snap
+            if (this.snapEnabled) {
+                px = this.snap(px);
+                py = this.snap(py);
+            }
 
-    if (this.selectedPoint !== first) {
-        if (Math.hypot(px - first.x, py - first.y) < 20) {
+            // Snap auf ersten Punkt → wie Setzen: neuer Punkt
+            if (!this.isClosed && this.points.length > 1) {
+                const first = this.points[0];
 
-            const idx = this.points.indexOf(this.selectedPoint);
+                if (this.selectedPoint !== first) {
+                    if (Math.hypot(px - first.x, py - first.y) < 20) {
 
-            // 🔥 ALTEN PUNKT WIRKLICH ENTFERNEN
-            this.points.splice(idx, 1);
+                        const idx = this.points.indexOf(this.selectedPoint);
 
-            // 🔥 NEUEN PUNKT ERZEUGEN (wie beim Setzen)
-            const newPoint = { x: first.x, y: first.y };
+                        // 1) alten Punkt komplett entfernen
+                        this.points.splice(idx, 1);
 
-            // 🔥 AN DIESELBE POSITION EINFÜGEN
-            this.points.splice(idx, 0, newPoint);
+                        // 2) neuen Punkt erzeugen (wie beim Setzen)
+                        const newPoint = { x: first.x, y: first.y };
 
-            // 🔥 DIESER PUNKT IST JETZT DER AKTIVE
-            this.selectedPoint = newPoint;
+                        // 3) an derselben Stelle einfügen
+                        this.points.splice(idx, 0, newPoint);
 
-            // 🔥 DRAG BEENDEN
-            this.isDragging = false;
-            this._pendingContext = null;
+                        // 4) alle Referenzen auf alten Punkt löschen
+                        this.selectedPoint = newPoint;
+                        this._pendingContext = null;
+                        this._pendingNewPoint = null;
+
+                        // 5) Drag beenden
+                        this.isDragging = false;
+
+                        this.updateWalls();
+                        this.render();
+                        return;
+                    }
+                }
+            }
+
+            // Normales Draggen
+            this.selectedPoint.x = px;
+            this.selectedPoint.y = py;
 
             this.updateWalls();
-            this.render();
-            return;
         }
-    }
-}
 
-
-
-
-
-    // Normales Draggen
-    this.selectedPoint.x = px;
-    this.selectedPoint.y = py;
-
-    this.updateWalls();
-}
-
-
-
-
+        // Türen bewegen
         if (this.draggingDoorIndex !== null) {
             const d = this.doors[this.draggingDoorIndex];
             const w = this.walls[d.wallIndex];
@@ -433,6 +432,7 @@ if (!this.isClosed && this.points.length > 1) {
             d.y = proj.y;
         }
 
+        // Fenster bewegen
         if (this.draggingWindowIndex !== null) {
             const wObj = this.windows[this.draggingWindowIndex];
             const w = this.walls[wObj.wallIndex];
