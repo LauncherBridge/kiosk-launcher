@@ -384,9 +384,11 @@ onMove(e) {
             }
 
 // MOVE-SNAP wie SETZEN: Raum schließen, wenn letzter Punkt auf ersten gezogen wird
+// MOVE-SNAP wie SETZEN: alten letzten Punkt ersetzen, Raum schließen
 if (!this.isClosed && this.points.length > 2) {
     const first = this.points[0];
-    const last = this.points[this.points.length - 1];
+    const lastIndex = this.points.length - 1;
+    const last = this.points[lastIndex];
 
     // Nur wenn der bewegte Punkt der letzte Punkt ist
     if (this.selectedPoint === last) {
@@ -394,13 +396,19 @@ if (!this.isClosed && this.points.length > 2) {
         // Snap-Bereich
         if (Math.hypot(px - first.x, py - first.y) < 20) {
 
-            // Letzten Punkt exakt auf den ersten setzen
-            last.x = first.x;
-            last.y = first.y;
+            // Alten letzten Punkt entfernen
+            this.points.splice(lastIndex, 1);
+
+            // Neuen Punkt erzeugen (wie SETZEN)
+            const newPoint = { x: first.x, y: first.y };
+            this.points.push(newPoint);
 
             // Raum schließen (wie SETZEN)
-            this.points.push(first);     // Schließkante
+            this.points.push(first);
             this.isClosed = true;
+
+            // Neuer Punkt ist jetzt ausgewählt
+            this.selectedPoint = newPoint;
 
             // Drag beenden
             this.isDragging = false;
@@ -411,6 +419,7 @@ if (!this.isClosed && this.points.length > 2) {
         }
     }
 }
+
 
 
 
