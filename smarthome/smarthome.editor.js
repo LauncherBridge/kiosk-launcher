@@ -1,5 +1,5 @@
 // ======================================================
-// Raumdesigner – vollständige, fehlerfreie Version
+// Raumdesigner – vollständige, fehlerfreie Version - Pan und Zoom funktionieren - Snap funktioniert ebenfalls
 // ======================================================
 
 const RoomDesigner = {
