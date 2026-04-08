@@ -380,7 +380,7 @@ onMove(e) {
                 py = this.snap(py);
             }
 
-// MOVE-SNAP nur erkennen, aber NICHT verschmelzen
+// MOVE-SNAP nur optisch, nicht verschmelzen
 this._snapCandidate = false;
 
 if (!this.isClosed && this.points.length > 2) {
@@ -389,12 +389,19 @@ if (!this.isClosed && this.points.length > 2) {
     const last = this.points[lastIndex];
 
     if (this.selectedPoint === last) {
-        if (Math.hypot(px - first.x, py - first.y) < 20) {
-            // Nur markieren, NICHT verschmelzen
+        const dist = Math.hypot(px - first.x, py - first.y);
+
+        if (dist < 20) {
+            // Optischer Snap
+            px = first.x;
+            py = first.y;
+
+            // Merken für onUp
             this._snapCandidate = true;
         }
     }
 }
+
 
             // Normales Draggen
             this.selectedPoint.x = px;
