@@ -378,30 +378,29 @@ if (this.selectedPoint) {
         py = this.snap(py);
     }
 
-    // 2) Snap auf ersten Punkt → ECHTES Verschmelzen
-    if (!this.isClosed && this.points.length > 1) {
-        const first = this.points[0];
+// 2) Snap auf ersten Punkt → ECHTES Verschmelzen + DRAG BEENDEN
+if (!this.isClosed && this.points.length > 1) {
+    const first = this.points[0];
 
-        // Nur wenn wir NICHT den ersten Punkt selbst ziehen
-        if (this.selectedPoint !== first) {
+    if (this.selectedPoint !== first) {
+        if (Math.hypot(px - first.x, py - first.y) < 20) {
 
-            if (Math.hypot(px - first.x, py - first.y) < 20) {
+            // Punkt wirklich verschmelzen
+            const idx = this.points.indexOf(this.selectedPoint);
+            this.points[idx] = first;
+            this.selectedPoint = first;
 
-                // ECHTES Verschmelzen:
-                const idx = this.points.indexOf(this.selectedPoint);
+            this.updateWalls();
+            this.render();
 
-                // Punkt wirklich ersetzen
-                this.points[idx] = first;
+            // WICHTIG: Drag sofort beenden
+            this.isDragging = false;
 
-                // selectedPoint auf den echten Punkt setzen
-                this.selectedPoint = first;
-
-                this.updateWalls();
-                this.render();
-                return;
-            }
+            return;
         }
     }
+}
+
 
     // Normales Draggen
     this.selectedPoint.x = px;
