@@ -29,6 +29,27 @@ const RoomDesigner = {
     gridAlphaSnap: 0.45,   // deutlicher bei aktivem Snap
     snapEnabled: false,    // Snap zunächst aus
 
+    // --------------------------------------------------
+    // Zoom & Pan
+    // --------------------------------------------------
+    zoom: 1,
+    offsetX: 0,
+    offsetY: 0,
+    
+    isPanning: false,
+    lastPanX: 0,
+    lastPanY: 0,
+    
+    // Touch-Zustand für Pinch-Zoom
+    touchState: {
+        active: false,
+        startDistance: 0,
+        startZoom: 1,
+        lastCenterX: 0,
+        lastCenterY: 0
+    },
+
+
 
     _closingByButton: false,
     _contextJustClosed: false,
@@ -64,12 +85,17 @@ const RoomDesigner = {
         this.canvas.addEventListener("mousedown", (e) => this.onDown(e));
         this.canvas.addEventListener("mouseup", () => this.onUp());
         this.canvas.addEventListener("contextmenu", (e) => this.onRightClick(e));
-
+        this.canvas.addEventListener("wheel", (e) => this.onWheelZoom(e), { passive: false });
+        this.canvas.addEventListener("dblclick", (e) => this.onDoubleClickZoom(e));
+        this.canvas.addEventListener("touchstart", (e) => this.onTouchStart(e), { passive: false });
+        this.canvas.addEventListener("touchmove", (e) => this.onTouchMove(e), { passive: false });
+        this.canvas.addEventListener("touchend", (e) => this.onTouchEnd(e));
         this.setupDoorButton();
         this.setupWindowButton();
         this.createContextMenu();
         this.setupSnapButton();
         this.setupGridSlider();
+        this.setupResetButton();
 
 
 
@@ -275,29 +301,48 @@ addContextButton(label, fn, closeMenu = false) {
     // --------------------------------------------------
 onMove(e) {
     const rect = this.canvas.getBoundingClientRect();
-    let hx = e.clientX - rect.left;
-    let hy = e.clientY - rect.top;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    const worldX = (mouseX / this.zoom) - this.offsetX;
+    const worldY = (mouseY / this.zoom) - this.offsetY;
+
+    let hx = mouseX;
+    let hy = mouseY;
 
     // Snap auf ersten Punkt (nur wenn offen)
     if (!this.isClosed && this.points.length > 0) {
         const first = this.points[0];
-        if (Math.hypot(hx - first.x, hy - first.y) < 20) {
-            hx = first.x;
-            hy = first.y;
+        if (Math.hypot(worldX - first.x, worldY - first.y) < 20) {
+            hx = (first.x + this.offsetX) * this.zoom;
+            hy = (first.y + this.offsetY) * this.zoom;
         }
     }
 
     this.hover.x = hx;
     this.hover.y = hy;
 
-    // --------------------------------------------------
+    // PAN MOVE
+    if (this.isPanning) {
+        const dx = mouseX - this.lastPanX;
+        const dy = mouseY - this.lastPanY;
+
+        this.offsetX += dx / this.zoom;
+        this.offsetY += dy / this.zoom;
+
+        this.lastPanX = mouseX;
+        this.lastPanY = mouseY;
+
+        this.render();
+        return;
+    }
+
     // DRAG: Tür
-    // --------------------------------------------------
     if (this.draggingDoorIndex !== null) {
         const d = this.doors[this.draggingDoorIndex];
         const w = this.walls[d.wallIndex];
         if (w) {
-            const proj = this.projectOnWall(hx, hy, w);
+            const proj = this.projectOnWall(worldX, worldY, w);
             d.t = proj.t;
             d.x = proj.x;
             d.y = proj.y;
@@ -307,14 +352,12 @@ onMove(e) {
         return;
     }
 
-    // --------------------------------------------------
     // DRAG: Fenster
-    // --------------------------------------------------
     if (this.draggingWindowIndex !== null) {
         const wObj = this.windows[this.draggingWindowIndex];
         const w = this.walls[wObj.wallIndex];
         if (w) {
-            const proj = this.projectOnWall(hx, hy, w);
+            const proj = this.projectOnWall(worldX, worldY, w);
             wObj.t = proj.t;
             wObj.x = proj.x;
             wObj.y = proj.y;
@@ -324,21 +367,18 @@ onMove(e) {
         return;
     }
 
-    // --------------------------------------------------
     // DRAG: Punkt
-    // --------------------------------------------------
     if (this.selectedPoint) {
 
-        const dx = hx - this.selectedPoint.x;
-        const dy = hy - this.selectedPoint.y;
+        const dx = worldX - this.selectedPoint.x;
+        const dy = worldY - this.selectedPoint.y;
 
         if (Math.hypot(dx, dy) > 2) {
 
-            // Verschmelzen durch Drag
             if (!this.isClosed) {
                 const first = this.points[0];
                 if (this.selectedPoint !== first &&
-                    Math.hypot(hx - first.x, hy - first.y) < 20) {
+                    Math.hypot(worldX - first.x, worldY - first.y) < 20) {
 
                     this.points[this.points.length - 1] = first;
                     this.isClosed = true;
@@ -349,13 +389,13 @@ onMove(e) {
                 }
             }
 
-if (this.snapEnabled) {
-    this.selectedPoint.x = this.snap(hx);
-    this.selectedPoint.y = this.snap(hy);
-} else {
-    this.selectedPoint.x = hx;
-    this.selectedPoint.y = hy;
-}
+            if (this.snapEnabled) {
+                this.selectedPoint.x = this.snap(worldX);
+                this.selectedPoint.y = this.snap(worldY);
+            } else {
+                this.selectedPoint.x = worldX;
+                this.selectedPoint.y = worldY;
+            }
 
             this.updateWalls();
             this.isDragging = true;
@@ -365,62 +405,88 @@ if (this.snapEnabled) {
         return;
     }
 
-// --------------------------------------------------
-// Prüfen, ob ein Klick-Kandidat zum Drag wird
-// --------------------------------------------------
-if (this._pendingContext) {
-    const dx = hx - this._pendingContext.x;
-    const dy = hy - this._pendingContext.y;
+    // Klick-Kandidat → Drag?
+    if (this._pendingContext) {
+        const dx = worldX - this._pendingContext.x;
+        const dy = worldY - this._pendingContext.y;
 
-    if (Math.hypot(dx, dy) > 2) {
+        if (Math.hypot(dx, dy) > 2) {
 
-        // Punkt wird zum Drag
-        if (this._pendingContext.type === "point") {
-            this.selectedPoint = this.points[this._pendingContext.index];
+            if (this._pendingContext.type === "point") {
+                this.selectedPoint = this.points[this._pendingContext.index];
+            }
+
+            if (this._pendingContext.type === "door") {
+                this.draggingDoorIndex = this._pendingContext.index;
+            }
+
+            if (this._pendingContext.type === "window") {
+                this.draggingWindowIndex = this._pendingContext.index;
+            }
+
+            this._pendingContext = null;
+            this.isDragging = true;
         }
-
-        // Tür wird zum Drag
-        if (this._pendingContext.type === "door") {
-            this.draggingDoorIndex = this._pendingContext.index;
-        }
-
-        // Fenster wird zum Drag
-        if (this._pendingContext.type === "window") {
-            this.draggingWindowIndex = this._pendingContext.index;
-        }
-
-        this._pendingContext = null;
-        this.isDragging = true;
     }
-}
-
 
     this.render();
 },
 
+
+
     // --------------------------------------------------
     // HIT-DETECTION REIHENFOLGE (wichtig!)
     // --------------------------------------------------
-    hitTest(x, y) {
-        const doorIndex = this.getDoorIndexAt(x, y);
-        if (doorIndex !== null) return { type: "door", index: doorIndex };
+hitTest(x, y) {
+    // x, y kommen im Moment als Screen-Koordinaten rein
+    const worldX = (x / this.zoom) - this.offsetX;
+    const worldY = (y / this.zoom) - this.offsetY;
 
-        const windowIndex = this.getWindowIndexAt(x, y);
-        if (windowIndex !== null) return { type: "window", index: windowIndex };
+    const doorIndex = this.getDoorIndexAt(worldX, worldY);
+    if (doorIndex !== null) return { type: "door", index: doorIndex };
 
-        const point = this.getPointAt(x, y);
-        if (point) return { type: "point", index: this.points.indexOf(point) };
+    const windowIndex = this.getWindowIndexAt(worldX, worldY);
+    if (windowIndex !== null) return { type: "window", index: windowIndex };
 
-        const wall = this.getWallAt(x, y);
-        if (wall) return { type: "wall", data: wall };
+    const point = this.getPointAt(worldX, worldY);
+    if (point) return { type: "point", index: this.points.indexOf(point) };
 
-        return { type: "empty" };
-    },
+    const wall = this.getWallAt(worldX, worldY);
+    if (wall) return { type: "wall", data: wall };
+
+    return { type: "empty" };
+},
+
+getPointAt(x, y) {
+    // x, y im Welt-Raum
+    return this.points.find(p => Math.hypot(p.x - x, p.y - y) < 10);
+},
+
+getDoorIndexAt(x, y) {
+    // x, y im Welt-Raum
+    for (let i = 0; i < this.doors.length; i++) {
+        const d = this.doors[i];
+        if (Math.hypot(d.x - x, d.y - y) < 15) return i;
+    }
+    return null;
+},
+
+getWindowIndexAt(x, y) {
+    // x, y im Welt-Raum
+    for (let i = 0; i < this.windows.length; i++) {
+        const w = this.windows[i];
+        if (Math.hypot(w.x - x, w.y - y) < 15) return i;
+    }
+    return null;
+},
 
 onDown(e) {
     const rect = this.canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    const worldX = (mouseX / this.zoom) - this.offsetX;
+    const worldY = (mouseY / this.zoom) - this.offsetY;
 
     // Rechtsklick → Menü schließen, Klick ignorieren
     if (e.button === 2) {
@@ -428,8 +494,8 @@ onDown(e) {
         return;
     }
 
-    // Prüfen, ob wir auf ein Objekt klicken
-    const hit = this.hitTest(x, y);
+    // Hit-Test mit Screen-Koordinaten (hitTest rechnet selbst in Welt um)
+    const hit = this.hitTest(mouseX, mouseY);
     const clickingObject =
         hit.type === "point" ||
         hit.type === "door" ||
@@ -440,30 +506,22 @@ onDown(e) {
         this.contextMenuEl &&
         this.contextMenuEl.style.display === "flex";
 
-    // Menü schließen
     this.hideContextMenu();
 
-    // Wenn Menü offen war und wir NICHT auf ein Objekt klicken → Klick ignorieren
     if (this._contextJustClosed && !clickingObject) {
         this._contextJustClosed = false;
         return;
     }
 
-    // Wenn Menü offen war und wir auf ein Objekt klicken → Klick NICHT ignorieren
     if (this._contextJustClosed && clickingObject) {
         this._contextJustClosed = false;
-        // WICHTIG: weiterlaufen lassen!
     }
 
-    // --------------------------------------------------
     // Raum schließen durch Klick auf ersten Punkt
-    // --------------------------------------------------
     if (!this.isClosed && this.points.length >= 2) {
         const first = this.points[0];
-        if (Math.hypot(x - first.x, y - first.y) < 20) {
-
+        if (Math.hypot(worldX - first.x, worldY - first.y) < 20) {
             this.points.push(first);
-
             this.isClosed = true;
             this.updateWalls();
             this.render();
@@ -471,15 +529,11 @@ onDown(e) {
         }
     }
 
-    // Hit-Test erneut verwenden
-    // (wir haben oben schon hit berechnet)
-    // --------------------------------------------------
     // Fenster-Modus
-    // --------------------------------------------------
     if (this.mode === "windows") {
 
         if (hit.type === "window") {
-            this._pendingContext = { x, y, type: "window", index: hit.index };
+            this._pendingContext = { x: worldX, y: worldY, type: "window", index: hit.index };
             return;
         }
 
@@ -500,9 +554,7 @@ onDown(e) {
         return;
     }
 
-    // --------------------------------------------------
     // Tür-Modus
-    // --------------------------------------------------
     if (this.mode === "doors") {
 
         if (!this._placingDoor) {
@@ -526,7 +578,7 @@ onDown(e) {
         if (this._placingDoor) {
             const lastDoor = this.doors[this.doors.length - 1];
             const w = this.walls[lastDoor.wallIndex];
-            this.setDoorHingeFromTap(lastDoor, x, y, w);
+            this.setDoorHingeFromTap(lastDoor, worldX, worldY, w);
 
             this._placingDoor = false;
             this.mode = "points";
@@ -535,22 +587,20 @@ onDown(e) {
         }
     }
 
-    // --------------------------------------------------
     // Punkt-Modus
-    // --------------------------------------------------
 
     if (hit.type === "door") {
-        this._pendingContext = { x, y, type: "door", index: hit.index };
+        this._pendingContext = { x: worldX, y: worldY, type: "door", index: hit.index };
         return;
     }
 
     if (hit.type === "window") {
-        this._pendingContext = { x, y, type: "window", index: hit.index };
+        this._pendingContext = { x: worldX, y: worldY, type: "window", index: hit.index };
         return;
     }
 
     if (hit.type === "point") {
-        this._pendingContext = { x, y, type: "point", index: hit.index };
+        this._pendingContext = { x: worldX, y: worldY, type: "point", index: hit.index };
         return;
     }
 
@@ -568,26 +618,43 @@ onDown(e) {
 
     // Neuen Punkt setzen
     if (!this.isClosed) {
-    
-        let px = x;
-        let py = y;
-    
+        let px = worldX;
+        let py = worldY;
+
         if (this.snapEnabled) {
             px = this.snap(px);
             py = this.snap(py);
         }
-    
+
         this.points.push({ x: px, y: py });
         this.updateWalls();
         this.render();
         return;
     }
 
+    // PAN = STANDARD
+    if (
+        hit.type === "empty" ||
+        hit.type === "wall" ||
+        hit.type === "none"
+    ) {
+        this.isPanning = true;
+        this.lastPanX = mouseX;
+        this.lastPanY = mouseY;
+    }
 },
+
+
 
 onUp() {
 
-    // Wenn wir gerade etwas gezogen haben → Drag-Ende
+    // PAN END
+    if (this.isPanning) {
+        this.isPanning = false;
+        return;
+    }
+
+    // DRAG END
     if (this.isDragging) {
         this.isDragging = false;
         this.selectedPoint = null;
@@ -597,24 +664,203 @@ onUp() {
         return;
     }
 
-    // Wenn ein Kontextkandidat existiert → Kontextmenü öffnen
+    // Kontextmenü öffnen
     if (this._pendingContext) {
         const c = this._pendingContext;
-
-        // WICHTIG: pendingContext sofort löschen,
-        // damit kein zweites Menü entsteht
         this._pendingContext = null;
 
-        this.showContextMenu(c.x, c.y, c.type, c.index);
+        // Welt → Screen für Menüposition
+        const screenX = (c.x + this.offsetX) * this.zoom;
+        const screenY = (c.y + this.offsetY) * this.zoom;
+
+        this.showContextMenu(screenX, screenY, c.type, c.index);
         return;
     }
 
-    // Reset aller Drag-/Kontextvariablen
     this.selectedPoint = null;
     this.draggingDoorIndex = null;
     this.draggingWindowIndex = null;
     this._pendingContext = null;
 },
+
+
+
+// --------------------------------------------------
+// Zoom per Mausrad
+// --------------------------------------------------
+onWheelZoom(e) {
+    e.preventDefault();
+
+    const rect = this.canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    const worldX = (mouseX / this.zoom) - this.offsetX;
+    const worldY = (mouseY / this.zoom) - this.offsetY;
+
+    const zoomFactor = 1.1;
+    if (e.deltaY < 0) {
+        this.zoom *= zoomFactor;
+    } else {
+        this.zoom /= zoomFactor;
+    }
+
+    this.zoom = Math.max(0.2, Math.min(4.0, this.zoom));
+
+    this.offsetX = (mouseX / this.zoom) - worldX;
+    this.offsetY = (mouseY / this.zoom) - worldY;
+
+    this.render();
+},
+
+
+
+
+// --------------------------------------------------
+// Doppelklick-Zoom (Toggle)
+// --------------------------------------------------
+onDoubleClickZoom(e) {
+    e.preventDefault();
+
+    const rect = this.canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    const worldX = (mouseX / this.zoom) - this.offsetX;
+    const worldY = (mouseY / this.zoom) - this.offsetY;
+
+    const oldZoom = this.zoom;
+
+    if (this.zoom < 1.5) {
+        this.zoom *= 1.5;
+    } else {
+        this.zoom /= 1.5;
+    }
+
+    this.zoom = Math.max(0.2, Math.min(4.0, this.zoom));
+
+    this.offsetX = (mouseX / this.zoom) - worldX;
+    this.offsetY = (mouseY / this.zoom) - worldY;
+
+    this.render();
+},
+
+
+// --------------------------------------------------
+// TOUCH START
+// --------------------------------------------------
+onTouchStart(e) {
+    e.preventDefault();
+
+    const touches = e.touches;
+
+    // Ein Finger → Pan
+    if (touches.length === 1) {
+        const rect = this.canvas.getBoundingClientRect();
+        const x = touches[0].clientX - rect.left;
+        const y = touches[0].clientY - rect.top;
+
+        this.isPanning = true;
+        this.lastPanX = x;
+        this.lastPanY = y;
+        this.touchState.active = false;
+        return;
+    }
+
+    // Zwei Finger → Pinch-Zoom
+    if (touches.length === 2) {
+        this.touchState.active = true;
+
+        const rect = this.canvas.getBoundingClientRect();
+
+        const x1 = touches[0].clientX - rect.left;
+        const y1 = touches[0].clientY - rect.top;
+        const x2 = touches[1].clientX - rect.left;
+        const y2 = touches[1].clientY - rect.top;
+
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+
+        this.touchState.startDistance = Math.hypot(dx, dy);
+        this.touchState.startZoom = this.zoom;
+
+        this.touchState.lastCenterX = (x1 + x2) / 2;
+        this.touchState.lastCenterY = (y1 + y2) / 2;
+
+        this.isPanning = false;
+    }
+},
+
+
+
+// --------------------------------------------------
+// TOUCH MOVE
+// --------------------------------------------------
+onTouchMove(e) {
+    e.preventDefault();
+
+    const touches = e.touches;
+    const rect = this.canvas.getBoundingClientRect();
+
+    // Ein Finger → Pan
+    if (touches.length === 1 && !this.touchState.active) {
+        const x = touches[0].clientX - rect.left;
+        const y = touches[0].clientY - rect.top;
+
+        const dx = x - this.lastPanX;
+        const dy = y - this.lastPanY;
+
+        this.offsetX += dx / this.zoom;
+        this.offsetY += dy / this.zoom;
+
+        this.lastPanX = x;
+        this.lastPanY = y;
+
+        this.render();
+        return;
+    }
+
+    // Zwei Finger → Pinch-Zoom
+    if (touches.length === 2) {
+        const x1 = touches[0].clientX - rect.left;
+        const y1 = touches[0].clientY - rect.top;
+        const x2 = touches[1].clientX - rect.left;
+        const y2 = touches[1].clientY - rect.top;
+
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+
+        const newDist = Math.hypot(dx, dy);
+        const centerX = (x1 + x2) / 2;
+        const centerY = (y1 + y2) / 2;
+
+        const worldX = (centerX / this.zoom) - this.offsetX;
+        const worldY = (centerY / this.zoom) - this.offsetY;
+
+        this.zoom = this.touchState.startZoom * (newDist / this.touchState.startDistance);
+        this.zoom = Math.max(0.2, Math.min(4.0, this.zoom));
+
+        this.offsetX = (centerX / this.zoom) - worldX;
+        this.offsetY = (centerY / this.zoom) - worldY;
+
+        this.render();
+    }
+},
+
+
+
+// --------------------------------------------------
+// TOUCH END
+// --------------------------------------------------
+onTouchEnd(e) {
+    if (e.touches.length === 0) {
+        this.isPanning = false;
+        this.touchState.active = false;
+    }
+},
+
+
+    
     // --------------------------------------------------
     // Hilfsfunktionen
     // --------------------------------------------------
@@ -844,115 +1090,123 @@ updateWalls() {
     // --------------------------------------------------
     // Canvas-Transform (für zukünftigen Zoom/Pan vorbereitet)
     // --------------------------------------------------
-    applyTransform() {
-        const ctx = this.ctx;
-        if (!ctx) return;
-    
-        // Aktuell kein Zoom/Offset – später hier erweitern
-        // ctx.scale(this.zoom, this.zoom);
-        // ctx.translate(this.offsetX, this.offsetY);
-    },
+applyTransform() {
+    const ctx = this.ctx;
+    if (!ctx) return;
 
+    // Welt → Screen:
+    // screen = (world + offset) * zoom
+    ctx.translate(this.offsetX * this.zoom, this.offsetY * this.zoom);
+    ctx.scale(this.zoom, this.zoom);
+},
+
+
+   
+    
     // --------------------------------------------------
     // Rendering
     // --------------------------------------------------
-    render() {
-        const ctx = this.ctx;
-        if (!ctx || !this.canvas) return;
+render() {
+    const ctx = this.ctx;
+    if (!ctx || !this.canvas) return;
 
-        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        this.applyTransform();
+    ctx.save();
+    this.applyTransform();   // Transform aktiv
 
-        this.drawGrid();
-        this.drawFloor();
-        this.drawPolygon();
-        this.drawWalls();
-        this.drawWallLengths();
+    this.drawGrid();         // Grid im Welt-Raum
+    this.drawFloor();
+    this.drawPolygon();
+    this.drawWalls();
+    this.drawWallLengths();
+    this.drawWindows();
+    this.drawDoors();
 
-        // Winkelanzeige beim Draggen eines Punktes
-        if (this.isDragging && this.selectedPoint) {
-            const idx = this.points.indexOf(this.selectedPoint);
-            const affected = new Set([idx]);
+    // Winkelanzeige beim Drag
+    if (this.isDragging && this.selectedPoint) {
+        const idx = this.points.indexOf(this.selectedPoint);
+        const affected = new Set([idx]);
 
-            if (this.isClosed) {
-                affected.add((idx - 1 + this.points.length) % this.points.length);
-                affected.add((idx + 1) % this.points.length);
-            } else {
-                if (idx > 0) affected.add(idx - 1);
-                if (idx < this.points.length - 1) affected.add(idx + 1);
-            }
-
-            for (const i of affected) {
-                const prev = this.isClosed
-                    ? this.points[(i - 1 + this.points.length) % this.points.length]
-                    : this.points[i - 1];
-
-                const next = this.isClosed
-                    ? this.points[(i + 1) % this.points.length]
-                    : this.points[i + 1];
-
-                if (prev && next) {
-                    this.drawAngleAtPoint(this.points[i], prev, next);
-                }
-            }
+        if (this.isClosed) {
+            affected.add((idx - 1 + this.points.length) % this.points.length);
+            affected.add((idx + 1) % this.points.length);
+        } else {
+            if (idx > 0) affected.add(idx - 1);
+            if (idx < this.points.length - 1) affected.add(idx + 1);
         }
 
-        this.drawWindows();
-        this.drawDoors();
-        this.drawHoverCross();
-    },
+        for (const i of affected) {
+            const prev = this.isClosed
+                ? this.points[(i - 1 + this.points.length) % this.points.length]
+                : this.points[i - 1];
+
+            const next = this.isClosed
+                ? this.points[(i + 1) % this.points.length]
+                : this.points[i + 1];
+
+            if (prev && next) {
+                this.drawAngleAtPoint(this.points[i], prev, next);
+            }
+        }
+    }
+
+    ctx.restore();
+
+    // Hover-Kreuz im Screen-Space
+    this.drawHoverCross();
+},
+
 
 
     // --------------------------------------------------
     // Grid (zoomfähig, konfigurierbar, snap-aware)
     // --------------------------------------------------
-    drawGrid() {
-        const ctx = this.ctx;
-        if (!ctx || !this.canvas) return;
-    
-        const size = this.gridSize;
-    
-        ctx.save();
-    
-        // Grid-Farbe abhängig von Snap
-        ctx.strokeStyle = this.gridColor;
-        ctx.globalAlpha = this.snapEnabled ? this.gridAlphaSnap : this.gridAlpha;
-        ctx.lineWidth = 1;
-    
-        // Sichtbare Fläche im transformierten Raum
-        const width = this.canvas.width;
-        const height = this.canvas.height;
-    
-        // Startpunkte am Raster ausrichten
-        // Offset + Zoom berücksichtigen
-        const zoom = this.zoom || 1;
-        const offX = this.offsetX || 0;
-        const offY = this.offsetY || 0;
-        
-        // Startpunkte am Raster ausrichten
-        const startX = -((offX / zoom) % size);
-        const startY = -((offY / zoom) % size);
+drawGrid() {
+    const ctx = this.ctx;
+    if (!ctx || !this.canvas) return;
 
-    
-        // Vertikale Linien
-        for (let x = startX; x < width; x += size) {
-            ctx.beginPath();
-            ctx.moveTo(x, 0);
-            ctx.lineTo(x, height);
-            ctx.stroke();
-        }
-    
-        // Horizontale Linien
-        for (let y = startY; y < height; y += size) {
-            ctx.beginPath();
-            ctx.moveTo(0, y);
-            ctx.lineTo(width, y);
-            ctx.stroke();
-        }
-    
-        ctx.restore();
-    },
+    const size = this.gridSize;
+
+    ctx.save();
+
+    ctx.strokeStyle = this.gridColor;
+    ctx.globalAlpha = this.snapEnabled ? this.gridAlphaSnap : this.gridAlpha;
+    ctx.lineWidth = 1;
+
+    // Sichtbarer Bereich im Welt-Raum
+    const widthWorld = this.canvas.width / this.zoom;
+    const heightWorld = this.canvas.height / this.zoom;
+
+    const left = -this.offsetX;
+    const top = -this.offsetY;
+    const right = left + widthWorld;
+    const bottom = top + heightWorld;
+
+    const startX = Math.floor(left / size) * size;
+    const endX = Math.ceil(right / size) * size;
+
+    const startY = Math.floor(top / size) * size;
+    const endY = Math.ceil(bottom / size) * size;
+
+    // Vertikale Linien
+    for (let x = startX; x <= endX; x += size) {
+        ctx.beginPath();
+        ctx.moveTo(x, top);
+        ctx.lineTo(x, bottom);
+        ctx.stroke();
+    }
+
+    // Horizontale Linien
+    for (let y = startY; y <= endY; y += size) {
+        ctx.beginPath();
+        ctx.moveTo(left, y);
+        ctx.lineTo(right, y);
+        ctx.stroke();
+    }
+
+    ctx.restore();
+},
     
     
         
@@ -1305,6 +1559,17 @@ updateWalls() {
         });
     },
 
+
+setupResetButton() {
+    const btn = document.getElementById("btnResetView");
+    if (!btn) return;
+
+    btn.addEventListener("click", () => {
+        this.resetView();
+    });
+},
+
+    
     // --------------------------------------------------
     // Delete-Toast
     // --------------------------------------------------
@@ -1372,6 +1637,14 @@ updateWalls() {
         this._toastEl.style.display = "flex";
     },
 
+resetView() {
+    this.zoom = 1;
+    this.offsetX = 0;
+    this.offsetY = 0;
+    this.render();
+},
+
+    
     hideToast() {
         if (this._toastEl) {
             this._toastEl.style.display = "none";
