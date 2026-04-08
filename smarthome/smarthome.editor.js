@@ -385,25 +385,29 @@ if (!this.isClosed && this.points.length > 1) {
     if (this.selectedPoint !== first) {
         if (Math.hypot(px - first.x, py - first.y) < 20) {
 
-            // Punkt wirklich verschmelzen
+            // Index des alten Punktes
             const idx = this.points.indexOf(this.selectedPoint);
-            this.points[idx] = first;
-            this.selectedPoint = first;
 
-            // WICHTIG: Drag beenden
+            // NEU: wie beim Setzen → neuen Punkt erzeugen
+            const newPoint = { x: first.x, y: first.y };
+
+            // alten Punkt ersetzen
+            this.points[idx] = newPoint;
+
+            // neuer Punkt ist jetzt der aktive
+            this.selectedPoint = newPoint;
+
+            // Drag beenden
             this.isDragging = false;
-
-            // WICHTIGER: Kontextzustand löschen
             this._pendingContext = null;
 
-            // WICHTIG: Kein weiterer Move mehr → sofort rendern
             this.updateWalls();
             this.render();
-
             return;
         }
     }
 }
+
 
 
 
