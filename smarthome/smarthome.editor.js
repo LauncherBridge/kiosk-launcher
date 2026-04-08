@@ -46,6 +46,9 @@ const RoomDesigner = {
 
     _lastClickTime: 0,
     _pendingNewPoint: null,
+    _lastClickTime: 0,
+    _pendingNewPoint: null,
+    _suppressNextClick: false,
 
     
     // Touch-Zustand für Pinch-Zoom
@@ -458,65 +461,172 @@ onDown(e) {
     const worldX = (mouseX / this.zoom) - this.offsetX;
     const worldY = (mouseY / this.zoom) - this.offsetY;
 
-    // Rechtsklick → nur Menü schließen
+    // Rechtsklick → Menü schließen, Klick ignorieren
     if (e.button === 2) {
         this.hideContextMenu();
         return;
     }
 
-    // Menü gerade geschlossen → Klick ignorieren
-    if (this._menuClosedAt && performance.now() - this._menuClosedAt < 150) {
-        return;
-    }
-
+    // Hit-Test mit Screen-Koordinaten (hitTest rechnet selbst in Welt um)
     const hit = this.hitTest(mouseX, mouseY);
+    const clickingObject =
+        hit.type === "point" ||
+        hit.type === "door" ||
+        hit.type === "window";
 
-    // Kontextmenü vorbereiten (Objekt getroffen)
-    if (hit.type === "point" || hit.type === "door" || hit.type === "window") {
-        this._pendingContext = { x: worldX, y: worldY, type: hit.type, index: hit.index };
-        this._downX = worldX;
-        this._downY = worldY;
+    const menuWasOpen =
+        this.contextMenuEl &&
+        this.contextMenuEl.style.display === "flex";
+
+    this.hideContextMenu();
+
+    if (this._contextJustClosed && !clickingObject) {
+        this._contextJustClosed = false;
         return;
     }
 
-    // Wand → Punkt einfügen
+    if (this._contextJustClosed && clickingObject) {
+        this._contextJustClosed = false;
+    }
+
+    // Raum schließen durch Klick auf ersten Punkt
+    if (!this.isClosed && this.points.length >= 2) {
+        const first = this.points[0];
+        if (Math.hypot(worldX - first.x, worldY - first.y) < 20) {
+            this.points.push(first);
+            this.isClosed = true;
+            this.updateWalls();
+            this.render();
+            return;
+        }
+    }
+
+    // Fenster-Modus
+    if (this.mode === "windows") {
+
+        if (hit.type === "window") {
+            this._pendingContext = { x: worldX, y: worldY, type: "window", index: hit.index };
+            return;
+        }
+
+        if (hit.type === "wall") {
+            const w = hit.data;
+            this.windows.push({
+                wallIndex: w.index,
+                t: w.t,
+                x: w.x,
+                y: w.y,
+                width: 80
+            });
+            this.updateWalls();
+            this.render();
+        }
+
+        this.mode = "points";
+        return;
+    }
+
+    // Tür-Modus
+    if (this.mode === "doors") {
+
+        if (!this._placingDoor) {
+            if (hit.type === "wall") {
+                const w = hit.data;
+                this.doors.push({
+                    wallIndex: w.index,
+                    t: w.t,
+                    x: w.x,
+                    y: w.y,
+                    width: 36,
+                    hinge: null,
+                    side: 1
+                });
+                this._placingDoor = true;
+                this.render();
+                return;
+            }
+        }
+
+        if (this._placingDoor) {
+            const lastDoor = this.doors[this.doors.length - 1];
+            const w = this.walls[lastDoor.wallIndex];
+            this.setDoorHingeFromTap(lastDoor, worldX, worldY, w);
+
+            this._placingDoor = false;
+            this.mode = "points";
+            this.render();
+            return;
+        }
+    }
+
+    // Punkt-Modus
+
+    if (hit.type === "door") {
+        this._pendingContext = { x: worldX, y: worldY, type: "door", index: hit.index };
+        return;
+    }
+
+    if (hit.type === "window") {
+        this._pendingContext = { x: worldX, y: worldY, type: "window", index: hit.index };
+        return;
+    }
+
+    if (hit.type === "point") {
+        this._pendingContext = { x: worldX, y: worldY, type: "point", index: hit.index };
+        return;
+    }
+
+    // Punkt auf Wand einfügen
     if (hit.type === "wall") {
         const w = hit.data;
-        this.points.splice(w.index + 1, 0, { x: w.x, y: w.y });
+        const insertPoint = { x: w.x, y: w.y };
+
+        this.points.splice(w.index + 1, 0, insertPoint);
+
         this.updateWalls();
         this.render();
         return;
     }
 
-    // Leerer Raum → Klick-Kandidat für Punkt
-    if (hit.type === "empty" && !this.isClosed) {
-        this._downX = worldX;
-        this._downY = worldY;
-        this._clickedEmpty = true;
+    // Punkt-Kandidat im leeren Raum
+    if (!this.isClosed && hit.type === "empty") {
+        let px = worldX;
+        let py = worldY;
+
+        if (this.snapEnabled) {
+            px = this.snap(px);
+            py = this.snap(py);
+        }
+
+        this._pendingNewPoint = { x: px, y: py };
     }
 
-    // Pan-Kandidat
-    this.isPanCandidate = true;
-    this.panStartX = mouseX;
-    this.panStartY = mouseY;
+    // PAN-Kandidat merken (aber noch NICHT starten)
+    if (hit.type === "empty" || hit.type === "wall") {
+        this.isPanCandidate = true;
+        this.panStartX = mouseX;
+        this.panStartY = mouseY;
+    }
 },
 
 
-onUp(e) {
+onUp() {
+
     this.isPanCandidate = false;
 
-    // Pan enden
+    // PAN END
     if (this.isPanning) {
         this.isPanning = false;
         return;
     }
 
-    // Drag enden
+    // DRAG END
     if (this.isDragging) {
         this.isDragging = false;
         this.selectedPoint = null;
         this.draggingDoorIndex = null;
         this.draggingWindowIndex = null;
+        this._pendingContext = null;
         return;
     }
 
@@ -525,38 +635,36 @@ onUp(e) {
         const c = this._pendingContext;
         this._pendingContext = null;
 
+        // Welt → Screen für Menüposition
         const screenX = (c.x + this.offsetX) * this.zoom;
         const screenY = (c.y + this.offsetY) * this.zoom;
 
         this.showContextMenu(screenX, screenY, c.type, c.index);
-        this._menuClosedAt = performance.now();
         return;
     }
 
-    // Doppelklick?
-    const now = performance.now();
-    if (now - this._lastClickTime < 250) {
-        this._lastClickTime = now;
-        return; // Punkt NICHT setzen
+    // Doppelklick aus dblclick-Handler unterdrückt den nächsten Klick
+    if (this._suppressNextClick) {
+        this._suppressNextClick = false;
+        this._pendingNewPoint = null;
+        return;
     }
-    this._lastClickTime = now;
 
-    // Punkt setzen
-    if (this._clickedEmpty && !this.isClosed) {
-        let px = this._downX;
-        let py = this._downY;
-
-        if (this.snapEnabled) {
-            px = this.snap(px);
-            py = this.snap(py);
-        }
-
-        this.points.push({ x: px, y: py });
+    // Wenn kein Pan, kein Drag und ein Punkt-Kandidat existiert → Punkt wirklich setzen
+    if (!this.isClosed && !this.isPanning && !this.isDragging && this._pendingNewPoint) {
+        this.points.push(this._pendingNewPoint);
+        this._pendingNewPoint = null;
         this.updateWalls();
         this.render();
+        return;
     }
 
-    this._clickedEmpty = false;
+    this._pendingNewPoint = null;
+
+    this.selectedPoint = null;
+    this.draggingDoorIndex = null;
+    this.draggingWindowIndex = null;
+    this._pendingContext = null;
 },
 
 
