@@ -491,16 +491,28 @@ onDown(e) {
     }
 
     // Raum schließen durch Klick auf ersten Punkt
-    if (!this.isClosed && this.points.length >= 2) {
-        const first = this.points[0];
-        if (Math.hypot(worldX - first.x, worldY - first.y) < 20) {
-            this.points.push(first);
-            this.isClosed = true;
-            this.updateWalls();
-            this.render();
-            return;
-        }
+if (!this.isClosed && this.points.length >= 2) {
+    const first = this.points[0];
+    if (Math.hypot(worldX - first.x, worldY - first.y) < 20) {
+
+        this.points.push(first);
+        this.isClosed = true;
+
+        // NEU: Winkelanzeige aktivieren
+        this.selectedPoint = first;
+        this.isDragging = true;
+
+        this.updateWalls();
+        this.render();
+
+        // Reset
+        this.isDragging = false;
+        this.selectedPoint = null;
+
+        return;
     }
+}
+
 
     // Fenster-Modus
     if (this.mode === "windows") {
@@ -657,12 +669,26 @@ onUp(e) {
         // Timer abgelaufen → es war ein einfacher Klick
         this._clickTimer = null;
 
-        if (!this.isClosed && this._pendingNewPoint) {
-            this.points.push(this._pendingNewPoint);
-            this._pendingNewPoint = null;
-            this.updateWalls();
-            this.render();
+if (!this.isClosed && this._pendingNewPoint) {
+
+    let px = this._pendingNewPoint.x;
+    let py = this._pendingNewPoint.y;
+
+    // NEU: Snap auf ersten Punkt beim Setzen
+    if (this.points.length > 0) {
+        const first = this.points[0];
+        if (Math.hypot(px - first.x, py - first.y) < 20) {
+            px = first.x;
+            py = first.y;
         }
+    }
+
+    this.points.push({ x: px, y: py });
+    this._pendingNewPoint = null;
+    this.updateWalls();
+    this.render();
+}
+
 
         this._pendingNewPoint = null;
 
