@@ -390,17 +390,21 @@ if (!this.isClosed && this.points.length > 1) {
             this.points[idx] = first;
             this.selectedPoint = first;
 
+            // WICHTIG: Drag beenden
+            this.isDragging = false;
+
+            // WICHTIGER: Kontextzustand löschen
+            this._pendingContext = null;
+
+            // WICHTIG: Kein weiterer Move mehr → sofort rendern
             this.updateWalls();
             this.render();
-
-            // WICHTIG: Drag sofort beenden
-            this.isDragging = false;
-            this._pendingContext = null;
 
             return;
         }
     }
 }
+
 
 
     // Normales Draggen
