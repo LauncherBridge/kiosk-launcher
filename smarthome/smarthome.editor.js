@@ -380,31 +380,18 @@ onMove(e) {
                 py = this.snap(py);
             }
 
-// MOVE-SNAP: letzten Punkt mit erstem verschmelzen, ohne neuen Punkt
+// MOVE-SNAP nur erkennen, aber NICHT verschmelzen
+this._snapCandidate = false;
+
 if (!this.isClosed && this.points.length > 2) {
     const first = this.points[0];
     const lastIndex = this.points.length - 1;
     const last = this.points[lastIndex];
 
     if (this.selectedPoint === last) {
-
         if (Math.hypot(px - first.x, py - first.y) < 20) {
-
-            // Alten letzten Punkt entfernen
-            this.points.splice(lastIndex, 1);
-
-            // Der erste Punkt IST jetzt der gezogene Punkt
-            this.selectedPoint = first;
-
-            // Raum schließen
-            this.isClosed = true;
-
-            // Drag beenden
-            this.isDragging = false;
-
-            this.updateWalls();
-            this.render();
-            return;
+            // Nur markieren, NICHT verschmelzen
+            this._snapCandidate = true;
         }
     }
 }
@@ -665,12 +652,12 @@ if (!this.isClosed && this.points.length >= 2) {
 
 
 onUp(e) {
-// Wenn gerade gesnapped wurde → Klick komplett ignorieren
-if (this._justSnapped) {
-    this._justSnapped = false;
-    this._pendingNewPoint = null;
-    return;
-}
+    // Wenn gerade gesnapped wurde → Klick komplett ignorieren
+    if (this._justSnapped) {
+        this._justSnapped = false;
+        this._pendingNewPoint = null;
+        return;
+    }
 
     this.isPanCandidate = false;
 
@@ -682,6 +669,29 @@ if (this._justSnapped) {
 
     // DRAG END
     if (this.isDragging) {
+
+        // --- SNAP beim Loslassen ---
+        if (this._snapCandidate) {
+            const first = this.points[0];
+            const lastIndex = this.points.length - 1;
+
+            // letzten Punkt entfernen
+            this.points.splice(lastIndex, 1);
+
+            // erster Punkt wird der aktive Punkt
+            this.selectedPoint = first;
+
+            this.isClosed = true;
+            this._snapCandidate = false;
+
+            this.updateWalls();
+            this.render();
+
+            this.isDragging = false;
+            return;
+        }
+
+        // Normaler Drag-Ende
         this.isDragging = false;
         this.selectedPoint = null;
         this.draggingDoorIndex = null;
@@ -716,26 +726,25 @@ if (this._justSnapped) {
         // Timer abgelaufen → es war ein einfacher Klick
         this._clickTimer = null;
 
-if (!this.isClosed && this._pendingNewPoint) {
+        if (!this.isClosed && this._pendingNewPoint) {
 
-    let px = this._pendingNewPoint.x;
-    let py = this._pendingNewPoint.y;
+            let px = this._pendingNewPoint.x;
+            let py = this._pendingNewPoint.y;
 
-    // NEU: Snap auf ersten Punkt beim Setzen
-    if (this.points.length > 0) {
-        const first = this.points[0];
-        if (Math.hypot(px - first.x, py - first.y) < 20) {
-            px = first.x;
-            py = first.y;
+            // NEU: Snap auf ersten Punkt beim Setzen
+            if (this.points.length > 0) {
+                const first = this.points[0];
+                if (Math.hypot(px - first.x, py - first.y) < 20) {
+                    px = first.x;
+                    py = first.y;
+                }
+            }
+
+            this.points.push({ x: px, y: py });
+            this._pendingNewPoint = null;
+            this.updateWalls();
+            this.render();
         }
-    }
-
-    this.points.push({ x: px, y: py });
-    this._pendingNewPoint = null;
-    this.updateWalls();
-    this.render();
-}
-
 
         this._pendingNewPoint = null;
 
