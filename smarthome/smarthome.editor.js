@@ -378,22 +378,37 @@ if (this.selectedPoint) {
         py = this.snap(py);
     }
 
-    // 2) Snap auf ersten Punkt (wenn Raum noch offen)
+    // 2) Snap auf ersten Punkt → ECHTES Verschmelzen
     if (!this.isClosed && this.points.length > 1) {
         const first = this.points[0];
+
+        // Nur wenn wir NICHT den ersten Punkt selbst ziehen
         if (this.selectedPoint !== first) {
+
             if (Math.hypot(px - first.x, py - first.y) < 20) {
-                px = first.x;
-                py = first.y;
+
+                // ECHTES Verschmelzen:
+                this.selectedPoint.x = first.x;
+                this.selectedPoint.y = first.y;
+
+                // WICHTIG: Punkte-Liste aktualisieren
+                const idx = this.points.indexOf(this.selectedPoint);
+                this.points[idx] = first;
+
+                this.updateWalls();
+                this.render();
+                return;
             }
         }
     }
 
+    // Normales Draggen
     this.selectedPoint.x = px;
     this.selectedPoint.y = py;
 
     this.updateWalls();
 }
+
 
 
         if (this.draggingDoorIndex !== null) {
