@@ -610,7 +610,7 @@ onDown(e) {
 },
 
 
-onUp() {
+onUp(e) {
 
     this.isPanCandidate = false;
 
@@ -635,7 +635,6 @@ onUp() {
         const c = this._pendingContext;
         this._pendingContext = null;
 
-        // Welt → Screen für Menüposition
         const screenX = (c.x + this.offsetX) * this.zoom;
         const screenY = (c.y + this.offsetY) * this.zoom;
 
@@ -643,28 +642,30 @@ onUp() {
         return;
     }
 
-    // Doppelklick aus dblclick-Handler unterdrückt den nächsten Klick
-    if (this._suppressNextClick) {
-        this._suppressNextClick = false;
-        this._pendingNewPoint = null;
-        return;
+    // Wenn bereits ein Timer läuft → das hier ist der zweite Klick → Doppelklick
+    if (this._clickTimer) {
+        clearTimeout(this._clickTimer);
+        this._clickTimer = null;
+        this._pendingNewPoint = null; // keinen Punkt setzen
+        return; // Doppelklick → Zoom übernimmt
     }
 
-    // Wenn kein Pan, kein Drag und ein Punkt-Kandidat existiert → Punkt wirklich setzen
-    if (!this.isClosed && !this.isPanning && !this.isDragging && this._pendingNewPoint) {
-        this.points.push(this._pendingNewPoint);
+    // Erster Klick → Timer starten
+    this._clickTimer = setTimeout(() => {
+
+        // Timer abgelaufen → es war ein einfacher Klick
+        this._clickTimer = null;
+
+        if (!this.isClosed && this._pendingNewPoint) {
+            this.points.push(this._pendingNewPoint);
+            this._pendingNewPoint = null;
+            this.updateWalls();
+            this.render();
+        }
+
         this._pendingNewPoint = null;
-        this.updateWalls();
-        this.render();
-        return;
-    }
 
-    this._pendingNewPoint = null;
-
-    this.selectedPoint = null;
-    this.draggingDoorIndex = null;
-    this.draggingWindowIndex = null;
-    this._pendingContext = null;
+    }, 220); // 220ms = Standard-Doppelklick-Fenster
 },
 
 
