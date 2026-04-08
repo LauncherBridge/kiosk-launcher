@@ -380,44 +380,34 @@ onMove(e) {
                 py = this.snap(py);
             }
 
-            // ------------------------------------------------------
-            // MOVE-SNAP WIE SETZEN (EIN PUNKT, RAUM SCHLIESSEN)
-            // ------------------------------------------------------
-            if (!this.isClosed && this.points.length > 2) {
+// MOVE-SNAP: letzten Punkt mit erstem verschmelzen, ohne neuen Punkt
+if (!this.isClosed && this.points.length > 2) {
+    const first = this.points[0];
+    const lastIndex = this.points.length - 1;
+    const last = this.points[lastIndex];
 
-                const first = this.points[0];
-                const lastIndex = this.points.length - 1;
-                const last = this.points[lastIndex];
+    if (this.selectedPoint === last) {
 
-                // Nur wenn der bewegte Punkt der letzte Punkt ist
-                if (this.selectedPoint === last) {
+        if (Math.hypot(px - first.x, py - first.y) < 20) {
 
-                    // Snap-Bereich
-                    if (Math.hypot(px - first.x, py - first.y) < 20) {
+            // Alten letzten Punkt entfernen
+            this.points.splice(lastIndex, 1);
 
-                        // Alten letzten Punkt entfernen
-                        this.points.splice(lastIndex, 1);
+            // Der erste Punkt IST jetzt der gezogene Punkt
+            this.selectedPoint = first;
 
-                        // Neuen Punkt erzeugen (wie SETZEN)
-                        const newPoint = { x: first.x, y: first.y };
-                        this.points.push(newPoint);
+            // Raum schließen
+            this.isClosed = true;
 
-                        // Raum schließen (wie SETZEN)
-                       // this.points.push(first);
-                        this.isClosed = true;
+            // Drag beenden
+            this.isDragging = false;
 
-                        // Neuer Punkt ist jetzt ausgewählt
-                        this.selectedPoint = newPoint;
-
-                        // Drag beenden
-                        this.isDragging = false;
-
-                        this.updateWalls();
-                        this.render();
-                        return;
-                    }
-                }
-            }
+            this.updateWalls();
+            this.render();
+            return;
+        }
+    }
+}
 
             // Normales Draggen
             this.selectedPoint.x = px;
