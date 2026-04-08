@@ -395,6 +395,7 @@ if (!this.isClosed && this.points.length > 1) {
 
             // WICHTIG: Drag sofort beenden
             this.isDragging = false;
+            this._pendingContext = null;
 
             return;
         }
