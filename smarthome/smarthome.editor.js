@@ -383,8 +383,8 @@ onMove(e) {
                 py = this.snap(py);
             }
 
-// Snap nur für den letzten Punkt
-if (!this.isClosed && this.points.length > 1) {
+// MOVE-SNAP wie SETZEN: Raum schließen, wenn letzter Punkt auf ersten gezogen wird
+if (!this.isClosed && this.points.length > 2) {
     const first = this.points[0];
     const last = this.points[this.points.length - 1];
 
@@ -394,9 +394,13 @@ if (!this.isClosed && this.points.length > 1) {
         // Snap-Bereich
         if (Math.hypot(px - first.x, py - first.y) < 20) {
 
-            // Einfach den letzten Punkt auf die Koordinaten des ersten setzen
+            // Letzten Punkt exakt auf den ersten setzen
             last.x = first.x;
             last.y = first.y;
+
+            // Raum schließen (wie SETZEN)
+            this.points.push(first);     // Schließkante
+            this.isClosed = true;
 
             // Drag beenden
             this.isDragging = false;
