@@ -385,19 +385,21 @@ if (!this.isClosed && this.points.length > 1) {
     if (this.selectedPoint !== first) {
         if (Math.hypot(px - first.x, py - first.y) < 20) {
 
-            // Index des alten Punktes
             const idx = this.points.indexOf(this.selectedPoint);
 
-            // NEU: wie beim Setzen → neuen Punkt erzeugen
+            // 🔥 ALTEN PUNKT WIRKLICH ENTFERNEN
+            this.points.splice(idx, 1);
+
+            // 🔥 NEUEN PUNKT ERZEUGEN (wie beim Setzen)
             const newPoint = { x: first.x, y: first.y };
 
-            // alten Punkt ersetzen
-            this.points[idx] = newPoint;
+            // 🔥 AN DIESELBE POSITION EINFÜGEN
+            this.points.splice(idx, 0, newPoint);
 
-            // neuer Punkt ist jetzt der aktive
+            // 🔥 DIESER PUNKT IST JETZT DER AKTIVE
             this.selectedPoint = newPoint;
 
-            // Drag beenden
+            // 🔥 DRAG BEENDEN
             this.isDragging = false;
             this._pendingContext = null;
 
@@ -407,6 +409,7 @@ if (!this.isClosed && this.points.length > 1) {
         }
     }
 }
+
 
 
 
