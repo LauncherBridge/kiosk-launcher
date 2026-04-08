@@ -706,7 +706,10 @@ onWheelZoom(e) {
 // --------------------------------------------------
 onDoubleClickZoom(e) {
     e.preventDefault();
-    e.stopPropagation();
+    e.stopPropagation(); // verhindert Kontext-Kollision
+
+    // Signal an onUp: diesen Klick NICHT als Punkt interpretieren
+    this._suppressNextClick = true;
 
     const rect = this.canvas.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
@@ -715,8 +718,11 @@ onDoubleClickZoom(e) {
     const worldX = (mouseX / this.zoom) - this.offsetX;
     const worldY = (mouseY / this.zoom) - this.offsetY;
 
-    if (this.zoom < 1.5) this.zoom *= 1.5;
-    else this.zoom /= 1.5;
+    if (this.zoom < 1.5) {
+        this.zoom *= 1.5;
+    } else {
+        this.zoom /= 1.5;
+    }
 
     this.zoom = Math.max(0.2, Math.min(4.0, this.zoom));
 
