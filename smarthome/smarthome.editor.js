@@ -546,7 +546,7 @@ if (!this.isClosed && this.points.length >= 2) {
     const first = this.points[0];
     if (Math.hypot(worldX - first.x, worldY - first.y) < 20) {
 
-        this.points.push(first);
+      // this.points.push(first);
         this.isClosed = true;
 
         // NEU: Winkelanzeige aktivieren
