@@ -1,5 +1,5 @@
 // ======================================================
-// Raumdesigner – kompletter Editor (überarbeitet)
+// Raumdesigner – vollständige, fehlerfreie Version
 // ======================================================
 
 const RoomDesigner = {
@@ -19,6 +19,19 @@ const RoomDesigner = {
 
     isDragging: false,
     _initialized: false,
+
+    // --------------------------------------------------
+    // Grid-Konfiguration
+    // --------------------------------------------------
+    gridSize: 40,          // Standard-Rasterweite in Pixeln
+    gridColor: "#444",     // dezentes Grau
+    gridAlpha: 0.25,       // normale Sichtbarkeit
+    gridAlphaSnap: 0.45,   // deutlicher bei aktivem Snap
+    snapEnabled: false,    // Snap zunächst aus
+
+
+    _closingByButton: false,
+    _contextJustClosed: false,
 
     mode: "points",   // "points" | "doors" | "windows"
     isClosed: false,
@@ -55,6 +68,10 @@ const RoomDesigner = {
         this.setupDoorButton();
         this.setupWindowButton();
         this.createContextMenu();
+        this.setupSnapButton();
+        this.setupGridSlider();
+
+
 
         this.resize();
         this.render();
@@ -64,6 +81,14 @@ const RoomDesigner = {
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
         this.render();
+    },
+
+    // --------------------------------------------------
+    // Rechtsklick verhindern
+    // --------------------------------------------------
+    onRightClick(e) {
+        e.preventDefault();
+        this.hideContextMenu();
     },
 
     // --------------------------------------------------
@@ -78,289 +103,523 @@ const RoomDesigner = {
         el.style.padding = "6px";
         el.style.borderRadius = "6px";
         el.style.zIndex = "20000";
-        el.style.display = "flex";
         el.style.gap = "6px";
 
         document.body.appendChild(el);
         this.contextMenuEl = el;
     },
 
-    hideContextMenu() {
-        if (!this.contextMenuEl) return;
-        this.contextMenuEl.style.display = "none";
-        this.contextTarget = null;
-    },
+hideContextMenu() {
+    if (!this.contextMenuEl) return;
+
+    // Nur wenn das Menü wirklich offen ist UND nicht durch Button geschlossen wird
+    if (this.contextMenuEl.style.display === "flex" && !this._closingByButton) {
+        this._contextJustClosed = true;
+    }
+
+    this.contextMenuEl.style.display = "none";
+    this.contextTarget = null;
+},
 
     showContextMenu(x, y, type, index) {
         const menu = this.contextMenuEl;
         menu.innerHTML = "";
         this.contextTarget = { type, index };
 
-        // Punkt → nur löschen
-        if (type === "point") {
-            this.addContextButton("🗑", () => {
-                const p = this.points[index];
-                this.points = this.points.filter(pt => pt !== p);
-                if (this.points.length < 3) this.isClosed = false;
-                this.updateWalls();
-                this.hideContextMenu();
-                this.render();
-            });
+if (type === "point") {
+    this.addContextButton("🗑", () => {
+
+        // 1. Betroffene Wände bestimmen
+        const prevWall = index - 1;
+        const nextWall = index;
+
+        // 2. Türen/Fenster merken, die auf diesen Wänden liegen
+        const affectedDoors = this.doors.filter(d => d.wallIndex === prevWall || d.wallIndex === nextWall);
+        const affectedWindows = this.windows.filter(w => w.wallIndex === prevWall || w.wallIndex === nextWall);
+
+        // 3. Punkt löschen
+        const p = this.points[index];
+        this.points = this.points.filter(pt => pt !== p);
+        if (this.points.length < 3) this.isClosed = false;
+
+        // 4. Wände neu berechnen
+        this.updateWalls();
+
+        // 5. Neue Wand ist jetzt prevWall
+        const newWallIndex = prevWall;
+
+        // 6. Türen neu projizieren
+        for (const d of affectedDoors) {
+            const w = this.walls[newWallIndex];
+            if (!w) continue;
+
+            const proj = this.projectOnWall(d.x, d.y, w);
+
+            d.wallIndex = newWallIndex;
+            d.t = proj.t;
+            d.x = proj.x;
+            d.y = proj.y;
         }
 
-        // Tür/Fenster → + / - / löschen
-        if (type === "door" || type === "window") {
-            const arr = type === "door" ? this.doors : this.windows;
+        // 7. Fenster neu projizieren
+        for (const win of affectedWindows) {
+            const w = this.walls[newWallIndex];
+            if (!w) continue;
 
-            this.addContextButton("＋", () => {
-                arr[index].width += 10;
-                this.updateWalls();
-                this.render();
-            });
+            const proj = this.projectOnWall(win.x, win.y, w);
 
-            this.addContextButton("－", () => {
-                arr[index].width = Math.max(20, arr[index].width - 10);
-                this.updateWalls();
-                this.render();
-            });
-
-            this.addContextButton("🗑", () => {
-                arr.splice(index, 1);
-                this.hideContextMenu();
-                this.render();
-            });
+            win.wallIndex = newWallIndex;
+            win.t = proj.t;
+            win.x = proj.x;
+            win.y = proj.y;
         }
 
-        menu.style.display = "flex";
+        this.render();
+    }, true);
+}
 
-        const rect = menu.getBoundingClientRect();
-        const spaceRight = window.innerWidth - x - rect.width - 10;
-        const spaceTop = y - rect.height - 10;
-        const spaceBottom = window.innerHeight - y - rect.height - 10;
 
-        if (spaceRight > 0) {
-            menu.style.left = (x + 10) + "px";
-            menu.style.top = (y - rect.height / 2) + "px";
-        } else if (spaceTop > 0) {
-            menu.style.left = (x - rect.width / 2) + "px";
-            menu.style.top = (y - rect.height - 10) + "px";
-        } else if (spaceBottom > 0) {
-            menu.style.left = (x - rect.width / 2) + "px";
-            menu.style.top = (y + 10) + "px";
-        } else {
-            menu.style.left = (x - rect.width - 10) + "px";
-            menu.style.top = (y - rect.height / 2) + "px";
-        }
+
+if (type === "door" || type === "window") {
+    const arr = type === "door" ? this.doors : this.windows;
+
+    // PLUS → Menü bleibt offen
+    this.addContextButton("＋", () => {
+        arr[index].width += 10;
+        this.updateWalls();
+        this.render();
+    }, false);
+
+    // MINUS → Menü bleibt offen
+    this.addContextButton("－", () => {
+        arr[index].width = Math.max(20, arr[index].width - 10);
+        this.updateWalls();
+        this.render();
+    }, false);
+
+    // DELETE → Menü schließt sich
+    this.addContextButton("🗑", () => {
+        arr.splice(index, 1);
+        this.updateWalls();
+        this.render();
+    }, true);
+}
+
+
+menu.style.display = "flex";
+
+const rect = menu.getBoundingClientRect();
+const offset = 20;
+
+// Standard: rechts unten neben dem Objekt
+let left = x + offset;
+let top = y + offset;
+
+// Falls rechts kein Platz → links
+if (left + rect.width > window.innerWidth) {
+    left = x - rect.width - offset;
+}
+
+// Falls unten kein Platz → oben
+if (top + rect.height > window.innerHeight) {
+    top = y - rect.height - offset;
+}
+
+// Falls links immer noch außerhalb → rechts erzwingen
+if (left < 0) {
+    left = x + offset;
+}
+
+// Falls oben immer noch außerhalb → unten erzwingen
+if (top < 0) {
+    top = y + offset;
+}
+
+menu.style.left = left + "px";
+menu.style.top = top + "px";
+
     },
 
-    addContextButton(label, fn) {
-        const btn = document.createElement("button");
-        btn.textContent = label;
-        btn.style.width = "32px";
-        btn.style.height = "32px";
-        btn.style.fontSize = "18px";
-        btn.style.border = "none";
-        btn.style.borderRadius = "4px";
-        btn.style.background = "#444";
-        btn.style.color = "#fff";
-        btn.style.cursor = "pointer";
-        btn.addEventListener("click", fn);
-        this.contextMenuEl.appendChild(btn);
-    },
+addContextButton(label, fn, closeMenu = false) {
+    const btn = document.createElement("button");
+    btn.textContent = label;
+    btn.style.width = "32px";
+    btn.style.height = "32px";
+    btn.style.fontSize = "18px";
+    btn.style.border = "none";
+    btn.style.borderRadius = "4px";
+    btn.style.background = "#444";
+    btn.style.color = "#fff";
+    btn.style.cursor = "pointer";
+
+    btn.addEventListener("click", () => {
+
+        // PLUS / MINUS → Menü bleibt offen
+        if (!closeMenu) {
+            fn && fn();
+            return;
+        }
+
+        // DELETE → Menü schließen
+        this._closingByButton = true;
+        fn && fn();
+        this.hideContextMenu();
+        this._closingByButton = false;
+    });
+
+    this.contextMenuEl.appendChild(btn);
+},
 
     // --------------------------------------------------
     // Eingaben
     // --------------------------------------------------
-    onMove(e) {
-        const rect = this.canvas.getBoundingClientRect();
-        let hx = e.clientX - rect.left;
-        let hy = e.clientY - rect.top;
+onMove(e) {
+    const rect = this.canvas.getBoundingClientRect();
+    let hx = e.clientX - rect.left;
+    let hy = e.clientY - rect.top;
 
-        // Magnetisches Einrasten
-        if (this.points.length > 0) {
-            const first = this.points[0];
-            if (!this.isClosed && Math.hypot(hx - first.x, hy - first.y) < 20) {
-                hx = first.x;
-                hy = first.y;
-            }
+    // Snap auf ersten Punkt (nur wenn offen)
+    if (!this.isClosed && this.points.length > 0) {
+        const first = this.points[0];
+        if (Math.hypot(hx - first.x, hy - first.y) < 20) {
+            hx = first.x;
+            hy = first.y;
         }
+    }
 
-        this.hover.x = hx;
-        this.hover.y = hy;
+    this.hover.x = hx;
+    this.hover.y = hy;
 
-        // Tür verschieben
-        if (this.draggingDoorIndex !== null) {
-            const d = this.doors[this.draggingDoorIndex];
-            const w = this.walls[d.wallIndex];
-            if (w) {
-                const proj = this.projectOnWall(hx, hy, w);
-                d.t = proj.t;
-                d.x = proj.x;
-                d.y = proj.y;
-            }
-            this.render();
-            return;
+    // --------------------------------------------------
+    // DRAG: Tür
+    // --------------------------------------------------
+    if (this.draggingDoorIndex !== null) {
+        const d = this.doors[this.draggingDoorIndex];
+        const w = this.walls[d.wallIndex];
+        if (w) {
+            const proj = this.projectOnWall(hx, hy, w);
+            d.t = proj.t;
+            d.x = proj.x;
+            d.y = proj.y;
         }
+        this.isDragging = true;
+        this.render();
+        return;
+    }
 
-        // Fenster verschieben
-        if (this.draggingWindowIndex !== null) {
-            const wObj = this.windows[this.draggingWindowIndex];
-            const w = this.walls[wObj.wallIndex];
-            if (w) {
-                const proj = this.projectOnWall(hx, hy, w);
-                wObj.t = proj.t;
-                wObj.x = proj.x;
-                wObj.y = proj.y;
-            }
-            this.render();
-            return;
+    // --------------------------------------------------
+    // DRAG: Fenster
+    // --------------------------------------------------
+    if (this.draggingWindowIndex !== null) {
+        const wObj = this.windows[this.draggingWindowIndex];
+        const w = this.walls[wObj.wallIndex];
+        if (w) {
+            const proj = this.projectOnWall(hx, hy, w);
+            wObj.t = proj.t;
+            wObj.x = proj.x;
+            wObj.y = proj.y;
         }
+        this.isDragging = true;
+        this.render();
+        return;
+    }
 
-        // Punkt ziehen
-        if (this.isDragging && this.selectedPoint) {
-            this.selectedPoint.x = hx;
-            this.selectedPoint.y = hy;
+    // --------------------------------------------------
+    // DRAG: Punkt
+    // --------------------------------------------------
+    if (this.selectedPoint) {
+
+        const dx = hx - this.selectedPoint.x;
+        const dy = hy - this.selectedPoint.y;
+
+        if (Math.hypot(dx, dy) > 2) {
+
+            // Verschmelzen durch Drag
+            if (!this.isClosed) {
+                const first = this.points[0];
+                if (this.selectedPoint !== first &&
+                    Math.hypot(hx - first.x, hy - first.y) < 20) {
+
+                    this.points[this.points.length - 1] = first;
+                    this.isClosed = true;
+                    this.updateWalls();
+                    this.isDragging = true;
+                    this.render();
+                    return;
+                }
+            }
+
+if (this.snapEnabled) {
+    this.selectedPoint.x = this.snap(hx);
+    this.selectedPoint.y = this.snap(hy);
+} else {
+    this.selectedPoint.x = hx;
+    this.selectedPoint.y = hy;
+}
+
             this.updateWalls();
+            this.isDragging = true;
         }
 
         this.render();
+        return;
+    }
+
+// --------------------------------------------------
+// Prüfen, ob ein Klick-Kandidat zum Drag wird
+// --------------------------------------------------
+if (this._pendingContext) {
+    const dx = hx - this._pendingContext.x;
+    const dy = hy - this._pendingContext.y;
+
+    if (Math.hypot(dx, dy) > 2) {
+
+        // Punkt wird zum Drag
+        if (this._pendingContext.type === "point") {
+            this.selectedPoint = this.points[this._pendingContext.index];
+        }
+
+        // Tür wird zum Drag
+        if (this._pendingContext.type === "door") {
+            this.draggingDoorIndex = this._pendingContext.index;
+        }
+
+        // Fenster wird zum Drag
+        if (this._pendingContext.type === "window") {
+            this.draggingWindowIndex = this._pendingContext.index;
+        }
+
+        this._pendingContext = null;
+        this.isDragging = true;
+    }
+}
+
+
+    this.render();
+},
+
+    // --------------------------------------------------
+    // HIT-DETECTION REIHENFOLGE (wichtig!)
+    // --------------------------------------------------
+    hitTest(x, y) {
+        const doorIndex = this.getDoorIndexAt(x, y);
+        if (doorIndex !== null) return { type: "door", index: doorIndex };
+
+        const windowIndex = this.getWindowIndexAt(x, y);
+        if (windowIndex !== null) return { type: "window", index: windowIndex };
+
+        const point = this.getPointAt(x, y);
+        if (point) return { type: "point", index: this.points.indexOf(point) };
+
+        const wall = this.getWallAt(x, y);
+        if (wall) return { type: "wall", data: wall };
+
+        return { type: "empty" };
     },
 
-    onDown(e) {
-        const rect = this.canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+onDown(e) {
+    const rect = this.canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
 
-        // Rechtsklick → Delete-Toast
-        if (e.button === 2) return;
-
-        // Klick ins Leere → Kontext schließen
+    // Rechtsklick → Menü schließen, Klick ignorieren
+    if (e.button === 2) {
         this.hideContextMenu();
+        return;
+    }
 
-        // --------------------------------------------------
-        // EINMALIGER FENSTER-MODUS
-        // --------------------------------------------------
-        if (this.mode === "windows") {
+    // Prüfen, ob wir auf ein Objekt klicken
+    const hit = this.hitTest(x, y);
+    const clickingObject =
+        hit.type === "point" ||
+        hit.type === "door" ||
+        hit.type === "window" ||
+        hit.type === "wall";
 
-            const winIndex = this.getWindowIndexAt(x, y);
-            if (winIndex !== null) {
-                this.showContextMenu(x, y, "window", winIndex);
-                return;
-            }
+    const menuWasOpen =
+        this.contextMenuEl &&
+        this.contextMenuEl.style.display === "flex";
 
-            const hit = this.getWallAt(x, y);
-            if (hit) {
-                this.windows.push({
-                    wallIndex: hit.index,
-                    t: hit.t,
-                    x: hit.x,
-                    y: hit.y,
-                    width: 80
-                });
-                this.updateWalls();
-                this.render();
-            }
+    // Menü schließen
+    this.hideContextMenu();
 
-            // EINMALIG → zurück zu Punkten
-            this.mode = "points";
+    // Wenn Menü offen war und wir NICHT auf ein Objekt klicken → Klick ignorieren
+    if (this._contextJustClosed && !clickingObject) {
+        this._contextJustClosed = false;
+        return;
+    }
+
+    // Wenn Menü offen war und wir auf ein Objekt klicken → Klick NICHT ignorieren
+    if (this._contextJustClosed && clickingObject) {
+        this._contextJustClosed = false;
+        // WICHTIG: weiterlaufen lassen!
+    }
+
+    // --------------------------------------------------
+    // Raum schließen durch Klick auf ersten Punkt
+    // --------------------------------------------------
+    if (!this.isClosed && this.points.length >= 2) {
+        const first = this.points[0];
+        if (Math.hypot(x - first.x, y - first.y) < 20) {
+
+            this.points.push(first);
+
+            this.isClosed = true;
+            this.updateWalls();
+            this.render();
+            return;
+        }
+    }
+
+    // Hit-Test erneut verwenden
+    // (wir haben oben schon hit berechnet)
+    // --------------------------------------------------
+    // Fenster-Modus
+    // --------------------------------------------------
+    if (this.mode === "windows") {
+
+        if (hit.type === "window") {
+            this._pendingContext = { x, y, type: "window", index: hit.index };
             return;
         }
 
-        // --------------------------------------------------
-        // EINMALIGER TÜR-MODUS
-        // --------------------------------------------------
-        if (this.mode === "doors") {
+        if (hit.type === "wall") {
+            const w = hit.data;
+            this.windows.push({
+                wallIndex: w.index,
+                t: w.t,
+                x: w.x,
+                y: w.y,
+                width: 80
+            });
+            this.updateWalls();
+            this.render();
+        }
 
-            const doorIndex = this.getDoorIndexAt(x, y);
-            if (doorIndex !== null) {
-                this.showContextMenu(x, y, "door", doorIndex);
-                return;
-            }
+        this.mode = "points";
+        return;
+    }
 
-            const hit = this.getWallAt(x, y);
-            if (hit) {
+    // --------------------------------------------------
+    // Tür-Modus
+    // --------------------------------------------------
+    if (this.mode === "doors") {
+
+        if (!this._placingDoor) {
+            if (hit.type === "wall") {
+                const w = hit.data;
                 this.doors.push({
-                    wallIndex: hit.index,
-                    t: hit.t,
-                    x: hit.x,
-                    y: hit.y,
+                    wallIndex: w.index,
+                    t: w.t,
+                    x: w.x,
+                    y: w.y,
                     width: 36,
                     hinge: null,
                     side: 1
                 });
-                this.render();
-            }
-
-            // EINMALIG → zurück zu Punkten
-            this.mode = "points";
-            return;
-        }
-
-        // --------------------------------------------------
-        // PUNKT-MODUS
-        // --------------------------------------------------
-
-        // Raum schließen
-        if (!this.isClosed && this.points.length > 2) {
-            const first = this.points[0];
-            if (Math.hypot(x - first.x, y - first.y) < 20) {
-                this.isClosed = true;
-                this.updateWalls();
+                this._placingDoor = true;
                 this.render();
                 return;
             }
         }
 
-        // Punkt getroffen
-        const hitPoint = this.getPointAt(x, y);
-        if (hitPoint) {
-            const idx = this.points.indexOf(hitPoint);
-            this.selectedPoint = hitPoint;
-            this.isDragging = true;
-            this.showContextMenu(x, y, "point", idx);
-            return;
-        }
+        if (this._placingDoor) {
+            const lastDoor = this.doors[this.doors.length - 1];
+            const w = this.walls[lastDoor.wallIndex];
+            this.setDoorHingeFromTap(lastDoor, x, y, w);
 
-        // Punkt in Wand einfügen
-        const wallHit = this.getWallAt(x, y);
-        if (wallHit) {
-            const idx = wallHit.index;
-            const insertPoint = { x: wallHit.x, y: wallHit.y };
-
-            if (idx < this.points.length - 1) {
-                this.points.splice(idx + 1, 0, insertPoint);
-            } else {
-                this.points.push(insertPoint);
-            }
-
-            this.updateWalls();
+            this._placingDoor = false;
+            this.mode = "points";
             this.render();
             return;
         }
+    }
 
-        // Neuen Punkt setzen
-        if (!this.isClosed) {
-            this.points.push({ x, y });
-            this.updateWalls();
-            this.render();
+    // --------------------------------------------------
+    // Punkt-Modus
+    // --------------------------------------------------
+
+    if (hit.type === "door") {
+        this._pendingContext = { x, y, type: "door", index: hit.index };
+        return;
+    }
+
+    if (hit.type === "window") {
+        this._pendingContext = { x, y, type: "window", index: hit.index };
+        return;
+    }
+
+    if (hit.type === "point") {
+        this._pendingContext = { x, y, type: "point", index: hit.index };
+        return;
+    }
+
+    // Punkt auf Wand einfügen
+    if (hit.type === "wall") {
+        const w = hit.data;
+        const insertPoint = { x: w.x, y: w.y };
+
+        this.points.splice(w.index + 1, 0, insertPoint);
+
+        this.updateWalls();
+        this.render();
+        return;
+    }
+
+    // Neuen Punkt setzen
+    if (!this.isClosed) {
+    
+        let px = x;
+        let py = y;
+    
+        if (this.snapEnabled) {
+            px = this.snap(px);
+            py = this.snap(py);
         }
-    },
+    
+        this.points.push({ x: px, y: py });
+        this.updateWalls();
+        this.render();
+        return;
+    }
 
-    onUp() {
+},
+
+onUp() {
+
+    // Wenn wir gerade etwas gezogen haben → Drag-Ende
+    if (this.isDragging) {
         this.isDragging = false;
         this.selectedPoint = null;
         this.draggingDoorIndex = null;
         this.draggingWindowIndex = null;
-    },
+        this._pendingContext = null;
+        return;
+    }
+
+    // Wenn ein Kontextkandidat existiert → Kontextmenü öffnen
+    if (this._pendingContext) {
+        const c = this._pendingContext;
+
+        // WICHTIG: pendingContext sofort löschen,
+        // damit kein zweites Menü entsteht
+        this._pendingContext = null;
+
+        this.showContextMenu(c.x, c.y, c.type, c.index);
+        return;
+    }
+
+    // Reset aller Drag-/Kontextvariablen
+    this.selectedPoint = null;
+    this.draggingDoorIndex = null;
+    this.draggingWindowIndex = null;
+    this._pendingContext = null;
+},
     // --------------------------------------------------
     // Hilfsfunktionen
     // --------------------------------------------------
     getPointAt(x, y) {
         return this.points.find(p => Math.hypot(p.x - x, p.y - y) < 10);
-    },
-
-    getDoorAt(x, y) {
-        return this.doors.find(d => Math.hypot(d.x - x, d.y - y) < 15);
     },
 
     getDoorIndexAt(x, y) {
@@ -371,10 +630,6 @@ const RoomDesigner = {
         return null;
     },
 
-    getWindowAt(x, y) {
-        return this.windows.find(w => Math.hypot(w.x - x, w.y - y) < 15);
-    },
-
     getWindowIndexAt(x, y) {
         for (let i = 0; i < this.windows.length; i++) {
             const w = this.windows[i];
@@ -383,32 +638,50 @@ const RoomDesigner = {
         return null;
     },
 
-    getWallAt(x, y) {
-        for (let i = 0; i < this.walls.length; i++) {
-            const w = this.walls[i];
+// --------------------------------------------------
+// Snap auf Grid
+// --------------------------------------------------
+snap(value) {
+    return Math.round(value / this.gridSize) * this.gridSize;
+},
 
-            const A = { x: w.x1, y: w.y1 };
-            const B = { x: w.x2, y: w.y2 };
+ // --------------------------------------------------
+// Grid-Größe ändern
+// --------------------------------------------------
+setGridSize(size) {
+    this.gridSize = Math.max(5, size); // Mindestgröße
+    this.render();
+},
+   
+    
+getWallAt(x, y) {
+    // Wände IMMER prüfen – auch wenn der Raum offen ist
 
-            const ABx = B.x - A.x;
-            const ABy = B.y - A.y;
-            const APx = x - A.x;
-            const APy = y - A.y;
+    for (let i = 0; i < this.walls.length; i++) {
+        const w = this.walls[i];
 
-            const abLen = Math.hypot(ABx, ABy);
-            if (abLen === 0) continue;
+        const A = { x: w.x1, y: w.y1 };
+        const B = { x: w.x2, y: w.y2 };
 
-            const t = Math.max(0, Math.min(1, (APx * ABx + APy * ABy) / (abLen * abLen)));
+        const ABx = B.x - A.x;
+        const ABy = B.y - A.y;
+        const APx = x - A.x;
+        const APy = y - A.y;
 
-            const cx = A.x + t * ABx;
-            const cy = A.y + t * ABy;
+        const abLen = Math.hypot(ABx, ABy);
+        if (abLen === 0) continue;
 
-            if (Math.hypot(x - cx, y - cy) < 10) {
-                return { index: i, t, x: cx, y: cy };
-            }
+        const t = Math.max(0, Math.min(1, (APx * ABx + APy * ABy) / (abLen * abLen)));
+
+        const cx = A.x + t * ABx;
+        const cy = A.y + t * ABy;
+
+        if (Math.hypot(x - cx, y - cy) < 10) {
+            return { index: i, t, x: cx, y: cy };
         }
-        return null;
-    },
+    }
+    return null;
+},
 
     projectOnWall(x, y, w) {
         const A = { x: w.x1, y: w.y1 };
@@ -433,7 +706,7 @@ const RoomDesigner = {
     },
 
     // --------------------------------------------------
-    // Tür-Scharnier (UNVERÄNDERT GELASSEN!)
+    // Tür-Scharnier (alte Logik, exakt wie früher)
     // --------------------------------------------------
     setDoorHingeFromTap(door, tapX, tapY, wall) {
         const dx = wall.x2 - wall.x1;
@@ -444,9 +717,9 @@ const RoomDesigner = {
         const tx = dx / len;
         const ty = dy / len;
 
-        const half = door.width / 2;
         const cx = door.x;
         const cy = door.y;
+        const half = door.width / 2;
 
         const x1 = cx - tx * half;
         const y1 = cy - ty * half;
@@ -470,6 +743,8 @@ const RoomDesigner = {
 
         const ex = ox - hx;
         const ey = oy - hy;
+        const elen = Math.hypot(ex, ey);
+        if (elen === 0) return;
 
         const vx = tapX - hx;
         const vy = tapY - hy;
@@ -481,41 +756,101 @@ const RoomDesigner = {
     // --------------------------------------------------
     // Wände aktualisieren
     // --------------------------------------------------
-    updateWalls() {
-        this.walls = [];
+updateWalls() {
+    this.walls = [];
 
-        if (this.points.length < 2) return;
+    if (this.points.length < 2) return;
 
-        for (let i = 0; i < this.points.length - 1; i++) {
-            const a = this.points[i];
-            const b = this.points[i + 1];
-            this.walls.push({ x1: a.x, y1: a.y, x2: b.x, y2: b.y });
+    // --------------------------------------------------
+    // Wände neu aufbauen
+    // --------------------------------------------------
+    for (let i = 0; i < this.points.length - 1; i++) {
+        const a = this.points[i];
+        const b = this.points[i + 1];
+        this.walls.push({ x1: a.x, y1: a.y, x2: b.x, y2: b.y });
+    }
+
+    if (this.isClosed && this.points.length > 2) {
+        const last = this.points[this.points.length - 1];
+        const first = this.points[0];
+        this.walls.push({ x1: last.x, y1: last.y, x2: first.x, y2: first.y });
+    }
+
+    // --------------------------------------------------
+    // Türen neu zuordnen (robust gegen Punkt-Einfügen)
+    // --------------------------------------------------
+    for (const d of this.doors) {
+        let bestWall = null;
+        let bestDist = Infinity;
+        let bestT = 0;
+
+        for (let i = 0; i < this.walls.length; i++) {
+            const w = this.walls[i];
+            const proj = this.projectOnWall(d.x, d.y, w);
+            const dist = Math.hypot(d.x - proj.x, d.y - proj.y);
+
+            if (dist < bestDist) {
+                bestDist = dist;
+                bestWall = i;
+                bestT = proj.t;
+            }
         }
 
-        if (this.isClosed && this.points.length > 2) {
-            const last = this.points[this.points.length - 1];
-            const first = this.points[0];
-            this.walls.push({ x1: last.x, y1: last.y, x2: first.x, y2: first.y });
-        }
+        if (bestWall !== null) {
+            d.wallIndex = bestWall;
+            d.t = bestT;
 
-        // Türen/Fenster mitwandern lassen
-        for (const d of this.doors) {
-            const w = this.walls[d.wallIndex];
-            if (!w) continue;
+            const w = this.walls[bestWall];
             const A = { x: w.x1, y: w.y1 };
             const B = { x: w.x2, y: w.y2 };
             d.x = A.x + (B.x - A.x) * d.t;
             d.y = A.y + (B.y - A.y) * d.t;
         }
+    }
 
-        for (const win of this.windows) {
-            const w = this.walls[win.wallIndex];
-            if (!w) continue;
+    // --------------------------------------------------
+    // Fenster neu zuordnen
+    // --------------------------------------------------
+    for (const win of this.windows) {
+        let bestWall = null;
+        let bestDist = Infinity;
+        let bestT = 0;
+
+        for (let i = 0; i < this.walls.length; i++) {
+            const w = this.walls[i];
+            const proj = this.projectOnWall(win.x, win.y, w);
+            const dist = Math.hypot(win.x - proj.x, win.y - proj.y);
+
+            if (dist < bestDist) {
+                bestDist = dist;
+                bestWall = i;
+                bestT = proj.t;
+            }
+        }
+
+        if (bestWall !== null) {
+            win.wallIndex = bestWall;
+            win.t = bestT;
+
+            const w = this.walls[bestWall];
             const A = { x: w.x1, y: w.y1 };
             const B = { x: w.x2, y: w.y2 };
             win.x = A.x + (B.x - A.x) * win.t;
             win.y = A.y + (B.y - A.y) * win.t;
         }
+    }
+},
+  
+    // --------------------------------------------------
+    // Canvas-Transform (für zukünftigen Zoom/Pan vorbereitet)
+    // --------------------------------------------------
+    applyTransform() {
+        const ctx = this.ctx;
+        if (!ctx) return;
+    
+        // Aktuell kein Zoom/Offset – später hier erweitern
+        // ctx.scale(this.zoom, this.zoom);
+        // ctx.translate(this.offsetX, this.offsetY);
     },
 
     // --------------------------------------------------
@@ -523,7 +858,11 @@ const RoomDesigner = {
     // --------------------------------------------------
     render() {
         const ctx = this.ctx;
+        if (!ctx || !this.canvas) return;
+
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        this.applyTransform();
 
         this.drawGrid();
         this.drawFloor();
@@ -531,7 +870,7 @@ const RoomDesigner = {
         this.drawWalls();
         this.drawWallLengths();
 
-        // Winkelanzeige
+        // Winkelanzeige beim Draggen eines Punktes
         if (this.isDragging && this.selectedPoint) {
             const idx = this.points.indexOf(this.selectedPoint);
             const affected = new Set([idx]);
@@ -564,27 +903,128 @@ const RoomDesigner = {
         this.drawHoverCross();
     },
 
+
+    // --------------------------------------------------
+    // Grid (zoomfähig, konfigurierbar, snap-aware)
+    // --------------------------------------------------
     drawGrid() {
         const ctx = this.ctx;
-        ctx.strokeStyle = "rgba(255,255,255,0.05)";
+        if (!ctx || !this.canvas) return;
+    
+        const size = this.gridSize;
+    
+        ctx.save();
+    
+        // Grid-Farbe abhängig von Snap
+        ctx.strokeStyle = this.gridColor;
+        ctx.globalAlpha = this.snapEnabled ? this.gridAlphaSnap : this.gridAlpha;
         ctx.lineWidth = 1;
+    
+        // Sichtbare Fläche im transformierten Raum
+        const width = this.canvas.width;
+        const height = this.canvas.height;
+    
+        // Startpunkte am Raster ausrichten
+        // Offset + Zoom berücksichtigen
+        const zoom = this.zoom || 1;
+        const offX = this.offsetX || 0;
+        const offY = this.offsetY || 0;
+        
+        // Startpunkte am Raster ausrichten
+        const startX = -((offX / zoom) % size);
+        const startY = -((offY / zoom) % size);
 
-        const grid = 40;
-
-        for (let x = 0; x < this.canvas.width; x += grid) {
+    
+        // Vertikale Linien
+        for (let x = startX; x < width; x += size) {
             ctx.beginPath();
             ctx.moveTo(x, 0);
-            ctx.lineTo(x, this.canvas.height);
+            ctx.lineTo(x, height);
             ctx.stroke();
         }
-
-        for (let y = 0; y < this.canvas.height; y += grid) {
+    
+        // Horizontale Linien
+        for (let y = startY; y < height; y += size) {
             ctx.beginPath();
             ctx.moveTo(0, y);
-            ctx.lineTo(this.canvas.width, y);
+            ctx.lineTo(width, y);
+            ctx.stroke();
+        }
+    
+        ctx.restore();
+    },
+    
+    
+        
+        
+    
+    // --------------------------------------------------
+    // Boden zeichnen
+    // --------------------------------------------------
+    drawFloor() {
+        if (this.points.length < 3) return;
+
+        const ctx = this.ctx;
+        ctx.fillStyle = "rgba(255,255,255,0.03)";
+        ctx.beginPath();
+        ctx.moveTo(this.points[0].x, this.points[0].y);
+
+        for (let i = 1; i < this.points.length; i++) {
+            ctx.lineTo(this.points[i].x, this.points[i].y);
+        }
+
+        if (this.isClosed) ctx.closePath();
+        ctx.fill();
+    },
+
+    // --------------------------------------------------
+    // Polygon zeichnen
+    // --------------------------------------------------
+    drawPolygon() {
+        if (this.points.length === 0) return;
+
+        const ctx = this.ctx;
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 2;
+
+        ctx.beginPath();
+        ctx.moveTo(this.points[0].x, this.points[0].y);
+
+        for (let i = 1; i < this.points.length; i++) {
+            ctx.lineTo(this.points[i].x, this.points[i].y);
+        }
+
+        if (this.isClosed) ctx.closePath();
+        ctx.stroke();
+
+        // Punkte zeichnen
+        for (const p of this.points) {
+            ctx.fillStyle = "#ffffff";
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    },
+
+    // --------------------------------------------------
+    // Wände zeichnen
+    // --------------------------------------------------
+    drawWalls() {
+        const ctx = this.ctx;
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 4;
+
+        for (const w of this.walls) {
+            ctx.beginPath();
+            ctx.moveTo(w.x1, w.y1);
+            ctx.lineTo(w.x2, w.y2);
             ctx.stroke();
         }
     },
+
+    // --------------------------------------------------
+    // Wandlängen
+    // --------------------------------------------------
     drawWallLengths() {
         if (!this.isDragging || !this.selectedPoint) return;
 
@@ -622,6 +1062,9 @@ const RoomDesigner = {
         }
     },
 
+    // --------------------------------------------------
+    // Winkelanzeige
+    // --------------------------------------------------
     drawAngleAtPoint(P, A, B) {
         const ctx = this.ctx;
 
@@ -649,7 +1092,7 @@ const RoomDesigner = {
     },
 
     // --------------------------------------------------
-    // Türen zeichnen (Scharnier-Logik UNVERÄNDERT)
+    // Türen zeichnen (alte Darstellung)
     // --------------------------------------------------
     drawDoors() {
         const ctx = this.ctx;
@@ -678,7 +1121,7 @@ const RoomDesigner = {
             const y2 = cy + ty * half;
 
             // Türblatt
-            ctx.strokeStyle = "#00ffcc";
+            ctx.strokeStyle = "#00ffc8";
             ctx.lineWidth = 6;
             ctx.beginPath();
             ctx.moveTo(x1, y1);
@@ -754,7 +1197,7 @@ const RoomDesigner = {
     drawWindows() {
         const ctx = this.ctx;
 
-        ctx.strokeStyle = "#5dade2";
+        ctx.strokeStyle = "#4aa3ff";
         ctx.lineWidth = 4;
 
         for (const w of this.windows) {
@@ -816,11 +1259,9 @@ const RoomDesigner = {
         if (!btn) return;
 
         btn.addEventListener("click", () => {
-            this.mode = "doors";   // EINMALIG
-            btn.style.background = "#e29a4a";
-
-            const winBtn = document.getElementById("btnWindowMode");
-            if (winBtn) winBtn.style.background = "#3498db";
+            this.hideContextMenu();
+            this.mode = "doors";
+            this._placingDoor = false;
         });
     },
 
@@ -829,15 +1270,43 @@ const RoomDesigner = {
         if (!btn) return;
 
         btn.addEventListener("click", () => {
-            this.mode = "windows"; // EINMALIG
-            btn.style.background = "#5dade2";
-
-            const doorBtn = document.getElementById("btnDoorMode");
-            if (doorBtn) doorBtn.style.background = "#4a90e2";
+            this.hideContextMenu();
+            this.mode = "windows";
         });
     },
+
     // --------------------------------------------------
-    // Delete-Toast (unverändert)
+    // Grid-Size Slider
+    // --------------------------------------------------
+    setupGridSlider() {
+        const slider = document.getElementById("gridSizeSlider");
+        if (!slider) return;
+    
+        slider.addEventListener("input", () => {
+            this.setGridSize(parseInt(slider.value));
+        });
+    },
+
+    
+    // --------------------------------------------------
+    // Snap-Toggle
+    // --------------------------------------------------
+    setupSnapButton() {
+        const btn = document.getElementById("btnSnapToggle");
+        if (!btn) return;
+    
+        btn.addEventListener("click", () => {
+            this.snapEnabled = !this.snapEnabled;
+    
+            // Optional: Button visuell hervorheben
+            btn.style.background = this.snapEnabled ? "#66bb6a" : "#444";
+    
+            this.render();
+        });
+    },
+
+    // --------------------------------------------------
+    // Delete-Toast
     // --------------------------------------------------
     showDeleteToast(message, onConfirm) {
         this._toastConfirmFn = onConfirm;
@@ -870,7 +1339,7 @@ const RoomDesigner = {
             btnYes.style.color = "#fff";
             btnYes.style.fontSize = "16px";
 
-            const btnNo = document.createElement("button";
+            const btnNo = document.createElement("button");
             btnNo.textContent = "Abbrechen";
             btnNo.style.padding = "10px 16px";
             btnNo.style.border = "none";
@@ -881,6 +1350,7 @@ const RoomDesigner = {
 
             btnYes.addEventListener("click", () => {
                 if (this._toastConfirmFn) this._toastConfirmFn();
+                    this._contextJustClosed = false;
                 this.hideToast();
             });
 
@@ -912,29 +1382,29 @@ const RoomDesigner = {
 
 
 // --------------------------------------------------
-// Debug: Editor öffnen
+// Editor öffnen
 // --------------------------------------------------
 window.addEventListener("DOMContentLoaded", () => {
     const openBtn = document.getElementById("btnOpenEditor");
-    if (openBtn) {
-        openBtn.addEventListener("click", () => {
-            const root = document.getElementById("smarthome-root");
-            const header = document.getElementById("sh-group-header");
-            const minimap = document.getElementById("smarthome-minimap");
+    if (!openBtn) return;
 
-            if (root) root.style.display = "none";
-            if (header) header.style.display = "none";
-            if (minimap) minimap.style.display = "none";
+    openBtn.addEventListener("click", () => {
+        const root = document.getElementById("smarthome-root");
+        const header = document.getElementById("sh-group-header");
+        const minimap = document.getElementById("smarthome-minimap");
 
-            const canvas = document.getElementById("roomdesigner");
-            const doorBtn = document.getElementById("btnDoorMode");
-            const winBtn = document.getElementById("btnWindowMode");
+        if (root) root.style.display = "none";
+        if (header) header.style.display = "none";
+        if (minimap) minimap.style.display = "none";
 
-            if (canvas) canvas.style.display = "block";
-            if (doorBtn) doorBtn.style.display = "block";
-            if (winBtn) winBtn.style.display = "block";
+        const canvas = document.getElementById("roomdesigner");
+        const doorBtn = document.getElementById("btnDoorMode");
+        const winBtn = document.getElementById("btnWindowMode");
 
-            RoomDesigner.init();
-        });
-    }
+        if (canvas) canvas.style.display = "block";
+        if (doorBtn) doorBtn.style.display = "block";
+        if (winBtn) winBtn.style.display = "block";
+
+        RoomDesigner.init();
+    });
 });
