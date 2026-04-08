@@ -50,6 +50,7 @@ const RoomDesigner = {
     _lastClickTime: 0,
     _pendingNewPoint: null,
     _suppressNextClick: false,
+    _justSnapped: false,
 
     
     // Touch-Zustand für Pinch-Zoom
@@ -382,38 +383,34 @@ onMove(e) {
                 py = this.snap(py);
             }
 
-            // Snap auf ersten Punkt → wie Setzen: neuer Punkt
+            // Snap auf ersten Punkt → verschmelzen
             if (!this.isClosed && this.points.length > 1) {
                 const first = this.points[0];
-
+            
                 if (this.selectedPoint !== first) {
                     if (Math.hypot(px - first.x, py - first.y) < 20) {
-
+            
                         const idx = this.points.indexOf(this.selectedPoint);
-
-                        // 1) alten Punkt komplett entfernen
-                        this.points.splice(idx, 1);
-
-                        // 2) neuen Punkt erzeugen (wie beim Setzen)
-                        const newPoint = { x: first.x, y: first.y };
-
-                        // 3) an derselben Stelle einfügen
-                        this.points.splice(idx, 0, newPoint);
-
-                        // 4) alle Referenzen auf alten Punkt löschen
-                        this.selectedPoint = newPoint;
-                        this._pendingContext = null;
-                        this._pendingNewPoint = null;
-
-                        // 5) Drag beenden
+            
+                        // alten Punkt entfernen
+                        if (idx !== -1) this.points.splice(idx, 1);
+            
+                        // ausgewählter Punkt ist jetzt der erste
+                        this.selectedPoint = first;
+            
+                        // wichtig: Snap-Flag setzen
+                        this._justSnapped = true;
+            
+                        // Drag beenden
                         this.isDragging = false;
-
+            
                         this.updateWalls();
                         this.render();
                         return;
                     }
                 }
             }
+
 
             // Normales Draggen
             this.selectedPoint.x = px;
@@ -670,6 +667,12 @@ if (!this.isClosed && this.points.length >= 2) {
 
 
 onUp(e) {
+// Wenn gerade gesnapped wurde → Klick komplett ignorieren
+if (this._justSnapped) {
+    this._justSnapped = false;
+    this._pendingNewPoint = null;
+    return;
+}
 
     this.isPanCandidate = false;
 
