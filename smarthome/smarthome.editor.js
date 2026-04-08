@@ -367,16 +367,34 @@ onMove(e) {
 
     // Drag bewegen
     if (this.isDragging) {
-        if (this.selectedPoint) {
-            if (this.snapEnabled) {
-                this.selectedPoint.x = this.snap(worldX);
-                this.selectedPoint.y = this.snap(worldY);
-            } else {
-                this.selectedPoint.x = worldX;
-                this.selectedPoint.y = worldY;
+if (this.selectedPoint) {
+
+    let px = worldX;
+    let py = worldY;
+
+    // 1) Grid-Snap
+    if (this.snapEnabled) {
+        px = this.snap(px);
+        py = this.snap(py);
+    }
+
+    // 2) Snap auf ersten Punkt (wenn Raum noch offen)
+    if (!this.isClosed && this.points.length > 1) {
+        const first = this.points[0];
+        if (this.selectedPoint !== first) {
+            if (Math.hypot(px - first.x, py - first.y) < 20) {
+                px = first.x;
+                py = first.y;
             }
-            this.updateWalls();
         }
+    }
+
+    this.selectedPoint.x = px;
+    this.selectedPoint.y = py;
+
+    this.updateWalls();
+}
+
 
         if (this.draggingDoorIndex !== null) {
             const d = this.doors[this.draggingDoorIndex];
