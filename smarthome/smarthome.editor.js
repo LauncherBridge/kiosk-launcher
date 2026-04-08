@@ -2,6 +2,7 @@
 // Raumdesigner – vollständige, fehlerfreie Version
 // ======================================================
 
+
 const RoomDesigner = {
     canvas: null,
     ctx: null,
