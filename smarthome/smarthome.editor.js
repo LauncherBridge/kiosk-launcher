@@ -330,6 +330,7 @@ onMove(e) {
             this.lastPanY = mouseY;
             this.isPanCandidate = false;
             this._clickedEmpty = false;
+            this._pendingNewPoint = null;
         }
     }
 
