@@ -1,6 +1,6 @@
 // SmartHome Module Entry Point
-
 window.SmartHomeModule = {
+
     state: {
         panelId: null,
         defaultRoom: null,
@@ -18,20 +18,14 @@ window.SmartHomeModule = {
     },
 
     open(config) {
-        // Save configuration
-        this.state.panelId = config.panelId;
-        this.state.defaultRoom = config.defaultRoom;
-        this.state.category = config.category;
 
-        // Mark as initialized
-        this.state.initialized = true;
+        // Neuer Mount-Punkt für die neue UI-Struktur
+        this.state.panelId = "smarthome-canvas";
 
-        // Apply theme if available
-        if (window.SmartHomeTheme) {
-            SmartHomeTheme.apply();
-        }
+        // Falls du defaultRoom/category nutzt, übernehmen wir sie weiterhin
+        this.state.defaultRoom = config.defaultRoom || null;
+        this.state.category = config.category || null;
 
-        // Direkt initialisieren – kein Template nachladen
         this._startView();
     },
 
