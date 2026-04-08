@@ -369,9 +369,6 @@ onMove(e) {
     // Drag bewegen
     if (this.isDragging) {
 
-        // ------------------------------------------------------
-        // MOVE-SNAP WIE SETZEN (NEUER PUNKT, KEIN GEISTERPUNKT)
-        // ------------------------------------------------------
         if (this.selectedPoint) {
 
             let px = worldX;
@@ -383,45 +380,44 @@ onMove(e) {
                 py = this.snap(py);
             }
 
-// MOVE-SNAP wie SETZEN: Raum schließen, wenn letzter Punkt auf ersten gezogen wird
-// MOVE-SNAP wie SETZEN: alten letzten Punkt ersetzen, Raum schließen
-if (!this.isClosed && this.points.length > 2) {
-    const first = this.points[0];
-    const lastIndex = this.points.length - 1;
-    const last = this.points[lastIndex];
+            // ------------------------------------------------------
+            // MOVE-SNAP WIE SETZEN (EIN PUNKT, RAUM SCHLIESSEN)
+            // ------------------------------------------------------
+            if (!this.isClosed && this.points.length > 2) {
 
-    // Nur wenn der bewegte Punkt der letzte Punkt ist
-    if (this.selectedPoint === last) {
+                const first = this.points[0];
+                const lastIndex = this.points.length - 1;
+                const last = this.points[lastIndex];
 
-        // Snap-Bereich
-        if (Math.hypot(px - first.x, py - first.y) < 20) {
+                // Nur wenn der bewegte Punkt der letzte Punkt ist
+                if (this.selectedPoint === last) {
 
-            // Alten letzten Punkt entfernen
-            this.points.splice(lastIndex, 1);
+                    // Snap-Bereich
+                    if (Math.hypot(px - first.x, py - first.y) < 20) {
 
-            // Neuen Punkt erzeugen (wie SETZEN)
-            const newPoint = { x: first.x, y: first.y };
-            this.points.push(newPoint);
+                        // Alten letzten Punkt entfernen
+                        this.points.splice(lastIndex, 1);
 
-            // Raum schließen (wie SETZEN)
-            this.points.push(first);
-            this.isClosed = true;
+                        // Neuen Punkt erzeugen (wie SETZEN)
+                        const newPoint = { x: first.x, y: first.y };
+                        this.points.push(newPoint);
 
-            // Neuer Punkt ist jetzt ausgewählt
-            this.selectedPoint = newPoint;
+                        // Raum schließen (wie SETZEN)
+                        this.points.push(first);
+                        this.isClosed = true;
 
-            // Drag beenden
-            this.isDragging = false;
+                        // Neuer Punkt ist jetzt ausgewählt
+                        this.selectedPoint = newPoint;
 
-            this.updateWalls();
-            this.render();
-            return;
-        }
-    }
-}
+                        // Drag beenden
+                        this.isDragging = false;
 
-
-
+                        this.updateWalls();
+                        this.render();
+                        return;
+                    }
+                }
+            }
 
             // Normales Draggen
             this.selectedPoint.x = px;
@@ -459,6 +455,7 @@ if (!this.isClosed && this.points.length > 2) {
     this.hover.y = mouseY;
     this.render();
 },
+
 
 
 
