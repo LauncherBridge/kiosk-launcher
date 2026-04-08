@@ -315,37 +315,21 @@ onMove(e) {
     const worldX = (mouseX / this.zoom) - this.offsetX;
     const worldY = (mouseY / this.zoom) - this.offsetY;
 
-    // PAN STARTEN, wenn wir einen Pan-Kandidaten haben und genug Bewegung erfolgt
+    // Pan starten
     if (this.isPanCandidate && !this.isPanning) {
         const dx = mouseX - this.panStartX;
         const dy = mouseY - this.panStartY;
-    
-        if (Math.hypot(dx, dy) > 6) {   // Schwellwert 6px
+
+        if (Math.hypot(dx, dy) > 6) {
             this.isPanning = true;
             this.lastPanX = mouseX;
             this.lastPanY = mouseY;
             this.isPanCandidate = false;
-            this._pendingNewPoint = null; // Punkt-Kandidat verwerfen, wenn es doch Pan wird
+            this._clickedEmpty = false;
         }
     }
 
-
-    let hx = mouseX;
-    let hy = mouseY;
-
-    // Snap auf ersten Punkt (nur wenn offen)
-    if (!this.isClosed && this.points.length > 0) {
-        const first = this.points[0];
-        if (Math.hypot(worldX - first.x, worldY - first.y) < 20) {
-            hx = (first.x + this.offsetX) * this.zoom;
-            hy = (first.y + this.offsetY) * this.zoom;
-        }
-    }
-
-    this.hover.x = hx;
-    this.hover.y = hy;
-
-    // PAN MOVE
+    // Pan bewegen
     if (this.isPanning) {
         const dx = mouseX - this.lastPanX;
         const dy = mouseY - this.lastPanY;
@@ -360,58 +344,26 @@ onMove(e) {
         return;
     }
 
-    // DRAG: Tür
-    if (this.draggingDoorIndex !== null) {
-        const d = this.doors[this.draggingDoorIndex];
-        const w = this.walls[d.wallIndex];
-        if (w) {
-            const proj = this.projectOnWall(worldX, worldY, w);
-            d.t = proj.t;
-            d.x = proj.x;
-            d.y = proj.y;
+    // Drag starten?
+    if (this._pendingContext) {
+        const dx = worldX - this._pendingContext.x;
+        const dy = worldY - this._pendingContext.y;
+
+        if (Math.hypot(dx, dy) > 3) {
+            const c = this._pendingContext;
+
+            if (c.type === "point") this.selectedPoint = this.points[c.index];
+            if (c.type === "door") this.draggingDoorIndex = c.index;
+            if (c.type === "window") this.draggingWindowIndex = c.index;
+
+            this._pendingContext = null;
+            this.isDragging = true;
         }
-        this.isDragging = true;
-        this.render();
-        return;
     }
 
-    // DRAG: Fenster
-    if (this.draggingWindowIndex !== null) {
-        const wObj = this.windows[this.draggingWindowIndex];
-        const w = this.walls[wObj.wallIndex];
-        if (w) {
-            const proj = this.projectOnWall(worldX, worldY, w);
-            wObj.t = proj.t;
-            wObj.x = proj.x;
-            wObj.y = proj.y;
-        }
-        this.isDragging = true;
-        this.render();
-        return;
-    }
-
-    // DRAG: Punkt
-    if (this.selectedPoint) {
-
-        const dx = worldX - this.selectedPoint.x;
-        const dy = worldY - this.selectedPoint.y;
-
-        if (Math.hypot(dx, dy) > 2) {
-
-            if (!this.isClosed) {
-                const first = this.points[0];
-                if (this.selectedPoint !== first &&
-                    Math.hypot(worldX - first.x, worldY - first.y) < 20) {
-
-                    this.points[this.points.length - 1] = first;
-                    this.isClosed = true;
-                    this.updateWalls();
-                    this.isDragging = true;
-                    this.render();
-                    return;
-                }
-            }
-
+    // Drag bewegen
+    if (this.isDragging) {
+        if (this.selectedPoint) {
             if (this.snapEnabled) {
                 this.selectedPoint.x = this.snap(worldX);
                 this.selectedPoint.y = this.snap(worldY);
@@ -419,39 +371,34 @@ onMove(e) {
                 this.selectedPoint.x = worldX;
                 this.selectedPoint.y = worldY;
             }
-
             this.updateWalls();
-            this.isDragging = true;
+        }
+
+        if (this.draggingDoorIndex !== null) {
+            const d = this.doors[this.draggingDoorIndex];
+            const w = this.walls[d.wallIndex];
+            const proj = this.projectOnWall(worldX, worldY, w);
+            d.t = proj.t;
+            d.x = proj.x;
+            d.y = proj.y;
+        }
+
+        if (this.draggingWindowIndex !== null) {
+            const wObj = this.windows[this.draggingWindowIndex];
+            const w = this.walls[wObj.wallIndex];
+            const proj = this.projectOnWall(worldX, worldY, w);
+            wObj.t = proj.t;
+            wObj.x = proj.x;
+            wObj.y = proj.y;
         }
 
         this.render();
         return;
     }
 
-    // Klick-Kandidat → Drag?
-    if (this._pendingContext) {
-        const dx = worldX - this._pendingContext.x;
-        const dy = worldY - this._pendingContext.y;
-
-        if (Math.hypot(dx, dy) > 2) {
-
-            if (this._pendingContext.type === "point") {
-                this.selectedPoint = this.points[this._pendingContext.index];
-            }
-
-            if (this._pendingContext.type === "door") {
-                this.draggingDoorIndex = this._pendingContext.index;
-            }
-
-            if (this._pendingContext.type === "window") {
-                this.draggingWindowIndex = this._pendingContext.index;
-            }
-
-            this._pendingContext = null;
-            this.isDragging = true;
-        }
-    }
-
+    // Hover aktualisieren
+    this.hover.x = mouseX;
+    this.hover.y = mouseY;
     this.render();
 },
 
@@ -511,175 +458,65 @@ onDown(e) {
     const worldX = (mouseX / this.zoom) - this.offsetX;
     const worldY = (mouseY / this.zoom) - this.offsetY;
 
-    // Rechtsklick → Menü schließen, Klick ignorieren
+    // Rechtsklick → nur Menü schließen
     if (e.button === 2) {
         this.hideContextMenu();
         return;
     }
 
-    // Hit-Test mit Screen-Koordinaten (hitTest rechnet selbst in Welt um)
+    // Menü gerade geschlossen → Klick ignorieren
+    if (this._menuClosedAt && performance.now() - this._menuClosedAt < 150) {
+        return;
+    }
+
     const hit = this.hitTest(mouseX, mouseY);
-    const clickingObject =
-        hit.type === "point" ||
-        hit.type === "door" ||
-        hit.type === "window";
 
-    const menuWasOpen =
-        this.contextMenuEl &&
-        this.contextMenuEl.style.display === "flex";
-
-    this.hideContextMenu();
-
-    if (this._contextJustClosed && !clickingObject) {
-        this._contextJustClosed = false;
+    // Kontextmenü vorbereiten (Objekt getroffen)
+    if (hit.type === "point" || hit.type === "door" || hit.type === "window") {
+        this._pendingContext = { x: worldX, y: worldY, type: hit.type, index: hit.index };
+        this._downX = worldX;
+        this._downY = worldY;
         return;
     }
 
-    if (this._contextJustClosed && clickingObject) {
-        this._contextJustClosed = false;
-    }
-
-    // Raum schließen durch Klick auf ersten Punkt
-    if (!this.isClosed && this.points.length >= 2) {
-        const first = this.points[0];
-        if (Math.hypot(worldX - first.x, worldY - first.y) < 20) {
-            this.points.push(first);
-            this.isClosed = true;
-            this.updateWalls();
-            this.render();
-            return;
-        }
-    }
-
-    // Fenster-Modus
-    if (this.mode === "windows") {
-
-        if (hit.type === "window") {
-            this._pendingContext = { x: worldX, y: worldY, type: "window", index: hit.index };
-            return;
-        }
-
-        if (hit.type === "wall") {
-            const w = hit.data;
-            this.windows.push({
-                wallIndex: w.index,
-                t: w.t,
-                x: w.x,
-                y: w.y,
-                width: 80
-            });
-            this.updateWalls();
-            this.render();
-        }
-
-        this.mode = "points";
-        return;
-    }
-
-    // Tür-Modus
-    if (this.mode === "doors") {
-
-        if (!this._placingDoor) {
-            if (hit.type === "wall") {
-                const w = hit.data;
-                this.doors.push({
-                    wallIndex: w.index,
-                    t: w.t,
-                    x: w.x,
-                    y: w.y,
-                    width: 36,
-                    hinge: null,
-                    side: 1
-                });
-                this._placingDoor = true;
-                this.render();
-                return;
-            }
-        }
-
-        if (this._placingDoor) {
-            const lastDoor = this.doors[this.doors.length - 1];
-            const w = this.walls[lastDoor.wallIndex];
-            this.setDoorHingeFromTap(lastDoor, worldX, worldY, w);
-
-            this._placingDoor = false;
-            this.mode = "points";
-            this.render();
-            return;
-        }
-    }
-
-    // Punkt-Modus
-
-    if (hit.type === "door") {
-        this._pendingContext = { x: worldX, y: worldY, type: "door", index: hit.index };
-        return;
-    }
-
-    if (hit.type === "window") {
-        this._pendingContext = { x: worldX, y: worldY, type: "window", index: hit.index };
-        return;
-    }
-
-    if (hit.type === "point") {
-        this._pendingContext = { x: worldX, y: worldY, type: "point", index: hit.index };
-        return;
-    }
-
-    // Punkt auf Wand einfügen
+    // Wand → Punkt einfügen
     if (hit.type === "wall") {
         const w = hit.data;
-        const insertPoint = { x: w.x, y: w.y };
-
-        this.points.splice(w.index + 1, 0, insertPoint);
-
+        this.points.splice(w.index + 1, 0, { x: w.x, y: w.y });
         this.updateWalls();
         this.render();
         return;
     }
 
-    // ❗ FIX: Punkt nur setzen, wenn es KEIN Doppelklick ist
-    // e.detail === 1 → normaler Klick
-    // e.detail === 2 → zweiter Klick eines Doppelklicks → NICHT setzen
-    if (!this.isClosed && hit.type === "empty" && e.detail === 1) {
-        let px = worldX;
-        let py = worldY;
-
-        if (this.snapEnabled) {
-            px = this.snap(px);
-            py = this.snap(py);
-        }
-
-        this._pendingNewPoint = { x: px, y: py };
-        // kein return → Pan-Kandidat wird unten trotzdem gesetzt
+    // Leerer Raum → Klick-Kandidat für Punkt
+    if (hit.type === "empty" && !this.isClosed) {
+        this._downX = worldX;
+        this._downY = worldY;
+        this._clickedEmpty = true;
     }
 
-    // PAN-Kandidat merken (aber noch NICHT starten)
-    if (hit.type === "empty" || hit.type === "wall") {
-        this.isPanCandidate = true;
-        this.panStartX = mouseX;
-        this.panStartY = mouseY;
-    }
+    // Pan-Kandidat
+    this.isPanCandidate = true;
+    this.panStartX = mouseX;
+    this.panStartY = mouseY;
 },
 
 
 onUp(e) {
-
     this.isPanCandidate = false;
 
-    // PAN END
+    // Pan enden
     if (this.isPanning) {
         this.isPanning = false;
         return;
     }
 
-    // DRAG END
+    // Drag enden
     if (this.isDragging) {
         this.isDragging = false;
         this.selectedPoint = null;
         this.draggingDoorIndex = null;
         this.draggingWindowIndex = null;
-        this._pendingContext = null;
         return;
     }
 
@@ -688,36 +525,38 @@ onUp(e) {
         const c = this._pendingContext;
         this._pendingContext = null;
 
-        // Welt → Screen für Menüposition
         const screenX = (c.x + this.offsetX) * this.zoom;
         const screenY = (c.y + this.offsetY) * this.zoom;
 
         this.showContextMenu(screenX, screenY, c.type, c.index);
+        this._menuClosedAt = performance.now();
         return;
     }
 
-    // ❗ FIX: Beim Doppelklick KEINEN Punkt setzen
-    // e.detail > 1 bedeutet: zweiter Klick eines Doppelklicks
-    if (e.detail > 1) {
-        this._pendingNewPoint = null;
-        return;
+    // Doppelklick?
+    const now = performance.now();
+    if (now - this._lastClickTime < 250) {
+        this._lastClickTime = now;
+        return; // Punkt NICHT setzen
     }
+    this._lastClickTime = now;
 
-    // Wenn kein Pan, kein Drag und ein Punkt-Kandidat existiert → Punkt wirklich setzen
-    if (!this.isClosed && !this.isPanning && !this.isDragging && this._pendingNewPoint) {
-        this.points.push(this._pendingNewPoint);
-        this._pendingNewPoint = null;
+    // Punkt setzen
+    if (this._clickedEmpty && !this.isClosed) {
+        let px = this._downX;
+        let py = this._downY;
+
+        if (this.snapEnabled) {
+            px = this.snap(px);
+            py = this.snap(py);
+        }
+
+        this.points.push({ x: px, y: py });
         this.updateWalls();
         this.render();
-        return;
     }
 
-    this._pendingNewPoint = null;
-
-    this.selectedPoint = null;
-    this.draggingDoorIndex = null;
-    this.draggingWindowIndex = null;
-    this._pendingContext = null;
+    this._clickedEmpty = false;
 },
 
 
@@ -759,7 +598,7 @@ onWheelZoom(e) {
 // --------------------------------------------------
 onDoubleClickZoom(e) {
     e.preventDefault();
-    e.stopPropagation(); // verhindert Punktsetzen
+    e.stopPropagation();
 
     const rect = this.canvas.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
@@ -768,11 +607,8 @@ onDoubleClickZoom(e) {
     const worldX = (mouseX / this.zoom) - this.offsetX;
     const worldY = (mouseY / this.zoom) - this.offsetY;
 
-    if (this.zoom < 1.5) {
-        this.zoom *= 1.5;
-    } else {
-        this.zoom /= 1.5;
-    }
+    if (this.zoom < 1.5) this.zoom *= 1.5;
+    else this.zoom /= 1.5;
 
     this.zoom = Math.max(0.2, Math.min(4.0, this.zoom));
 
