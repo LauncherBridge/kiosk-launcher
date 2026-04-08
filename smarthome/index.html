@@ -14,102 +14,119 @@
 
 <body>
 
-<!-- SmartHome Base Template -->
+<!-- ROOT -->
 <div id="smarthome-root">
-    <div id="sh-floor-list"></div>
-    <canvas id="smarthome-canvas"></canvas>
-    <div id="smarthome-overlay"></div>
-</div>
 
-<!-- Schritt 1: Raumdesigner-Canvas -->
-<canvas id="roomdesigner" style="display:none;"></canvas>
+    <!-- UI-EBENE (fix, zoomt nicht, pann’t nicht) -->
+    <div id="smarthome-ui">
 
-
-<!-- Schritt 6: Tür-Modus Button -->
-<button id="btnDoorMode" class="editor-btn" style="
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    padding: 12px 20px;
-    background: #4a90e2;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 16px;
-    z-index: 9999;
-    display: none;
-">Tür platzieren</button>
-
-    <button id="btnWindowMode"
-        style="
-            position: fixed;
-            top: 70px;
-            left: 20px;
-            padding: 12px 18px;
-            background: #3498db;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            z-index: 9999;
-            display: none;
-        ">
-    Fenster
-</button>
-
-
-<!-- Debug: Editor öffnen -->
-<button id="btnOpenEditor" style="
-    position: absolute;
-    top: 70px;
-    right: 20px;
-    padding: 12px 20px;
-    background: #27ae60;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 16px;
-    z-index: 9999;
-">Editor öffnen</button>
-
-    
-<button id="btnResetView">Reset</button>
-
-  <button id="btnSnapToggle">Snap</button>
-  <input type="range" id="gridSizeSlider" min="10" max="120" step="10" value="40">
-
-
-<!-- Group Header -->
-<div id="sh-group-header" class="hidden">
-    <div id="sh-group-back" class="material-icons">arrow_back</div>
-    <div id="sh-group-title"></div>
-    <div id="sh-group-rooms"></div>
-</div>
-
-<!-- Popup -->
-<div id="smarthome-popup" class="sh-popup hidden">
-    <div class="sh-popup-content">
-        <div class="sh-popup-header">
-            <span id="sh-popup-icon" class="material-icons"></span>
-            <span id="sh-popup-title"></span>
-            <button id="sh-popup-close" class="sh-popup-close material-icons">close</button>
+        <!-- TITELBAR -->
+        <div id="smarthome-titlebar">
+            <div id="titlebar-line1">Objekt > Etage > Raum > Element > Zusatzinfo</div>
+            <div id="titlebar-line2">Kontextinformationen…</div>
         </div>
 
-        <div class="sh-popup-tabs">
-            <button data-tab="status">Status</button>
-            <button data-tab="actions">Aktionen</button>
-            <button data-tab="history">Historie</button>
-            <button data-tab="devices">Geräte</button>
+        <!-- SIDEBAR LINKS -->
+        <div id="smarthome-sidebar-left"></div>
+
+        <!-- SIDEBAR RECHTS -->
+        <div id="smarthome-sidebar-right">
+
+            <!-- Sidebar Tabs -->
+            <div id="sidebar-tabs">
+                <button class="sidebar-tab active" data-tab="elements">Elemente</button>
+                <button class="sidebar-tab" data-tab="options">Optionen</button>
+            </div>
+
+            <!-- TAB 1: Elemente hinzufügen -->
+            <div id="sidebar-tab-elements" class="sidebar-tab-content active">
+
+                <h3>Elemente hinzufügen</h3>
+
+                <button id="btnOpenEditor" class="sidebar-btn">
+                    Editor öffnen
+                </button>
+
+                <button id="btnDoorMode" class="sidebar-btn" style="display:none;">
+                    Tür platzieren
+                </button>
+
+                <button id="btnWindowMode" class="sidebar-btn" style="display:none;">
+                    Fenster platzieren
+                </button>
+
+                <!-- Weitere Elemente folgen später -->
+                <div class="sidebar-section">
+                    <h4>Weitere Elemente</h4>
+                    <button class="sidebar-btn">Möbel</button>
+                    <button class="sidebar-btn">Elektrogerät</button>
+                    <button class="sidebar-btn">Gartenobjekt</button>
+                </div>
+
+            </div>
+
+            <!-- TAB 2: Allgemeine Optionen -->
+            <div id="sidebar-tab-options" class="sidebar-tab-content">
+
+                <h3>Allgemeine Optionen</h3>
+
+                <div class="sidebar-section">
+                    <h4>Farbschema</h4>
+                    <button class="sidebar-btn">Hell</button>
+                    <button class="sidebar-btn">Dunkel</button>
+                    <button class="sidebar-btn">Resident Evil</button>
+                </div>
+
+                <div class="sidebar-section">
+                    <h4>Raster</h4>
+                    <button id="btnResetView" class="sidebar-btn">Reset Ansicht</button>
+                    <button id="btnSnapToggle" class="sidebar-btn">Snap</button>
+
+                    <label for="gridSizeSlider">Rastergröße</label>
+                    <input type="range" id="gridSizeSlider" min="10" max="120" step="10" value="40">
+                </div>
+
+            </div>
+
+        </div> <!-- Ende rechte Sidebar -->
+
+        <!-- Popup -->
+        <div id="smarthome-popup" class="sh-popup hidden">
+            <div class="sh-popup-content">
+                <div class="sh-popup-header">
+                    <span id="sh-popup-icon" class="material-icons"></span>
+                    <span id="sh-popup-title"></span>
+                    <button id="sh-popup-close" class="sh-popup-close material-icons">close</button>
+                </div>
+
+                <div class="sh-popup-tabs">
+                    <button data-tab="status">Status</button>
+                    <button data-tab="actions">Aktionen</button>
+                    <button data-tab="history">Historie</button>
+                    <button data-tab="devices">Geräte</button>
+                </div>
+
+                <div id="sh-popup-body" class="sh-popup-body"></div>
+            </div>
         </div>
 
-        <div id="sh-popup-body" class="sh-popup-body"></div>
+        <!-- Minimap -->
+        <div id="smarthome-minimap">
+            <canvas id="smarthome-minimap-canvas"></canvas>
+        </div>
+
+    </div> <!-- Ende UI-Ebene -->
+
+
+    <!-- CANVAS-EBENE (zoomt & pann’t) -->
+    <div id="smarthome-canvas-wrapper">
+        <canvas id="smarthome-canvas"></canvas>
+        <canvas id="roomdesigner" style="display:none;"></canvas>
+        <div id="smarthome-overlay"></div>
     </div>
-</div>
 
-<!-- Minimap -->
-<div id="smarthome-minimap">
-    <canvas id="smarthome-minimap-canvas"></canvas>
-</div>
+</div> <!-- Ende ROOT -->
+
 
 <!-- Scripts (richtige Reihenfolge!) -->
 <script src="smarthome.data.js"></script>
