@@ -388,12 +388,13 @@ if (this.selectedPoint) {
             if (Math.hypot(px - first.x, py - first.y) < 20) {
 
                 // ECHTES Verschmelzen:
-                this.selectedPoint.x = first.x;
-                this.selectedPoint.y = first.y;
-
-                // WICHTIG: Punkte-Liste aktualisieren
                 const idx = this.points.indexOf(this.selectedPoint);
+
+                // Punkt wirklich ersetzen
                 this.points[idx] = first;
+
+                // selectedPoint auf den echten Punkt setzen
+                this.selectedPoint = first;
 
                 this.updateWalls();
                 this.render();
@@ -408,6 +409,7 @@ if (this.selectedPoint) {
 
     this.updateWalls();
 }
+
 
 
 
