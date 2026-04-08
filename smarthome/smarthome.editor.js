@@ -403,7 +403,7 @@ onMove(e) {
                         this.points.push(newPoint);
 
                         // Raum schließen (wie SETZEN)
-                        this.points.push(first);
+                       // this.points.push(first);
                         this.isClosed = true;
 
                         // Neuer Punkt ist jetzt ausgewählt
