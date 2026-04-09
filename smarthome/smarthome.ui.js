@@ -410,14 +410,98 @@ window.SmartHomeUI = {
         });
     },
 
-    renderEditorDevicesPanel(container) {
-        container.innerHTML = `
-            <div class="editor-placeholder">
-                SmartDevices, Szenen & Zeitprogramme (Tab 2)<br>
-                Inhalte folgen in Schritt 7.
-            </div>
+renderEditorDevicesPanel(container) {
+    container.innerHTML = `
+        <div class="editor-section-title">SmartDevices</div>
+        <div id="editor-smartdevices" class="editor-list"></div>
+
+        <div class="editor-section-title">Szenen</div>
+        <div id="editor-scenes" class="editor-list"></div>
+        <button id="scene-add" class="editor-btn">Neue Szene</button>
+
+        <div class="editor-section-title">Zeitprogramme</div>
+        <div id="editor-programs" class="editor-list"></div>
+        <button id="program-add" class="editor-btn">Neues Zeitprogramm</button>
+    `;
+
+    // --------------------------------------------------
+    // SmartDevices anzeigen
+    // --------------------------------------------------
+    const smartList = container.querySelector("#editor-smartdevices");
+    smartList.innerHTML = "";
+
+    SmartHomeData.devices.forEach(dev => {
+        const row = document.createElement("div");
+        row.className = "editor-device-row";
+        row.textContent = dev.name;
+
+        row.addEventListener("click", () => {
+            RoomDesigner.assignSmartDevice(dev.id);
+        });
+
+        smartList.appendChild(row);
+    });
+
+    // --------------------------------------------------
+    // Szenen anzeigen
+    // --------------------------------------------------
+    const sceneList = container.querySelector("#editor-scenes");
+    sceneList.innerHTML = "";
+
+    SmartHomeData.scenes.forEach(scene => {
+        const row = document.createElement("div");
+        row.className = "editor-scene-row";
+        row.innerHTML = `
+            <span>${scene.name}</span>
+            <button data-id="${scene.id}" data-action="edit">Bearbeiten</button>
+            <button data-id="${scene.id}" data-action="delete">Löschen</button>
         `;
-    },
+
+        row.querySelector("[data-action='edit']").addEventListener("click", () => {
+            RoomDesigner.editScene(scene.id);
+        });
+
+        row.querySelector("[data-action='delete']").addEventListener("click", () => {
+            RoomDesigner.deleteScene(scene.id);
+        });
+
+        sceneList.appendChild(row);
+    });
+
+    container.querySelector("#scene-add").addEventListener("click", () => {
+        RoomDesigner.addScene();
+    });
+
+    // --------------------------------------------------
+    // Zeitprogramme anzeigen
+    // --------------------------------------------------
+    const programList = container.querySelector("#editor-programs");
+    programList.innerHTML = "";
+
+    SmartHomeData.programs.forEach(program => {
+        const row = document.createElement("div");
+        row.className = "editor-program-row";
+        row.innerHTML = `
+            <span>${program.name}</span>
+            <button data-id="${program.id}" data-action="edit">Bearbeiten</button>
+            <button data-id="${program.id}" data-action="delete">Löschen</button>
+        `;
+
+        row.querySelector("[data-action='edit']").addEventListener("click", () => {
+            RoomDesigner.editProgram(program.id);
+        });
+
+        row.querySelector("[data-action='delete']").addEventListener("click", () => {
+            RoomDesigner.deleteProgram(program.id);
+        });
+
+        programList.appendChild(row);
+    });
+
+    container.querySelector("#program-add").addEventListener("click", () => {
+        RoomDesigner.addProgram();
+    });
+},
 
     renderEditorOptionsPanel(container) {
         container.innerHTML = `
