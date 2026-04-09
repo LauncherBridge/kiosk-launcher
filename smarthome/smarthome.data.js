@@ -489,3 +489,11 @@ SmartHomeData.rooms.forEach(room => {
         room.passages = [];
     }
 });
+
+// Kategorien auf- und zuklappen
+document.querySelectorAll(".category-header").forEach(header => {
+    header.addEventListener("click", () => {
+        const cat = header.parentElement;
+        cat.classList.toggle("open");
+    });
+});
