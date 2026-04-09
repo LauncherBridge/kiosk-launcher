@@ -315,15 +315,99 @@ window.SmartHomeUI = {
     },
 
     // --------------------------------------------------
-    // Editor Panels (Platzhalter)
+    // Schritt 6: Editor Panels (mit Werkzeugen)
     // --------------------------------------------------
     renderEditorElementsPanel(container) {
         container.innerHTML = `
-            <div class="editor-placeholder">
-                Elemente & Werkzeuge (Tab 1)<br>
-                Inhalte folgen in Schritt 6.
+            <div class="editor-section-title">Werkzeuge</div>
+            <div class="editor-tools">
+                <button data-tool="select">Auswahl</button>
+                <button data-tool="move">Verschieben</button>
+                <button data-tool="delete">Löschen</button>
+                <button data-tool="undo">Undo</button>
+                <button data-tool="redo">Redo</button>
+            </div>
+
+            <div class="editor-section-title">Türen</div>
+            <div class="editor-list">
+                <button data-element="door-front">Haustür</button>
+                <button data-element="door-room">Zimmertür</button>
+                <button data-element="door-fold">Falttür</button>
+                <button data-element="door-slide">Schiebetür</button>
+                <button data-element="door-terrace">Terrassentür</button>
+                <button data-element="door-garage">Garagentor</button>
+                <button data-element="door-garden">Gartentörchen</button>
+                <button data-element="door-roof">Dachluke</button>
+            </div>
+
+            <div class="editor-section-title">Fenster</div>
+            <div class="editor-list">
+                <button data-element="window-normal">Fenster</button>
+                <button data-element="window-double">Doppelfenster</button>
+                <button data-element="window-tilt">Kippfenster</button>
+                <button data-element="window-slide">Schiebefenster</button>
+                <button data-element="window-round">Rundfenster</button>
+                <button data-element="window-roof">Dachfenster</button>
+                <button data-element="window-shutter">Fenster + Rolladen</button>
+            </div>
+
+            <div class="editor-section-title">Möbel</div>
+            <div class="editor-list">
+                <button data-element="furniture-sofa">Sofa</button>
+                <button data-element="furniture-table">Tisch</button>
+                <button data-element="furniture-bed">Bett</button>
+                <button data-element="furniture-wardrobe">Schrank</button>
+                <button data-element="furniture-kitchen">Küchenmodul</button>
+            </div>
+
+            <div class="editor-section-title">E-Geräte</div>
+            <div class="editor-list">
+                <button data-element="device-fridge">Kühlschrank</button>
+                <button data-element="device-stove">Herd</button>
+                <button data-element="device-tv">Fernseher</button>
+                <button data-element="device-washer">Waschmaschine</button>
+            </div>
+
+            <div class="editor-section-title">SmartDevice-Container</div>
+            <div class="editor-list">
+                <button data-element="smart-box">SmartDevice-Box</button>
+            </div>
+
+            <div class="editor-section-title">Gartenelemente</div>
+            <div class="editor-list">
+                <button data-element="garden-plant">Pflanze</button>
+                <button data-element="garden-awning">Markise</button>
+                <button data-element="garden-furniture">Gartenmöbel</button>
+            </div>
+
+            <div class="editor-section-title">Darstellung</div>
+            <div class="editor-settings">
+                <label>Farbe: <input type="color" id="editor-color"></label>
+                <label>Transparenz: <input type="range" min="0" max="100" id="editor-alpha"></label>
+                <label>Wandstärke: <input type="number" min="1" max="50" id="editor-wall"></label>
+                <label>Punkte anzeigen: <input type="checkbox" id="editor-showpoints"></label>
+            </div>
+
+            <div class="editor-section-title">Snap & Grid</div>
+            <div class="editor-settings">
+                <label>Snap aktiv: <input type="checkbox" id="editor-snap"></label>
+                <label>Grid anzeigen: <input type="checkbox" id="editor-grid"></label>
+                <label>Grid-Größe: <input type="number" min="5" max="200" id="editor-gridsize"></label>
             </div>
         `;
+
+        // Events an RoomDesigner weiterleiten
+        container.querySelectorAll("[data-tool]").forEach(btn => {
+            btn.addEventListener("click", () => {
+                RoomDesigner.setTool(btn.dataset.tool);
+            });
+        });
+
+        container.querySelectorAll("[data-element]").forEach(btn => {
+            btn.addEventListener("click", () => {
+                RoomDesigner.setElement(btn.dataset.element);
+            });
+        });
     },
 
     renderEditorDevicesPanel(container) {
