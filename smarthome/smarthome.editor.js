@@ -2115,20 +2115,31 @@ window.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-// --------------------------------------------------
-// Editor schliessen
-// --------------------------------------------------
-document.getElementById("editor-close-btn").addEventListener("click", () => {
+// ===============================
+// Editor schließen
+// ===============================
+document.getElementById("editor-close-btn")?.addEventListener("click", () => {
+
     // Titelbar ausblenden
-    document.getElementById("editor-titlebar").style.display = "none";
+    const titlebar = document.getElementById("editor-titlebar");
+    if (titlebar) titlebar.style.display = "none";
 
-    // Editor ausblenden
-    document.getElementById("roomdesigner").style.display = "none";
-    document.getElementById("btnDoorMode").style.display = "none";
-    document.getElementById("btnWindowMode").style.display = "none";
+    // Editor-Canvas ausblenden
+    const canvas = document.getElementById("roomdesigner");
+    if (canvas) canvas.style.display = "none";
 
-    // SmartHome wieder anzeigen
-    document.getElementById("smarthome-root").style.display = "block";
-    document.getElementById("sh-group-header").style.display = "block";
-    document.getElementById("smarthome-minimap").style.display = "block";
+    // Editor-spezifische Buttons ausblenden
+    const doorBtn = document.getElementById("btnDoorMode");
+    const winBtn = document.getElementById("btnWindowMode");
+    if (doorBtn) doorBtn.style.display = "none";
+    if (winBtn) winBtn.style.display = "none";
+
+    // SmartHome-UI wieder einblenden
+    const root = document.getElementById("smarthome-root");
+    const header = document.getElementById("sh-group-header");
+    const minimap = document.getElementById("smarthome-minimap");
+
+    if (root) root.style.display = "block";
+    if (header) header.style.display = "block";
+    if (minimap) minimap.style.display = "block";
 });
