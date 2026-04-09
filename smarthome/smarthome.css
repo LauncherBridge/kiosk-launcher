@@ -334,3 +334,35 @@ html, body {
     z-index: 9999;
     display: none; /* wird vom Editor sichtbar geschaltet */
 }
+
+#editor-titlebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 48px;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(6px);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    z-index: 99999;
+    font-size: 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+}
+
+#editor-titlebar button {
+    background: #e74c3c;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+#editor-titlebar button:hover {
+    background: #c0392b;
+}
