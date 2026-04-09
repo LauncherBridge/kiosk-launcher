@@ -2111,6 +2111,11 @@ window.addEventListener("DOMContentLoaded", () => {
         const titlebar = document.getElementById("editor-titlebar");
         if (titlebar) titlebar.style.display = "flex";
 
+        // Sidebar anzeigen
+        const sidebar = document.getElementById("editor-sidebar");
+        if (sidebar) sidebar.style.display = "flex";
+
+
         RoomDesigner.init();
     });
 });
@@ -2123,6 +2128,11 @@ document.getElementById("editor-close-btn")?.addEventListener("click", () => {
     // Titelbar ausblenden
     const titlebar = document.getElementById("editor-titlebar");
     if (titlebar) titlebar.style.display = "none";
+
+    // Sidebar ausblenden
+    const sidebar = document.getElementById("editor-sidebar");
+    if (sidebar) sidebar.style.display = "none";
+
 
     // Editor-Canvas ausblenden
     const canvas = document.getElementById("roomdesigner");
@@ -2143,3 +2153,28 @@ document.getElementById("editor-close-btn")?.addEventListener("click", () => {
     if (header) header.style.display = "block";
     if (minimap) minimap.style.display = "block";
 });
+    
+    // ===============================
+    // Sidebar Tabs umschalten
+    // ===============================
+    document.querySelectorAll("#editor-sidebar-tabs button").forEach(btn => {
+        btn.addEventListener("click", () => {
+    
+            // Aktiven Tab markieren
+            document.querySelectorAll("#editor-sidebar-tabs button")
+                .forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+    
+            const target = btn.getAttribute("data-tab");
+    
+            // Panels umschalten
+            document.querySelectorAll(".sidebar-panel").forEach(panel => {
+                if (panel.getAttribute("data-panel") === target) {
+                    panel.style.display = "block";
+                } else {
+                    panel.style.display = "none";
+                }
+            });
+        });
+    });
+
