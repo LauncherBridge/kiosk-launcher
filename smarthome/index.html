@@ -32,6 +32,23 @@
     </div>
 </div>
 
+<!-- Editor Sidebar (rechts) -->
+<div id="editor-sidebar" style="display:none;">
+    <div id="editor-sidebar-tabs">
+        <button data-tab="tools" class="active">Tools</button>
+        <button data-tab="elements">Elemente</button>
+        <button data-tab="settings">Einstellungen</button>
+    </div>
+
+    <div id="editor-sidebar-content">
+        <!-- Inhalt wird später dynamisch gefüllt -->
+        <div class="sidebar-panel" data-panel="tools">Tools kommen hier rein</div>
+        <div class="sidebar-panel" data-panel="elements" style="display:none;">Elemente kommen hier rein</div>
+        <div class="sidebar-panel" data-panel="settings" style="display:none;">Einstellungen kommen hier rein</div>
+    </div>
+</div>
+
+    
     
 <!-- Schritt 1: Raumdesigner-Canvas -->
 <canvas id="roomdesigner" style="display:none;"></canvas>
