@@ -423,3 +423,34 @@ html, body {
     color: #eee;
     font-size: 14px;
 }
+
+.tool-button {
+    padding: 10px;
+    margin-bottom: 8px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px;
+    cursor: pointer;
+    color: #eee;
+    font-size: 14px;
+}
+
+.tool-button:hover {
+    background: rgba(255,255,255,0.15);
+}
+
+.tool-button.active {
+    background: rgba(74,144,226,0.3);
+    border-color: #4a90e2;
+}
+
+.element-item,
+.settings-item {
+    padding: 10px;
+    margin-bottom: 8px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px;
+    color: #eee;
+    font-size: 14px;
+}
