@@ -2114,3 +2114,21 @@ window.addEventListener("DOMContentLoaded", () => {
         RoomDesigner.init();
     });
 });
+
+// --------------------------------------------------
+// Editor schliessen
+// --------------------------------------------------
+document.getElementById("editor-close-btn").addEventListener("click", () => {
+    // Titelbar ausblenden
+    document.getElementById("editor-titlebar").style.display = "none";
+
+    // Editor ausblenden
+    document.getElementById("roomdesigner").style.display = "none";
+    document.getElementById("btnDoorMode").style.display = "none";
+    document.getElementById("btnWindowMode").style.display = "none";
+
+    // SmartHome wieder anzeigen
+    document.getElementById("smarthome-root").style.display = "block";
+    document.getElementById("sh-group-header").style.display = "block";
+    document.getElementById("smarthome-minimap").style.display = "block";
+});
