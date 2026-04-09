@@ -1,10 +1,11 @@
 window.SmartHomeUI = {
 
-    init() {
-        this.bindObjectHeader();
-        this.renderSidebar();
-        this.bindSmartHomeEvents();
-    },
+init() {
+    this.bindObjectHeader();
+    this.renderSidebar();
+    this.bindSmartHomeEvents();
+    this.initRightTabs();
+},
 
     // --------------------------------------------------
     // Objekt-Header (O3 Overlay)
@@ -143,4 +144,111 @@ window.SmartHomeUI = {
             this.updateBreadcrumb();
         });
     }
+
+    // --------------------------------------------------
+    // Rechte Sidebar: Tabs
+    // --------------------------------------------------
+    initRightTabs() {
+        const tabsContainer = document.getElementById("sh-right-tabs");
+        const content = document.getElementById("sh-right-content");
+    
+        const tabs = [
+            { id: "devices", label: "Geräte" },
+            { id: "actions", label: "Aktionen" },
+            { id: "info",    label: "Info" }
+        ];
+    
+        tabsContainer.innerHTML = "";
+        tabs.forEach(tab => {
+            const btn = document.createElement("button");
+            btn.className = "sh-right-tab";
+            btn.dataset.tab = tab.id;
+            btn.textContent = tab.label;
+    
+            btn.addEventListener("click", () => {
+                this.setRightTab(tab.id);
+            });
+    
+            tabsContainer.appendChild(btn);
+        });
+    
+        // Standard-Tab
+        this.setRightTab("devices");
+    },
+    
+    setRightTab(tabId) {
+        const content = document.getElementById("sh-right-content");
+    
+        document.querySelectorAll(".sh-right-tab").forEach(btn => {
+            btn.classList.toggle("active", btn.dataset.tab === tabId);
+        });
+    
+        if (tabId === "devices") {
+            this.renderDevicesPanel(content);
+        } else if (tabId === "actions") {
+            this.renderActionsPanel(content);
+        } else if (tabId === "info") {
+            this.renderInfoPanel(content);
+        }
+    },
+    
+    renderDevicesPanel(container) {
+        container.innerHTML = "";
+    
+        const roomId = SmartHomeView.activeRoom;
+        if (!roomId) {
+            container.textContent = "Kein Raum ausgewählt.";
+            return;
+        }
+    
+        const devices = SmartHomeData.devices.filter(d => d.room === roomId);
+    
+        if (!devices.length) {
+            container.textContent = "Keine Geräte in diesem Raum.";
+            return;
+        }
+    
+        const list = document.createElement("div");
+        list.className = "sh-device-list";
+    
+        devices.forEach(dev => {
+            const row = document.createElement("div");
+            row.className = "sh-device-row";
+            row.textContent = dev.name;
+            // später: Status, Icon, Toggle etc.
+            list.appendChild(row);
+        });
+    
+        container.appendChild(list);
+    },
+    
+    renderActionsPanel(container) {
+        container.innerHTML = `
+            <div class="sh-actions-placeholder">
+                Aktionen für diesen Raum / dieses Objekt folgen später.
+            </div>
+        `;
+    },
+    
+    renderInfoPanel(container) {
+        const roomId = SmartHomeView.activeRoom;
+        const room = SmartHomeData.rooms.find(r => r.id === roomId);
+    
+        container.innerHTML = "";
+    
+        if (!room) {
+            container.textContent = "Keine Raum-Informationen verfügbar.";
+            return;
+        }
+    
+        const div = document.createElement("div");
+        div.className = "sh-info-panel";
+        div.innerHTML = `
+            <div><strong>Raum:</strong> ${room.name}</div>
+            <div><strong>ID:</strong> ${room.id}</div>
+            <div><strong>Etage:</strong> ${room.floor}</div>
+        `;
+        container.appendChild(div);
+    }
+
 };
