@@ -497,3 +497,20 @@ document.querySelectorAll(".category-header").forEach(header => {
         cat.classList.toggle("open");
     });
 });
+
+// Türtypen aus Tab 1 aktivieren
+document.querySelectorAll(".item[data-type^='door_']").forEach(item => {
+    item.addEventListener("click", () => {
+
+        // Aktiven Button markieren
+        document.querySelectorAll(".item").forEach(i => i.classList.remove("active"));
+        item.classList.add("active");
+
+        const subtype = item.getAttribute("data-type").replace("door_", "");
+
+        // Editor in Türmodus setzen
+        if (RoomDesigner && typeof RoomDesigner.setTool === "function") {
+            RoomDesigner.setTool("door", subtype);
+        }
+    });
+});
