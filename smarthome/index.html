@@ -42,9 +42,24 @@
 
     <div id="editor-sidebar-content">
         <!-- Inhalt wird später dynamisch gefüllt -->
-        <div class="sidebar-panel" data-panel="tools">Tools kommen hier rein</div>
-        <div class="sidebar-panel" data-panel="elements" style="display:none;">Elemente kommen hier rein</div>
-        <div class="sidebar-panel" data-panel="settings" style="display:none;">Einstellungen kommen hier rein</div>
+        <div class="sidebar-panel" data-panel="tools">
+            <div class="tool-button" data-tool="select">Auswahl</div>
+            <div class="tool-button" data-tool="draw">Raum zeichnen</div>
+            <div class="tool-button" data-tool="door">Tür setzen</div>
+            <div class="tool-button" data-tool="window">Fenster setzen</div>
+            <div class="tool-button" data-tool="delete">Löschen</div>
+        </div>
+        <div class="sidebar-panel" data-panel="elements" style="display:none;">
+            <div class="element-item">Lampe</div>
+            <div class="element-item">Steckdose</div>
+            <div class="element-item">Heizung</div>
+            <div class="element-item">Sensor</div>
+        </div>
+        <div class="sidebar-panel" data-panel="settings" style="display:none;">
+            <div class="settings-item">Raster anzeigen</div>
+            <div class="settings-item">Snap aktivieren</div>
+            <div class="settings-item">Maßeinheit: Meter</div>
+        </div>
     </div>
 </div>
 
