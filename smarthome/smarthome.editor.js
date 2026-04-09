@@ -2178,3 +2178,22 @@ document.getElementById("editor-close-btn")?.addEventListener("click", () => {
         });
     });
 
+    // ===============================
+    // Tools aus der Sidebar aktivieren
+    // ===============================
+    document.querySelectorAll(".tool-button").forEach(btn => {
+        btn.addEventListener("click", () => {
+    
+            // Aktiven Button markieren
+            document.querySelectorAll(".tool-button")
+                .forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+    
+            const tool = btn.getAttribute("data-tool");
+    
+            // Tool an RoomDesigner übergeben
+            if (RoomDesigner && typeof RoomDesigner.setTool === "function") {
+                RoomDesigner.setTool(tool);
+            }
+        });
+    });
