@@ -2107,6 +2107,10 @@ window.addEventListener("DOMContentLoaded", () => {
         if (doorBtn) doorBtn.style.display = "block";
         if (winBtn) winBtn.style.display = "block";
 
+        // NEU: Titelbar anzeigen
+        const titlebar = document.getElementById("editor-titlebar");
+        if (titlebar) titlebar.style.display = "flex";
+
         RoomDesigner.init();
     });
 });
