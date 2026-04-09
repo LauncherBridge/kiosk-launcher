@@ -1,11 +1,11 @@
 window.SmartHomeUI = {
 
-init() {
-    this.bindObjectHeader();
-    this.renderSidebar();
-    this.bindSmartHomeEvents();
-    this.initRightTabs();
-},
+    init() {
+        this.bindObjectHeader();
+        this.renderSidebar();
+        this.bindSmartHomeEvents();
+        this.initRightTabs(); // Standard: View-Modus Tabs
+    },
 
     // --------------------------------------------------
     // Objekt-Header (O3 Overlay)
@@ -143,46 +143,48 @@ init() {
             this.renderRooms();
             this.updateBreadcrumb();
         });
-    }
+    },
 
     // --------------------------------------------------
-    // Rechte Sidebar: Tabs
+    // Rechte Sidebar: View-Modus Tabs
     // --------------------------------------------------
     initRightTabs() {
         const tabsContainer = document.getElementById("sh-right-tabs");
         const content = document.getElementById("sh-right-content");
-    
+
         const tabs = [
             { id: "devices", label: "Geräte" },
             { id: "actions", label: "Aktionen" },
             { id: "info",    label: "Info" }
         ];
-    
+
         tabsContainer.innerHTML = "";
+        content.innerHTML = "";
+
         tabs.forEach(tab => {
             const btn = document.createElement("button");
             btn.className = "sh-right-tab";
             btn.dataset.tab = tab.id;
             btn.textContent = tab.label;
-    
+
             btn.addEventListener("click", () => {
                 this.setRightTab(tab.id);
             });
-    
+
             tabsContainer.appendChild(btn);
         });
-    
+
         // Standard-Tab
         this.setRightTab("devices");
     },
-    
+
     setRightTab(tabId) {
         const content = document.getElementById("sh-right-content");
-    
+
         document.querySelectorAll(".sh-right-tab").forEach(btn => {
             btn.classList.toggle("active", btn.dataset.tab === tabId);
         });
-    
+
         if (tabId === "devices") {
             this.renderDevicesPanel(content);
         } else if (tabId === "actions") {
@@ -191,37 +193,36 @@ init() {
             this.renderInfoPanel(content);
         }
     },
-    
+
     renderDevicesPanel(container) {
         container.innerHTML = "";
-    
+
         const roomId = SmartHomeView.activeRoom;
         if (!roomId) {
             container.textContent = "Kein Raum ausgewählt.";
             return;
         }
-    
+
         const devices = SmartHomeData.devices.filter(d => d.room === roomId);
-    
+
         if (!devices.length) {
             container.textContent = "Keine Geräte in diesem Raum.";
             return;
         }
-    
+
         const list = document.createElement("div");
         list.className = "sh-device-list";
-    
+
         devices.forEach(dev => {
             const row = document.createElement("div");
             row.className = "sh-device-row";
             row.textContent = dev.name;
-            // später: Status, Icon, Toggle etc.
             list.appendChild(row);
         });
-    
+
         container.appendChild(list);
     },
-    
+
     renderActionsPanel(container) {
         container.innerHTML = `
             <div class="sh-actions-placeholder">
@@ -229,18 +230,18 @@ init() {
             </div>
         `;
     },
-    
+
     renderInfoPanel(container) {
         const roomId = SmartHomeView.activeRoom;
         const room = SmartHomeData.rooms.find(r => r.id === roomId);
-    
+
         container.innerHTML = "";
-    
+
         if (!room) {
             container.textContent = "Keine Raum-Informationen verfügbar.";
             return;
         }
-    
+
         const div = document.createElement("div");
         div.className = "sh-info-panel";
         div.innerHTML = `
@@ -249,6 +250,98 @@ init() {
             <div><strong>Etage:</strong> ${room.floor}</div>
         `;
         container.appendChild(div);
+    },
+
+    // --------------------------------------------------
+    // Rechte Sidebar: Umschalten View <-> Editor
+    // --------------------------------------------------
+    setRightPanelForMode(mode) {
+        if (mode === "view") {
+            this.initRightTabs();
+        }
+
+        if (mode === "editor") {
+            this.initEditorTabs();
+        }
+    },
+
+    // --------------------------------------------------
+    // Editor-Modus Tabs
+    // --------------------------------------------------
+    initEditorTabs() {
+        const tabsContainer = document.getElementById("sh-right-tabs");
+        const content = document.getElementById("sh-right-content");
+
+        const tabs = [
+            { id: "editor-elements", label: "Elemente" },
+            { id: "editor-devices",  label: "SmartDevices" },
+            { id: "editor-options",  label: "Optionen" }
+        ];
+
+        tabsContainer.innerHTML = "";
+        content.innerHTML = "";
+
+        tabs.forEach(tab => {
+            const btn = document.createElement("button");
+            btn.className = "sh-right-tab";
+            btn.dataset.tab = tab.id;
+            btn.textContent = tab.label;
+
+            btn.addEventListener("click", () => {
+                this.setEditorTab(tab.id);
+            });
+
+            tabsContainer.appendChild(btn);
+        });
+
+        // Standard-Tab
+        this.setEditorTab("editor-elements");
+    },
+
+    setEditorTab(tabId) {
+        const content = document.getElementById("sh-right-content");
+
+        document.querySelectorAll(".sh-right-tab").forEach(btn => {
+            btn.classList.toggle("active", btn.dataset.tab === tabId);
+        });
+
+        if (tabId === "editor-elements") {
+            this.renderEditorElementsPanel(content);
+        } else if (tabId === "editor-devices") {
+            this.renderEditorDevicesPanel(content);
+        } else if (tabId === "editor-options") {
+            this.renderEditorOptionsPanel(content);
+        }
+    },
+
+    // --------------------------------------------------
+    // Editor Panels (Platzhalter)
+    // --------------------------------------------------
+    renderEditorElementsPanel(container) {
+        container.innerHTML = `
+            <div class="editor-placeholder">
+                Elemente & Werkzeuge (Tab 1)<br>
+                Inhalte folgen in Schritt 6.
+            </div>
+        `;
+    },
+
+    renderEditorDevicesPanel(container) {
+        container.innerHTML = `
+            <div class="editor-placeholder">
+                SmartDevices, Szenen & Zeitprogramme (Tab 2)<br>
+                Inhalte folgen in Schritt 7.
+            </div>
+        `;
+    },
+
+    renderEditorOptionsPanel(container) {
+        container.innerHTML = `
+            <div class="editor-placeholder">
+                Allgemeine Optionen (Tab 3)<br>
+                Inhalte folgen in Schritt 8.
+            </div>
+        `;
     }
 
 };
