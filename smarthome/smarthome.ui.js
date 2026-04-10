@@ -403,11 +403,19 @@ window.SmartHomeUI = {
             });
         });
 
-        container.querySelectorAll("[data-element]").forEach(btn => {
-            btn.addEventListener("click", () => {
-                RoomDesigner.setElement(btn.dataset.element);
-            });
-        });
+container.querySelectorAll("[data-element]").forEach(btn => {
+    const el = btn.dataset.element;
+
+    // Türen NICHT über setElement() behandeln
+    if (el && el.startsWith("door-")) {
+        return;
+    }
+
+    btn.addEventListener("click", () => {
+        RoomDesigner.setElement(el);
+    });
+});
+
         
 
 // ------------------------------------------------------------
