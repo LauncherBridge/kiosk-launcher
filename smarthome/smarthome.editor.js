@@ -1438,77 +1438,195 @@ onDown(e) {
             const x2 = cx + tx * half;
             const y2 = cy + ty * half;
 
-            // Türblatt
+// ------------------------------------------------------------
+// ⭐ Tür nach Typ zeichnen
+// ------------------------------------------------------------
+this.drawDoorByType(ctx, d, {
+    w, x1, y1, x2, y2, hx: null, hy: null, ox: null, oy: null, px: null, py: null, elen: null
+});
+
+// Wenn kein Scharnier → fertig (z.B. Dachluke, Schiebetür)
+if (!d.hinge) continue;
+
+// ------------------------------------------------------------
+// ⭐ Scharnierberechnung wie bisher
+// ------------------------------------------------------------
+let hx, hy, ox, oy;
+if (d.hinge === "start") {
+    hx = x1; hy = y1;
+    ox = x2; oy = y2;
+} else {
+    hx = x2; hy = y2;
+    ox = x1; oy = y1;
+}
+
+const ex = ox - hx;
+const ey = oy - hy;
+const elen = Math.sqrt(ex*ex + ey*ey);
+if (elen === 0) continue;
+
+const px = -ey / elen;
+const py = ex / elen;
+
+const side = d.side || 1;
+
+const sx = hx + px * elen * side;
+const sy = hy + py * elen * side;
+
+// Anschlag-Strich
+ctx.strokeStyle = "rgba(0,255,200,0.4)";
+ctx.lineWidth = 2;
+ctx.beginPath();
+ctx.moveTo(hx, hy);
+ctx.lineTo(sx, sy);
+ctx.stroke();
+
+// Viertelkreis (nur für normale Türen)
+this.drawDoorArc(ctx, d, hx, hy, px, py, elen, side);
+
+        }
+    },
+
+drawDoorByType(ctx, d, geo) {
+
+    const { x1, y1, x2, y2 } = geo;
+
+    switch (d.type) {
+
+        // ------------------------------------------------------------
+        // ⭐ Zimmertür / Haustür / Standardtür
+        // ------------------------------------------------------------
+        case "zimmertuer":
+        case "haustuer":
+        case "default":
             ctx.strokeStyle = "#00ffc8";
             ctx.lineWidth = 6;
             ctx.beginPath();
             ctx.moveTo(x1, y1);
             ctx.lineTo(x2, y2);
             ctx.stroke();
+            return;
 
-            if (!d.hinge) continue;
+        // ------------------------------------------------------------
+        // ⭐ Dachluke → rund, frei platzierbar
+        // ------------------------------------------------------------
+        case "dachluke":
+            ctx.strokeStyle = "#00ffc8";
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(d.x, d.y, d.width / 2, 0, Math.PI * 2);
+            ctx.stroke();
+            return;
 
-            // Scharnierpunkt + anderes Ende
-            let hx, hy, ox, oy;
-            if (d.hinge === "start") {
-                hx = x1; hy = y1;
-                ox = x2; oy = y2;
-            } else {
-                hx = x2; hy = y2;
-                ox = x1; oy = y1;
-            }
+        // ------------------------------------------------------------
+        // ⭐ Schiebetür → kein Viertelkreis
+        // ------------------------------------------------------------
+        case "schiebetuer":
+            ctx.strokeStyle = "#00ffc8";
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+            return;
 
-            const ex = ox - hx;
-            const ey = oy - hy;
-            const elen = Math.sqrt(ex*ex + ey*ey);
-            if (elen === 0) continue;
+        // ------------------------------------------------------------
+        // ⭐ Falttür → segmentiert
+        // ------------------------------------------------------------
+        case "falttuer":
+            ctx.strokeStyle = "#00ffc8";
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
 
-            const px = -ey / elen;
-            const py = ex / elen;
-
-            const side = d.side || 1;
-
-            const sx = hx + px * elen * side;
-            const sy = hy + py * elen * side;
-
-            // Anschlag-Strich
-            ctx.strokeStyle = "rgba(0,255,200,0.4)";
+            // Segment-Linien
+            const midX = (x1 + x2) / 2;
+            const midY = (y1 + y2) / 2;
             ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.moveTo(hx, hy);
-            ctx.lineTo(sx, sy);
+            ctx.moveTo(midX, midY);
+            ctx.lineTo(midX + (y1 - y2) * 0.2, midY + (x2 - x1) * 0.2);
             ctx.stroke();
+            return;
 
-            // Viertelkreis
-            const baseVecX = px * elen * side;
-            const baseVecY = py * elen * side;
-
-            const steps = 24;
-            ctx.strokeStyle = "rgba(0,255,200,0.25)";
-            ctx.lineWidth = 1.5;
+        // ------------------------------------------------------------
+        // ⭐ Terrassentür → Glas
+        // ------------------------------------------------------------
+        case "terrassentuer":
+            ctx.strokeStyle = "#00ffc8";
+            ctx.lineWidth = 3;
             ctx.beginPath();
-
-            for (let i = 0; i <= steps; i++) {
-                const t = i / steps;
-                const angle = -side * (Math.PI / 2) * t;
-
-                const cosA = Math.cos(angle);
-                const sinA = Math.sin(angle);
-
-                const rx = baseVecX * cosA - baseVecY * sinA;
-                const ry = baseVecX * sinA + baseVecY * cosA;
-
-                const px2 = hx + rx;
-                const py2 = hy + ry;
-
-                if (i === 0) ctx.moveTo(px2, py2);
-                else ctx.lineTo(px2, py2);
-            }
-
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
             ctx.stroke();
-        }
-    },
 
+            ctx.strokeStyle = "rgba(0,255,200,0.3)";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+            return;
+
+        // ------------------------------------------------------------
+        // ⭐ Garagentor → dicke Linie
+        // ------------------------------------------------------------
+        case "garagentor":
+            ctx.strokeStyle = "#00ffc8";
+            ctx.lineWidth = 10;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+            return;
+
+        // ------------------------------------------------------------
+        // ⭐ Gartentörchen → schmal
+        // ------------------------------------------------------------
+        case "gartentor":
+            ctx.strokeStyle = "#00ffc8";
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+            return;
+    }
+},
+
+
+drawDoorArc(ctx, d, hx, hy, px, py, elen, side) {
+    const baseVecX = px * elen * side;
+    const baseVecY = py * elen * side;
+
+    const steps = 24;
+    ctx.strokeStyle = "rgba(0,255,200,0.25)";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+
+    for (let i = 0; i <= steps; i++) {
+        const t = i / steps;
+        const angle = -side * (Math.PI / 2) * t;
+
+        const cosA = Math.cos(angle);
+        const sinA = Math.sin(angle);
+
+        const rx = baseVecX * cosA - baseVecY * sinA;
+        const ry = baseVecX * sinA + baseVecY * cosA;
+
+        const px2 = hx + rx;
+        const py2 = hy + ry;
+
+        if (i === 0) ctx.moveTo(px2, py2);
+        else ctx.lineTo(px2, py2);
+    }
+
+    ctx.stroke();
+},
+    
+    
     drawWindows() {
         const ctx = this.ctx;
 
