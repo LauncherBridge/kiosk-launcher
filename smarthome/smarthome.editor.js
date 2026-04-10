@@ -1715,15 +1715,44 @@ onDown(e) {
 
 // Werkzeug setzen (z.B. "select", "draw", "door", "window", "smartdevice")
 setTool(tool, subtype = null) {
+
     this.currentTool = tool;
 
-    // Türtyp setzen
+    // ------------------------------------------------------------
+    // ⭐ Türmodus aktivieren
+    // ------------------------------------------------------------
     if (tool === "door") {
+
+        // Türtyp setzen
         this.currentDoorType = subtype || "default";
+
+        // Modus aktivieren
+        this.mode = "doors";
+
+        // Platzierungszustand zurücksetzen
+        this._placingDoor = false;
+
+        console.log("[RoomDesigner] setTool: DOOR-MODE aktiviert →", subtype);
+        return;
     }
 
+    // ------------------------------------------------------------
+    // ⭐ Fenster-Modus aktivieren
+    // ------------------------------------------------------------
+    if (tool === "window") {
+        this.mode = "windows";
+        this._placingWindow = false;
+        console.log("[RoomDesigner] setTool: WINDOW-MODE aktiviert");
+        return;
+    }
+
+    // ------------------------------------------------------------
+    // ⭐ Standard-Tools
+    // ------------------------------------------------------------
+    this.mode = "points";
     console.log("[RoomDesigner] setTool:", tool, "subtype:", subtype);
 },
+
 
 
     // Element-Typ setzen (z.B. "wall", "door-single", "window-standard", "smart-box")
