@@ -1413,6 +1413,13 @@ onDown(e) {
     // Türen zeichnen (alte Darstellung)
     // --------------------------------------------------
     drawDoors() {
+        const DOOR_TYPES_WITH_ARC = new Set([
+            "zimmertuer",
+            "haustuer",
+            "terrassentuer",
+            "gartentor"
+        ]);
+
         const ctx = this.ctx;
 
         for (const d of this.doors) {
@@ -1481,9 +1488,10 @@ ctx.moveTo(hx, hy);
 ctx.lineTo(sx, sy);
 ctx.stroke();
 
-// Viertelkreis (nur für normale Türen)
-this.drawDoorArc(ctx, d, hx, hy, px, py, elen, side);
-
+        // Viertelkreis (nur für normale Türen)
+        if (DOOR_TYPES_WITH_ARC.has(d.type)) {
+            this.drawDoorArc(ctx, d, hx, hy, px, py, elen, side);
+        }
         }
     },
 
@@ -1494,13 +1502,23 @@ drawDoorByType(ctx, d, geo) {
     switch (d.type) {
 
         // ------------------------------------------------------------
-        // ⭐ Zimmertür / Haustür / Standardtür
+        // ⭐ Zimmertür
         // ------------------------------------------------------------
         case "zimmertuer":
-        case "haustuer":
-        case "default":
             ctx.strokeStyle = "#00ffc8";
             ctx.lineWidth = 5;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+            return;
+
+        // ------------------------------------------------------------
+        // ⭐ Haustür
+        // ------------------------------------------------------------
+        case "haustuer":
+            ctx.strokeStyle = "#00d4a8";
+            ctx.lineWidth = 7;
             ctx.beginPath();
             ctx.moveTo(x1, y1);
             ctx.lineTo(x2, y2);
@@ -1512,14 +1530,12 @@ drawDoorByType(ctx, d, geo) {
         // ⭐ Dachluke → rund, frei platzierbar
         // ------------------------------------------------------------
         case "dachluke":
-            // Außenkreis
             ctx.strokeStyle = "#00b7ff";
             ctx.lineWidth = 3;
             ctx.beginPath();
             ctx.arc(d.x, d.y, d.width / 2, 0, Math.PI * 2);
             ctx.stroke();
         
-            // Innenhighlight
             ctx.fillStyle = "rgba(0,183,255,0.15)";
             ctx.beginPath();
             ctx.arc(d.x, d.y, d.width / 2.5, 0, Math.PI * 2);
@@ -1527,11 +1543,11 @@ drawDoorByType(ctx, d, geo) {
             return;
 
 
+
         // ------------------------------------------------------------
         // ⭐ Schiebetür → kein Viertelkreis
         // ------------------------------------------------------------
         case "schiebetuer":
-            // Türblatt
             ctx.strokeStyle = "#00ffc8";
             ctx.lineWidth = 3;
             ctx.beginPath();
@@ -1539,17 +1555,29 @@ drawDoorByType(ctx, d, geo) {
             ctx.lineTo(x2, y2);
             ctx.stroke();
         
-            // Schiebe-Pfeil
+            // Doppelpfeil
             const mx = (x1 + x2) / 2;
             const my = (y1 + y2) / 2;
         
-            ctx.strokeStyle = "#00ffc8";
-            ctx.lineWidth = 2;
+            const nx = (y1 - y2) * 0.2;
+            const ny = (x2 - x1) * 0.2;
+        
             ctx.beginPath();
-            ctx.moveTo(mx - (y2 - y1) * 0.15, my + (x2 - x1) * 0.15);
-            ctx.lineTo(mx + (y2 - y1) * 0.15, my - (x2 - x1) * 0.15);
+            ctx.moveTo(mx - nx, my - ny);
+            ctx.lineTo(mx + nx, my + ny);
+            ctx.stroke();
+        
+            ctx.beginPath();
+            ctx.moveTo(mx + nx, my + ny);
+            ctx.lineTo(mx + nx * 0.6, my + ny * 0.6);
+            ctx.stroke();
+        
+            ctx.beginPath();
+            ctx.moveTo(mx - nx, my - ny);
+            ctx.lineTo(mx - nx * 0.6, my - ny * 0.6);
             ctx.stroke();
             return;
+
 
 
         // ------------------------------------------------------------
@@ -1563,39 +1591,41 @@ drawDoorByType(ctx, d, geo) {
             ctx.lineTo(x2, y2);
             ctx.stroke();
         
-            // Segment 1
             const midX = (x1 + x2) / 2;
             const midY = (y1 + y2) / 2;
         
-            ctx.strokeStyle = "rgba(0,255,200,0.6)";
-            ctx.lineWidth = 2;
+            const nx2 = (y1 - y2) * 0.25;
+            const ny2 = (x2 - x1) * 0.25;
+        
+            // Segment 1
             ctx.beginPath();
             ctx.moveTo(midX, midY);
-            ctx.lineTo(midX + (y1 - y2) * 0.2, midY + (x2 - x1) * 0.2);
+            ctx.lineTo(midX + nx2, midY + ny2);
             ctx.stroke();
         
             // Segment 2
             ctx.beginPath();
             ctx.moveTo(midX, midY);
-            ctx.lineTo(midX - (y1 - y2) * 0.2, midY - (x2 - x1) * 0.2);
+            ctx.lineTo(midX - nx2, midY - ny2);
             ctx.stroke();
             return;
+
 
         // ------------------------------------------------------------
         // ⭐ Terrassentür → Glas
         // ------------------------------------------------------------
-         case "terrassentuer":
+        case "terrassentuer":
             // Rahmen
             ctx.strokeStyle = "#00ffc8";
-            ctx.lineWidth = 3;
+            ctx.lineWidth = 4;
             ctx.beginPath();
             ctx.moveTo(x1, y1);
             ctx.lineTo(x2, y2);
             ctx.stroke();
         
-            // Glas
-            ctx.strokeStyle = "rgba(0,255,200,0.3)";
-            ctx.lineWidth = 6;
+            // Glasfüllung
+            ctx.strokeStyle = "rgba(0,255,200,0.35)";
+            ctx.lineWidth = 8;
             ctx.beginPath();
             ctx.moveTo(x1, y1);
             ctx.lineTo(x2, y2);
@@ -1603,10 +1633,11 @@ drawDoorByType(ctx, d, geo) {
             return;
 
 
+
         // ------------------------------------------------------------
         // ⭐ Garagentor → dicke Linie
         // ------------------------------------------------------------
-          case "garagentor":
+        case "garagentor":
             ctx.strokeStyle = "#00ffc8";
             ctx.lineWidth = 12;
             ctx.beginPath();
@@ -1617,16 +1648,27 @@ drawDoorByType(ctx, d, geo) {
             // Struktur
             ctx.strokeStyle = "rgba(0,255,200,0.3)";
             ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(x1, y1);
-            ctx.lineTo(x2, y2);
-            ctx.stroke();
+        
+            const steps = 3;
+            for (let i = 1; i <= steps; i++) {
+                const t = i / (steps + 1);
+                ctx.beginPath();
+                ctx.moveTo(
+                    x1 + (x2 - x1) * t,
+                    y1 + (y2 - y1) * t
+                );
+                ctx.lineTo(
+                    x1 + (x2 - x1) * t + (y1 - y2) * 0.15,
+                    y1 + (y2 - y1) * t + (x2 - x1) * 0.15
+                );
+                ctx.stroke();
+            }
             return;
 
         // ------------------------------------------------------------
         // ⭐ Gartentörchen → schmal
         // ------------------------------------------------------------
-        case "gartentor":
+          case "gartentor":
             ctx.strokeStyle = "#00ffc8";
             ctx.lineWidth = 2;
             ctx.beginPath();
@@ -1634,6 +1676,7 @@ drawDoorByType(ctx, d, geo) {
             ctx.lineTo(x2, y2);
             ctx.stroke();
             return;
+    
 
     }
 },
