@@ -1516,44 +1516,14 @@ drawDoorByType(ctx, d, geo) {
         // ------------------------------------------------------------
         // ⭐ Haustür
         // ------------------------------------------------------------
-case "haustuer":
-    // Türblatt (massiver als Zimmertür)
-    ctx.strokeStyle = "#00d4a8";   // etwas dunkleres Türkis
-    ctx.lineWidth = 7;
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
-
-    // ------------------------------------------------------------
-    // Schlüssel-Symbol (Option A)
-    // ------------------------------------------------------------
-
-    // Mittelpunkt der Tür berechnen
-    const mx = (x1 + x2) / 2;
-    const my = (y1 + y2) / 2;
-
-    // Schlüsselkopf (kleiner Kreis)
-    ctx.strokeStyle = "#00d4a8";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(mx, my, 5, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // Schaft
-    ctx.beginPath();
-    ctx.moveTo(mx + 5, my);
-    ctx.lineTo(mx + 12, my);
-    ctx.stroke();
-
-    // kleiner Zacken am Ende
-    ctx.beginPath();
-    ctx.moveTo(mx + 12, my);
-    ctx.lineTo(mx + 12, my - 4);
-    ctx.stroke();
-
-    return;
-
+        case "haustuer":
+            ctx.strokeStyle = "#00d4a8";
+            ctx.lineWidth = 7;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+            return;
 
 
         // ------------------------------------------------------------
