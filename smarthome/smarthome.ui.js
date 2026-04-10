@@ -410,25 +410,27 @@ window.SmartHomeUI = {
         });
 
         // ------------------------------------------------------------
-        // Türen aus Tab 1 aktivieren
+        // Türen aus Editor-Tab aktivieren (direkte Kopplung an RoomDesigner)
         // ------------------------------------------------------------
         container.querySelectorAll("[data-element^='door-']").forEach(btn => {
             btn.addEventListener("click", () => {
         
-                // Türtyp extrahieren
                 const subtype = btn.dataset.element.replace("door-", "");
         
-                // Tool setzen
-                if (RoomDesigner && typeof RoomDesigner.setTool === "function") {
-                    RoomDesigner.setTool("door", subtype);
-                }
+                console.log("[UI] Tür-Button geklickt:", btn.dataset.element, "→ subtype:", subtype);
         
-                // Editor in Türmodus schalten (wie der alte Button)
-                RoomDesigner.hideContextMenu();
+                // Türmodus im RoomDesigner direkt setzen
+                RoomDesigner.hideContextMenu && RoomDesigner.hideContextMenu();
+        
                 RoomDesigner.mode = "doors";
                 RoomDesigner._placingDoor = false;
+        
+                // Türtyp direkt setzen (ohne Umweg über setTool)
+                RoomDesigner.currentTool = "door";
+                RoomDesigner.currentDoorType = subtype;
             });
         });
+
 
         
     },
