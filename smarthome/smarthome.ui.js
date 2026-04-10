@@ -408,28 +408,30 @@ window.SmartHomeUI = {
                 RoomDesigner.setElement(btn.dataset.element);
             });
         });
+        
 
-        // ------------------------------------------------------------
-        // Türen aus Editor-Tab aktivieren (direkte Kopplung an RoomDesigner)
-        // ------------------------------------------------------------
-        container.querySelectorAll("[data-element^='door-']").forEach(btn => {
-            btn.addEventListener("click", () => {
-        
-                const subtype = btn.dataset.element.replace("door-", "");
-        
-                console.log("[UI] Tür-Button geklickt:", btn.dataset.element, "→ subtype:", subtype);
-        
-                // Türmodus im RoomDesigner direkt setzen
-                RoomDesigner.hideContextMenu && RoomDesigner.hideContextMenu();
-        
-                RoomDesigner.mode = "doors";
-                RoomDesigner._placingDoor = false;
-        
-                // Türtyp direkt setzen (ohne Umweg über setTool)
-                RoomDesigner.currentTool = "door";
-                RoomDesigner.currentDoorType = subtype;
-            });
-        });
+// ------------------------------------------------------------
+// Türen aus Editor-Tab aktivieren (nutzt den alten Tür-Button)
+// ------------------------------------------------------------
+container.querySelectorAll("[data-element^='door-']").forEach(btn => {
+    btn.addEventListener("click", () => {
+
+        const subtype = btn.dataset.element.replace("door-", "");
+        console.log("[UI] Tür-Button geklickt:", btn.dataset.element, "→ subtype:", subtype);
+
+        // Türtyp im RoomDesigner setzen (für spätere Darstellung/Logik)
+        if (RoomDesigner && typeof RoomDesigner.setTool === "function") {
+            RoomDesigner.setTool("door", subtype);
+        }
+
+        // Alten, funktionierenden Tür-Button auslösen
+        const doorBtn = document.getElementById("btnDoorMode");
+        if (doorBtn) {
+            doorBtn.click();
+        }
+    });
+});
+
 
 
         
