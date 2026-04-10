@@ -408,6 +408,29 @@ window.SmartHomeUI = {
                 RoomDesigner.setElement(btn.dataset.element);
             });
         });
+
+        // ------------------------------------------------------------
+        // Türen aus Tab 1 aktivieren
+        // ------------------------------------------------------------
+        container.querySelectorAll("[data-element^='door-']").forEach(btn => {
+            btn.addEventListener("click", () => {
+        
+                // Türtyp extrahieren
+                const subtype = btn.dataset.element.replace("door-", "");
+        
+                // Tool setzen
+                if (RoomDesigner && typeof RoomDesigner.setTool === "function") {
+                    RoomDesigner.setTool("door", subtype);
+                }
+        
+                // Editor in Türmodus schalten (wie der alte Button)
+                RoomDesigner.hideContextMenu();
+                RoomDesigner.mode = "doors";
+                RoomDesigner._placingDoor = false;
+            });
+        });
+
+        
     },
 
 renderEditorDevicesPanel(container) {
