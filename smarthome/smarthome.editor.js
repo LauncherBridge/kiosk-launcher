@@ -1500,9 +1500,9 @@ ctx.stroke();
     
         // Viertelkreis
         this.drawDoorArc(ctx, d, hx, hy, px, py, elen, side);
-}
-
     }
+
+    
 },
 
 drawDoorByType(ctx, d, geo) {
