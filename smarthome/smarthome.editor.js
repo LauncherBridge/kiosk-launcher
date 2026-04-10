@@ -1763,6 +1763,23 @@ setTool(tool, subtype = null) {
     },
 
     // --------------------------------------------------
+    // ⭐ NEU: Türtyp-Logik (Schritt B)
+    // --------------------------------------------------
+    getDoorProperties(type) {
+        switch (type) {
+            case "schiebetuer": return { hasArc:false, color:"#fff", width:36, free:false };
+            case "falttuer": return { hasArc:false, color:"#fff", width:36, free:false };
+            case "terrassentuer": return { hasArc:true, color:"rgba(0,150,255,0.5)", width:36, free:false };
+            case "garagentor": return { hasArc:false, color:"#ccc", width:120, free:false };
+            case "gartentoerchen": return { hasArc:true, color:"#88cc88", width:28, free:false };
+            case "dachluke": return { hasArc:false, color:"#fff", width:36, free:true };
+            case "haustuer":
+            case "zimmertuer":
+            default: return { hasArc:true, color:"#fff", width:36, free:false };
+        }
+    },
+
+    // --------------------------------------------------
     // Szenen
     // --------------------------------------------------
     addScene() {
