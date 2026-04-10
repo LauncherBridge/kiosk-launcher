@@ -1489,19 +1489,9 @@ ctx.lineTo(sx, sy);
 ctx.stroke();
 
         // Viertelkreis (nur für normale Türen)
-if (DOOR_TYPES_WITH_ARC.has(d.type)) {
-    // Scharnier-Strich
-    ctx.strokeStyle = "rgba(0,255,200,0.4)";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(hx, hy);
-    ctx.lineTo(sx, sy);
-    ctx.stroke();
-
-    // Viertelkreis
-    this.drawDoorArc(ctx, d, hx, hy, px, py, elen, side);
-}
-
+        if (DOOR_TYPES_WITH_ARC.has(d.type)) {
+            this.drawDoorArc(ctx, d, hx, hy, px, py, elen, side);
+        }
         }
     },
 
@@ -1526,38 +1516,44 @@ drawDoorByType(ctx, d, geo) {
         // ------------------------------------------------------------
         // ⭐ Haustür
         // ------------------------------------------------------------
-        case "haustuer":
-            ctx.strokeStyle = "#00d4a8";
-            ctx.lineWidth = 7;
-            ctx.beginPath();
-            ctx.moveTo(x1, y1);
-            ctx.lineTo(x2, y2);
-            ctx.stroke();
+case "haustuer":
+    // Türblatt (massiver als Zimmertür)
+    ctx.strokeStyle = "#00d4a8";   // etwas dunkleres Türkis
+    ctx.lineWidth = 7;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
 
-            // Schlüssel-Symbol
-            const mx = (x1 + x2) / 2;
-            const my = (y1 + y2) / 2;
-            
-            // Kreis (Schlüsselkopf)
-            ctx.strokeStyle = "#00d4a8";
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.arc(mx, my, 5, 0, Math.PI * 2);
-            ctx.stroke();
-            
-            // Schaft
-            ctx.beginPath();
-            ctx.moveTo(mx + 5, my);
-            ctx.lineTo(mx + 12, my);
-            ctx.stroke();
-            
-            // kleiner Zacken
-            ctx.beginPath();
-            ctx.moveTo(mx + 12, my);
-            ctx.lineTo(mx + 12, my - 4);
-            ctx.stroke();
+    // ------------------------------------------------------------
+    // Schlüssel-Symbol (Option A)
+    // ------------------------------------------------------------
 
-            return;
+    // Mittelpunkt der Tür berechnen
+    const mx = (x1 + x2) / 2;
+    const my = (y1 + y2) / 2;
+
+    // Schlüsselkopf (kleiner Kreis)
+    ctx.strokeStyle = "#00d4a8";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(mx, my, 5, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Schaft
+    ctx.beginPath();
+    ctx.moveTo(mx + 5, my);
+    ctx.lineTo(mx + 12, my);
+    ctx.stroke();
+
+    // kleiner Zacken am Ende
+    ctx.beginPath();
+    ctx.moveTo(mx + 12, my);
+    ctx.lineTo(mx + 12, my - 4);
+    ctx.stroke();
+
+    return;
+
 
 
         // ------------------------------------------------------------
@@ -1648,24 +1644,23 @@ drawDoorByType(ctx, d, geo) {
         // ------------------------------------------------------------
         // ⭐ Terrassentür → Glas
         // ------------------------------------------------------------
-case "terrassentuer":
-    // Rahmen
-    ctx.strokeStyle = "#00ffc8";
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
-
-    // Glasfüllung
-    ctx.strokeStyle = "rgba(0,200,255,0.45)";
-    ctx.lineWidth = 10;
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
-    return;
-
+        case "terrassentuer":
+            // Rahmen
+            ctx.strokeStyle = "#00ffc8";
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+        
+            // Glasfüllung
+            ctx.strokeStyle = "rgba(0,255,200,0.35)";
+            ctx.lineWidth = 8;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+            return;
 
 
 
