@@ -107,8 +107,8 @@ const RoomDesigner = {
         this.canvas.addEventListener("touchstart", (e) => this.onTouchStart(e), { passive: false });
         this.canvas.addEventListener("touchmove", (e) => this.onTouchMove(e), { passive: false });
         this.canvas.addEventListener("touchend", (e) => this.onTouchEnd(e));
-        this.setupDoorButton();
-        this.setupWindowButton();
+        //this.setupDoorButton();
+        //this.setupWindowButton();
         this.createContextMenu();
         this.setupSnapButton();
         this.setupGridSlider();
