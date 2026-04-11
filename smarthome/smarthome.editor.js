@@ -1,9 +1,7 @@
 const doorIcon = new Image();
 doorIcon.src =
-"data:image/svg+xml;utf8," +
-"<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'>" +
-"<path fill='white' d='M6 2h12v20H6V2zm7 10a1 1 0 11-2 0 1 1 0 012 0z'/>" +
-"</svg>";
+"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M6 2h12v20H6V2zm7 10a1 1 0 11-2 0 1 1 0 012 0z'/%3E%3C/svg%3E";
+
 
 
 const RoomDesigner = {
@@ -1552,6 +1550,7 @@ case "haustuer": {
 
     return;
 }
+
 
 
 
