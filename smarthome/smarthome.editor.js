@@ -1,3 +1,6 @@
+    const keyIcon = new Image();
+    keyIcon.src = "icons/key.svg";
+
 const RoomDesigner = {
     canvas: null,
     ctx: null,
