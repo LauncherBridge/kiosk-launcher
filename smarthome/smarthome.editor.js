@@ -1634,32 +1634,70 @@ case "schiebetuer":
         // ------------------------------------------------------------
         // ⭐ Falttür → segmentiert
         // ------------------------------------------------------------
-        case "falttuer":
-            ctx.strokeStyle = "#00ffc8";
-            ctx.lineWidth = 4;
-            ctx.beginPath();
-            ctx.moveTo(x1, y1);
-            ctx.lineTo(x2, y2);
-            ctx.stroke();
-        
-            const midX = (x1 + x2) / 2;
-            const midY = (y1 + y2) / 2;
-        
-            const nx2 = (y1 - y2) * 0.25;
-            const ny2 = (x2 - x1) * 0.25;
-        
-            // Segment 1
-            ctx.beginPath();
-            ctx.moveTo(midX, midY);
-            ctx.lineTo(midX + nx2, midY + ny2);
-            ctx.stroke();
-        
-            // Segment 2
-            ctx.beginPath();
-            ctx.moveTo(midX, midY);
-            ctx.lineTo(midX - nx2, midY - ny2);
-            ctx.stroke();
-            return;
+ case "falttuer": {
+    // Türvektor
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const len = Math.hypot(dx, dy);
+
+    // Normierter Vektor
+    const nx = dx / len;
+    const ny = dy / len;
+
+    // Senkrechter Vektor
+    const px = -ny;
+    const py = nx;
+
+    // Rahmenbreite
+    const w = 20; // Breite der Öffnung
+
+    // Mittelpunkt
+    const mx = (x1 + x2) / 2;
+    const my = (y1 + y2) / 2;
+
+    // Rahmen-Ecken
+    const rx = mx - nx * (w / 2);
+    const ry = my - ny * (w / 2);
+
+    ctx.save();
+
+    // Rahmen zeichnen
+    ctx.strokeStyle = "#00d4a8";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(rx - px * 10, ry - py * 10, w, 20);
+
+    // Innenfläche
+    ctx.fillStyle = "rgba(200,200,200,0.35)";
+    ctx.fillRect(rx - px * 10, ry - py * 10, w, 20);
+
+    // Falttür-Symbol
+    ctx.translate(mx, my);
+
+    // Rotation entlang der Türlinie
+    const angle = Math.atan2(dy, dx);
+    ctx.rotate(angle);
+
+    // Symbol-Position abhängig vom Scharnier
+    const offset = (d.hinge === "left") ? -w/2 + 4 : w/2 - 24;
+
+    ctx.translate(offset, -10);
+
+    // |/\/\| zeichnen
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 3;
+
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(6, -6);
+    ctx.lineTo(12, 0);
+    ctx.lineTo(18, -6);
+    ctx.lineTo(24, 0);
+    ctx.stroke();
+
+    ctx.restore();
+    return;
+}
+
 
 
         // ------------------------------------------------------------
