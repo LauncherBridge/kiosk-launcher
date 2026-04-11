@@ -45,8 +45,7 @@ const RoomDesigner = {
     panStartX: 0,
     panStartY: 0,
 
-    _lastClickTime: 0,
-    _pendingNewPoint: null,
+
     _lastClickTime: 0,
     _pendingNewPoint: null,
     _suppressNextClick: false,
