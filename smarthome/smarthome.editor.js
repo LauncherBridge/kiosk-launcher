@@ -1,5 +1,9 @@
 const doorIcon = new Image();
-doorIcon.src = "icons/door.svg";
+doorIcon.src =
+"data:image/svg+xml;utf8," +
+"<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'>" +
+"<path fill='white' d='M6 2h12v20H6V2zm7 10a1 1 0 11-2 0 1 1 0 012 0z'/>" +
+"</svg>";
 
 
 const RoomDesigner = {
@@ -1542,12 +1546,13 @@ case "haustuer": {
     const sx = mx + offX - 12;
     const sy = my + offY - 12;
 
-    if (doorIcon.complete && doorIcon.naturalWidth > 0) {
+    if (doorIcon.complete) {
         ctx.drawImage(doorIcon, sx, sy, 24, 24);
     }
 
     return;
 }
+
 
 
 
