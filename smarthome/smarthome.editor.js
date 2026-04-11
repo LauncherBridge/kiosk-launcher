@@ -1578,39 +1578,40 @@ case "haustuer":
 
 
 
-        // ------------------------------------------------------------
-        // ⭐ Schiebetür → kein Viertelkreis
-        // ------------------------------------------------------------
-        case "schiebetuer":
-            ctx.strokeStyle = "#00ffc8";
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            ctx.moveTo(x1, y1);
-            ctx.lineTo(x2, y2);
-            ctx.stroke();
-        
-            // Doppelpfeil
-            const mx = (x1 + x2) / 2;
-            const my = (y1 + y2) / 2;
-        
-            const nx = (y1 - y2) * 0.2;
-            const ny = (x2 - x1) * 0.2;
-        
-            ctx.beginPath();
-            ctx.moveTo(mx - nx, my - ny);
-            ctx.lineTo(mx + nx, my + ny);
-            ctx.stroke();
-        
-            ctx.beginPath();
-            ctx.moveTo(mx + nx, my + ny);
-            ctx.lineTo(mx + nx * 0.6, my + ny * 0.6);
-            ctx.stroke();
-        
-            ctx.beginPath();
-            ctx.moveTo(mx - nx, my - ny);
-            ctx.lineTo(mx - nx * 0.6, my - ny * 0.6);
-            ctx.stroke();
-            return;
+// ------------------------------------------------------------
+// ⭐ Schiebetür → kein Viertelkreis
+// ------------------------------------------------------------
+case "schiebetuer":
+    ctx.strokeStyle = "#00ffc8";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+
+    // Doppelpfeil
+    const mx_s = (x1 + x2) / 2;
+    const my_s = (y1 + y2) / 2;
+
+    const nx_s = (y1 - y2) * 0.2;
+    const ny_s = (x2 - x1) * 0.2;
+
+    ctx.beginPath();
+    ctx.moveTo(mx_s - nx_s, my_s - ny_s);
+    ctx.lineTo(mx_s + nx_s, my_s + ny_s);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(mx_s + nx_s, my_s + ny_s);
+    ctx.lineTo(mx_s + nx_s * 0.6, my_s + ny_s * 0.6);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(mx_s - nx_s, my_s - ny_s);
+    ctx.lineTo(mx_s - nx_s * 0.6, my_s - ny_s * 0.6);
+    ctx.stroke();
+    return;
+
 
 
 
