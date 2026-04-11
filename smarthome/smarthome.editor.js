@@ -1651,7 +1651,7 @@ case "falttuer": {
     // Wanddicke
     const wallThickness = 12;
 
-    // Türschwellen-Ecken (exakt Wandbreite)
+    // Türschwellen-Ecken (Polygon)
     const t1x = x1 + px * (wallThickness / 2);
     const t1y = y1 + py * (wallThickness / 2);
 
@@ -1664,39 +1664,41 @@ case "falttuer": {
     const t4x = x1 - px * (wallThickness / 2);
     const t4y = y1 - py * (wallThickness / 2);
 
-    // Türschwelle füllen: Bodenfarbe + grauer Overlay
-    ctx.fillStyle = room.floorColor; 
+    // --- Türschwelle korrekt füllen ---
     ctx.beginPath();
     ctx.moveTo(t1x, t1y);
     ctx.lineTo(t2x, t2y);
     ctx.lineTo(t3x, t3y);
     ctx.lineTo(t4x, t4y);
     ctx.closePath();
+
+    // 1. Bodenfarbe
+    ctx.fillStyle = room.floorColor;
     ctx.fill();
 
+    // 2. Grauer Overlay
     ctx.fillStyle = "rgba(180,180,180,0.25)";
     ctx.fill();
 
-    // Türschwelle-Umriss (filigran)
+    // 3. Filigraner Umriss
     ctx.strokeStyle = "#00d4a8";
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = 1.2;
     ctx.stroke();
 
-    // Symbolposition (zweiter Klick)
+    // --- Symbolposition (zweiter Klick) ---
     const proj = ((d.clickX - x1) * nx + (d.clickY - y1) * ny);
     const clamped = Math.max(0, Math.min(len, proj));
 
     const sx = x1 + nx * clamped;
     const sy = y1 + ny * clamped;
 
-    // Falttür-Symbol exakt auf der Wandlinie
+    // --- Falttür-Symbol exakt auf der Wandlinie ---
     ctx.save();
     ctx.translate(sx, sy);
     ctx.rotate(Math.atan2(dy, dx));
 
-    // Filigranes, enges Symbol |\/\/|
     ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = 1.2;
 
     ctx.beginPath();
     ctx.moveTo(0, 0);
@@ -1709,6 +1711,7 @@ case "falttuer": {
     ctx.restore();
     return;
 }
+
 
 
 
