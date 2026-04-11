@@ -19,8 +19,6 @@ const RoomDesigner = {
     isDragging: false,
     _initialized: false,
 
-    const keyIcon = new Image();
-    keyIcon.src = "icons/key.svg";
 
 
     // --------------------------------------------------
