@@ -1635,6 +1635,7 @@ case "schiebetuer":
         // ⭐ Falttür → segmentiert
         // ------------------------------------------------------------
 case "falttuer": {
+
     // Wandvektor
     const dx = x2 - x1;
     const dy = y2 - y1;
@@ -1648,8 +1649,8 @@ case "falttuer": {
     const px = -ny;
     const py = nx;
 
-    // Wanddicke
-    const wallThickness = 12;
+    // Wanddicke MUSS im Welt-Raum skaliert werden
+    const wallThickness = 12 / this.zoom;
 
     // Türschwellen-Ecken (Polygon)
     const t1x = x1 + px * (wallThickness / 2);
@@ -1665,7 +1666,7 @@ case "falttuer": {
     const t4y = y1 - py * (wallThickness / 2);
 
     // --- Türschwelle korrekt füllen ---
-    ctx.save(); // <<< WICHTIG: Fläche isolieren
+    ctx.save(); // Fläche isolieren
 
     // 1. Bodenfarbe
     ctx.beginPath();
@@ -1695,10 +1696,10 @@ case "falttuer": {
     ctx.lineTo(t4x, t4y);
     ctx.closePath();
     ctx.strokeStyle = "#00d4a8";
-    ctx.lineWidth = 1.2;
+    ctx.lineWidth = 1 / this.zoom; // filigran, zoom-sicher
     ctx.stroke();
 
-    ctx.restore(); // <<< WICHTIG: Fläche abgeschlossen
+    ctx.restore(); // Fläche abgeschlossen
 
     // --- Symbolposition (zweiter Klick) ---
     const proj = ((d.clickX - x1) * nx + (d.clickY - y1) * ny);
@@ -1713,7 +1714,7 @@ case "falttuer": {
     ctx.rotate(Math.atan2(dy, dx));
 
     ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 1.2;
+    ctx.lineWidth = 1.2 / this.zoom;
 
     ctx.beginPath();
     ctx.moveTo(0, 0);
