@@ -1525,7 +1525,7 @@ drawDoorByType(ctx, d, geo) {
         // ------------------------------------------------------------
         // ⭐ Haustür
         // ------------------------------------------------------------
-case "haustuer":
+case "haustuer": {
     // Türblatt
     ctx.strokeStyle = "#00d4a8";
     ctx.lineWidth = 7;
@@ -1551,7 +1551,7 @@ case "haustuer":
     }
 
     return;
-
+}
 
 
 
