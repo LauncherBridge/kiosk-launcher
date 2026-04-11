@@ -1644,11 +1644,11 @@ case "falttuer": {
     const nx = dx / len;
     const ny = dy / len;
 
-    // Senkrechter Vektor (für Wanddicke)
+    // Senkrechter Vektor
     const px = -ny;
     const py = nx;
 
-    // Wanddicke (an dein System anpassen!)
+    // Wanddicke
     const wallThickness = 12;
 
     // Türschwellen-Ecken (exakt Wandbreite)
@@ -1664,55 +1664,51 @@ case "falttuer": {
     const t4x = x1 - px * (wallThickness / 2);
     const t4y = y1 - py * (wallThickness / 2);
 
-    // Türschwelle zeichnen (dünner Rahmen)
-    ctx.strokeStyle = "#00d4a8";
-    ctx.lineWidth = 2;
+    // Türschwelle füllen: Bodenfarbe + grauer Overlay
+    ctx.fillStyle = room.floorColor; 
     ctx.beginPath();
     ctx.moveTo(t1x, t1y);
     ctx.lineTo(t2x, t2y);
     ctx.lineTo(t3x, t3y);
     ctx.lineTo(t4x, t4y);
     ctx.closePath();
-    ctx.stroke();
-
-    // Innenfläche (leicht heller als Boden)
-    ctx.fillStyle = "rgba(200,200,200,0.35)";
     ctx.fill();
 
-    // Mittelpunkt der Tür
-    const mx = (x1 + x2) / 2;
-    const my = (y1 + y2) / 2;
+    ctx.fillStyle = "rgba(180,180,180,0.25)";
+    ctx.fill();
 
-    // Falttür-Symbol zeichnen
+    // Türschwelle-Umriss (filigran)
+    ctx.strokeStyle = "#00d4a8";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Symbolposition (zweiter Klick)
+    const proj = ((d.clickX - x1) * nx + (d.clickY - y1) * ny);
+    const clamped = Math.max(0, Math.min(len, proj));
+
+    const sx = x1 + nx * clamped;
+    const sy = y1 + ny * clamped;
+
+    // Falttür-Symbol exakt auf der Wandlinie
     ctx.save();
-    ctx.translate(mx, my);
+    ctx.translate(sx, sy);
+    ctx.rotate(Math.atan2(dy, dx));
 
-    // Rotation entlang der Wand
-    const angle = Math.atan2(dy, dx);
-    ctx.rotate(angle);
-
-    // Symbol-Offset abhängig vom Scharnier
-    const hingeOffset = (d.hinge === "left") ? -len / 2 + 6 : len / 2 - 22;
-
-    // Symbol leicht nach innen versetzen (auf Wand)
-    ctx.translate(hingeOffset, -wallThickness / 2);
-
-    // |\/\/| Symbol (eng, dünn, professionell)
+    // Filigranes, enges Symbol |\/\/|
     ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1.5;
 
     ctx.beginPath();
     ctx.moveTo(0, 0);
-    ctx.lineTo(4, -4);
-    ctx.lineTo(8, 0);
-    ctx.lineTo(12, -4);
-    ctx.lineTo(16, 0);
+    ctx.lineTo(3, -3);
+    ctx.lineTo(6, 0);
+    ctx.lineTo(9, -3);
+    ctx.lineTo(12, 0);
     ctx.stroke();
 
     ctx.restore();
     return;
 }
-
 
 
 
