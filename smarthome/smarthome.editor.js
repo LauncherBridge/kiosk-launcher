@@ -1445,53 +1445,57 @@ onDown(e) {
             const x2 = cx + tx * half;
             const y2 = cy + ty * half;
 
-// ------------------------------------------------------------
-// ⭐ Tür nach Typ zeichnen
-// ------------------------------------------------------------
-this.drawDoorByType(ctx, d, {
-    w, x1, y1, x2, y2, hx: null, hy: null, ox: null, oy: null, px: null, py: null, elen: null
-});
+            // ------------------------------------------------------------
+            // ⭐ Tür nach Typ zeichnen
+            // ------------------------------------------------------------
+            this.drawDoorByType(ctx, d, {
+                w, x1, y1, x2, y2, hx: null, hy: null, ox: null, oy: null, px: null, py: null, elen: null
+            });
+            
+            // Wenn kein Scharnier → fertig (z.B. Dachluke, Schiebetür)
+            if (!d.hinge) continue;
+            
+            // ------------------------------------------------------------
+            // ⭐ Scharnierberechnung wie bisher
+            // ------------------------------------------------------------
+            let hx, hy, ox, oy;
+            if (d.hinge === "start") {
+                hx = x1; hy = y1;
+                ox = x2; oy = y2;
+            } else {
+                hx = x2; hy = y2;
+                ox = x1; oy = y1;
+            }
+            
+            const ex = ox - hx;
+            const ey = oy - hy;
+            const elen = Math.sqrt(ex*ex + ey*ey);
+            if (elen === 0) continue;
+            
+            const px = -ey / elen;
+            const py = ex / elen;
+            
+            const side = d.side || 1;
+            
+            const sx = hx + px * elen * side;
+            const sy = hy + py * elen * side;
+            
+            // ------------------------------------------------------------
+            // ⭐ Scharnier-Strich NUR für klassische Türen
+            // ------------------------------------------------------------
+            if (DOOR_TYPES_WITH_ARC.has(d.type)) {
+                ctx.strokeStyle = "rgba(0,255,200,0.4)";
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(hx, hy);
+                ctx.lineTo(sx, sy);
+                ctx.stroke();
+            }
 
-// Wenn kein Scharnier → fertig (z.B. Dachluke, Schiebetür)
-if (!d.hinge) continue;
-
-// ------------------------------------------------------------
-// ⭐ Scharnierberechnung wie bisher
-// ------------------------------------------------------------
-let hx, hy, ox, oy;
-if (d.hinge === "start") {
-    hx = x1; hy = y1;
-    ox = x2; oy = y2;
-} else {
-    hx = x2; hy = y2;
-    ox = x1; oy = y1;
-}
-
-const ex = ox - hx;
-const ey = oy - hy;
-const elen = Math.sqrt(ex*ex + ey*ey);
-if (elen === 0) continue;
-
-const px = -ey / elen;
-const py = ex / elen;
-
-const side = d.side || 1;
-
-const sx = hx + px * elen * side;
-const sy = hy + py * elen * side;
-
-// Anschlag-Strich
-ctx.strokeStyle = "rgba(0,255,200,0.4)";
-ctx.lineWidth = 2;
-ctx.beginPath();
-ctx.moveTo(hx, hy);
-ctx.lineTo(sx, sy);
-ctx.stroke();
-
-        // Viertelkreis (nur für normale Türen)
-        if (DOOR_TYPES_WITH_ARC.has(d.type)) {
-            this.drawDoorArc(ctx, d, hx, hy, px, py, elen, side);
-        }
+            // Viertelkreis (nur für normale Türen)
+            if (DOOR_TYPES_WITH_ARC.has(d.type)) {
+                this.drawDoorArc(ctx, d, hx, hy, px, py, elen, side);
+            }
         }
     },
 
