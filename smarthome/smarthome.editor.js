@@ -1,3 +1,7 @@
+const keyIcon = new Image();
+keyIcon.src = "icons/key.svg";
+
+
 const RoomDesigner = {
     canvas: null,
     ctx: null,
@@ -1522,49 +1526,32 @@ drawDoorByType(ctx, d, geo) {
         // ⭐ Haustür
         // ------------------------------------------------------------
 case "haustuer":
-    // Türblatt (massiver als Zimmertür)
-    ctx.strokeStyle = "#00d4a8";   // etwas dunkleres Türkis
+    // Türblatt
+    ctx.strokeStyle = "#00d4a8";
     ctx.lineWidth = 7;
     ctx.beginPath();
     ctx.moveTo(x1, y1);
     ctx.lineTo(x2, y2);
     ctx.stroke();
 
-// ------------------------------------------------------------
-// Schlüssel-Symbol (sichtbar, leicht versetzt)
-// ------------------------------------------------------------
-const mx = (x1 + x2) / 2;
-const my = (y1 + y2) / 2;
+    // Mittelpunkt der Tür
+    const mx = (x1 + x2) / 2;
+    const my = (y1 + y2) / 2;
 
-const offX = (y1 - y2) * 0.12;
-const offY = (x2 - x1) * 0.12;
+    // leichte Verschiebung senkrecht zur Türlinie
+    const offX = (y1 - y2) * 0.12;
+    const offY = (x2 - x1) * 0.12;
 
-const sx = mx + offX;
-const sy = my + offY;
+    const sx = mx + offX - 8;  // Icon zentrieren
+    const sy = my + offY - 8;
 
-ctx.strokeStyle = "#ffffff";
-ctx.lineWidth = 2;
-
-// Kopf (kleines Rechteck)
-ctx.beginPath();
-ctx.rect(sx - 4, sy - 4, 8, 8);
-ctx.stroke();
-
-// Schaft
-ctx.beginPath();
-ctx.moveTo(sx + 4, sy);
-ctx.lineTo(sx + 16, sy);
-ctx.stroke();
-
-// Zacken
-ctx.beginPath();
-ctx.moveTo(sx + 16, sy);
-ctx.lineTo(sx + 16, sy - 4);
-ctx.lineTo(sx + 12, sy - 4);
-ctx.stroke();
-
+    // Icon zeichnen (16x16)
+    if (keyIcon.complete) {
+        ctx.drawImage(keyIcon, sx, sy, 16, 16);
+    }
 
     return;
+
 
 
 
