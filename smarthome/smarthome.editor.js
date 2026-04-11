@@ -1634,69 +1634,85 @@ case "schiebetuer":
         // ------------------------------------------------------------
         // ⭐ Falttür → segmentiert
         // ------------------------------------------------------------
- case "falttuer": {
-    // Türvektor
+case "falttuer": {
+    // Wandvektor
     const dx = x2 - x1;
     const dy = y2 - y1;
     const len = Math.hypot(dx, dy);
 
-    // Normierter Vektor
+    // Normierter Wandvektor
     const nx = dx / len;
     const ny = dy / len;
 
-    // Senkrechter Vektor
+    // Senkrechter Vektor (für Wanddicke)
     const px = -ny;
     const py = nx;
 
-    // Rahmenbreite
-    const w = 20; // Breite der Öffnung
+    // Wanddicke (an dein System anpassen!)
+    const wallThickness = 12;
 
-    // Mittelpunkt
+    // Türschwellen-Ecken (exakt Wandbreite)
+    const t1x = x1 + px * (wallThickness / 2);
+    const t1y = y1 + py * (wallThickness / 2);
+
+    const t2x = x2 + px * (wallThickness / 2);
+    const t2y = y2 + py * (wallThickness / 2);
+
+    const t3x = x2 - px * (wallThickness / 2);
+    const t3y = y2 - py * (wallThickness / 2);
+
+    const t4x = x1 - px * (wallThickness / 2);
+    const t4y = y1 - py * (wallThickness / 2);
+
+    // Türschwelle zeichnen (dünner Rahmen)
+    ctx.strokeStyle = "#00d4a8";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(t1x, t1y);
+    ctx.lineTo(t2x, t2y);
+    ctx.lineTo(t3x, t3y);
+    ctx.lineTo(t4x, t4y);
+    ctx.closePath();
+    ctx.stroke();
+
+    // Innenfläche (leicht heller als Boden)
+    ctx.fillStyle = "rgba(200,200,200,0.35)";
+    ctx.fill();
+
+    // Mittelpunkt der Tür
     const mx = (x1 + x2) / 2;
     const my = (y1 + y2) / 2;
 
-    // Rahmen-Ecken
-    const rx = mx - nx * (w / 2);
-    const ry = my - ny * (w / 2);
-
+    // Falttür-Symbol zeichnen
     ctx.save();
-
-    // Rahmen zeichnen
-    ctx.strokeStyle = "#00d4a8";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(rx - px * 10, ry - py * 10, w, 20);
-
-    // Innenfläche
-    ctx.fillStyle = "rgba(200,200,200,0.35)";
-    ctx.fillRect(rx - px * 10, ry - py * 10, w, 20);
-
-    // Falttür-Symbol
     ctx.translate(mx, my);
 
-    // Rotation entlang der Türlinie
+    // Rotation entlang der Wand
     const angle = Math.atan2(dy, dx);
     ctx.rotate(angle);
 
-    // Symbol-Position abhängig vom Scharnier
-    const offset = (d.hinge === "left") ? -w/2 + 4 : w/2 - 24;
+    // Symbol-Offset abhängig vom Scharnier
+    const hingeOffset = (d.hinge === "left") ? -len / 2 + 6 : len / 2 - 22;
 
-    ctx.translate(offset, -10);
+    // Symbol leicht nach innen versetzen (auf Wand)
+    ctx.translate(hingeOffset, -wallThickness / 2);
 
-    // |/\/\| zeichnen
+    // |\/\/| Symbol (eng, dünn, professionell)
     ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 2;
 
     ctx.beginPath();
     ctx.moveTo(0, 0);
-    ctx.lineTo(6, -6);
-    ctx.lineTo(12, 0);
-    ctx.lineTo(18, -6);
-    ctx.lineTo(24, 0);
+    ctx.lineTo(4, -4);
+    ctx.lineTo(8, 0);
+    ctx.lineTo(12, -4);
+    ctx.lineTo(16, 0);
     ctx.stroke();
 
     ctx.restore();
     return;
 }
+
 
 
 
