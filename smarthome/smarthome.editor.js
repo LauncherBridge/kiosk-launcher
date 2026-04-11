@@ -1,6 +1,3 @@
-    const keyIcon = new Image();
-    keyIcon.src = "icons/key.svg";
-
 const RoomDesigner = {
     canvas: null,
     ctx: null,
@@ -1536,24 +1533,36 @@ case "haustuer":
 // ------------------------------------------------------------
 // Schlüssel-Symbol (sichtbar, leicht versetzt)
 // ------------------------------------------------------------
-
-// ------------------------------------------------------------
-// Schlüssel-Icon (SVG/PNG)
-// ------------------------------------------------------------
-
-// Mittelpunkt der Tür
 const mx = (x1 + x2) / 2;
 const my = (y1 + y2) / 2;
 
-// leichte Verschiebung senkrecht zur Türlinie
 const offX = (y1 - y2) * 0.12;
 const offY = (x2 - x1) * 0.12;
 
-const sx = mx + offX - 8;  // -8 = halbe Iconbreite
-const sy = my + offY - 8;  // -8 = halbe Iconhöhe
+const sx = mx + offX;
+const sy = my + offY;
 
-// Icon zeichnen (16x16 px)
-ctx.drawImage(keyIcon, sx, sy, 16, 16);
+ctx.strokeStyle = "#ffffff";
+ctx.lineWidth = 2;
+
+// Kopf (kleines Rechteck)
+ctx.beginPath();
+ctx.rect(sx - 4, sy - 4, 8, 8);
+ctx.stroke();
+
+// Schaft
+ctx.beginPath();
+ctx.moveTo(sx + 4, sy);
+ctx.lineTo(sx + 16, sy);
+ctx.stroke();
+
+// Zacken
+ctx.beginPath();
+ctx.moveTo(sx + 16, sy);
+ctx.lineTo(sx + 16, sy - 4);
+ctx.lineTo(sx + 12, sy - 4);
+ctx.stroke();
+
 
     return;
 
