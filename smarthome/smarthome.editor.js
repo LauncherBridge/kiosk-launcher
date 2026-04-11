@@ -16,6 +16,10 @@ const RoomDesigner = {
     isDragging: false,
     _initialized: false,
 
+    const keyIcon = new Image();
+    keyIcon.src = "icons/key.svg";
+
+
     // --------------------------------------------------
     // Grid-Konfiguration
     // --------------------------------------------------
@@ -1533,6 +1537,10 @@ case "haustuer":
 // Schlüssel-Symbol (sichtbar, leicht versetzt)
 // ------------------------------------------------------------
 
+// ------------------------------------------------------------
+// Schlüssel-Icon (SVG/PNG)
+// ------------------------------------------------------------
+
 // Mittelpunkt der Tür
 const mx = (x1 + x2) / 2;
 const my = (y1 + y2) / 2;
@@ -1541,32 +1549,11 @@ const my = (y1 + y2) / 2;
 const offX = (y1 - y2) * 0.12;
 const offY = (x2 - x1) * 0.12;
 
-const sx = mx + offX;
-const sy = my + offY;
+const sx = mx + offX - 8;  // -8 = halbe Iconbreite
+const sy = my + offY - 8;  // -8 = halbe Iconhöhe
 
-// Farbe mit starkem Kontrast
-ctx.strokeStyle = "#ffffff";
-ctx.lineWidth = 2;
-
-// Kopf (Kreis)
-ctx.beginPath();
-ctx.arc(sx, sy, 6, 0, Math.PI * 2);
-ctx.stroke();
-
-// Schaft
-ctx.beginPath();
-ctx.moveTo(sx + 6, sy);
-ctx.lineTo(sx + 16, sy);
-ctx.stroke();
-
-// Zacken
-ctx.beginPath();
-ctx.moveTo(sx + 16, sy);
-ctx.lineTo(sx + 16, sy - 4);
-ctx.lineTo(sx + 12, sy - 4);
-ctx.stroke();
-
-
+// Icon zeichnen (16x16 px)
+ctx.drawImage(keyIcon, sx, sy, 16, 16);
 
     return;
 
