@@ -1665,25 +1665,40 @@ case "falttuer": {
     const t4y = y1 - py * (wallThickness / 2);
 
     // --- Türschwelle korrekt füllen ---
+    ctx.save(); // <<< WICHTIG: Fläche isolieren
+
+    // 1. Bodenfarbe
     ctx.beginPath();
     ctx.moveTo(t1x, t1y);
     ctx.lineTo(t2x, t2y);
     ctx.lineTo(t3x, t3y);
     ctx.lineTo(t4x, t4y);
     ctx.closePath();
-
-    // 1. Bodenfarbe
     ctx.fillStyle = room.floorColor;
     ctx.fill();
 
     // 2. Grauer Overlay
+    ctx.beginPath();
+    ctx.moveTo(t1x, t1y);
+    ctx.lineTo(t2x, t2y);
+    ctx.lineTo(t3x, t3y);
+    ctx.lineTo(t4x, t4y);
+    ctx.closePath();
     ctx.fillStyle = "rgba(180,180,180,0.25)";
     ctx.fill();
 
     // 3. Filigraner Umriss
+    ctx.beginPath();
+    ctx.moveTo(t1x, t1y);
+    ctx.lineTo(t2x, t2y);
+    ctx.lineTo(t3x, t3y);
+    ctx.lineTo(t4x, t4y);
+    ctx.closePath();
     ctx.strokeStyle = "#00d4a8";
     ctx.lineWidth = 1.2;
     ctx.stroke();
+
+    ctx.restore(); // <<< WICHTIG: Fläche abgeschlossen
 
     // --- Symbolposition (zweiter Klick) ---
     const proj = ((d.clickX - x1) * nx + (d.clickY - y1) * ny);
@@ -1711,8 +1726,6 @@ case "falttuer": {
     ctx.restore();
     return;
 }
-
-
 
 
         // ------------------------------------------------------------
