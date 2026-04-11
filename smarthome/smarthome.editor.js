@@ -1,6 +1,5 @@
-const doorLockIcon = new Image();
-doorLockIcon.src = "icons/door-lock.svg";
-
+const doorIcon = new Image();
+doorIcon.src = "icons/door.svg";
 
 
 const RoomDesigner = {
@@ -1543,17 +1542,12 @@ case "haustuer": {
     const sx = mx + offX - 12;
     const sy = my + offY - 12;
 
-    try {
-        if (doorLockIcon.complete && doorLockIcon.naturalWidth > 0) {
-            ctx.drawImage(doorLockIcon, sx, sy, 24, 24);
-        }
-    } catch (e) {
-        console.warn("Icon konnte nicht gezeichnet werden:", e);
+    if (doorIcon.complete && doorIcon.naturalWidth > 0) {
+        ctx.drawImage(doorIcon, sx, sy, 24, 24);
     }
 
     return;
 }
-
 
 
 
