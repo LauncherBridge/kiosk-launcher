@@ -1526,7 +1526,6 @@ drawDoorByType(ctx, d, geo) {
         // ⭐ Haustür
         // ------------------------------------------------------------
 case "haustuer": {
-    // Türblatt
     ctx.strokeStyle = "#00d4a8";
     ctx.lineWidth = 7;
     ctx.beginPath();
@@ -1534,24 +1533,26 @@ case "haustuer": {
     ctx.lineTo(x2, y2);
     ctx.stroke();
 
-    // Mittelpunkt der Tür
     const mx = (x1 + x2) / 2;
     const my = (y1 + y2) / 2;
 
-    // leichte Verschiebung senkrecht zur Türlinie
     const offX = (y1 - y2) * 0.12;
     const offY = (x2 - x1) * 0.12;
 
-    const sx = mx + offX - 8;  // Icon zentrieren
+    const sx = mx + offX - 8;
     const sy = my + offY - 8;
 
-    // Icon zeichnen (16x16)
-    if (keyIcon.complete) {
-        ctx.drawImage(keyIcon, sx, sy, 16, 16);
+    try {
+        if (keyIcon.complete && keyIcon.naturalWidth > 0) {
+            ctx.drawImage(keyIcon, sx, sy, 16, 16);
+        }
+    } catch (e) {
+        console.warn("Icon konnte nicht gezeichnet werden:", e);
     }
 
     return;
 }
+
 
 
 
