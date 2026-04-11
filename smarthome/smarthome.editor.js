@@ -1,7 +1,18 @@
-const doorIcon = new Image();
-doorIcon.src =
+const doorSVG =
 "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M6 2h12v20H6V2zm7 10a1 1 0 11-2 0 1 1 0 012 0z'/%3E%3C/svg%3E";
 
+const doorIcon = new Image();
+const svgImg = new Image();
+svgImg.src = doorSVG;
+
+svgImg.onload = () => {
+    const c = document.createElement("canvas");
+    c.width = 24;
+    c.height = 24;
+    const ctx = c.getContext("2d");
+    ctx.drawImage(svgImg, 0, 0, 24, 24);
+    doorIcon.src = c.toDataURL("image/png");
+};
 
 
 const RoomDesigner = {
@@ -1550,6 +1561,7 @@ case "haustuer": {
 
     return;
 }
+
 
 
 
