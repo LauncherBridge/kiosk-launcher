@@ -1533,20 +1533,22 @@ case "haustuer":
 // Schlüssel-Symbol (sichtbar, leicht versetzt)
 // ------------------------------------------------------------
 
-// Mittelpunkt der Tür berechnen
+// Mittelpunkt der Tür
 const mx = (x1 + x2) / 2;
 const my = (y1 + y2) / 2;
 
-// Leichte Verschiebung senkrecht zur Türlinie
-const offsetX = (y1 - y2) * 0.1;
-const offsetY = (x2 - x1) * 0.1;
+// leichte Verschiebung senkrecht zur Türlinie
+const offX = (y1 - y2) * 0.12;
+const offY = (x2 - x1) * 0.12;
 
-const sx = mx + offsetX;
-const sy = my + offsetY;
+const sx = mx + offX;
+const sy = my + offY;
 
-// Schlüsselkopf (kleiner Kreis)
-ctx.strokeStyle = "#ffffff";   // WEISS → maximaler Kontrast
+// Farbe mit starkem Kontrast
+ctx.strokeStyle = "#ffffff";
 ctx.lineWidth = 2;
+
+// Kopf (Kreis)
 ctx.beginPath();
 ctx.arc(sx, sy, 6, 0, Math.PI * 2);
 ctx.stroke();
@@ -1554,14 +1556,16 @@ ctx.stroke();
 // Schaft
 ctx.beginPath();
 ctx.moveTo(sx + 6, sy);
-ctx.lineTo(sx + 14, sy);
+ctx.lineTo(sx + 16, sy);
 ctx.stroke();
 
-// kleiner Zacken am Ende
+// Zacken
 ctx.beginPath();
-ctx.moveTo(sx + 14, sy);
-ctx.lineTo(sx + 14, sy - 5);
+ctx.moveTo(sx + 16, sy);
+ctx.lineTo(sx + 16, sy - 4);
+ctx.lineTo(sx + 12, sy - 4);
 ctx.stroke();
+
 
 
     return;
