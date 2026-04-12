@@ -1684,8 +1684,11 @@ case "haustuer": {
 // 3. Haussymbol: mittig zur Schwelle, konstanter Abstand,
 //    auf der korrekten Seite (px * -side)
 // ------------------------------------------------------------
+// Wandnormale statt Türnormale verwenden
+const wx = -ty;
+const wy =  tx;
 
-// Mittelpunkt der Schwelle (entlang der Tür)
+// Mittelpunkt der Türlinie
 const mx = (hx + ox) / 2;
 const my = (hy + oy) / 2;
 
@@ -1693,15 +1696,16 @@ const my = (hy + oy) / 2;
 const iconGap = 6;
 const iconOffset = half + iconGap;
 
-// Seite war bereits korrekt → -side NICHT ändern!
-const ix = mx + px * (-side) * iconOffset;
-const iy = my + py * (-side) * iconOffset;
+// Seite bleibt korrekt → -side NICHT ändern!
+const ix = mx + wx * (-side) * iconOffset;
+const iy = my + wy * (-side) * iconOffset;
 
 ctx.save();
 ctx.translate(ix, iy);
 ctx.rotate(Math.atan2(ny, nx));
 drawDoorIcon(ctx, 0, 0, 24);
 ctx.restore();
+
 
 
     return;
