@@ -1539,7 +1539,7 @@ if (this.mode === "doors") {
 drawDoorByType(ctx, d, geo) {
 
     const { x1, y1, x2, y2 } = geo;
-    const { wx, wy } = params;
+    const { wx, wy } = geo;
 
     switch (d.type) {
 
