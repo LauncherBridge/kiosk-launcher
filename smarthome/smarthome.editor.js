@@ -1544,7 +1544,7 @@ drawDoorByType(ctx, d, geo) {
         // ------------------------------------------------------------
 case "zimmertuer":
 
-    d.isOpen = true; // nur zum Testen
+    d.isOpen = false; // nur zum Testen
 
     // Drehpunkt bestimmen
     const hx = (d.hinge === "start") ? x1 : x2;
