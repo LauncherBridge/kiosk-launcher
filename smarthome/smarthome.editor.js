@@ -1313,7 +1313,10 @@ if (this.mode === "doors") {
         if (this.points.length < 3) return;
 
         const ctx = this.ctx;
-        ctx.fillStyle = "rgba(255,255,255,0.03)";
+        
+    this._floorColor = "rgba(255,255,255,0.03)";
+    ctx.fillStyle = this._floorColor;
+        
         ctx.beginPath();
         ctx.moveTo(this.points[0].x, this.points[0].y);
 
@@ -1651,52 +1654,78 @@ case "falttuer": {
     ctx.lineTo(x2, y2);
     ctx.stroke();
 
-    // Wandvektor
-    const dx = x2 - x1;
-    const dy = y2 - y1;
-    const len = Math.hypot(dx, dy);
-    if (!len) return;
+// ------------------------------------------------------------
+// TÜR-SCHWELLE (breiter + Bodenfarbe + Grauschleier)
+// ------------------------------------------------------------
 
-    const nx = dx / len;
-    const ny = dy / len;
+// Wandvektor
+const dx = x2 - x1;
+const dy = y2 - y1;
+const len = Math.hypot(dx, dy);
+if (!len) return;
 
-    // Senkrechter Vektor
-    const px = -ny;
-    const py = nx;
+// Normierter Wandvektor
+const nx = dx / len;
+const ny = dy / len;
 
-    // Wanddicke in Weltkoordinaten (KEIN Zoom-Gefrickel)
-    const wallThickness = 12;
+// Senkrechter Vektor
+const px = -ny;
+const py = nx;
 
-    // Türschwellen-Ecken
-    const t1x = x1 + px * (wallThickness / 2);
-    const t1y = y1 + py * (wallThickness / 2);
+// ⭐ Wanddicke + EXTRA Breite für Falttür
+const wallThickness = 12;          // deine Wand
+// const extra = 8;                   zusätzliche Breite der Schwelle
+const half = (wallThickness + extra) / 2;
 
-    const t2x = x2 + px * (wallThickness / 2);
-    const t2y = y2 + py * (wallThickness / 2);
+// ⭐ Türschwellen-Ecken
+const t1x = x1 + px * half;
+const t1y = y1 + py * half;
 
-    const t3x = x2 - px * (wallThickness / 2);
-    const t3y = y2 - py * (wallThickness / 2);
+const t2x = x2 + px * half;
+const t2y = y2 + py * half;
 
-    const t4x = x1 - px * (wallThickness / 2);
-    const t4y = y1 - py * (wallThickness / 2);
+const t3x = x2 - px * half;
+const t3y = y2 - py * half;
 
-    // Schwelle füllen (neutral, ohne room-Abhängigkeit)
-    ctx.save();
+const t4x = x1 - px * half;
+const t4y = y1 - py * half;
 
-    ctx.beginPath();
-    ctx.moveTo(t1x, t1y);
-    ctx.lineTo(t2x, t2y);
-    ctx.lineTo(t3x, t3y);
-    ctx.lineTo(t4x, t4y);
-    ctx.closePath();
-    ctx.fillStyle = "rgba(255,255,255,0.06)";
-    ctx.fill();
+// ⭐ Schwelle zeichnen
+ctx.save();
 
-    ctx.strokeStyle = "#00d4a8";
-    ctx.lineWidth = 1.2;
-    ctx.stroke();
+// 1. Bodenfarbe
+ctx.beginPath();
+ctx.moveTo(t1x, t1y);
+ctx.lineTo(t2x, t2y);
+ctx.lineTo(t3x, t3y);
+ctx.lineTo(t4x, t4y);
+ctx.closePath();
+ctx.fillStyle = room.floorColor;
+ctx.fill();
 
-    ctx.restore();
+// 2. Grauschleier
+ctx.beginPath();
+ctx.moveTo(t1x, t1y);
+ctx.lineTo(t2x, t2y);
+ctx.lineTo(t3x, t3y);
+ctx.lineTo(t4x, t4y);
+ctx.closePath();
+ctx.fillStyle = "rgba(180,180,180,0.25)";
+ctx.fill();
+
+// 3. feiner Umriss
+ctx.beginPath();
+ctx.moveTo(t1x, t1y);
+ctx.lineTo(t2x, t2y);
+ctx.lineTo(t3x, t3y);
+ctx.lineTo(t4x, t4y);
+ctx.closePath();
+ctx.strokeStyle = "#00d4a8";
+ctx.lineWidth = 1.2;
+ctx.stroke();
+
+ctx.restore();
+
 
     // Symbol in der Mitte der Tür
     const mx = (x1 + x2) / 2;
