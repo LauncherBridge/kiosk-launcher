@@ -1662,7 +1662,7 @@ case "falttuer": {
     const py = nx;
 
     // Wanddicke + etwas breiter für Falttür
-    const wallThickness = 12;
+    const wallThickness = 10;
     const extra = 0;
     const half = (wallThickness + extra) / 2;
 
