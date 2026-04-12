@@ -1879,7 +1879,7 @@ ctx.restore();
             ctx.stroke();
         
             // Glasfüllung
-            ctx.strokeStyle = "rgba(0,255,200,0.35)";
+            ctx.strokeStyle = "rgba(0, 180, 255, 0.7)";
             ctx.lineWidth = 8;
             ctx.beginPath();
             ctx.moveTo(x1, y1);
