@@ -1543,21 +1543,27 @@ drawDoorByType(ctx, d, geo) {
         // ⭐ Zimmertür
         // ------------------------------------------------------------
 case "zimmertuer":
-    
-            d.isOpen=true;
-            
+
+    d.isOpen = true; // nur zum Testen
+
+    // Drehpunkt bestimmen
+    const hx = (d.hinge === "start") ? x1 : x2;
+    const hy = (d.hinge === "start") ? y1 : y2;
+
+    const ox = (d.hinge === "start") ? x2 : x1;
+    const oy = (d.hinge === "start") ? y2 : y1;
+
+    const dx = ox - hx;
+    const dy = oy - hy;
+    const len = Math.hypot(dx, dy);
+
+    const nx = dx / len;
+    const ny = dy / len;
+
     if (d.isOpen) {
-        // offene Tür: 90° aufgeklappt
+        // 90° drehen
         const angle = Math.PI / 2 * (d.side || 1);
 
-        const dx = x2 - x1;
-        const dy = y2 - y1;
-        const len = Math.hypot(dx, dy);
-
-        const nx = dx / len;
-        const ny = dy / len;
-
-        // 90° gedreht
         const rx = nx * Math.cos(angle) - ny * Math.sin(angle);
         const ry = nx * Math.sin(angle) + ny * Math.cos(angle);
 
@@ -1565,12 +1571,12 @@ case "zimmertuer":
         ctx.lineWidth = 5;
 
         ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x1 + rx * len, y1 + ry * len);
+        ctx.moveTo(hx, hy);
+        ctx.lineTo(hx + rx * len, hy + ry * len);
         ctx.stroke();
 
     } else {
-        // geschlossene Tür: normale Linie
+        // geschlossene Tür
         ctx.strokeStyle = "#00ffc8";
         ctx.lineWidth = 15;
 
@@ -1581,6 +1587,7 @@ case "zimmertuer":
     }
 
     return;
+
 
 
         // ------------------------------------------------------------
