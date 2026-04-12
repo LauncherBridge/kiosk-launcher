@@ -1468,6 +1468,9 @@ if (this.mode === "doors") {
             const tx = dx / len;
             const ty = dy / len;
 
+            const wx = -ty;
+            const wy =  tx;
+
             const cx = d.x;
             const cy = d.y;
 
@@ -1483,7 +1486,7 @@ if (this.mode === "doors") {
             // ⭐ Tür nach Typ zeichnen
             // ------------------------------------------------------------
             this.drawDoorByType(ctx, d, {
-                w, x1, y1, x2, y2, hx: null, hy: null, ox: null, oy: null, px: null, py: null, elen: null
+                w, x1, y1, x2, y2, hx: null, hy: null, ox: null, oy: null, px: null, py: null, elen: null, wx,wy
             });
             
             // Wenn kein Scharnier → fertig (z.B. Dachluke, Schiebetür)
@@ -1536,6 +1539,7 @@ if (this.mode === "doors") {
 drawDoorByType(ctx, d, geo) {
 
     const { x1, y1, x2, y2 } = geo;
+    const { wx, wy } = params;
 
     switch (d.type) {
 
