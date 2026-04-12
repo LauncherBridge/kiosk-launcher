@@ -590,60 +590,114 @@ onDown(e) {
     // ------------------------------------------------------------
     // ⭐ TÜR-MODUS (JETZT MIT TÜR-TYPEN)
     // ------------------------------------------------------------
-    if (this.mode === "doors") {
+// ------------------------------------------------------------
+// ⭐ TÜR-MODUS (JETZT MIT TÜR-TYPEN)
+// ------------------------------------------------------------
+if (this.mode === "doors") {
 
-        const type = this.currentDoorType || "default";
+    const type = this.currentDoorType || "default";
 
-        // ⭐ 1) Dachluke → frei platzieren
-        if (type === "dachluke") {
+    // ------------------------------------------------------------
+    // ⭐ FALTTÜR (2‑Klick‑Logik)
+    // ------------------------------------------------------------
+    if (type === "falttuer") {
+
+        // 1. Klick → Türmittelpunkt setzen
+        if (!this._placingFalttuer) {
+
+            if (hit.type !== "wall") return;
+
+            const w = hit.data;
+
+            this._placingFalttuer = {
+                type: "falttuer",
+                wallIndex: w.index,
+                t: w.t,
+                x: w.x,
+                y: w.y,
+                width: 80,
+                clickX: null,
+                clickY: null
+            };
+
+            return; // warte auf zweiten Klick
+        }
+
+        // 2. Klick → Symbolposition setzen
+        if (this._placingFalttuer.clickX === null) {
+
+            this._placingFalttuer.clickX = worldX;
+            this._placingFalttuer.clickY = worldY;
+
+            this.doors.push(this._placingFalttuer);
+
+            // State zurücksetzen → WICHTIG!
+            this._placingFalttuer = null;
+            this.currentDoorType = null;
+            this.mode = "points";
+
+            this.render();
+            return;
+        }
+    }
+
+    // ------------------------------------------------------------
+    // ⭐ 1) Dachluke → frei platzieren
+    // ------------------------------------------------------------
+    if (type === "dachluke") {
+        this.doors.push({
+            wallIndex: null,
+            t: null,
+            x: worldX,
+            y: worldY,
+            width: 36,
+            hinge: null,
+            side: 1,
+            type: type
+        });
+
+        this.render();
+        this.mode = "points";
+        return;
+    }
+
+    // ------------------------------------------------------------
+    // ⭐ 2) Alle anderen Türtypen → Wandgebunden
+    // ------------------------------------------------------------
+    if (!this._placingDoor) {
+        if (hit.type === "wall") {
+            const w = hit.data;
             this.doors.push({
-                wallIndex: null,
-                t: null,
-                x: worldX,
-                y: worldY,
+                wallIndex: w.index,
+                t: w.t,
+                x: w.x,
+                y: w.y,
                 width: 36,
                 hinge: null,
                 side: 1,
                 type: type
             });
-
-            this.render();
-            this.mode = "points";
-            return;
-        }
-
-        // ⭐ 2) Alle anderen Türtypen → Wandgebunden
-        if (!this._placingDoor) {
-            if (hit.type === "wall") {
-                const w = hit.data;
-                this.doors.push({
-                    wallIndex: w.index,
-                    t: w.t,
-                    x: w.x,
-                    y: w.y,
-                    width: 36,
-                    hinge: null,
-                    side: 1,
-                    type: type   // ⭐ Türtyp speichern
-                });
-                this._placingDoor = true;
-                this.render();
-                return;
-            }
-        }
-
-        // ⭐ 3) Hinge setzen (unverändert)
-        if (this._placingDoor) {
-            const lastDoor = this.doors[this.doors.length - 1];
-            const w = this.walls[lastDoor.wallIndex];
-            this.setDoorHingeFromTap(lastDoor, worldX, worldY, w);
-
-            this._placingDoor = false;
-            this.mode = "points";
+            this._placingDoor = true;
             this.render();
             return;
         }
     }
+
+    // ------------------------------------------------------------
+    // ⭐ 3) Hinge setzen (normale Türen)
+    // ------------------------------------------------------------
+    if (this._placingDoor) {
+        const lastDoor = this.doors[this.doors.length - 1];
+        const w = this.walls[lastDoor.wallIndex];
+        this.setDoorHingeFromTap(lastDoor, worldX, worldY, w);
+
+        this._placingDoor = false;
+        this.mode = "points";
+        this.render();
+        return;
+    }
+}
+
 
     // Punkt-Modus
 
@@ -1734,6 +1788,7 @@ case "falttuer": {
 
     return;
 }
+
 
 
 
