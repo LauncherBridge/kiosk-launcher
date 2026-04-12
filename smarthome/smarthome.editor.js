@@ -1651,83 +1651,63 @@ case "schiebetuer": {
     ctx.lineTo(t3x, t3y);
     ctx.lineTo(t4x, t4y);
     ctx.closePath();
-    ctx.fillStyle = floorColor;
+    ctx.fillStyle = "rgba(0,0,0,0.5)";
     ctx.fill();
 
-    // Grauschleier
-    ctx.beginPath();
-    ctx.moveTo(t1x, t1y);
-    ctx.lineTo(t2x, t2y);
-    ctx.lineTo(t3x, t3y);
-    ctx.lineTo(t4x, t4y);
-    ctx.closePath();
-    ctx.fillStyle = "rgba(180,180,180,0.25)";
-    ctx.fill();
 
-    // Umriss
-    ctx.beginPath();
-    ctx.moveTo(t1x, t1y);
-    ctx.lineTo(t2x, t2y);
-    ctx.lineTo(t3x, t3y);
-    ctx.lineTo(t4x, t4y);
-    ctx.closePath();
-    ctx.strokeStyle = "#00d4a8";
-    ctx.lineWidth = 1.2;
-    ctx.stroke();
 
     ctx.restore();
 
 
-    // ------------------------------------------------------------
-    // 2. Schiebetür-Linie (NEU)
-    // ------------------------------------------------------------
 
-    // Scharnierseite bestimmen
-    let hx, hy, ox, oy;
-    if (d.hinge === "start") {
-        hx = x1; hy = y1;
-        ox = x2; oy = y2;
-    } else {
-        hx = x2; hy = y2;
-        ox = x1; oy = y1;
-    }
+// ------------------------------------------------------------
+// ⭐ Schiebetür-Linie (alle 4 Varianten)
+// ------------------------------------------------------------
 
-    // Türvektor
-    const dx2 = ox - hx;
-    const dy2 = oy - hy;
-    const len2 = Math.hypot(dx2, dy2);
-    if (!len2) return;
+// 1. Scharnier-Ende bestimmen
+let hx, hy, ox, oy;
+if (d.hinge === "start") {
+    hx = x1; hy = y1;
+    ox = x2; oy = y2;
+} else {
+    hx = x2; hy = y2;
+    ox = x1; oy = y1;
+}
 
-    const nx2 = dx2 / len2;
-    const ny2 = dy2 / len2;
+// 2. Richtungsvektoren
+const dx2 = ox - hx;
+const dy2 = oy - hy;
+const len2 = Math.hypot(dx2, dy2);
+if (!len2) return;
 
-    // Senkrecht
-    const px2 = -ny2;
-    const py2 = nx2;
+const nx2 = dx2 / len2;
+const ny2 = dy2 / len2;
 
-    // Linie soll 60% der Türbreite haben
-    const lineLen = len2 * 0.6;
+// Senkrecht
+const px2 = -ny2;
+const py2 = nx2;
 
-    // Mittelpunkt der Linie → auf Scharnierseite
-    const mx = hx + nx2 * (lineLen / 2);
-    const my = hy + ny2 * (lineLen / 2);
+// 3. Linie auf die richtige Seite verschieben
+const side = d.side || 1;
+const offset = 4;
 
-    // Linie leicht nach innen verschieben (auf Wandlinie)
-    const offset = 3; // 3px nach innen
-    const ox2 = mx + px2 * offset;
-    const oy2 = my + py2 * offset;
+const lx = hx + px2 * offset * side;
+const ly = hy + py2 * offset * side;
 
-    // Linie zeichnen
-    ctx.save();
-    ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 2;
+// 4. Linie entlang der Tür zeichnen
+const lineLen = len2 * 0.6;
 
-    ctx.beginPath();
-    ctx.moveTo(ox2 - nx2 * (lineLen / 2), oy2 - ny2 * (lineLen / 2));
-    ctx.lineTo(ox2 + nx2 * (lineLen / 2), oy2 + ny2 * (lineLen / 2));
-    ctx.stroke();
+ctx.save();
+ctx.strokeStyle = "#ffffff";
+ctx.lineWidth = 2;
 
-    ctx.restore();
+ctx.beginPath();
+ctx.moveTo(lx, ly);
+ctx.lineTo(lx + nx2 * lineLen, ly + ny2 * lineLen);
+ctx.stroke();
+
+ctx.restore();
+
 
     return;
 }
