@@ -1619,14 +1619,15 @@ case "haustuer": {
 
     const side = d.side || 1;
 
+    // Geometrie der Schwelle (Breite)
+    const wallThickness = 12;
+    const extra = 8;
+    const half = (wallThickness + extra) / 2;
+
     // ------------------------------------------------------------
     // 1. Türschwelle bei offener Tür (am Scharnier, so lang wie Türblatt)
     // ------------------------------------------------------------
     if (d.isOpen) {
-
-        const wallThickness = 12;
-        const extra = 8;
-        const half = (wallThickness + extra) / 2;
 
         const s1x = hx + px * half;
         const s1y = hy + py * half;
@@ -1680,19 +1681,20 @@ case "haustuer": {
     }
 
     // ------------------------------------------------------------
-    // 3. Haussymbol: stabil für alle 4 Varianten
+    // 3. Haussymbol: mittig zur Schwelle, kleiner Abstand,
+    //    auf der gegenüberliegenden Seite der Öffnung
     // ------------------------------------------------------------
 
-    const iconOffset = 18;   // Abstand senkrecht zur Tür
-    const t = 0.40;          // Position entlang der Tür (0 = Scharnier, 1 = Ende)
+    // Mittelpunkt der Schwelle (entlang der Tür)
+    const mx = (hx + ox) / 2;
+    const my = (hy + oy) / 2;
 
-    // Punkt auf dem Türblatt (immer stabil)
-    const bx = hx + nx * len * t;
-    const by = hy + ny * len * t;
+    const iconGap = 6;                 // kleiner Abstand außerhalb der Schwelle
+    const iconOffset = half + iconGap; // von der Wand weg
 
-    // Icon auf gegenüberliegende Seite verschieben
-    const ix = bx + px * (-side) * iconOffset;
-    const iy = by + py * (-side) * iconOffset;
+    // gegenüber der Öffnungsseite: -side
+    const ix = mx + px * (-side) * iconOffset;
+    const iy = my + py * (-side) * iconOffset;
 
     ctx.save();
     ctx.translate(ix, iy);
@@ -1702,6 +1704,7 @@ case "haustuer": {
 
     return;
 }
+
 
 
 
