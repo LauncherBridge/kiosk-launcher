@@ -1661,7 +1661,7 @@ case "schiebetuer": {
 
 
 // ------------------------------------------------------------
-// ⭐ Schiebetür-Linie (alle 4 Varianten, volle Länge, versetzt)
+// Schiebetür-Linie (volle Länge, halb offen verschoben)
 // ------------------------------------------------------------
 
 // 1. Scharnier-Ende bestimmen
@@ -1687,23 +1687,32 @@ const ny2 = dy2 / len2;
 const px2 = -ny2;
 const py2 = nx2;
 
-// 3. Linie auf die richtige Seite verschieben
+// 3. Seite (innen/außen)
 const side = d.side || 1;
 const offset = 4;
 
-// Mittelpunkt der Tür
+// Mittelpunkt der Türschwelle
 const mx = (x1 + x2) / 2;
 const my = (y1 + y2) / 2;
 
-// Startpunkt = Mitte - halbe Länge
-const sx = mx - nx2 * (len2 / 2) + px2 * offset * side;
-const sy = my - ny2 * (len2 / 2) + py2 * offset * side;
+// Basis-Start/Ende: gleiche Länge wie Schwelle, leicht zur Seite versetzt
+let sx = mx - nx2 * (len2 / 2) + px2 * offset * side;
+let sy = my - ny2 * (len2 / 2) + py2 * offset * side;
 
-// Endpunkt = Mitte + halbe Länge
-const ex2 = mx + nx2 * (len2 / 2) + px2 * offset * side;
-const ey2 = my + ny2 * (len2 / 2) + py2 * offset * side;
+let ex2 = mx + nx2 * (len2 / 2) + px2 * offset * side;
+let ey2 = my + ny2 * (len2 / 2) + py2 * offset * side;
 
-// 4. Linie zeichnen
+// 4. Halb-offen: komplette Linie entlang der Tür verschieben
+// Schieberichtung abhängig vom Scharnier
+const slideDir = (d.hinge === "start") ? -1 : 1;
+const slideOffset = (len2 / 2) * slideDir;
+
+sx += nx2 * slideOffset;
+sy += ny2 * slideOffset;
+ex2 += nx2 * slideOffset;
+ey2 += ny2 * slideOffset;
+
+// 5. Linie zeichnen
 ctx.save();
 ctx.strokeStyle = "#ffffff";
 ctx.lineWidth = 2;
@@ -1714,6 +1723,7 @@ ctx.lineTo(ex2, ey2);
 ctx.stroke();
 
 ctx.restore();
+
 
 
     return;
