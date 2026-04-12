@@ -1601,7 +1601,7 @@ case "haustuer": {
     const hx = (d.hinge === "start") ? x1 : x2;
     const hy = (d.hinge === "start") ? y1 : y2;
 
-    // anderer Endpunkt
+    // anderer Endpunkt (Türblatt-Ende)
     const ox = (d.hinge === "start") ? x2 : x1;
     const oy = (d.hinge === "start") ? y2 : y1;
 
@@ -1618,37 +1618,43 @@ case "haustuer": {
 
     const side = d.side || 1;
 
-    // -------------------------------
-    // 1. Türschwelle bei offener Tür
-    // -------------------------------
+    // ------------------------------------------------------------
+    // 1. Türschwelle bei offener Tür (korrekt: am Scharnier beginnend)
+    // ------------------------------------------------------------
     if (d.isOpen) {
-        const half = 10; // Breite der Schwelle
 
-        const s1x = x1 + px * half;
-        const s1y = y1 + py * half;
+        const wallThickness = 12;
+        const extra = 8;
+        const half = (wallThickness + extra) / 2;
 
-        const s2x = x2 + px * half;
-        const s2y = y2 + py * half;
+        // Rechteck entlang des Türblatts, aber am Scharnier beginnend
+        const s1x = hx + px * half;
+        const s1y = hy + py * half;
 
-        const s3x = x2 - px * half;
-        const s3y = y2 - py * half;
+        const s2x = ox + px * half;
+        const s2y = oy + py * half;
 
-        const s4x = x1 - px * half;
-        const s4y = y1 - py * half;
+        const s3x = ox - px * half;
+        const s3y = oy - py * half;
 
-        ctx.fillStyle = "rgba(0,0,0,0.5)";
+        const s4x = hx - px * half;
+        const s4y = hy - py * half;
+
+        ctx.save();
         ctx.beginPath();
         ctx.moveTo(s1x, s1y);
         ctx.lineTo(s2x, s2y);
         ctx.lineTo(s3x, s3y);
         ctx.lineTo(s4x, s4y);
         ctx.closePath();
+        ctx.fillStyle = "rgba(0,0,0,0.5)";
         ctx.fill();
+        ctx.restore();
     }
 
-    // -------------------------------
+    // ------------------------------------------------------------
     // 2. Türblatt (offen/geschlossen)
-    // -------------------------------
+    // ------------------------------------------------------------
     if (d.isOpen) {
         const angle = Math.PI / 2 * side;
 
@@ -1673,9 +1679,9 @@ case "haustuer": {
         ctx.stroke();
     }
 
-    // -------------------------------
+    // ------------------------------------------------------------
     // 3. Haussymbol auf GEGENÜBERLIEGENDER Seite
-    // -------------------------------
+    // ------------------------------------------------------------
 
     const mx = (x1 + x2) / 2;
     const my = (y1 + y2) / 2;
