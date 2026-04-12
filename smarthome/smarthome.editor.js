@@ -1544,7 +1544,7 @@ drawDoorByType(ctx, d, geo) {
         // ------------------------------------------------------------
 case "zimmertuer": {
 
-    d.isOpen = false; // nur zum Testen
+    d.isOpen = true; // nur zum Testen
 
     // Drehpunkt bestimmen
     const hx = (d.hinge === "start") ? x1 : x2;
@@ -1595,7 +1595,7 @@ case "zimmertuer": {
         // ------------------------------------------------------------
 case "haustuer": {
 
-    d.isOpen = false; // nur zum Testen
+    d.isOpen = true; // nur zum Testen
 
     // Drehpunkt bestimmen (Scharnier)
     const hx = (d.hinge === "start") ? x1 : x2;
@@ -1627,7 +1627,7 @@ case "haustuer": {
         const rx = nx * Math.cos(angle) - ny * Math.sin(angle);
         const ry = nx * Math.sin(angle) + ny * Math.cos(angle);
 
-        ctx.strokeStyle = "#00d4a8";
+        ctx.strokeStyle = "#00ffc8";
         ctx.lineWidth = 7;
 
         ctx.beginPath();
