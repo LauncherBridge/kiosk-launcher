@@ -1595,7 +1595,7 @@ case "zimmertuer": {
         // ------------------------------------------------------------
 case "haustuer": {
 
-    d.isOpen = true; // nur zum Testen
+    d.isOpen = false; // nur zum Testen
 
     // Drehpunkt bestimmen (Scharnier)
     const hx = (d.hinge === "start") ? x1 : x2;
@@ -1610,11 +1610,19 @@ case "haustuer": {
     const dy = oy - hy;
     const len = Math.hypot(dx, dy);
 
-    const nx = dx / len;
+    const nx = dx / len;   // entlang der Tür
     const ny = dy / len;
 
+    const px = -ny;        // senkrecht zur Tür
+    const py = nx;
+
+    const side = d.side || 1;
+
+    // -------------------------------
+    // 1. Türblatt zeichnen (offen/zu)
+    // -------------------------------
     if (d.isOpen) {
-        const angle = Math.PI / 2 * (d.side || 1);
+        const angle = Math.PI / 2 * side;
 
         const rx = nx * Math.cos(angle) - ny * Math.sin(angle);
         const ry = nx * Math.sin(angle) + ny * Math.cos(angle);
@@ -1637,20 +1645,26 @@ case "haustuer": {
         ctx.stroke();
     }
 
-    // Icon wie bisher
-    const mx = (x1 + x2) / 2;
-    const my = (y1 + y2) / 2;
+    // -------------------------------
+    // 2. Haussymbol auf GEGENÜBERLIEGENDE Seite
+    // -------------------------------
 
-    const offX = (y1 - y2) * 0.12;
-    const offY = (x2 - x1) * 0.12;
+    const iconOffset = 18; // Abstand vom Türblatt
 
-    const sx = mx + offX - 12;
-    const sy = my + offY - 12;
+    // Symbol auf -side statt side → gegenüberliegende Seite
+    const ix = hx + px * (-side) * iconOffset;
+    const iy = hy + py * (-side) * iconOffset;
 
-    drawDoorIcon(ctx, sx, sy, 24);
+    // Symbol entlang der Tür ausrichten
+    ctx.save();
+    ctx.translate(ix, iy);
+    ctx.rotate(Math.atan2(ny, nx));
+    drawDoorIcon(ctx, 0, 0, 24);
+    ctx.restore();
 
     return;
 }
+
 
 
 
