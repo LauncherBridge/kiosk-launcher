@@ -590,56 +590,10 @@ onDown(e) {
     // ------------------------------------------------------------
     // ⭐ TÜR-MODUS (JETZT MIT TÜR-TYPEN)
     // ------------------------------------------------------------
-// ------------------------------------------------------------
-// ⭐ TÜR-MODUS (JETZT MIT TÜR-TYPEN)
-// ------------------------------------------------------------
+
 if (this.mode === "doors") {
 
     const type = this.currentDoorType || "default";
-
-    // ------------------------------------------------------------
-    // ⭐ FALTTÜR (2‑Klick‑Logik)
-    // ------------------------------------------------------------
-    if (type === "falttuer") {
-
-        // 1. Klick → Türmittelpunkt setzen
-        if (!this._placingFalttuer) {
-
-            if (hit.type !== "wall") return;
-
-            const w = hit.data;
-
-            this._placingFalttuer = {
-                type: "falttuer",
-                wallIndex: w.index,
-                t: w.t,
-                x: w.x,
-                y: w.y,
-                width: 80,
-                clickX: null,
-                clickY: null
-            };
-
-            return; // warte auf zweiten Klick
-        }
-
-        // 2. Klick → Symbolposition setzen
-        if (this._placingFalttuer.clickX === null) {
-
-            this._placingFalttuer.clickX = worldX;
-            this._placingFalttuer.clickY = worldY;
-
-            this.doors.push(this._placingFalttuer);
-
-            // State zurücksetzen → WICHTIG!
-            this._placingFalttuer = null;
-            this.currentDoorType = null;
-            this.mode = "points";
-
-            this.render();
-            return;
-        }
-    }
 
     // ------------------------------------------------------------
     // ⭐ 1) Dachluke → frei platzieren
@@ -1689,13 +1643,20 @@ case "schiebetuer":
         // ⭐ Falttür → segmentiert
         // ------------------------------------------------------------
 case "falttuer": {
+    // Türblatt-Linie (wie bei Haustür, nur grün)
+    ctx.strokeStyle = "#00d4a8";
+    ctx.lineWidth = 7;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
 
     // Wandvektor
     const dx = x2 - x1;
     const dy = y2 - y1;
     const len = Math.hypot(dx, dy);
+    if (!len) return;
 
-    // Normierter Wandvektor
     const nx = dx / len;
     const ny = dy / len;
 
@@ -1703,10 +1664,10 @@ case "falttuer": {
     const px = -ny;
     const py = nx;
 
-    // Wanddicke im Welt-Raum (ZOOM-SICHER!)
-    const wallThickness = 12 / this.zoom;
+    // Wanddicke in Weltkoordinaten (KEIN Zoom-Gefrickel)
+    const wallThickness = 12;
 
-    // Türschwellen-Ecken (Polygon)
+    // Türschwellen-Ecken
     const t1x = x1 + px * (wallThickness / 2);
     const t1y = y1 + py * (wallThickness / 2);
 
@@ -1719,73 +1680,44 @@ case "falttuer": {
     const t4x = x1 - px * (wallThickness / 2);
     const t4y = y1 - py * (wallThickness / 2);
 
-    // ------------------------------------------------------------
-    // ⭐ Türschwelle zeichnen (wie Dachluke → KEIN Panting!)
-    // ------------------------------------------------------------
+    // Schwelle füllen (neutral, ohne room-Abhängigkeit)
     ctx.save();
 
-    // 1. Bodenfarbe
     ctx.beginPath();
     ctx.moveTo(t1x, t1y);
     ctx.lineTo(t2x, t2y);
     ctx.lineTo(t3x, t3y);
     ctx.lineTo(t4x, t4y);
     ctx.closePath();
-    ctx.fillStyle = room.floorColor;
+    ctx.fillStyle = "rgba(255,255,255,0.06)";
     ctx.fill();
 
-    // 2. Grauer Overlay
-    ctx.beginPath();
-    ctx.moveTo(t1x, t1y);
-    ctx.lineTo(t2x, t2y);
-    ctx.lineTo(t3x, t3y);
-    ctx.lineTo(t4x, t4y);
-    ctx.closePath();
-    ctx.fillStyle = "rgba(180,180,180,0.25)";
-    ctx.fill();
-
-    // 3. Filigraner Umriss (ZOOM-SICHER)
-    ctx.beginPath();
-    ctx.moveTo(t1x, t1y);
-    ctx.lineTo(t2x, t2y);
-    ctx.lineTo(t3x, t3y);
-    ctx.lineTo(t4x, t4y);
-    ctx.closePath();
     ctx.strokeStyle = "#00d4a8";
-    ctx.lineWidth = 1 / this.zoom;
+    ctx.lineWidth = 1.2;
     ctx.stroke();
 
     ctx.restore();
 
-    // ------------------------------------------------------------
-    // ⭐ Symbolposition (zweiter Klick)
-    // ------------------------------------------------------------
-    const proj = ((d.clickX - x1) * nx + (d.clickY - y1) * ny);
-    const clamped = Math.max(0, Math.min(len, proj));
+    // Symbol in der Mitte der Tür
+    const mx = (x1 + x2) / 2;
+    const my = (y1 + y2) / 2;
 
-    const sx = x1 + nx * clamped;
-    const sy = y1 + ny * clamped;
-
-    // ------------------------------------------------------------
-    // ⭐ Falttür-Symbol exakt auf der Wandlinie
-    // ------------------------------------------------------------
     ctx.save();
-    ctx.translate(sx, sy);
+    ctx.translate(mx, my);
     ctx.rotate(Math.atan2(dy, dx));
 
     ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 1.2 / this.zoom;
+    ctx.lineWidth = 1.2;
 
     ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.lineTo(3, -3);
-    ctx.lineTo(6, 0);
-    ctx.lineTo(9, -3);
-    ctx.lineTo(12, 0);
+    ctx.moveTo(-8, 0);
+    ctx.lineTo(-4, -4);
+    ctx.lineTo(0, 0);
+    ctx.lineTo(4, -4);
+    ctx.lineTo(8, 0);
     ctx.stroke();
 
     ctx.restore();
-
     return;
 }
 
