@@ -1542,14 +1542,46 @@ drawDoorByType(ctx, d, geo) {
         // ------------------------------------------------------------
         // ⭐ Zimmertür
         // ------------------------------------------------------------
-        case "zimmertuer":
-            ctx.strokeStyle = "#00ffc8";
-            ctx.lineWidth = 5;
-            ctx.beginPath();
-            ctx.moveTo(x1, y1);
-            ctx.lineTo(x2, y2);
-            ctx.stroke();
-            return;
+case "zimmertuer":
+    
+            d.isOpen=true;
+            
+    if (d.isOpen) {
+        // offene Tür: 90° aufgeklappt
+        const angle = Math.PI / 2 * (d.side || 1);
+
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const len = Math.hypot(dx, dy);
+
+        const nx = dx / len;
+        const ny = dy / len;
+
+        // 90° gedreht
+        const rx = nx * Math.cos(angle) - ny * Math.sin(angle);
+        const ry = nx * Math.sin(angle) + ny * Math.cos(angle);
+
+        ctx.strokeStyle = "#00ffc8";
+        ctx.lineWidth = 5;
+
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x1 + rx * len, y1 + ry * len);
+        ctx.stroke();
+
+    } else {
+        // geschlossene Tür: normale Linie
+        ctx.strokeStyle = "#00ffc8";
+        ctx.lineWidth = 15;
+
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+    }
+
+    return;
+
 
         // ------------------------------------------------------------
         // ⭐ Haustür
