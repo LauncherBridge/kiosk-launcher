@@ -1595,7 +1595,7 @@ case "zimmertuer": {
         // ------------------------------------------------------------
 case "haustuer": {
 
-    d.isOpen = true; // nur zum Testen
+    d.isOpen = false; // nur zum Testen
 
     // Drehpunkt bestimmen (Scharnier)
     const hx = (d.hinge === "start") ? x1 : x2;
@@ -1619,7 +1619,35 @@ case "haustuer": {
     const side = d.side || 1;
 
     // -------------------------------
-    // 1. Türblatt zeichnen (offen/zu)
+    // 1. Türschwelle bei offener Tür
+    // -------------------------------
+    if (d.isOpen) {
+        const half = 10; // Breite der Schwelle
+
+        const s1x = x1 + px * half;
+        const s1y = y1 + py * half;
+
+        const s2x = x2 + px * half;
+        const s2y = y2 + py * half;
+
+        const s3x = x2 - px * half;
+        const s3y = y2 - py * half;
+
+        const s4x = x1 - px * half;
+        const s4y = y1 - py * half;
+
+        ctx.fillStyle = "rgba(0,0,0,0.5)";
+        ctx.beginPath();
+        ctx.moveTo(s1x, s1y);
+        ctx.lineTo(s2x, s2y);
+        ctx.lineTo(s3x, s3y);
+        ctx.lineTo(s4x, s4y);
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    // -------------------------------
+    // 2. Türblatt (offen/geschlossen)
     // -------------------------------
     if (d.isOpen) {
         const angle = Math.PI / 2 * side;
@@ -1627,7 +1655,7 @@ case "haustuer": {
         const rx = nx * Math.cos(angle) - ny * Math.sin(angle);
         const ry = nx * Math.sin(angle) + ny * Math.cos(angle);
 
-        ctx.strokeStyle = "#00ffc8";
+        ctx.strokeStyle = "#00d4a8";
         ctx.lineWidth = 7;
 
         ctx.beginPath();
@@ -1646,16 +1674,17 @@ case "haustuer": {
     }
 
     // -------------------------------
-    // 2. Haussymbol auf GEGENÜBERLIEGENDE Seite
+    // 3. Haussymbol auf GEGENÜBERLIEGENDER Seite
     // -------------------------------
 
-    const iconOffset = 18; // Abstand vom Türblatt
+    const mx = (x1 + x2) / 2;
+    const my = (y1 + y2) / 2;
 
-    // Symbol auf -side statt side → gegenüberliegende Seite
-    const ix = hx + px * (-side) * iconOffset;
-    const iy = hy + py * (-side) * iconOffset;
+    const iconOffset = 18;
 
-    // Symbol entlang der Tür ausrichten
+    const ix = mx + px * (-side) * iconOffset;
+    const iy = my + py * (-side) * iconOffset;
+
     ctx.save();
     ctx.translate(ix, iy);
     ctx.rotate(Math.atan2(ny, nx));
