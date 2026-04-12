@@ -1694,29 +1694,29 @@ case "falttuer": {
     ctx.lineTo(t3x, t3y);
     ctx.lineTo(t4x, t4y);
     ctx.closePath();
-    ctx.fillStyle = "rgba(0,0,0,0,50)";
+    ctx.fillStyle = "rgba(0,0,0,1)";
     ctx.fill();
 
     // Grauschleier
-    ctx.beginPath();
-    ctx.moveTo(t1x, t1y);
-    ctx.lineTo(t2x, t2y);
-    ctx.lineTo(t3x, t3y);
-    ctx.lineTo(t4x, t4y);
-    ctx.closePath();
+  //  ctx.beginPath();
+    //ctx.moveTo(t1x, t1y);
+   // ctx.lineTo(t2x, t2y);
+   // ctx.lineTo(t3x, t3y);
+   // ctx.lineTo(t4x, t4y);
+   // ctx.closePath();
     // ctx.fillStyle = "rgba(180,180,180,0.25)";
-    ctx.fill();
+   // ctx.fill();
 
     // feiner Umriss
-    ctx.beginPath();
-    ctx.moveTo(t1x, t1y);
-    ctx.lineTo(t2x, t2y);
-    ctx.lineTo(t3x, t3y);
-    ctx.lineTo(t4x, t4y);
-    ctx.closePath();
-    ctx.strokeStyle = "#00d4a8";
-    ctx.lineWidth = 1.2;
-    ctx.stroke();
+//    ctx.beginPath();
+  //  ctx.moveTo(t1x, t1y);
+   // ctx.lineTo(t2x, t2y);
+   // ctx.lineTo(t3x, t3y);
+   // ctx.lineTo(t4x, t4y);
+    // ctx.closePath();
+   // ctx.strokeStyle = "#00d4a8";
+   // ctx.lineWidth = 1.2;
+   // ctx.stroke();
 
     ctx.restore();
 
