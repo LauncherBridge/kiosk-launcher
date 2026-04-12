@@ -1694,7 +1694,7 @@ case "falttuer": {
     ctx.lineTo(t3x, t3y);
     ctx.lineTo(t4x, t4y);
     ctx.closePath();
-    ctx.fillStyle = "rgba(0,0,0,1)";
+    ctx.fillStyle = "rgba(0,0,0,0.5)";
     ctx.fill();
 
     // Grauschleier
