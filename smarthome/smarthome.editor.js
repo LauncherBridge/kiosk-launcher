@@ -1685,24 +1685,18 @@ case "haustuer": {
 //    auf der bereits korrekten Seite (px * -side)
 // ------------------------------------------------------------
 
-// Mittelpunkt der Schwelle (entlang der Tür)
-const mx = (hx + ox) / 2;
-const my = (hy + oy) / 2;
+    const iconOffset = 18; // Abstand vom Türblatt
 
-// Abstand: Schwellenbreite + kleiner Abstand
-const iconGap = 6;
-const iconOffset = half + iconGap;
+    // Symbol auf -side statt side → gegenüberliegende Seite
+    const ix = hx + px * (-side) * iconOffset;
+    const iy = hy + py * (-side) * iconOffset;
 
-// Seite war bereits korrekt → -side NICHT ändern!
-const ix = mx + px * (-side) * iconOffset;
-const iy = my + py * (-side) * iconOffset;
-
-ctx.save();
-ctx.translate(ix, iy);
-ctx.rotate(Math.atan2(ny, nx));
-drawDoorIcon(ctx, 0, 0, 24);
-ctx.restore();
-
+    // Symbol entlang der Tür ausrichten
+    ctx.save();
+    ctx.translate(ix, iy);
+    ctx.rotate(Math.atan2(ny, nx));
+    drawDoorIcon(ctx, 0, 0, 24);
+    ctx.restore();
 
     return;
 }
