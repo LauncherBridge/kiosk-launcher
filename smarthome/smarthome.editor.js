@@ -1661,7 +1661,7 @@ case "schiebetuer": {
 
 
 // ------------------------------------------------------------
-// ⭐ Schiebetür-Linie (alle 4 Varianten)
+// ⭐ Schiebetür-Linie (alle 4 Varianten, volle Länge, versetzt)
 // ------------------------------------------------------------
 
 // 1. Scharnier-Ende bestimmen
@@ -1691,19 +1691,26 @@ const py2 = nx2;
 const side = d.side || 1;
 const offset = 4;
 
-const lx = hx + px2 * offset * side;
-const ly = hy + py2 * offset * side;
+// Mittelpunkt der Tür
+const mx = (x1 + x2) / 2;
+const my = (y1 + y2) / 2;
 
-// 4. Linie entlang der Tür zeichnen
-const lineLen = len2 * 0.6;
+// Startpunkt = Mitte - halbe Länge
+const sx = mx - nx2 * (len2 / 2) + px2 * offset * side;
+const sy = my - ny2 * (len2 / 2) + py2 * offset * side;
 
+// Endpunkt = Mitte + halbe Länge
+const ex2 = mx + nx2 * (len2 / 2) + px2 * offset * side;
+const ey2 = my + ny2 * (len2 / 2) + py2 * offset * side;
+
+// 4. Linie zeichnen
 ctx.save();
 ctx.strokeStyle = "#ffffff";
 ctx.lineWidth = 2;
 
 ctx.beginPath();
-ctx.moveTo(lx, ly);
-ctx.lineTo(lx + nx2 * lineLen, ly + ny2 * lineLen);
+ctx.moveTo(sx, sy);
+ctx.lineTo(ex2, ey2);
 ctx.stroke();
 
 ctx.restore();
