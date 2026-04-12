@@ -37,6 +37,7 @@ const RoomDesigner = {
     isDragging: false,
     _initialized: false,
 
+    floorColor: "rgba(255,255,255,0.03)",
 
 
     // --------------------------------------------------
