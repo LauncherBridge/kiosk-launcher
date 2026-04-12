@@ -1542,7 +1542,7 @@ drawDoorByType(ctx, d, geo) {
         // ------------------------------------------------------------
         // ⭐ Zimmertür
         // ------------------------------------------------------------
-case "zimmertuer":
+case "zimmertuer": {
 
     d.isOpen = false; // nur zum Testen
 
@@ -1587,13 +1587,13 @@ case "zimmertuer":
     }
 
     return;
-
+}
 
 
         // ------------------------------------------------------------
         // ⭐ Haustür
         // ------------------------------------------------------------
-case "haustuer":
+case "haustuer": {
 
     d.isOpen = false; // nur zum Testen
 
@@ -1614,7 +1614,6 @@ case "haustuer":
     const ny = dy / len;
 
     if (d.isOpen) {
-        // offene Haustür: 90° aufgeklappt
         const angle = Math.PI / 2 * (d.side || 1);
 
         const rx = nx * Math.cos(angle) - ny * Math.sin(angle);
@@ -1629,7 +1628,6 @@ case "haustuer":
         ctx.stroke();
 
     } else {
-        // geschlossene Haustür
         ctx.strokeStyle = "#00d4a8";
         ctx.lineWidth = 7;
 
@@ -1639,25 +1637,20 @@ case "haustuer":
         ctx.stroke();
     }
 
-    // --- Icon wie bisher (wird in Schritt 2 angepasst) ---
-
-    // Mittelpunkt der Tür
+    // Icon wie bisher
     const mx = (x1 + x2) / 2;
     const my = (y1 + y2) / 2;
 
-    // Versatz senkrecht zur Türlinie
     const offX = (y1 - y2) * 0.12;
     const offY = (x2 - x1) * 0.12;
 
-    // Icon-Position
     const sx = mx + offX - 12;
     const sy = my + offY - 12;
 
     drawDoorIcon(ctx, sx, sy, 24);
 
     return;
-
-
+}
 
 
 
