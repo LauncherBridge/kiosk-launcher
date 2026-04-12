@@ -1683,19 +1683,22 @@ case "haustuer": {
     // 3. Haussymbol auf GEGENÜBERLIEGENDER Seite
     // ------------------------------------------------------------
 
-    const mx = (x1 + x2) / 2;
-    const my = (y1 + y2) / 2;
+// Position entlang der Tür (0 = Scharnier, 1 = Ende)
+const t = 0.4; // 40% der Türlänge, wirkt optisch perfekt
 
-    const iconOffset = 18;
+// Punkt auf der Türlinie
+const bx = hx + nx * len * t;
+const by = hy + ny * len * t;
 
-    const ix = mx + px * (-side) * iconOffset;
-    const iy = my + py * (-side) * iconOffset;
+// Icon auf die gegenüberliegende Seite verschieben
+const ix = bx + px * (-side) * iconOffset;
+const iy = by + py * (-side) * iconOffset;
 
-    ctx.save();
-    ctx.translate(ix, iy);
-    ctx.rotate(Math.atan2(ny, nx));
-    drawDoorIcon(ctx, 0, 0, 24);
-    ctx.restore();
+ctx.save();
+ctx.translate(ix, iy);
+ctx.rotate(Math.atan2(ny, nx));
+drawDoorIcon(ctx, 0, 0, 24);
+ctx.restore();
 
     return;
 }
