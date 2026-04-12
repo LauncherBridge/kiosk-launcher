@@ -1609,6 +1609,7 @@ case "haustuer": {
     const dx = ox - hx;
     const dy = oy - hy;
     const len = Math.hypot(dx, dy);
+    if (!len) return;
 
     const nx = dx / len;   // entlang der Tür
     const ny = dy / len;
@@ -1619,15 +1620,13 @@ case "haustuer": {
     const side = d.side || 1;
 
     // ------------------------------------------------------------
-    // 1. Türschwelle bei offener Tür (korrekt: am Scharnier beginnend)
+    // 1. Türschwelle bei offener Tür (am Scharnier, so lang wie Türblatt)
     // ------------------------------------------------------------
     if (d.isOpen) {
-
         const wallThickness = 12;
         const extra = 8;
         const half = (wallThickness + extra) / 2;
 
-        // Rechteck entlang des Türblatts, aber am Scharnier beginnend
         const s1x = hx + px * half;
         const s1y = hy + py * half;
 
@@ -1680,28 +1679,30 @@ case "haustuer": {
     }
 
     // ------------------------------------------------------------
-    // 3. Haussymbol auf GEGENÜBERLIEGENDER Seite
+    // 3. Haussymbol: stabil für alle 4 Varianten
+    //    – entlang der Tür, seitlich auf -side
     // ------------------------------------------------------------
 
-// Position entlang der Tür (0 = Scharnier, 1 = Ende)
-const t = 0.4; // 40% der Türlänge, wirkt optisch perfekt
+    const iconOffset = 18;   // Abstand senkrecht zur Tür
+    const t = 0.4;           // Position entlang der Tür (0 = Scharnier, 1 = Ende)
 
-// Punkt auf der Türlinie
-const bx = hx + nx * len * t;
-const by = hy + ny * len * t;
+    // Punkt auf dem Türblatt
+    const bx = hx + nx * len * t;
+    const by = hy + ny * len * t;
 
-// Icon auf die gegenüberliegende Seite verschieben
-const ix = bx + px * (-side) * iconOffset;
-const iy = by + py * (-side) * iconOffset;
+    // Icon auf gegenüberliegende Seite verschieben
+    const ix = bx + px * (-side) * iconOffset;
+    const iy = by + py * (-side) * iconOffset;
 
-ctx.save();
-ctx.translate(ix, iy);
-ctx.rotate(Math.atan2(ny, nx));
-drawDoorIcon(ctx, 0, 0, 24);
-ctx.restore();
+    ctx.save();
+    ctx.translate(ix, iy);
+    ctx.rotate(Math.atan2(ny, nx));
+    drawDoorIcon(ctx, 0, 0, 24);
+    ctx.restore();
 
     return;
 }
+
 
 
 
