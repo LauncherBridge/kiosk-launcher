@@ -1661,7 +1661,7 @@ case "schiebetuer": {
 
 
 // ------------------------------------------------------------
-// Schiebetür-Linie (volle Länge, halb offen verschoben)
+// ⭐ Schiebetür-Linie (alle 4 Varianten, korrekt, halb offen)
 // ------------------------------------------------------------
 
 // 1. Scharnier-Ende bestimmen
@@ -1680,39 +1680,36 @@ const dy2 = oy - hy;
 const len2 = Math.hypot(dx2, dy2);
 if (!len2) return;
 
-const nx2 = dx2 / len2;
+const nx2 = dx2 / len2;   // entlang der Tür
 const ny2 = dy2 / len2;
 
-// Senkrecht
-const px2 = -ny2;
+const px2 = -ny2;         // senkrecht zur Tür
 const py2 = nx2;
 
 // 3. Seite (innen/außen)
 const side = d.side || 1;
 const offset = 4;
 
-// Mittelpunkt der Türschwelle
-const mx = (x1 + x2) / 2;
-const my = (y1 + y2) / 2;
-
-// Basis-Start/Ende: gleiche Länge wie Schwelle, leicht zur Seite versetzt
-let sx = mx - nx2 * (len2 / 2) + px2 * offset * side;
-let sy = my - ny2 * (len2 / 2) + py2 * offset * side;
-
-let ex2 = mx + nx2 * (len2 / 2) + px2 * offset * side;
-let ey2 = my + ny2 * (len2 / 2) + py2 * offset * side;
-
 // 4. Halb-offen: komplette Linie entlang der Tür verschieben
-// Schieberichtung abhängig vom Scharnier
-const slideDir = (d.hinge === "start") ? -1 : 1;
+//    Wenn hinge = start → Türblatt rutscht nach rechts
+//    Wenn hinge = end   → Türblatt rutscht nach links
+const slideDir = (d.hinge === "start") ? 1 : -1;
 const slideOffset = (len2 / 2) * slideDir;
 
-sx += nx2 * slideOffset;
-sy += ny2 * slideOffset;
-ex2 += nx2 * slideOffset;
-ey2 += ny2 * slideOffset;
+// 5. Startpunkt der Linie
+const sx = hx 
+         + nx2 * slideOffset      // halb offen verschoben
+         + px2 * offset * side;   // innen/außen
 
-// 5. Linie zeichnen
+const sy = hy 
+         + ny2 * slideOffset
+         + py2 * offset * side;
+
+// 6. Endpunkt der Linie (volle Länge)
+const ex2 = sx + nx2 * len2;
+const ey2 = sy + ny2 * len2;
+
+// 7. Linie zeichnen
 ctx.save();
 ctx.strokeStyle = "#ffffff";
 ctx.lineWidth = 2;
@@ -1723,6 +1720,7 @@ ctx.lineTo(ex2, ey2);
 ctx.stroke();
 
 ctx.restore();
+
 
 
 
