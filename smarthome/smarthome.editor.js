@@ -1680,20 +1680,14 @@ case "haustuer": {
         ctx.stroke();
     }
 
-// ------------------------------------------------------------
-// 3. Haussymbol: mittig zur Schwelle, konstanter Abstand,
-//    auf der korrekten Seite (px * -side)
-// ------------------------------------------------------------
-
-// Mittelpunkt der Schwelle (entlang der Tür)
+// Mittelpunkt der Schwelle
 const mx = (hx + ox) / 2;
 const my = (hy + oy) / 2;
 
 // Abstand: Schwellenbreite + kleiner Abstand
-const iconGap = 6;
-const iconOffset = half + iconGap;
+const iconOffset = half + 6;
 
-// Seite war bereits korrekt → -side NICHT ändern!
+// Seite bleibt korrekt → -side NICHT ändern!
 const ix = mx + px * (-side) * iconOffset;
 const iy = my + py * (-side) * iconOffset;
 
@@ -1702,8 +1696,6 @@ ctx.translate(ix, iy);
 ctx.rotate(Math.atan2(ny, nx));
 drawDoorIcon(ctx, 0, 0, 24);
 ctx.restore();
-
-
 
     return;
 }
