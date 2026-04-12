@@ -1578,7 +1578,7 @@ case "zimmertuer":
     } else {
         // geschlossene Tür
         ctx.strokeStyle = "#00ffc8";
-        ctx.lineWidth = 15;
+        ctx.lineWidth = 5;
 
         ctx.beginPath();
         ctx.moveTo(x1, y1);
