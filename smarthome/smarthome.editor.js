@@ -1623,6 +1623,7 @@ case "haustuer": {
     // 1. Türschwelle bei offener Tür (am Scharnier, so lang wie Türblatt)
     // ------------------------------------------------------------
     if (d.isOpen) {
+
         const wallThickness = 12;
         const extra = 8;
         const half = (wallThickness + extra) / 2;
@@ -1680,13 +1681,12 @@ case "haustuer": {
 
     // ------------------------------------------------------------
     // 3. Haussymbol: stabil für alle 4 Varianten
-    //    – entlang der Tür, seitlich auf -side
     // ------------------------------------------------------------
 
     const iconOffset = 18;   // Abstand senkrecht zur Tür
-    const t = 0.4;           // Position entlang der Tür (0 = Scharnier, 1 = Ende)
+    const t = 0.40;          // Position entlang der Tür (0 = Scharnier, 1 = Ende)
 
-    // Punkt auf dem Türblatt
+    // Punkt auf dem Türblatt (immer stabil)
     const bx = hx + nx * len * t;
     const by = hy + ny * len * t;
 
