@@ -1689,8 +1689,9 @@ case "haustuer": {
 //    auf der korrekten Seite (px * -side)
 // ------------------------------------------------------------
 // Wandnormale statt Türnormale verwenden
-const wx = -ty;
-const wy =  tx;
+
+    const { wx, wy } = geo;
+
 
 // Mittelpunkt der Türlinie
 const mx = (hx + ox) / 2;
