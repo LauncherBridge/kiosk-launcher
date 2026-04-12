@@ -1694,7 +1694,7 @@ case "falttuer": {
     ctx.lineTo(t3x, t3y);
     ctx.lineTo(t4x, t4y);
     ctx.closePath();
-    ctx.fillStyle = "rgba(255,255,255,0.03)";
+    ctx.fillStyle = "rgba(0,0,0,0,50)";
     ctx.fill();
 
     // Grauschleier
@@ -1704,7 +1704,7 @@ case "falttuer": {
     ctx.lineTo(t3x, t3y);
     ctx.lineTo(t4x, t4y);
     ctx.closePath();
-    ctx.fillStyle = "rgba(180,180,180,0.25)";
+    // ctx.fillStyle = "rgba(180,180,180,0.25)";
     ctx.fill();
 
     // feiner Umriss
