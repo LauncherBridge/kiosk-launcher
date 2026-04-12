@@ -1663,7 +1663,7 @@ case "falttuer": {
 
     // Wanddicke + etwas breiter für Falttür
     const wallThickness = 12;
-    const extra = 8;
+    // const extra = 8;
     const half = (wallThickness + extra) / 2;
 
     // Türblatt-Ecken
