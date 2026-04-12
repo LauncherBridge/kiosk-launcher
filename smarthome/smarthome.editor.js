@@ -1649,7 +1649,7 @@ case "falttuer": {
     const px = -ny;
     const py = nx;
 
-    // Wanddicke MUSS im Welt-Raum skaliert werden
+    // Wanddicke im Welt-Raum (ZOOM-SICHER!)
     const wallThickness = 12 / this.zoom;
 
     // Türschwellen-Ecken (Polygon)
@@ -1665,8 +1665,10 @@ case "falttuer": {
     const t4x = x1 - px * (wallThickness / 2);
     const t4y = y1 - py * (wallThickness / 2);
 
-    // --- Türschwelle korrekt füllen ---
-    ctx.save(); // Fläche isolieren
+    // ------------------------------------------------------------
+    // ⭐ Türschwelle zeichnen (wie Dachluke → KEIN Panting!)
+    // ------------------------------------------------------------
+    ctx.save();
 
     // 1. Bodenfarbe
     ctx.beginPath();
@@ -1688,7 +1690,7 @@ case "falttuer": {
     ctx.fillStyle = "rgba(180,180,180,0.25)";
     ctx.fill();
 
-    // 3. Filigraner Umriss
+    // 3. Filigraner Umriss (ZOOM-SICHER)
     ctx.beginPath();
     ctx.moveTo(t1x, t1y);
     ctx.lineTo(t2x, t2y);
@@ -1696,19 +1698,23 @@ case "falttuer": {
     ctx.lineTo(t4x, t4y);
     ctx.closePath();
     ctx.strokeStyle = "#00d4a8";
-    ctx.lineWidth = 1 / this.zoom; // filigran, zoom-sicher
+    ctx.lineWidth = 1 / this.zoom;
     ctx.stroke();
 
-    ctx.restore(); // Fläche abgeschlossen
+    ctx.restore();
 
-    // --- Symbolposition (zweiter Klick) ---
+    // ------------------------------------------------------------
+    // ⭐ Symbolposition (zweiter Klick)
+    // ------------------------------------------------------------
     const proj = ((d.clickX - x1) * nx + (d.clickY - y1) * ny);
     const clamped = Math.max(0, Math.min(len, proj));
 
     const sx = x1 + nx * clamped;
     const sy = y1 + ny * clamped;
 
-    // --- Falttür-Symbol exakt auf der Wandlinie ---
+    // ------------------------------------------------------------
+    // ⭐ Falttür-Symbol exakt auf der Wandlinie
+    // ------------------------------------------------------------
     ctx.save();
     ctx.translate(sx, sy);
     ctx.rotate(Math.atan2(dy, dx));
@@ -1725,8 +1731,10 @@ case "falttuer": {
     ctx.stroke();
 
     ctx.restore();
+
     return;
 }
+
 
 
         // ------------------------------------------------------------
