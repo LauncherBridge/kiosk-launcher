@@ -1607,36 +1607,130 @@ case "haustuer": {
 // ------------------------------------------------------------
 // ⭐ Schiebetür → kein Viertelkreis
 // ------------------------------------------------------------
-case "schiebetuer":
-    ctx.strokeStyle = "#00ffc8";
-    ctx.lineWidth = 3;
+case "schiebetuer": {
+
+    // ------------------------------------------------------------
+    // 1. Türschwelle (identisch zur Falttür)
+    // ------------------------------------------------------------
+
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const len = Math.hypot(dx, dy);
+    if (!len) return;
+
+    const nx = dx / len;
+    const ny = dy / len;
+
+    const px = -ny;
+    const py = nx;
+
+    const wallThickness = 12;
+    const extra = 8;
+    const half = (wallThickness + extra) / 2;
+
+    const t1x = x1 + px * half;
+    const t1y = y1 + py * half;
+
+    const t2x = x2 + px * half;
+    const t2y = y2 + py * half;
+
+    const t3x = x2 - px * half;
+    const t3y = y2 - py * half;
+
+    const t4x = x1 - px * half;
+    const t4y = y1 - py * half;
+
+    const floorColor = "rgba(255,255,255,0.03)";
+
+    ctx.save();
+
+    // Bodenfarbe
     ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
+    ctx.moveTo(t1x, t1y);
+    ctx.lineTo(t2x, t2y);
+    ctx.lineTo(t3x, t3y);
+    ctx.lineTo(t4x, t4y);
+    ctx.closePath();
+    ctx.fillStyle = floorColor;
+    ctx.fill();
+
+    // Grauschleier
+    ctx.beginPath();
+    ctx.moveTo(t1x, t1y);
+    ctx.lineTo(t2x, t2y);
+    ctx.lineTo(t3x, t3y);
+    ctx.lineTo(t4x, t4y);
+    ctx.closePath();
+    ctx.fillStyle = "rgba(180,180,180,0.25)";
+    ctx.fill();
+
+    // Umriss
+    ctx.beginPath();
+    ctx.moveTo(t1x, t1y);
+    ctx.lineTo(t2x, t2y);
+    ctx.lineTo(t3x, t3y);
+    ctx.lineTo(t4x, t4y);
+    ctx.closePath();
+    ctx.strokeStyle = "#00d4a8";
+    ctx.lineWidth = 1.2;
     ctx.stroke();
 
-    // Doppelpfeil
-    const mx_s = (x1 + x2) / 2;
-    const my_s = (y1 + y2) / 2;
+    ctx.restore();
 
-    const nx_s = (y1 - y2) * 0.2;
-    const ny_s = (x2 - x1) * 0.2;
+
+    // ------------------------------------------------------------
+    // 2. Schiebetür-Linie (NEU)
+    // ------------------------------------------------------------
+
+    // Scharnierseite bestimmen
+    let hx, hy, ox, oy;
+    if (d.hinge === "start") {
+        hx = x1; hy = y1;
+        ox = x2; oy = y2;
+    } else {
+        hx = x2; hy = y2;
+        ox = x1; oy = y1;
+    }
+
+    // Türvektor
+    const dx2 = ox - hx;
+    const dy2 = oy - hy;
+    const len2 = Math.hypot(dx2, dy2);
+    if (!len2) return;
+
+    const nx2 = dx2 / len2;
+    const ny2 = dy2 / len2;
+
+    // Senkrecht
+    const px2 = -ny2;
+    const py2 = nx2;
+
+    // Linie soll 60% der Türbreite haben
+    const lineLen = len2 * 0.6;
+
+    // Mittelpunkt der Linie → auf Scharnierseite
+    const mx = hx + nx2 * (lineLen / 2);
+    const my = hy + ny2 * (lineLen / 2);
+
+    // Linie leicht nach innen verschieben (auf Wandlinie)
+    const offset = 3; // 3px nach innen
+    const ox2 = mx + px2 * offset;
+    const oy2 = my + py2 * offset;
+
+    // Linie zeichnen
+    ctx.save();
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 2;
 
     ctx.beginPath();
-    ctx.moveTo(mx_s - nx_s, my_s - ny_s);
-    ctx.lineTo(mx_s + nx_s, my_s + ny_s);
+    ctx.moveTo(ox2 - nx2 * (lineLen / 2), oy2 - ny2 * (lineLen / 2));
+    ctx.lineTo(ox2 + nx2 * (lineLen / 2), oy2 + ny2 * (lineLen / 2));
     ctx.stroke();
 
-    ctx.beginPath();
-    ctx.moveTo(mx_s + nx_s, my_s + ny_s);
-    ctx.lineTo(mx_s + nx_s * 0.6, my_s + ny_s * 0.6);
-    ctx.stroke();
+    ctx.restore();
 
-    ctx.beginPath();
-    ctx.moveTo(mx_s - nx_s, my_s - ny_s);
-    ctx.lineTo(mx_s - nx_s * 0.6, my_s - ny_s * 0.6);
-    ctx.stroke();
     return;
+}
 
 
 
