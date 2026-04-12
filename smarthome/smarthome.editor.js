@@ -1647,111 +1647,82 @@ case "schiebetuer":
         // ⭐ Falttür → segmentiert
         // ------------------------------------------------------------
 case "falttuer": {
-    // Türblatt-Linie (wie bei Haustür, nur grün)
-    ctx.strokeStyle = "#00d4a8";
-    ctx.lineWidth = 7;
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
 
-// ------------------------------------------------------------
-// TÜR-SCHWELLE (breiter + Bodenfarbe + Grauschleier)
-// ------------------------------------------------------------
+    // Wandvektor
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const len = Math.hypot(dx, dy);
+    if (!len) return;
 
-// Wandvektor
-const dx = x2 - x1;
-const dy = y2 - y1;
-const len = Math.hypot(dx, dy);
-if (!len) return;
+    const nx = dx / len;
+    const ny = dy / len;
 
-// Normierter Wandvektor
-const nx = dx / len;
-const ny = dy / len;
+    // Senkrechter Vektor
+    const px = -ny;
+    const py = nx;
 
-// Senkrechter Vektor
-const px = -ny;
-const py = nx;
+    // Wanddicke + etwas breiter für Falttür
+    const wallThickness = 12;
+    const extra = 8;
+    const half = (wallThickness + extra) / 2;
 
-// ⭐ Wanddicke + EXTRA Breite für Falttür
-const wallThickness = 12;          // deine Wand
-// const extra = 8;                   zusätzliche Breite der Schwelle
-const half = (wallThickness + extra) / 2;
+    // Türblatt-Ecken
+    const t1x = x1 + px * half;
+    const t1y = y1 + py * half;
 
-// ⭐ Türschwellen-Ecken
-const t1x = x1 + px * half;
-const t1y = y1 + py * half;
+    const t2x = x2 + px * half;
+    const t2y = y2 + py * half;
 
-const t2x = x2 + px * half;
-const t2y = y2 + py * half;
+    const t3x = x2 - px * half;
+    const t3y = y2 - py * half;
 
-const t3x = x2 - px * half;
-const t3y = y2 - py * half;
+    const t4x = x1 - px * half;
+    const t4y = y1 - py * half;
 
-const t4x = x1 - px * half;
-const t4y = y1 - py * half;
+    // ⭐ Bodenfarbe (fix, stabil, ohne Abhängigkeit)
+    const floorColor = "rgba(255,255,255,0.03)";
 
-// ⭐ Schwelle zeichnen
-ctx.save();
-
-// 1. Bodenfarbe
-ctx.beginPath();
-ctx.moveTo(t1x, t1y);
-ctx.lineTo(t2x, t2y);
-ctx.lineTo(t3x, t3y);
-ctx.lineTo(t4x, t4y);
-ctx.closePath();
-ctx.fillStyle = room.floorColor;
-ctx.fill();
-
-// 2. Grauschleier
-ctx.beginPath();
-ctx.moveTo(t1x, t1y);
-ctx.lineTo(t2x, t2y);
-ctx.lineTo(t3x, t3y);
-ctx.lineTo(t4x, t4y);
-ctx.closePath();
-ctx.fillStyle = "rgba(180,180,180,0.25)";
-ctx.fill();
-
-// 3. feiner Umriss
-ctx.beginPath();
-ctx.moveTo(t1x, t1y);
-ctx.lineTo(t2x, t2y);
-ctx.lineTo(t3x, t3y);
-ctx.lineTo(t4x, t4y);
-ctx.closePath();
-ctx.strokeStyle = "#00d4a8";
-ctx.lineWidth = 1.2;
-ctx.stroke();
-
-ctx.restore();
-
-
-    // Symbol in der Mitte der Tür
-    const mx = (x1 + x2) / 2;
-    const my = (y1 + y2) / 2;
-
+    // ------------------------------------------------------------
+    // Türblatt füllen
+    // ------------------------------------------------------------
     ctx.save();
-    ctx.translate(mx, my);
-    ctx.rotate(Math.atan2(dy, dx));
 
-    ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 1.2;
-
+    // Bodenfarbe
     ctx.beginPath();
-    ctx.moveTo(-8, 0);
-    ctx.lineTo(-4, -4);
-    ctx.lineTo(0, 0);
-    ctx.lineTo(4, -4);
-    ctx.lineTo(8, 0);
+    ctx.moveTo(t1x, t1y);
+    ctx.lineTo(t2x, t2y);
+    ctx.lineTo(t3x, t3y);
+    ctx.lineTo(t4x, t4y);
+    ctx.closePath();
+    ctx.fillStyle = floorColor;
+    ctx.fill();
+
+    // Grauschleier
+    ctx.beginPath();
+    ctx.moveTo(t1x, t1y);
+    ctx.lineTo(t2x, t2y);
+    ctx.lineTo(t3x, t3y);
+    ctx.lineTo(t4x, t4y);
+    ctx.closePath();
+    ctx.fillStyle = "rgba(180,180,180,0.25)";
+    ctx.fill();
+
+    // feiner Umriss
+    ctx.beginPath();
+    ctx.moveTo(t1x, t1y);
+    ctx.lineTo(t2x, t2y);
+    ctx.lineTo(t3x, t3y);
+    ctx.lineTo(t4x, t4y);
+    ctx.closePath();
+    ctx.strokeStyle = "#00d4a8";
+    ctx.lineWidth = 1.2;
     ctx.stroke();
 
     ctx.restore();
+
+    // ⭐ Zacken kommen später (Schritt 2)
     return;
 }
-
-
 
 
         // ------------------------------------------------------------
