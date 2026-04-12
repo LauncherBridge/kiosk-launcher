@@ -1749,7 +1749,7 @@ const px2 = -ny2;
 const py2 = nx2;
 
 // Zacken-Parameter
-const step = 6;     // enger
+const step = 2;     // enger
 const height = 3;   // Zackenhöhe
 const count = 8;    // ein Zacken mehr
 
