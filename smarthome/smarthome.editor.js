@@ -1681,8 +1681,8 @@ case "haustuer": {
     }
 
 // ------------------------------------------------------------
-// 3. Haussymbol: mittig zur Schwelle, kleiner Abstand,
-//    auf der bereits korrekten Seite (px * -side)
+// 3. Haussymbol: mittig zur Schwelle, konstanter Abstand,
+//    auf der korrekten Seite (px * -side)
 // ------------------------------------------------------------
 
 // Mittelpunkt der Schwelle (entlang der Tür)
@@ -1702,6 +1702,7 @@ ctx.translate(ix, iy);
 ctx.rotate(Math.atan2(ny, nx));
 drawDoorIcon(ctx, 0, 0, 24);
 ctx.restore();
+
 
 
     return;
