@@ -1661,7 +1661,8 @@ case "schiebetuer": {
 
 
 // ------------------------------------------------------------
-// ⭐ Schiebetür-Linie (alle 4 Varianten, korrekt, halb offen)
+// Schiebetür-Linie: Mittelpunkt am Scharnier, volle Länge,
+// auf gewählter Seite (innen/außen)
 // ------------------------------------------------------------
 
 // 1. Scharnier-Ende bestimmen
@@ -1674,7 +1675,7 @@ if (d.hinge === "start") {
     ox = x1; oy = y1;
 }
 
-// 2. Richtungsvektoren
+// 2. Richtungsvektoren entlang der Tür
 const dx2 = ox - hx;
 const dy2 = oy - hy;
 const len2 = Math.hypot(dx2, dy2);
@@ -1686,32 +1687,25 @@ const ny2 = dy2 / len2;
 const px2 = -ny2;         // senkrecht zur Tür
 const py2 = nx2;
 
-// 3. Richtung bestimmen
-const hingeDir = (d.hinge === "start") ? 1 : -1;
-const sideDir  = (d.side || 1);
+// 3. Seite (innen/außen)
+const side = d.side || 1;
+const offset = 4; // Abstand von der Schwelle
 
-// ⭐ Die entscheidende Formel:
-const lineDir = hingeDir * sideDir;
+// Mittelpunkt der Linie = Scharnierpunkt, seitlich versetzt
+const mx = hx + px2 * offset * side;
+const my = hy + py2 * offset * side;
 
-// 4. Halb-offen: komplette Linie entlang der Tür verschieben
-const slideOffset = (len2 / 2) * lineDir;
+// Linie so lang wie die Türschwelle
+const halfLen = len2 / 2;
 
-// 5. Startpunkt der Linie
-const offset = 4; // innen/außen Abstand
+// Start- und Endpunkt um den Mittelpunkt herum
+const sx = mx - nx2 * halfLen;
+const sy = my - ny2 * halfLen;
 
-const sx = hx 
-         + nx2 * slideOffset      // halb offen verschoben
-         + px2 * offset * sideDir;
+const ex2 = mx + nx2 * halfLen;
+const ey2 = my + ny2 * halfLen;
 
-const sy = hy 
-         + ny2 * slideOffset
-         + py2 * offset * sideDir;
-
-// 6. Endpunkt der Linie (volle Länge)
-const ex2 = sx + nx2 * len2 * lineDir;
-const ey2 = sy + ny2 * len2 * lineDir;
-
-// 7. Linie zeichnen
+// 4. Linie zeichnen
 ctx.save();
 ctx.strokeStyle = "#ffffff";
 ctx.lineWidth = 2;
@@ -1722,6 +1716,7 @@ ctx.lineTo(ex2, ey2);
 ctx.stroke();
 
 ctx.restore();
+
 
 
 
