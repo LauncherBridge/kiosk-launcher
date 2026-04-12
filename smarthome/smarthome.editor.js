@@ -1619,7 +1619,7 @@ case "haustuer": {
 
     const side = d.side || 1;
 
-    // Geometrie der Schwelle (Breite)
+    // Geometrie der Schwelle
     const wallThickness = 12;
     const extra = 8;
     const half = (wallThickness + extra) / 2;
@@ -1682,7 +1682,7 @@ case "haustuer": {
 
     // ------------------------------------------------------------
     // 3. Haussymbol: mittig zur Schwelle, kleiner Abstand,
-    //    auf der gegenüberliegenden Seite der Öffnung
+    //    auf der anderen Seite des Scharniers
     // ------------------------------------------------------------
 
     // Mittelpunkt der Schwelle (entlang der Tür)
@@ -1692,9 +1692,13 @@ case "haustuer": {
     const iconGap = 6;                 // kleiner Abstand außerhalb der Schwelle
     const iconOffset = half + iconGap; // von der Wand weg
 
-    // gegenüber der Öffnungsseite: -side
-    const ix = mx + px * (-side) * iconOffset;
-    const iy = my + py * (-side) * iconOffset;
+    // "andere Seite des Scharniers":
+    // wir leiten ein Vorzeichen nur aus hinge ab, nicht aus side
+    const hingeSign = (d.hinge === "start") ? 1 : -1;
+    const dir = -hingeSign; // andere Seite
+
+    const ix = mx + px * dir * iconOffset;
+    const iy = my + py * dir * iconOffset;
 
     ctx.save();
     ctx.translate(ix, iy);
@@ -1704,9 +1708,6 @@ case "haustuer": {
 
     return;
 }
-
-
-
 
 
 
