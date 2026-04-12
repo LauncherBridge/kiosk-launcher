@@ -1680,31 +1680,29 @@ case "haustuer": {
         ctx.stroke();
     }
 
-    // ------------------------------------------------------------
-    // 3. Haussymbol: mittig zur Schwelle, kleiner Abstand,
-    //    auf der anderen Seite des Scharniers
-    // ------------------------------------------------------------
+ // ------------------------------------------------------------
+// 3. Haussymbol: mittig zur Schwelle, kleiner Abstand,
+//    auf der bereits korrekten Seite (px * -side)
+// ------------------------------------------------------------
 
-    // Mittelpunkt der Schwelle (entlang der Tür)
-    const mx = (hx + ox) / 2;
-    const my = (hy + oy) / 2;
+// Mittelpunkt der Schwelle (entlang der Tür)
+const mx = (hx + ox) / 2;
+const my = (hy + oy) / 2;
 
-    const iconGap = 6;                 // kleiner Abstand außerhalb der Schwelle
-    const iconOffset = half + iconGap; // von der Wand weg
+// Abstand: Schwellenbreite + kleiner Abstand
+const iconGap = 6;
+const iconOffset = half + iconGap;
 
-    // "andere Seite des Scharniers":
-    // wir leiten ein Vorzeichen nur aus hinge ab, nicht aus side
-    const hingeSign = (d.hinge === "start") ? 1 : -1;
-    const dir = -hingeSign; // andere Seite
+// Seite war bereits korrekt → -side NICHT ändern!
+const ix = mx + px * (-side) * iconOffset;
+const iy = my + py * (-side) * iconOffset;
 
-    const ix = mx + px * dir * iconOffset;
-    const iy = my + py * dir * iconOffset;
+ctx.save();
+ctx.translate(ix, iy);
+ctx.rotate(Math.atan2(ny, nx));
+drawDoorIcon(ctx, 0, 0, 24);
+ctx.restore();
 
-    ctx.save();
-    ctx.translate(ix, iy);
-    ctx.rotate(Math.atan2(ny, nx));
-    drawDoorIcon(ctx, 0, 0, 24);
-    ctx.restore();
 
     return;
 }
