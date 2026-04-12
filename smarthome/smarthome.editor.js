@@ -1593,14 +1593,53 @@ case "zimmertuer":
         // ------------------------------------------------------------
         // ⭐ Haustür
         // ------------------------------------------------------------
-case "haustuer": {
-    // Türblatt
-    ctx.strokeStyle = "#00d4a8";
-    ctx.lineWidth = 7;
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
+case "haustuer":
+
+    d.isOpen = false; // nur zum Testen
+
+    // Drehpunkt bestimmen (Scharnier)
+    const hx = (d.hinge === "start") ? x1 : x2;
+    const hy = (d.hinge === "start") ? y1 : y2;
+
+    // anderer Endpunkt
+    const ox = (d.hinge === "start") ? x2 : x1;
+    const oy = (d.hinge === "start") ? y2 : y1;
+
+    // Türblatt-Vektor
+    const dx = ox - hx;
+    const dy = oy - hy;
+    const len = Math.hypot(dx, dy);
+
+    const nx = dx / len;
+    const ny = dy / len;
+
+    if (d.isOpen) {
+        // offene Haustür: 90° aufgeklappt
+        const angle = Math.PI / 2 * (d.side || 1);
+
+        const rx = nx * Math.cos(angle) - ny * Math.sin(angle);
+        const ry = nx * Math.sin(angle) + ny * Math.cos(angle);
+
+        ctx.strokeStyle = "#00d4a8";
+        ctx.lineWidth = 7;
+
+        ctx.beginPath();
+        ctx.moveTo(hx, hy);
+        ctx.lineTo(hx + rx * len, hy + ry * len);
+        ctx.stroke();
+
+    } else {
+        // geschlossene Haustür
+        ctx.strokeStyle = "#00d4a8";
+        ctx.lineWidth = 7;
+
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+    }
+
+    // --- Icon wie bisher (wird in Schritt 2 angepasst) ---
 
     // Mittelpunkt der Tür
     const mx = (x1 + x2) / 2;
@@ -1614,12 +1653,9 @@ case "haustuer": {
     const sx = mx + offX - 12;
     const sy = my + offY - 12;
 
-    // Haustür-Icon zeichnen
     drawDoorIcon(ctx, sx, sy, 24);
 
     return;
-}
-
 
 
 
