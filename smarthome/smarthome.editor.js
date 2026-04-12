@@ -1686,28 +1686,30 @@ const ny2 = dy2 / len2;
 const px2 = -ny2;         // senkrecht zur Tür
 const py2 = nx2;
 
-// 3. Seite (innen/außen)
-const side = d.side || 1;
-const offset = 4;
+// 3. Richtung bestimmen
+const hingeDir = (d.hinge === "start") ? 1 : -1;
+const sideDir  = (d.side || 1);
+
+// ⭐ Die entscheidende Formel:
+const lineDir = hingeDir * sideDir;
 
 // 4. Halb-offen: komplette Linie entlang der Tür verschieben
-//    Wenn hinge = start → Türblatt rutscht nach rechts
-//    Wenn hinge = end   → Türblatt rutscht nach links
-const slideDir = (d.hinge === "start") ? 1 : -1;
-const slideOffset = (len2 / 2) * slideDir;
+const slideOffset = (len2 / 2) * lineDir;
 
 // 5. Startpunkt der Linie
+const offset = 4; // innen/außen Abstand
+
 const sx = hx 
          + nx2 * slideOffset      // halb offen verschoben
-         + px2 * offset * side;   // innen/außen
+         + px2 * offset * sideDir;
 
 const sy = hy 
          + ny2 * slideOffset
-         + py2 * offset * side;
+         + py2 * offset * sideDir;
 
 // 6. Endpunkt der Linie (volle Länge)
-const ex2 = sx + nx2 * len2;
-const ey2 = sy + ny2 * len2;
+const ex2 = sx + nx2 * len2 * lineDir;
+const ey2 = sy + ny2 * len2 * lineDir;
 
 // 7. Linie zeichnen
 ctx.save();
@@ -1720,7 +1722,6 @@ ctx.lineTo(ex2, ey2);
 ctx.stroke();
 
 ctx.restore();
-
 
 
 
