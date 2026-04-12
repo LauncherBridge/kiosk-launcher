@@ -1721,6 +1721,61 @@ case "falttuer": {
     ctx.restore();
 
     // ⭐ Zacken kommen später (Schritt 2)
+// ------------------------------------------------------------
+// ⭐ Falttür-Zacken am Scharnierende
+// ------------------------------------------------------------
+
+// Scharnier-Ende bestimmen
+let hx, hy, ox, oy;
+if (d.hinge === "start") {
+    hx = x1; hy = y1;
+    ox = x2; oy = y2;
+} else {
+    hx = x2; hy = y2;
+    ox = x1; oy = y1;
+}
+
+// Richtungsvektoren
+const dx2 = ox - hx;
+const dy2 = oy - hy;
+const len2 = Math.hypot(dx2, dy2);
+if (!len2) return;
+
+const nx2 = dx2 / len2;
+const ny2 = dy2 / len2;
+
+// Senkrecht
+const px2 = -ny2;
+const py2 = nx2;
+
+// Zacken-Parameter
+const step = 4;     // enger
+const height = 3;   // Zackenhöhe
+const count = 6;    // ein Zacken mehr
+
+ctx.save();
+ctx.translate(hx, hy);
+ctx.rotate(Math.atan2(dy2, dx2));
+
+ctx.strokeStyle = "#ffffff";
+ctx.lineWidth = 1.2;
+
+ctx.beginPath();
+ctx.moveTo(0, 0);
+
+for (let i = 1; i <= count; i++) {
+    const x = i * step;
+    const y = (i % 2 === 0) ? -height : 0;
+    ctx.lineTo(x, y);
+}
+
+ctx.stroke();
+ctx.restore();
+
+
+
+
+    
     return;
 }
 
