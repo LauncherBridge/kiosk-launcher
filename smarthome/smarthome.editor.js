@@ -1468,9 +1468,6 @@ if (this.mode === "doors") {
             const tx = dx / len;
             const ty = dy / len;
 
-            const wx = -ty;
-            const wy =  tx;
-
             const cx = d.x;
             const cy = d.y;
 
@@ -1598,14 +1595,13 @@ case "zimmertuer": {
         // ------------------------------------------------------------
 case "haustuer": {
 
-    d.isOpen = true; // nur zum Testen
+    d.isOpen = false; // nur zum Testen
 
-    // ------------------------------------------------------------
-    // 1. Scharnier & Türblatt-Endpunkt
-    // ------------------------------------------------------------
+    // Drehpunkt bestimmen (Scharnier)
     const hx = (d.hinge === "start") ? x1 : x2;
     const hy = (d.hinge === "start") ? y1 : y2;
 
+    // anderer Endpunkt (Türblatt-Ende)
     const ox = (d.hinge === "start") ? x2 : x1;
     const oy = (d.hinge === "start") ? y2 : y1;
 
@@ -1613,25 +1609,25 @@ case "haustuer": {
     const dx = ox - hx;
     const dy = oy - hy;
     const len = Math.hypot(dx, dy);
-    if (!len) return;
 
-    const nx = dx / len;   // Richtung entlang der Tür/Wand
+    const nx = dx / len;   // entlang der Tür
     const ny = dy / len;
 
-    const px = -ny;        // Normale zur Tür/Wand
+    const px = -ny;        // senkrecht zur Tür
     const py = nx;
 
     const side = d.side || 1;
 
     // ------------------------------------------------------------
-    // 2. Schwellengeometrie
+    // 1. Türschwelle bei offener Tür (korrekt: am Scharnier beginnend)
     // ------------------------------------------------------------
-    const wallThickness = 12;
-    const extra = 8;
-    const half = (wallThickness + extra) / 2;
-
     if (d.isOpen) {
 
+        const wallThickness = 12;
+        const extra = 8;
+        const half = (wallThickness + extra) / 2;
+
+        // Rechteck entlang des Türblatts, aber am Scharnier beginnend
         const s1x = hx + px * half;
         const s1y = hy + py * half;
 
@@ -1657,7 +1653,7 @@ case "haustuer": {
     }
 
     // ------------------------------------------------------------
-    // 3. Türblatt (offen/geschlossen)
+    // 2. Türblatt (offen/geschlossen)
     // ------------------------------------------------------------
     if (d.isOpen) {
         const angle = Math.PI / 2 * side;
@@ -1684,25 +1680,20 @@ case "haustuer": {
     }
 
     // ------------------------------------------------------------
-    // 4. Haussymbol (stabil, feste Seite, px/py)
+    // 3. Haussymbol auf GEGENÜBERLIEGENDER Seite
     // ------------------------------------------------------------
 
-    // Mittelpunkt der Türlinie
-    const mx = (hx + ox) / 2;
-    const my = (hy + oy) / 2;
+    const mx = (x1 + x2) / 2;
+    const my = (y1 + y2) / 2;
 
-    // Abstand: Schwellenbreite + kleiner Abstand
-    const iconGap = 6;
-    const iconOffset = half + iconGap;
+    const iconOffset = 18;
 
-    // Feste Seite: px/py zeigt senkrecht zur Wand
-    // Falls Icon auf falscher Seite → iconOffset * -1
-    const ix = mx + px * iconOffset;
-    const iy = my + py * iconOffset;
+    const ix = mx + px * (-side) * iconOffset;
+    const iy = my + py * (-side) * iconOffset;
 
     ctx.save();
     ctx.translate(ix, iy);
-    ctx.rotate(Math.atan2(ny, nx)); // Wand-/Türblatt-Richtung
+    ctx.rotate(Math.atan2(ny, nx));
     drawDoorIcon(ctx, 0, 0, 24);
     ctx.restore();
 
