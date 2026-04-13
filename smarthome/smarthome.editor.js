@@ -2020,11 +2020,8 @@ case "falttuer": {
         // ⭐ Terrassentür → Glas
         // ------------------------------------------------------------
 case "terrassentuer": {
-    d.isOpen = true; // nur zum Testen
 
-    // d.isOpen wird von außen gesetzt (wie bei zimmertuer)
-
-    // Drehpunkt bestimmen (wie bei Zimmertür)
+    // Drehpunkt bestimmen (IDENTISCH zur Zimmertür)
     const hx = (d.hinge === "start") ? x1 : x2;
     const hy = (d.hinge === "start") ? y1 : y2;
 
@@ -2045,7 +2042,7 @@ case "terrassentuer": {
     const side = d.side || 1;
 
     // ------------------------------------------------------------
-    // 1. Türschwelle bei offener Tür (wie bei Zimmertür)
+    // 1. Türschwelle bei offener Tür (IDENTISCH zur Zimmertür)
     // ------------------------------------------------------------
     if (d.isOpen) {
 
@@ -2078,9 +2075,8 @@ case "terrassentuer": {
     }
 
     // ------------------------------------------------------------
-    // 2. Türblatt / Design der Terrassentür (UNVERÄNDERT)
-    //    Rahmen + Glasfüllung entlang der Wand
-    //    (kein Schwenken, kein Drehen – so wie dein Original)
+    // 2. Türblatt (DESIGN UNVERÄNDERT)
+    //    → immer gleich, egal ob offen oder geschlossen
     // ------------------------------------------------------------
 
     // Rahmen
@@ -2101,6 +2097,7 @@ case "terrassentuer": {
 
     return;
 }
+
 
 
 
