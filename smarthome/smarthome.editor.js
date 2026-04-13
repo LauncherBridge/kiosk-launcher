@@ -2134,6 +2134,7 @@ case "terrassentuer": {
         // ⭐ Garagentor → dicke Linie
         // ------------------------------------------------------------
 case "garagentor": {
+    d.isOpen = true; // nur zum Testen
 
     // ------------------------------------------------------------
     // 0. Drehpunkt bestimmen (Scharnierseite)
