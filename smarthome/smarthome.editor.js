@@ -1911,7 +1911,7 @@ case "falttuer": {
     const extra = 0;
     const half = (wallThickness + extra) / 2;
 
-    // Türblatt-Ecken / Schwelle
+    // Türblatt-/Schwellen-Ecken
     const t1x = x1 + px * half;
     const t1y = y1 + py * half;
 
@@ -1925,27 +1925,9 @@ case "falttuer": {
     const t4y = y1 - py * half;
 
     // ------------------------------------------------------------
-    // geschlossene Falttür: nur dünne Linie, so lang wie Schwelle
+    // 1. Schwelle / Türfläche (immer sichtbar)
     // ------------------------------------------------------------
-    if (!d.isOpen) {
-        ctx.save();
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 1; // sehr dünn
-        ctx.beginPath();
-        ctx.moveTo(t1x, t1y);
-        ctx.lineTo(t2x, t2y);
-        ctx.stroke();
-        ctx.restore();
-        return;
-    }
-
-    // ------------------------------------------------------------
-    // offene Falttür (dein bisheriger Code)
-    // ------------------------------------------------------------
-
-    // Türblatt füllen
     ctx.save();
-
     ctx.beginPath();
     ctx.moveTo(t1x, t1y);
     ctx.lineTo(t2x, t2y);
@@ -1954,10 +1936,34 @@ case "falttuer": {
     ctx.closePath();
     ctx.fillStyle = "rgba(0,0,0,0.5)";
     ctx.fill();
-
     ctx.restore();
 
-    // ⭐ Falttür-Zacken am Scharnierende
+    // ------------------------------------------------------------
+    // 2. Geschlossene Falttür: dünne Linie in der MITTE der Schwelle
+    // ------------------------------------------------------------
+    if (!d.isOpen) {
+        // Mittelpunkt der Schwelle in Querrichtung
+        const c1x = (t1x + t4x) / 2;
+        const c1y = (t1y + t4y) / 2;
+
+        const c2x = (t2x + t3x) / 2;
+        const c2y = (t2y + t3y) / 2;
+
+        ctx.save();
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 1; // sehr dünn
+        ctx.beginPath();
+        ctx.moveTo(c1x, c1y);
+        ctx.lineTo(c2x, c2y);
+        ctx.stroke();
+        ctx.restore();
+
+        return;
+    }
+
+    // ------------------------------------------------------------
+    // 3. Offene Falttür – dein bisheriger Code (Zacken)
+    // ------------------------------------------------------------
 
     // Scharnier-Ende bestimmen
     let hx, hy, ox, oy;
@@ -1969,7 +1975,6 @@ case "falttuer": {
         ox = x1; oy = y1;
     }
 
-    // Richtungsvektoren
     const dx2 = ox - hx;
     const dy2 = oy - hy;
     const len2 = Math.hypot(dx2, dy2);
@@ -1978,14 +1983,12 @@ case "falttuer": {
     const nx2 = dx2 / len2;
     const ny2 = dy2 / len2;
 
-    // Senkrecht
     const px2 = -ny2;
     const py2 = nx2;
 
-    // Zacken-Parameter
-    const step = 2;     // enger
-    const height = 4;   // Zackenhöhe
-    const count = 8;    // ein Zacken mehr
+    const step = 2;
+    const height = 4;
+    const count = 8;
 
     ctx.save();
     ctx.translate(hx, hy);
@@ -2008,6 +2011,7 @@ case "falttuer": {
 
     return;
 }
+
 
 
 
