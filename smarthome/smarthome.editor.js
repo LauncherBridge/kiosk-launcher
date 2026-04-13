@@ -2133,33 +2133,116 @@ case "terrassentuer": {
         // ------------------------------------------------------------
         // ⭐ Garagentor → dicke Linie
         // ------------------------------------------------------------
-        case "garagentor":
-            ctx.strokeStyle = "#00ffc8";
-            ctx.lineWidth = 12;
-            ctx.beginPath();
-            ctx.moveTo(x1, y1);
-            ctx.lineTo(x2, y2);
-            ctx.stroke();
-        
-            // Struktur
-            ctx.strokeStyle = "rgba(0,255,200,0.3)";
-            ctx.lineWidth = 2;
-        
-            const steps = 3;
-            for (let i = 1; i <= steps; i++) {
-                const t = i / (steps + 1);
-                ctx.beginPath();
-                ctx.moveTo(
-                    x1 + (x2 - x1) * t,
-                    y1 + (y2 - y1) * t
-                );
-                ctx.lineTo(
-                    x1 + (x2 - x1) * t + (y1 - y2) * 0.15,
-                    y1 + (y2 - y1) * t + (x2 - x1) * 0.15
-                );
-                ctx.stroke();
-            }
-            return;
+case "garagentor": {
+    d.isOpen = false; // nur zum Testen
+
+    // ------------------------------------------------------------
+    // 0. Drehpunkt bestimmen (Scharnierseite)
+    // ------------------------------------------------------------
+    const hx = (d.hinge === "start") ? x1 : x2;
+    const hy = (d.hinge === "start") ? y1 : y2;
+
+    const ox = (d.hinge === "start") ? x2 : x1;
+    const oy = (d.hinge === "start") ? y2 : y1;
+
+    const dx = ox - hx;
+    const dy = oy - hy;
+    const len = Math.hypot(dx, dy);
+    if (!len) return;
+
+    const nx = dx / len;
+    const ny = dy / len;
+
+    // Normalenvektor (senkrecht zur Wand)
+    const px = -ny;
+    const py = nx;
+
+    const side = d.side || 1;
+
+    // ------------------------------------------------------------
+    // 1. Schwelle bei offen
+    // ------------------------------------------------------------
+    if (d.isOpen) {
+
+        const wallThickness = 16;
+        const extra = 10;
+        const half = (wallThickness + extra) / 2;
+
+        const s1x = hx + px * half;
+        const s1y = hy + py * half;
+
+        const s2x = ox + px * half;
+        const s2y = oy + py * half;
+
+        const s3x = ox - px * half;
+        const s3y = oy - py * half;
+
+        const s4x = hx - px * half;
+        const s4y = hy - py * half;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(s1x, s1y);
+        ctx.lineTo(s2x, s2y);
+        ctx.lineTo(s3x, s3y);
+        ctx.lineTo(s4x, s4y);
+        ctx.closePath();
+        ctx.fillStyle = "rgba(0,0,0,0.5)";
+        ctx.fill();
+        ctx.restore();
+    }
+
+    // ------------------------------------------------------------
+    // 2. Torblatt (parallel verschoben, NICHT geschwenkt)
+    // ------------------------------------------------------------
+
+    let bx1 = x1;
+    let by1 = y1;
+    let bx2 = x2;
+    let by2 = y2;
+
+    if (d.isOpen) {
+        // Tor wird parallel zur Schwelle verschoben
+        const offset = 40 * side; // Öffnungsweite
+
+        bx1 = x1 + px * offset;
+        by1 = y1 + py * offset;
+
+        bx2 = x2 + px * offset;
+        by2 = y2 + py * offset;
+    }
+
+    // --- Rahmen
+    ctx.strokeStyle = "#00ffc8";
+    ctx.lineWidth = 12;
+    ctx.beginPath();
+    ctx.moveTo(bx1, by1);
+    ctx.lineTo(bx2, by2);
+    ctx.stroke();
+
+    // --- Strukturstreifen
+    ctx.strokeStyle = "rgba(0,255,200,0.3)";
+    ctx.lineWidth = 2;
+
+    const steps = 3;
+    for (let i = 1; i <= steps; i++) {
+        const t = i / (steps + 1);
+
+        const sx = bx1 + (bx2 - bx1) * t;
+        const sy = by1 + (by2 - by1) * t;
+
+        ctx.beginPath();
+        ctx.moveTo(sx, sy);
+        ctx.lineTo(
+            sx + (y1 - y2) * 0.15,
+            sy + (x2 - x1) * 0.15
+        );
+        ctx.stroke();
+    }
+
+    return;
+}
+
 
         // ------------------------------------------------------------
         // ⭐ Gartentörchen → schmal
