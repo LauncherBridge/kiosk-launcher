@@ -1766,6 +1766,7 @@ case "haustuer": {
 // ⭐ Schiebetür → kein Viertelkreis
 // ------------------------------------------------------------
 case "schiebetuer": {
+    d.isOpen = true; // nur zum Testen
 
     // ------------------------------------------------------------
     // 1. Türschwelle (identisch zur Falttür)
@@ -1798,11 +1799,7 @@ case "schiebetuer": {
     const t4x = x1 - px * half;
     const t4y = y1 - py * half;
 
-    const floorColor = "rgba(255,255,255,0.03)";
-
     ctx.save();
-
-    // Bodenfarbe
     ctx.beginPath();
     ctx.moveTo(t1x, t1y);
     ctx.lineTo(t2x, t2y);
@@ -1811,77 +1808,79 @@ case "schiebetuer": {
     ctx.closePath();
     ctx.fillStyle = "rgba(0,0,0,0.5)";
     ctx.fill();
-
-
-
     ctx.restore();
 
 
+    // ------------------------------------------------------------
+    // 2. Türblatt (offen/geschlossen) – exakt wie bei Zimmertür
+    // ------------------------------------------------------------
 
-// ------------------------------------------------------------
-// Schiebetür-Linie: Mittelpunkt am Scharnier, volle Länge,
-// auf gewählter Seite (innen/außen)
-// ------------------------------------------------------------
+    // Scharnier bestimmen
+    let hx, hy, ox, oy;
+    if (d.hinge === "start") {
+        hx = x1; hy = y1;
+        ox = x2; oy = y2;
+    } else {
+        hx = x2; hy = y2;
+        ox = x1; oy = y1;
+    }
 
-// 1. Scharnier-Ende bestimmen
-let hx, hy, ox, oy;
-if (d.hinge === "start") {
-    hx = x1; hy = y1;
-    ox = x2; oy = y2;
-} else {
-    hx = x2; hy = y2;
-    ox = x1; oy = y1;
-}
+    // Türblatt-Vektor
+    const dx2 = ox - hx;
+    const dy2 = oy - hy;
+    const len2 = Math.hypot(dx2, dy2);
+    if (!len2) return;
 
-// 2. Richtungsvektoren entlang der Tür
-const dx2 = ox - hx;
-const dy2 = oy - hy;
-const len2 = Math.hypot(dx2, dy2);
-if (!len2) return;
+    const nx2 = dx2 / len2;
+    const ny2 = dy2 / len2;
 
-const nx2 = dx2 / len2;   // entlang der Tür
-const ny2 = dy2 / len2;
+    const px2 = -ny2;
+    const py2 = nx2;
 
-const px2 = -ny2;         // senkrecht zur Tür
-const py2 = nx2;
+    const side = d.side || 1;
+    const offset = 4; // wie bisher
 
-// 3. Seite (innen/außen)
-const side = d.side || 1;
-const offset = 4; // Abstand von der Schwelle
+    ctx.save();
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 2;
 
-// Mittelpunkt der Linie = Scharnierpunkt, seitlich versetzt
-const mx = hx + px2 * offset * side;
-const my = hy + py2 * offset * side;
+    if (d.isOpen) {
+        // --------------------------------------------------------
+        // OFFENE SCHIEBETÜR (dein bisheriger Zustand)
+        // halb zur Seite verschoben
+        // --------------------------------------------------------
 
-// Linie so lang wie die Türschwelle
-const halfLen = len2 / 2;
+        const mx = hx + px2 * offset * side;
+        const my = hy + py2 * offset * side;
 
-// Start- und Endpunkt um den Mittelpunkt herum
-const sx = mx - nx2 * halfLen;
-const sy = my - ny2 * halfLen;
+        const halfLen = len2 / 2;
 
-const ex2 = mx + nx2 * halfLen;
-const ey2 = my + ny2 * halfLen;
+        const sx = mx - nx2 * halfLen;
+        const sy = my - ny2 * halfLen;
 
-// 4. Linie zeichnen
-ctx.save();
-ctx.strokeStyle = "#ffffff";
-ctx.lineWidth = 2;
+        const ex2 = mx + nx2 * halfLen;
+        const ey2 = my + ny2 * halfLen;
 
-ctx.beginPath();
-ctx.moveTo(sx, sy);
-ctx.lineTo(ex2, ey2);
-ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(sx, sy);
+        ctx.lineTo(ex2, ey2);
+        ctx.stroke();
 
-ctx.restore();
+    } else {
+        // --------------------------------------------------------
+        // GESCHLOSSENE SCHIEBETÜR
+        // Türblatt liegt EXAKT auf der Schwelle (nicht versetzt)
+        // --------------------------------------------------------
 
+        ctx.beginPath();
+        ctx.moveTo(t1x, t1y);
+        ctx.lineTo(t2x, t2y);
+        ctx.stroke();
+    }
 
-
-
-
+    ctx.restore();
     return;
 }
-
 
 
 
