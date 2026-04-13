@@ -2134,7 +2134,6 @@ case "terrassentuer": {
         // ⭐ Garagentor → dicke Linie
         // ------------------------------------------------------------
 case "garagentor": {
-    d.isOpen = false; // nur zum Testen
 
     // ------------------------------------------------------------
     // 0. Drehpunkt bestimmen (Scharnierseite)
@@ -2193,7 +2192,7 @@ case "garagentor": {
     }
 
     // ------------------------------------------------------------
-    // 2. Torblatt (parallel verschoben, NICHT geschwenkt)
+    // 2. Torblatt (offen = dick + transparent, geschlossen = dünn)
     // ------------------------------------------------------------
 
     let bx1 = x1;
@@ -2212,36 +2211,50 @@ case "garagentor": {
         by2 = y2 + py * offset;
     }
 
-    // --- Rahmen
-ctx.strokeStyle = "rgba(0,255,200,0.25)";
-    ctx.lineWidth = 80;
-    ctx.beginPath();
-    ctx.moveTo(bx1, by1);
-    ctx.lineTo(bx2, by2);
-    ctx.stroke();
+    if (d.isOpen) {
 
-    // --- Strukturstreifen
-    ctx.strokeStyle = "rgba(0,255,200,0.3)";
-    ctx.lineWidth = 2;
-
-    const steps = 3;
-    for (let i = 1; i <= steps; i++) {
-        const t = i / (steps + 1);
-
-        const sx = bx1 + (bx2 - bx1) * t;
-        const sy = by1 + (by2 - by1) * t;
-
+        // --- OFFEN: dickes, transparentes Torblatt
+        ctx.strokeStyle = "rgba(0,255,200,0.25)";
+        ctx.lineWidth = 80;
         ctx.beginPath();
-        ctx.moveTo(sx, sy);
-        ctx.lineTo(
-            sx + (y1 - y2) * 0.15,
-            sy + (x2 - x1) * 0.15
-        );
+        ctx.moveTo(bx1, by1);
+        ctx.lineTo(bx2, by2);
+        ctx.stroke();
+
+        // --- Strukturstreifen
+        ctx.strokeStyle = "rgba(0,255,200,0.3)";
+        ctx.lineWidth = 2;
+
+        const steps = 3;
+        for (let i = 1; i <= steps; i++) {
+            const t = i / (steps + 1);
+
+            const sx = bx1 + (bx2 - bx1) * t;
+            const sy = by1 + (by2 - by1) * t;
+
+            ctx.beginPath();
+            ctx.moveTo(sx, sy);
+            ctx.lineTo(
+                sx + (y1 - y2) * 0.15,
+                sy + (x2 - x1) * 0.15
+            );
+            ctx.stroke();
+        }
+
+    } else {
+
+        // --- GESCHLOSSEN: dünne Linie auf der Schwelle
+        ctx.strokeStyle = "#00ffc8";
+        ctx.lineWidth = 8;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
         ctx.stroke();
     }
 
     return;
 }
+
 
 
         // ------------------------------------------------------------
