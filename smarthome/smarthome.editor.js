@@ -2020,7 +2020,7 @@ case "falttuer": {
         // ⭐ Terrassentür → Glas
         // ------------------------------------------------------------
 case "terrassentuer": {
-    d.isOpen = true; // nur zum Testen
+    d.isOpen = false; // nur zum Testen
 
     // ------------------------------------------------------------
     // 0. Drehpunkt bestimmen (IDENTISCH zur Zimmertür)
