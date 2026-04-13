@@ -1676,7 +1676,11 @@ case "haustuer": {
         ctx.moveTo(x1, y1);
         ctx.lineTo(x2, y2);
         ctx.stroke();
-    } }
+    }
+
+    return;
+}
+
 
     // ------------------------------------------------------------
     // 3. Haussymbol auf GEGENÜBERLIEGENDER Seite
@@ -1696,8 +1700,8 @@ case "haustuer": {
 //    drawDoorIcon(ctx, 0, 0, 24);
 //    ctx.restore();
 
-    return;
-}
+//    return;
+//}
 
 
 
