@@ -1766,7 +1766,7 @@ case "haustuer": {
 // ⭐ Schiebetür → kein Viertelkreis
 // ------------------------------------------------------------
 case "schiebetuer": {
-    d.isOpen = true; // nur zum Testen
+    d.isOpen = false; // nur zum Testen
 
     // ------------------------------------------------------------
     // 1. Türschwelle (identisch zur Falttür)
