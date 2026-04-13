@@ -1619,7 +1619,7 @@ case "haustuer": {
     const side = d.side || 1;
 
     // ------------------------------------------------------------
-    // 1. Türschwelle bei offener Tür (korrekt: am Scharnier beginnend)
+    // 1. Türschwelle bei offener Tür
     // ------------------------------------------------------------
     if (d.isOpen) {
 
@@ -1627,7 +1627,6 @@ case "haustuer": {
         const extra = 8;
         const half = (wallThickness + extra) / 2;
 
-        // Rechteck entlang des Türblatts, aber am Scharnier beginnend
         const s1x = hx + px * half;
         const s1y = hy + py * half;
 
@@ -1653,16 +1652,19 @@ case "haustuer": {
     }
 
     // ------------------------------------------------------------
-    // 2. Türblatt (offen/geschlossen)
+    // 2. Türblatt (offen/geschlossen) – Haustür dicker + Glow
     // ------------------------------------------------------------
+
+    ctx.strokeStyle = "#00d4a8";   // Haustürfarbe
+    ctx.lineWidth = 9;             // dicker als Zimmertür
+    ctx.shadowColor = "rgba(0, 212, 168, 0.35)"; // dezentes Leuchten
+    ctx.shadowBlur = 12;
+
     if (d.isOpen) {
         const angle = Math.PI / 2 * side;
 
         const rx = nx * Math.cos(angle) - ny * Math.sin(angle);
         const ry = nx * Math.sin(angle) + ny * Math.cos(angle);
-
-        ctx.strokeStyle = "#00d4a8";
-        ctx.lineWidth = 7;
 
         ctx.beginPath();
         ctx.moveTo(hx, hy);
@@ -1670,14 +1672,11 @@ case "haustuer": {
         ctx.stroke();
 
     } else {
-        ctx.strokeStyle = "#00d4a8";
-        ctx.lineWidth = 7;
-
         ctx.beginPath();
         ctx.moveTo(x1, y1);
         ctx.lineTo(x2, y2);
         ctx.stroke();
-    }
+    } }
 
     // ------------------------------------------------------------
     // 3. Haussymbol auf GEGENÜBERLIEGENDER Seite
