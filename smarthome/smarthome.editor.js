@@ -2022,7 +2022,9 @@ case "falttuer": {
 case "terrassentuer": {
     d.isOpen = true; // nur zum Testen
 
-    // Drehpunkt bestimmen (IDENTISCH zur Zimmertür)
+    // ------------------------------------------------------------
+    // 0. Drehpunkt bestimmen (IDENTISCH zur Zimmertür)
+    // ------------------------------------------------------------
     const hx = (d.hinge === "start") ? x1 : x2;
     const hy = (d.hinge === "start") ? y1 : y2;
 
@@ -2076,31 +2078,56 @@ case "terrassentuer": {
     }
 
     // ------------------------------------------------------------
-    // 2. Türblatt (DESIGN UNVERÄNDERT)
-    //    → immer gleich, egal ob offen oder geschlossen
+    // 2. Türblatt (offen/geschlossen) – DESIGN BLEIBT TERRASSENTÜR
     // ------------------------------------------------------------
 
-    // Rahmen
-    ctx.strokeStyle = "#00ffc8";
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
+    // OFFEN → geschwenktes Türblatt (wie Zimmertür)
+    if (d.isOpen) {
 
-    // Glasfüllung
-    ctx.strokeStyle = "rgba(0, 180, 255, 0.7)";
-    ctx.lineWidth = 8;
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
+        const angle = Math.PI / 2 * side;
+
+        const rx = nx * Math.cos(angle) - ny * Math.sin(angle);
+        const ry = nx * Math.sin(angle) + ny * Math.cos(angle);
+
+        const ex = hx + rx * len;
+        const ey = hy + ry * len;
+
+        // Rahmen (Terrassentür-Design)
+        ctx.strokeStyle = "#00ffc8";
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(hx, hy);
+        ctx.lineTo(ex, ey);
+        ctx.stroke();
+
+        // Glasfüllung (Terrassentür-Design)
+        ctx.strokeStyle = "rgba(0, 180, 255, 0.7)";
+        ctx.lineWidth = 8;
+        ctx.beginPath();
+        ctx.moveTo(hx, hy);
+        ctx.lineTo(ex, ey);
+        ctx.stroke();
+
+    } else {
+
+        // GESCHLOSSEN → Linie auf der Wand (wie Zimmertür)
+        ctx.strokeStyle = "#00ffc8";
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+
+        ctx.strokeStyle = "rgba(0, 180, 255, 0.7)";
+        ctx.lineWidth = 8;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+    }
 
     return;
 }
-
-
-
 
 
         // ------------------------------------------------------------
