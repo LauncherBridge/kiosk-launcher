@@ -2019,23 +2019,88 @@ case "falttuer": {
         // ------------------------------------------------------------
         // ⭐ Terrassentür → Glas
         // ------------------------------------------------------------
-        case "terrassentuer":
-            // Rahmen
-            ctx.strokeStyle = "#00ffc8";
-            ctx.lineWidth = 4;
-            ctx.beginPath();
-            ctx.moveTo(x1, y1);
-            ctx.lineTo(x2, y2);
-            ctx.stroke();
-        
-            // Glasfüllung
-            ctx.strokeStyle = "rgba(0, 180, 255, 0.7)";
-            ctx.lineWidth = 8;
-            ctx.beginPath();
-            ctx.moveTo(x1, y1);
-            ctx.lineTo(x2, y2);
-            ctx.stroke();
-            return;
+case "terrassentuer": {
+
+    // d.isOpen wird von außen gesetzt (wie bei zimmertuer)
+
+    // Drehpunkt bestimmen (wie bei Zimmertür)
+    const hx = (d.hinge === "start") ? x1 : x2;
+    const hy = (d.hinge === "start") ? y1 : y2;
+
+    const ox = (d.hinge === "start") ? x2 : x1;
+    const oy = (d.hinge === "start") ? y2 : y1;
+
+    const dx = ox - hx;
+    const dy = oy - hy;
+    const len = Math.hypot(dx, dy);
+    if (!len) return;
+
+    const nx = dx / len;
+    const ny = dy / len;
+
+    const px = -ny;
+    const py = nx;
+
+    const side = d.side || 1;
+
+    // ------------------------------------------------------------
+    // 1. Türschwelle bei offener Tür (wie bei Zimmertür)
+    // ------------------------------------------------------------
+    if (d.isOpen) {
+
+        const wallThickness = 12;
+        const extra = 8;
+        const half = (wallThickness + extra) / 2;
+
+        const s1x = hx + px * half;
+        const s1y = hy + py * half;
+
+        const s2x = ox + px * half;
+        const s2y = oy + py * half;
+
+        const s3x = ox - px * half;
+        const s3y = oy - py * half;
+
+        const s4x = hx - px * half;
+        const s4y = hy - py * half;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(s1x, s1y);
+        ctx.lineTo(s2x, s2y);
+        ctx.lineTo(s3x, s3y);
+        ctx.lineTo(s4x, s4y);
+        ctx.closePath();
+        ctx.fillStyle = "rgba(0,0,0,0.5)";
+        ctx.fill();
+        ctx.restore();
+    }
+
+    // ------------------------------------------------------------
+    // 2. Türblatt / Design der Terrassentür (UNVERÄNDERT)
+    //    Rahmen + Glasfüllung entlang der Wand
+    //    (kein Schwenken, kein Drehen – so wie dein Original)
+    // ------------------------------------------------------------
+
+    // Rahmen
+    ctx.strokeStyle = "#00ffc8";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+
+    // Glasfüllung
+    ctx.strokeStyle = "rgba(0, 180, 255, 0.7)";
+    ctx.lineWidth = 8;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+
+    return;
+}
+
 
 
 
