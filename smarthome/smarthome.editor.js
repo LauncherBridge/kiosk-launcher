@@ -1911,7 +1911,7 @@ case "falttuer": {
     const extra = 0;
     const half = (wallThickness + extra) / 2;
 
-    // Türblatt-Ecken
+    // Türblatt-Ecken / Schwelle
     const t1x = x1 + px * half;
     const t1y = y1 + py * half;
 
@@ -1924,15 +1924,28 @@ case "falttuer": {
     const t4x = x1 - px * half;
     const t4y = y1 - py * half;
 
-    // ⭐ Bodenfarbe (fix, stabil, ohne Abhängigkeit)
-    const floorColor = "rgba(255,255,255,0.03)";
+    // ------------------------------------------------------------
+    // geschlossene Falttür: nur dünne Linie, so lang wie Schwelle
+    // ------------------------------------------------------------
+    if (!d.isOpen) {
+        ctx.save();
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 1; // sehr dünn
+        ctx.beginPath();
+        ctx.moveTo(t1x, t1y);
+        ctx.lineTo(t2x, t2y);
+        ctx.stroke();
+        ctx.restore();
+        return;
+    }
 
     // ------------------------------------------------------------
-    // Türblatt füllen
+    // offene Falttür (dein bisheriger Code)
     // ------------------------------------------------------------
+
+    // Türblatt füllen
     ctx.save();
 
-    // Bodenfarbe
     ctx.beginPath();
     ctx.moveTo(t1x, t1y);
     ctx.lineTo(t2x, t2y);
@@ -1942,87 +1955,60 @@ case "falttuer": {
     ctx.fillStyle = "rgba(0,0,0,0.5)";
     ctx.fill();
 
-    // Grauschleier
-  //  ctx.beginPath();
-    //ctx.moveTo(t1x, t1y);
-   // ctx.lineTo(t2x, t2y);
-   // ctx.lineTo(t3x, t3y);
-   // ctx.lineTo(t4x, t4y);
-   // ctx.closePath();
-    // ctx.fillStyle = "rgba(180,180,180,0.25)";
-   // ctx.fill();
-
-    // feiner Umriss
-//    ctx.beginPath();
-  //  ctx.moveTo(t1x, t1y);
-   // ctx.lineTo(t2x, t2y);
-   // ctx.lineTo(t3x, t3y);
-   // ctx.lineTo(t4x, t4y);
-    // ctx.closePath();
-   // ctx.strokeStyle = "#00d4a8";
-   // ctx.lineWidth = 1.2;
-   // ctx.stroke();
-
     ctx.restore();
 
-    // ⭐ Zacken kommen später (Schritt 2)
-// ------------------------------------------------------------
-// ⭐ Falttür-Zacken am Scharnierende
-// ------------------------------------------------------------
+    // ⭐ Falttür-Zacken am Scharnierende
 
-// Scharnier-Ende bestimmen
-let hx, hy, ox, oy;
-if (d.hinge === "start") {
-    hx = x1; hy = y1;
-    ox = x2; oy = y2;
-} else {
-    hx = x2; hy = y2;
-    ox = x1; oy = y1;
-}
+    // Scharnier-Ende bestimmen
+    let hx, hy, ox, oy;
+    if (d.hinge === "start") {
+        hx = x1; hy = y1;
+        ox = x2; oy = y2;
+    } else {
+        hx = x2; hy = y2;
+        ox = x1; oy = y1;
+    }
 
-// Richtungsvektoren
-const dx2 = ox - hx;
-const dy2 = oy - hy;
-const len2 = Math.hypot(dx2, dy2);
-if (!len2) return;
+    // Richtungsvektoren
+    const dx2 = ox - hx;
+    const dy2 = oy - hy;
+    const len2 = Math.hypot(dx2, dy2);
+    if (!len2) return;
 
-const nx2 = dx2 / len2;
-const ny2 = dy2 / len2;
+    const nx2 = dx2 / len2;
+    const ny2 = dy2 / len2;
 
-// Senkrecht
-const px2 = -ny2;
-const py2 = nx2;
+    // Senkrecht
+    const px2 = -ny2;
+    const py2 = nx2;
 
-// Zacken-Parameter
-const step = 2;     // enger
-const height = 4;   // Zackenhöhe
-const count = 8;    // ein Zacken mehr
+    // Zacken-Parameter
+    const step = 2;     // enger
+    const height = 4;   // Zackenhöhe
+    const count = 8;    // ein Zacken mehr
 
-ctx.save();
-ctx.translate(hx, hy);
-ctx.rotate(Math.atan2(dy2, dx2));
+    ctx.save();
+    ctx.translate(hx, hy);
+    ctx.rotate(Math.atan2(dy2, dx2));
 
-ctx.strokeStyle = "#ffffff";
-ctx.lineWidth = 1.2;
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 1.2;
 
-ctx.beginPath();
-ctx.moveTo(0, 0);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
 
-for (let i = 1; i <= count; i++) {
-    const x = i * step;
-    const y = (i % 2 === 0) ? -height : 0;
-    ctx.lineTo(x, y);
-}
+    for (let i = 1; i <= count; i++) {
+        const x = i * step;
+        const y = (i % 2 === 0) ? -height : 0;
+        ctx.lineTo(x, y);
+    }
 
-ctx.stroke();
-ctx.restore();
+    ctx.stroke();
+    ctx.restore();
 
-
-
-
-    
     return;
 }
+
 
 
         // ------------------------------------------------------------
