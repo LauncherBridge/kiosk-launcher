@@ -2020,6 +2020,7 @@ case "falttuer": {
         // ⭐ Terrassentür → Glas
         // ------------------------------------------------------------
 case "terrassentuer": {
+    d.isOpen = true; // nur zum Testen
 
     // d.isOpen wird von außen gesetzt (wie bei zimmertuer)
 
