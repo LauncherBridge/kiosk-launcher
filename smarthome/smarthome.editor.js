@@ -1601,11 +1601,12 @@ case "haustuer": {
 
     d.isOpen = true; // nur zum Testen
 
-    // Drehpunkt bestimmen (Scharnier)
+    // ------------------------------------------------------------
+    // 1. Scharnier & Türblatt-Endpunkt
+    // ------------------------------------------------------------
     const hx = (d.hinge === "start") ? x1 : x2;
     const hy = (d.hinge === "start") ? y1 : y2;
 
-    // anderer Endpunkt (Türblatt-Ende)
     const ox = (d.hinge === "start") ? x2 : x1;
     const oy = (d.hinge === "start") ? y2 : y1;
 
@@ -1615,22 +1616,21 @@ case "haustuer": {
     const len = Math.hypot(dx, dy);
     if (!len) return;
 
-    const nx = dx / len;   // entlang der Tür
+    const nx = dx / len;   // Richtung entlang der Tür/Wand
     const ny = dy / len;
 
-    const px = -ny;        // senkrecht zur Tür
+    const px = -ny;        // Normale zur Tür/Wand
     const py = nx;
 
     const side = d.side || 1;
 
-    // Geometrie der Schwelle
+    // ------------------------------------------------------------
+    // 2. Schwellengeometrie
+    // ------------------------------------------------------------
     const wallThickness = 12;
     const extra = 8;
     const half = (wallThickness + extra) / 2;
 
-    // ------------------------------------------------------------
-    // 1. Türschwelle bei offener Tür (am Scharnier, so lang wie Türblatt)
-    // ------------------------------------------------------------
     if (d.isOpen) {
 
         const s1x = hx + px * half;
@@ -1658,7 +1658,7 @@ case "haustuer": {
     }
 
     // ------------------------------------------------------------
-    // 2. Türblatt (offen/geschlossen)
+    // 3. Türblatt (offen/geschlossen)
     // ------------------------------------------------------------
     if (d.isOpen) {
         const angle = Math.PI / 2 * side;
@@ -1684,37 +1684,32 @@ case "haustuer": {
         ctx.stroke();
     }
 
-// ------------------------------------------------------------
-// 3. Haussymbol: mittig zur Schwelle, konstanter Abstand,
-//    auf der korrekten Seite (px * -side)
-// ------------------------------------------------------------
-// Wandnormale statt Türnormale verwenden
+    // ------------------------------------------------------------
+    // 4. Haussymbol (stabil, feste Seite, px/py)
+    // ------------------------------------------------------------
 
-    const { wx, wy } = geo;
+    // Mittelpunkt der Türlinie
+    const mx = (hx + ox) / 2;
+    const my = (hy + oy) / 2;
 
+    // Abstand: Schwellenbreite + kleiner Abstand
+    const iconGap = 6;
+    const iconOffset = half + iconGap;
 
-// Mittelpunkt der Türlinie
-const mx = (hx + ox) / 2;
-const my = (hy + oy) / 2;
+    // Feste Seite: px/py zeigt senkrecht zur Wand
+    // Falls Icon auf falscher Seite → iconOffset * -1
+    const ix = mx + px * iconOffset;
+    const iy = my + py * iconOffset;
 
-// Abstand: Schwellenbreite + kleiner Abstand
-const iconGap = 6;
-const iconOffset = half + iconGap;
-
-// Seite bleibt korrekt → -side NICHT ändern!
-const ix = mx + wx * (-side) * iconOffset;
-const iy = my + wy * (-side) * iconOffset;
-
-ctx.save();
-ctx.translate(ix, iy);
-ctx.rotate(Math.atan2(ny, nx));
-drawDoorIcon(ctx, 0, 0, 24);
-ctx.restore();
-
-
+    ctx.save();
+    ctx.translate(ix, iy);
+    ctx.rotate(Math.atan2(ny, nx)); // Wand-/Türblatt-Richtung
+    drawDoorIcon(ctx, 0, 0, 24);
+    ctx.restore();
 
     return;
 }
+
 
 
 
