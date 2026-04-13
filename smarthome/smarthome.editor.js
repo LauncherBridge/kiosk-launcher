@@ -1892,6 +1892,7 @@ case "schiebetuer": {
         // ⭐ Falttür → segmentiert
         // ------------------------------------------------------------
 case "falttuer": {
+    d.isOpen = true; // nur zum Testen
 
     // Wandvektor
     const dx = x2 - x1;
