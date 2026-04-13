@@ -1683,19 +1683,19 @@ case "haustuer": {
     // 3. Haussymbol auf GEGENÜBERLIEGENDER Seite
     // ------------------------------------------------------------
 
-    const mx = (x1 + x2) / 2;
-    const my = (y1 + y2) / 2;
+ //   const mx = (x1 + x2) / 2;
+  //  const my = (y1 + y2) / 2;
 
-    const iconOffset = 18;
+ //   const iconOffset = 18;
 
-    const ix = mx + px * (-side) * iconOffset;
-    const iy = my + py * (-side) * iconOffset;
+//    const ix = mx + px * (-side) * iconOffset;
+//    const iy = my + py * (-side) * iconOffset;
 
-    ctx.save();
-    ctx.translate(ix, iy);
-    ctx.rotate(Math.atan2(ny, nx));
-    drawDoorIcon(ctx, 0, 0, 24);
-    ctx.restore();
+//    ctx.save();
+//    ctx.translate(ix, iy);
+//    ctx.rotate(Math.atan2(ny, nx));
+//    drawDoorIcon(ctx, 0, 0, 24);
+//    ctx.restore();
 
     return;
 }
