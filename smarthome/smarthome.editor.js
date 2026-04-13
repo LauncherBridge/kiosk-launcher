@@ -1811,74 +1811,84 @@ case "schiebetuer": {
     ctx.restore();
 
 
-    // ------------------------------------------------------------
-    // 2. Türblatt (offen/geschlossen) – exakt wie bei Zimmertür
-    // ------------------------------------------------------------
+// ------------------------------------------------------------
+// 2. Türblatt (offen/geschlossen) – jetzt mit richtiger Seite
+// ------------------------------------------------------------
 
-    // Scharnier bestimmen
-    let hx, hy, ox, oy;
-    if (d.hinge === "start") {
-        hx = x1; hy = y1;
-        ox = x2; oy = y2;
-    } else {
-        hx = x2; hy = y2;
-        ox = x1; oy = y1;
-    }
+// Scharnier bestimmen
+let hx, hy, ox, oy;
+if (d.hinge === "start") {
+    hx = x1; hy = y1;
+    ox = x2; oy = y2;
+} else {
+    hx = x2; hy = y2;
+    ox = x1; oy = y1;
+}
 
-    // Türblatt-Vektor
-    const dx2 = ox - hx;
-    const dy2 = oy - hy;
-    const len2 = Math.hypot(dx2, dy2);
-    if (!len2) return;
+// Türblatt-Vektor
+const dx2 = ox - hx;
+const dy2 = oy - hy;
+const len2 = Math.hypot(dx2, dy2);
+if (!len2) return;
 
-    const nx2 = dx2 / len2;
-    const ny2 = dy2 / len2;
+const nx2 = dx2 / len2;
+const ny2 = dy2 / len2;
 
-    const px2 = -ny2;
-    const py2 = nx2;
+const px2 = -ny2;
+const py2 = nx2;
 
-    const side = d.side || 1;
-    const offset = 4; // wie bisher
+const side = d.side || 1;
 
-    ctx.save();
-    ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 2;
+// Design unverändert
+ctx.save();
+ctx.strokeStyle = "#ffffff";
+ctx.lineWidth = 2;
 
-    if (d.isOpen) {
-        // --------------------------------------------------------
-        // OFFENE SCHIEBETÜR (dein bisheriger Zustand)
-        // halb zur Seite verschoben
-        // --------------------------------------------------------
+if (d.isOpen) {
+    // --------------------------------------------------------
+    // OFFENE SCHIEBETÜR (dein bisheriger Zustand)
+    // halb zur Seite verschoben
+    // --------------------------------------------------------
 
-        const mx = hx + px2 * offset * side;
-        const my = hy + py2 * offset * side;
+    const slide = 4 * side; // seitlicher Versatz
+    const mx = hx + px2 * slide;
+    const my = hy + py2 * slide;
 
-        const halfLen = len2 / 2;
+    const halfLen = len2 / 2;
 
-        const sx = mx - nx2 * halfLen;
-        const sy = my - ny2 * halfLen;
+    const sx = mx - nx2 * halfLen;
+    const sy = my - ny2 * halfLen;
 
-        const ex2 = mx + nx2 * halfLen;
-        const ey2 = my + ny2 * halfLen;
+    const ex2 = mx + nx2 * halfLen;
+    const ey2 = my + ny2 * halfLen;
 
-        ctx.beginPath();
-        ctx.moveTo(sx, sy);
-        ctx.lineTo(ex2, ey2);
-        ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(sx, sy);
+    ctx.lineTo(ex2, ey2);
+    ctx.stroke();
 
-    } else {
-        // --------------------------------------------------------
-        // GESCHLOSSENE SCHIEBETÜR
-        // Türblatt liegt EXAKT auf der Schwelle (nicht versetzt)
-        // --------------------------------------------------------
+} else {
+    // --------------------------------------------------------
+    // GESCHLOSSENE SCHIEBETÜR
+    // Türblatt liegt auf der Schwelle, aber auf der richtigen Seite
+    // --------------------------------------------------------
 
-        ctx.beginPath();
-        ctx.moveTo(t1x, t1y);
-        ctx.lineTo(t2x, t2y);
-        ctx.stroke();
-    }
+    const closedOffset = 4 * side;
 
-    ctx.restore();
+    const c1x = t1x + px2 * closedOffset;
+    const c1y = t1y + py2 * closedOffset;
+
+    const c2x = t2x + px2 * closedOffset;
+    const c2y = t2y + py2 * closedOffset;
+
+    ctx.beginPath();
+    ctx.moveTo(c1x, c1y);
+    ctx.lineTo(c2x, c2y);
+    ctx.stroke();
+}
+
+ctx.restore();
+
     return;
 }
 
