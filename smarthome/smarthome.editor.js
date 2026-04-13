@@ -2203,7 +2203,7 @@ case "garagentor": {
 
     if (d.isOpen) {
         // Tor wird parallel zur Schwelle verschoben
-        const offset = 20 * side; // Öffnungsweite
+        const offset = 30 * side; // Öffnungsweite
 
         bx1 = x1 + px * offset;
         by1 = y1 + py * offset;
@@ -2214,7 +2214,7 @@ case "garagentor": {
 
     // --- Rahmen
 ctx.strokeStyle = "rgba(0,255,200,0.25)";
-    ctx.lineWidth = 90;
+    ctx.lineWidth = 80;
     ctx.beginPath();
     ctx.moveTo(bx1, by1);
     ctx.lineTo(bx2, by2);
