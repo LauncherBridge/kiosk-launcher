@@ -1560,15 +1560,57 @@ case "zimmertuer": {
     const nx = dx / len;
     const ny = dy / len;
 
+    const px = -ny;
+    const py = nx;
+
+    const side = d.side || 1;
+
+    // ------------------------------------------------------------
+    // 1. Türschwelle bei offener Tür (wie bei Haustür, nur ohne Glow)
+    // ------------------------------------------------------------
     if (d.isOpen) {
-        // 90° drehen
-        const angle = Math.PI / 2 * (d.side || 1);
+
+        const wallThickness = 12;
+        const extra = 8;
+        const half = (wallThickness + extra) / 2;
+
+        const s1x = hx + px * half;
+        const s1y = hy + py * half;
+
+        const s2x = ox + px * half;
+        const s2y = oy + py * half;
+
+        const s3x = ox - px * half;
+        const s3y = oy - py * half;
+
+        const s4x = hx - px * half;
+        const s4y = hy - py * half;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(s1x, s1y);
+        ctx.lineTo(s2x, s2y);
+        ctx.lineTo(s3x, s3y);
+        ctx.lineTo(s4x, s4y);
+        ctx.closePath();
+        ctx.fillStyle = "rgba(0,0,0,0.5)";
+        ctx.fill();
+        ctx.restore();
+    }
+
+    // ------------------------------------------------------------
+    // 2. Türblatt (offen/geschlossen) – Zimmertür filigraner
+    // ------------------------------------------------------------
+    ctx.strokeStyle = "#00ffc8";  // Zimmertürfarbe
+    ctx.lineWidth = 5;            // dünner als Haustür
+    ctx.shadowColor = "transparent"; // kein Glow
+    ctx.shadowBlur = 0;
+
+    if (d.isOpen) {
+        const angle = Math.PI / 2 * side;
 
         const rx = nx * Math.cos(angle) - ny * Math.sin(angle);
         const ry = nx * Math.sin(angle) + ny * Math.cos(angle);
-
-        ctx.strokeStyle = "#00ffc8";
-        ctx.lineWidth = 5;
 
         ctx.beginPath();
         ctx.moveTo(hx, hy);
@@ -1576,10 +1618,6 @@ case "zimmertuer": {
         ctx.stroke();
 
     } else {
-        // geschlossene Tür
-        ctx.strokeStyle = "#00ffc8";
-        ctx.lineWidth = 5;
-
         ctx.beginPath();
         ctx.moveTo(x1, y1);
         ctx.lineTo(x2, y2);
