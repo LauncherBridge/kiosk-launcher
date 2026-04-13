@@ -2213,8 +2213,8 @@ case "garagentor": {
     }
 
     // --- Rahmen
-    ctx.strokeStyle = "#00ffc8";
-    ctx.lineWidth = 32;
+ctx.strokeStyle = "rgba(0,255,200,0.25)";
+    ctx.lineWidth = 120;
     ctx.beginPath();
     ctx.moveTo(bx1, by1);
     ctx.lineTo(bx2, by2);
