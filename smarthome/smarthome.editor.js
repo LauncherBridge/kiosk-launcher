@@ -1595,7 +1595,7 @@ case "zimmertuer": {
         // ------------------------------------------------------------
 case "haustuer": {
 
-    d.isOpen = false; // nur zum Testen
+    d.isOpen = true; // nur zum Testen
 
     // Drehpunkt bestimmen (Scharnier)
     const hx = (d.hinge === "start") ? x1 : x2;
