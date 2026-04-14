@@ -2354,11 +2354,7 @@ case "gartentor": {
 
     ctx.restore();
     return;
-}
 
-    
-
-    }
 },
 
 
