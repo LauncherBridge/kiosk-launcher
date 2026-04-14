@@ -336,8 +336,9 @@ window.SmartHomeUI = {
                 <button data-element="door-slide">Schiebetür</button>
                 <button data-element="door-terrace">Terrassentür</button>
                 <button data-element="door-garage">Garagentor</button>
-                <button data-element="door-garden">Gartentörchen</button>
+                <button data-element="door-garden">Gartentor</button>
                 <button data-element="door-roof">Dachluke</button>
+                 <button data-element="door-roof">Offener Durchgang</button>
             </div>
 
             <div class="editor-section-title">Fenster</div>
