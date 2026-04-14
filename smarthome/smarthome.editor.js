@@ -2302,7 +2302,7 @@ case "gartentor": {
 
     // 2. Parameter des Gartentors
     const torBreite = len;
-    const torHoehe = 4;
+    const torHoehe = 10;
     const streben = 6;
     const strebenBreite = 4;
     const querBreite = 6;
