@@ -2263,7 +2263,7 @@ case "garagentor": {
         // ------------------------------------------------------------
 case "gartentor": {
 
-    d.isOpen = d.isOpen ?? false;
+    d.isOpen = d.isOpen ?? true;
 
     // 0. Drehpunkt bestimmen (Scharnier)
     const hx = (d.hinge === "start") ? x1 : x2;
@@ -2302,7 +2302,7 @@ case "gartentor": {
 
     // 2. Parameter des Gartentors
     const torBreite = len;
-    const torHoehe = 40;
+    const torHoehe = 4;
     const streben = 6;
     const strebenBreite = 4;
     const querBreite = 6;
