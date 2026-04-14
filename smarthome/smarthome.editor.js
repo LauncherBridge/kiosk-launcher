@@ -2316,7 +2316,7 @@ case "gartentor": {
     // 2. Parameter des Gartentors
     // ------------------------------------------------------------
     const torBreite = len;   // Länge des Torblatts
-    const torHoehe = 40;     // Höhe des Tors (senkrecht)
+    const torHoehe = 4;     // Höhe des Tors (senkrecht)
     const streben = 6;       // Anzahl Latten
     const strebenBreite = 4;
     const querBreite = 6;
