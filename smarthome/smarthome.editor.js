@@ -2263,7 +2263,6 @@ case "garagentor": {
         // ------------------------------------------------------------
 case "gartentor": {
 
-    // Zustand initialisieren
     d.isOpen = d.isOpen ?? false;
 
     // ------------------------------------------------------------
@@ -2278,31 +2277,39 @@ case "gartentor": {
     const dx = ox - hx;
     const dy = oy - hy;
     const len = Math.hypot(dx, dy);
-    if (!len) return; // Schutz
+    if (!len) return;
 
-    // Basisvektor entlang des Tores
+    // Basisvektor entlang des geschlossenen Tores
     const nx = dx / len;
     const ny = dy / len;
 
-    // Normalenvektor (senkrecht zum Tor)
+    // Normalenvektor (senkrecht zum geschlossenen Tor)
     const px = -ny;
     const py = nx;
 
     const side = d.side || 1;
 
     // ------------------------------------------------------------
-    // 1. Rotation des Torblatts (offen/geschlossen)
+    // 1. Rotation berechnen (für Torblatt UND Normalenvektor)
     // ------------------------------------------------------------
     let rx = nx;
     let ry = ny;
+
+    let px2 = px;
+    let py2 = py;
 
     if (d.isOpen) {
         const angle = Math.PI / 2 * side;
         const cosA = Math.cos(angle);
         const sinA = Math.sin(angle);
 
+        // Torblatt-Vektor drehen
         rx = nx * cosA - ny * sinA;
         ry = nx * sinA + ny * cosA;
+
+        // Normalenvektor ebenfalls drehen
+        px2 = px * cosA - py * sinA;
+        py2 = px * sinA + py * cosA;
     }
 
     // ------------------------------------------------------------
@@ -2316,7 +2323,7 @@ case "gartentor": {
 
     ctx.save();
     ctx.lineCap = "round";
-    ctx.strokeStyle = "#8b5a2b";  // Holzfarbe
+    ctx.strokeStyle = "#8b5a2b";
     ctx.fillStyle = "#8b5a2b";
 
     // ------------------------------------------------------------
@@ -2348,8 +2355,8 @@ case "gartentor": {
         const sy = hy + ry * (t * torBreite);
 
         // Endpunkt der Latte senkrecht zum gedrehten Torblatt
-        const ex = sx + px * torHoehe;
-        const ey = sy + py * torHoehe;
+        const ex = sx + px2 * torHoehe;
+        const ey = sy + py2 * torHoehe;
 
         ctx.beginPath();
         ctx.moveTo(sx, sy);
