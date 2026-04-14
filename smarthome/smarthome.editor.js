@@ -2263,51 +2263,56 @@ case "garagentor": {
         // ------------------------------------------------------------
 case "gartentor": {
 
+    // Zustand initialisieren
     d.isOpen = d.isOpen ?? false;
 
-    // Drehpunkt bestimmen (Scharnier)
+    // ------------------------------------------------------------
+    // 0. Drehpunkt bestimmen (Scharnier)
+    // ------------------------------------------------------------
     const hx = (d.hinge === "start") ? x1 : x2;
     const hy = (d.hinge === "start") ? y1 : y2;
 
-    // anderer Endpunkt (Torblatt-Ende)
     const ox = (d.hinge === "start") ? x2 : x1;
     const oy = (d.hinge === "start") ? y2 : y1;
 
-    // Torblatt-Vektor
     const dx = ox - hx;
     const dy = oy - hy;
     const len = Math.hypot(dx, dy);
+    if (!len) return; // Schutz
 
-    const nx = dx / len;   // entlang des Tores
+    // Basisvektor entlang des Tores
+    const nx = dx / len;
     const ny = dy / len;
 
-    const px = -ny;        // senkrecht zum Tor
+    // Normalenvektor (senkrecht zum Tor)
+    const px = -ny;
     const py = nx;
 
     const side = d.side || 1;
 
     // ------------------------------------------------------------
-    // 1. Torblatt-Rotation (offen/geschlossen)
+    // 1. Rotation des Torblatts (offen/geschlossen)
     // ------------------------------------------------------------
-
     let rx = nx;
     let ry = ny;
 
     if (d.isOpen) {
         const angle = Math.PI / 2 * side;
-        rx = nx * Math.cos(angle) - ny * Math.sin(angle);
-        ry = nx * Math.sin(angle) + ny * Math.cos(angle);
+        const cosA = Math.cos(angle);
+        const sinA = Math.sin(angle);
+
+        rx = nx * cosA - ny * sinA;
+        ry = nx * sinA + ny * cosA;
     }
 
     // ------------------------------------------------------------
-    // 2. Gartentor zeichnen
+    // 2. Parameter des Gartentors
     // ------------------------------------------------------------
-
-    const torBreite = len;
-    const torHoehe = 40;          // Höhe des Törchens
-    const streben = 6;            // Anzahl senkrechter Latten
-    const strebenBreite = 4;      // Dicke der Latten
-    const querBreite = 6;         // Dicke der Querlatte
+    const torBreite = len;   // Länge des Torblatts
+    const torHoehe = 40;     // Höhe des Tors (senkrecht)
+    const streben = 6;       // Anzahl Latten
+    const strebenBreite = 4;
+    const querBreite = 6;
 
     ctx.save();
     ctx.lineCap = "round";
@@ -2315,9 +2320,8 @@ case "gartentor": {
     ctx.fillStyle = "#8b5a2b";
 
     // ------------------------------------------------------------
-    // Querlatte oben
+    // 3. Querlatte oben (rotiert korrekt)
     // ------------------------------------------------------------
-
     const q1x = hx;
     const q1y = hy;
 
@@ -2331,18 +2335,19 @@ case "gartentor": {
     ctx.stroke();
 
     // ------------------------------------------------------------
-    // Senkrechte Latten
+    // 4. Senkrechte Latten (rotiert + korrekt extrudiert)
     // ------------------------------------------------------------
-
     ctx.lineWidth = strebenBreite;
 
     for (let i = 0; i <= streben; i++) {
 
         const t = i / streben;
 
+        // Startpunkt der Latte entlang des gedrehten Torblatts
         const sx = hx + rx * (t * torBreite);
         const sy = hy + ry * (t * torBreite);
 
+        // Endpunkt der Latte senkrecht zum gedrehten Torblatt
         const ex = sx + px * torHoehe;
         const ey = sy + py * torHoehe;
 
@@ -2354,7 +2359,8 @@ case "gartentor": {
 
     ctx.restore();
     return;
-    }
+}
+
 }
 },
 
