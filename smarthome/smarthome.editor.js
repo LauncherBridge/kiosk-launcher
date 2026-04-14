@@ -2261,7 +2261,7 @@ case "garagentor": {
         // ------------------------------------------------------------
         // ⭐ Gartentörchen → schmal
         // ------------------------------------------------------------
-case "Gartentor": {
+case "gartentor": {
 
     d.isOpen = true; // nur zum Testen
 
