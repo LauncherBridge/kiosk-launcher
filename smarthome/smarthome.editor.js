@@ -2354,9 +2354,12 @@ case "gartentor": {
         const sx = hx + rx * (t * torBreite);
         const sy = hy + ry * (t * torBreite);
 
-        // Endpunkt der Latte senkrecht zum gedrehten Torblatt
-        const ex = sx + px2 * torHoehe;
-        const ey = sy + py2 * torHoehe;
+// Latten sollen immer auf der Scharnierseite sein
+const lattenSide = (d.hinge === "start") ? 1 : -1;
+
+const ex = sx + px2 * torHoehe * lattenSide;
+const ey = sy + py2 * torHoehe * lattenSide;
+
 
         ctx.beginPath();
         ctx.moveTo(sx, sy);
