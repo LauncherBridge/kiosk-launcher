@@ -2261,14 +2261,101 @@ case "garagentor": {
         // ------------------------------------------------------------
         // ⭐ Gartentörchen → schmal
         // ------------------------------------------------------------
-          case "gartentor":
-            ctx.strokeStyle = "#00ffc8";
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(x1, y1);
-            ctx.lineTo(x2, y2);
-            ctx.stroke();
-            return;
+case "gartentor": {
+
+    d.isOpen = d.isOpen ?? false;
+
+    // Drehpunkt bestimmen (Scharnier)
+    const hx = (d.hinge === "start") ? x1 : x2;
+    const hy = (d.hinge === "start") ? y1 : y2;
+
+    // anderer Endpunkt (Torblatt-Ende)
+    const ox = (d.hinge === "start") ? x2 : x1;
+    const oy = (d.hinge === "start") ? y2 : y1;
+
+    // Torblatt-Vektor
+    const dx = ox - hx;
+    const dy = oy - hy;
+    const len = Math.hypot(dx, dy);
+
+    const nx = dx / len;   // entlang des Tores
+    const ny = dy / len;
+
+    const px = -ny;        // senkrecht zum Tor
+    const py = nx;
+
+    const side = d.side || 1;
+
+    // ------------------------------------------------------------
+    // 1. Torblatt-Rotation (offen/geschlossen)
+    // ------------------------------------------------------------
+
+    let rx = nx;
+    let ry = ny;
+
+    if (d.isOpen) {
+        const angle = Math.PI / 2 * side;
+        rx = nx * Math.cos(angle) - ny * Math.sin(angle);
+        ry = nx * Math.sin(angle) + ny * Math.cos(angle);
+    }
+
+    // ------------------------------------------------------------
+    // 2. Gartentor zeichnen
+    // ------------------------------------------------------------
+
+    const torBreite = len;
+    const torHoehe = 40;          // Höhe des Törchens
+    const streben = 6;            // Anzahl senkrechter Latten
+    const strebenBreite = 4;      // Dicke der Latten
+    const querBreite = 6;         // Dicke der Querlatte
+
+    ctx.save();
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "#8b5a2b";  // Holzfarbe
+    ctx.fillStyle = "#8b5a2b";
+
+    // ------------------------------------------------------------
+    // Querlatte oben
+    // ------------------------------------------------------------
+
+    const q1x = hx;
+    const q1y = hy;
+
+    const q2x = hx + rx * torBreite;
+    const q2y = hy + ry * torBreite;
+
+    ctx.lineWidth = querBreite;
+    ctx.beginPath();
+    ctx.moveTo(q1x, q1y);
+    ctx.lineTo(q2x, q2y);
+    ctx.stroke();
+
+    // ------------------------------------------------------------
+    // Senkrechte Latten
+    // ------------------------------------------------------------
+
+    ctx.lineWidth = strebenBreite;
+
+    for (let i = 0; i <= streben; i++) {
+
+        const t = i / streben;
+
+        const sx = hx + rx * (t * torBreite);
+        const sy = hy + ry * (t * torBreite);
+
+        const ex = sx + px * torHoehe;
+        const ey = sy + py * torHoehe;
+
+        ctx.beginPath();
+        ctx.moveTo(sx, sy);
+        ctx.lineTo(ex, ey);
+        ctx.stroke();
+    }
+
+    ctx.restore();
+    return;
+}
+
     
 
     }
