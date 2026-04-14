@@ -2263,7 +2263,7 @@ case "garagentor": {
         // ------------------------------------------------------------
 case "gartentor": {
 
-    d.isOpen = d.isOpen ?? true;
+    d.isOpen = false; // nur zum Testen
 
     // 0. Drehpunkt bestimmen (Scharnier)
     const hx = (d.hinge === "start") ? x1 : x2;
