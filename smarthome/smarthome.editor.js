@@ -2281,23 +2281,31 @@ case "gartentor": {
     const nx = dx / len;
     const ny = dy / len;
 
-    // Normalenvektor (senkrecht zur Wand / Tor)
+    // Normalenvektor (senkrecht zur Wand / geschlossenem Tor)
     const px = -ny;
     const py = nx;
 
     const side = d.side || 1;
 
-    // 1. Rotation des Torblatts (offen/geschlossen)
+    // 1. Rotation für Torblatt UND Normalenvektor
     let rx = nx;
     let ry = ny;
+
+    let px2 = px;
+    let py2 = py;
 
     if (d.isOpen) {
         const angle = Math.PI / 2 * side;
         const cosA = Math.cos(angle);
         const sinA = Math.sin(angle);
 
+        // Torblatt drehen
         rx = nx * cosA - ny * sinA;
         ry = nx * sinA + ny * cosA;
+
+        // Normalenvektor mitdrehen
+        px2 = px * cosA - py * sinA;
+        py2 = px * sinA + py * cosA;
     }
 
     // 2. Parameter des Gartentors
@@ -2312,7 +2320,7 @@ case "gartentor": {
     ctx.strokeStyle = "#8b5a2b";
     ctx.fillStyle = "#8b5a2b";
 
-    // 3. Querlatte oben (rotiert korrekt)
+    // 3. Querlatte oben
     const q1x = hx;
     const q1y = hy;
 
@@ -2325,8 +2333,10 @@ case "gartentor": {
     ctx.lineTo(q2x, q2y);
     ctx.stroke();
 
-    // 4. Senkrechte Latten – immer auf der Seite des Viertelkreises
+    // 4. Senkrechte Latten – immer auf der GEGENÜBERLIEGENDEN Seite zum Viertelkreis
     ctx.lineWidth = strebenBreite;
+
+    const lattenSide = -side; // andere Seite als Viertelkreis/Scharniere
 
     for (let i = 0; i <= streben; i++) {
         const t = i / streben;
@@ -2335,9 +2345,9 @@ case "gartentor": {
         const sx = hx + rx * (t * torBreite);
         const sy = hy + ry * (t * torBreite);
 
-        // Endpunkt der Latte: immer in Richtung px * side
-        const ex = sx + px * torHoehe * side;
-        const ey = sy + py * torHoehe * side;
+        // Endpunkt der Latte: senkrecht zum gedrehten Torblatt, andere Seite als Viertelkreis
+        const ex = sx + px2 * torHoehe * lattenSide;
+        const ey = sy + py2 * torHoehe * lattenSide;
 
         ctx.beginPath();
         ctx.moveTo(sx, sy);
