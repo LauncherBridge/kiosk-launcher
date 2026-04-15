@@ -2828,6 +2828,15 @@ setTool(tool, subtype = null) {
 
     this.currentTool = tool;
 
+if (tool === "dachluke") {
+    this.mode = "dachluke";
+    this.currentDoorType = "dachluke";
+    this._placingDoor = false;
+    return;
+}
+
+
+    
     // ------------------------------------------------------------
     // ⭐ Türmodus aktivieren
     // ------------------------------------------------------------
@@ -2846,14 +2855,7 @@ setTool(tool, subtype = null) {
         return;
     }
 
-    // ------------------------------------------------------------
-    // ⭐ Dachluke
-    // ------------------------------------------------------------    
-    if (tool === "dachluke") {
-        this.mode = "dachluke";
-        return;
-    }
-    
+
 
 
     
