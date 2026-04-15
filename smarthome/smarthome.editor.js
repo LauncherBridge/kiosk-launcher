@@ -267,27 +267,6 @@ const RoomDesigner = {
             }, true);
         }
 
-if (type === "door") {
-    const d = this.doors[index];
-
-    if (d.type === "dachluke") {
-
-        this.addContextButton("↺", () => {
-            d.isOpen = !d.isOpen;
-            this.render();
-        }, false);
-
-        this.addContextButton("🗑", () => {
-            this.doors.splice(index, 1);
-            this.render();
-        }, true);
-
-        return;
-    }
-}
-
-
-        
         menu.style.display = "flex";
 
         const rect = menu.getBoundingClientRect();
@@ -542,18 +521,22 @@ onDown(e) {
 // ------------------------------------------------------------
 // ⭐ DACHLUKE → EIN Klick, frei im Raum
 // ------------------------------------------------------------
-this.doors.push({
-    wallIndex: null,
-    t: null,
-    x: worldX,
-    y: worldY,
-    width: 36,
-    hinge: null,
-    side: 1,
-    type: "dachluke",
-    isOpen: false   // NEU
-});
+if (this.mode === "dachluke") {
+    this.doors.push({
+        wallIndex: null,
+        t: null,
+        x: worldX,
+        y: worldY,
+        width: 36,
+        hinge: null,
+        side: 1,
+        type: "dachluke"
+    });
 
+    this.render();
+    this.mode = "points";
+    return;
+}
 
 
 
@@ -1842,41 +1825,18 @@ case "haustuer": {
         // ------------------------------------------------------------
         // ⭐ Dachluke → rund, frei platzierbar
         // ------------------------------------------------------------
-case "dachluke": {
-
-    const r = d.width / 2;
-
-    // Geschlossen = voller Kreis
-    if (!d.isOpen) {
-        ctx.strokeStyle = "#00b7ff";
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.arc(d.x, d.y, r, 0, Math.PI * 2);
-        ctx.stroke();
-
-        ctx.fillStyle = "rgba(0,183,255,0.15)";
-        ctx.beginPath();
-        ctx.arc(d.x, d.y, r * 0.6, 0, Math.PI * 2);
-        ctx.fill();
-        return;
-    }
-
-    // Offen = Halbkreis + Scharnierlinie
-    ctx.strokeStyle = "#00b7ff";
-    ctx.lineWidth = 3;
-
-    ctx.beginPath();
-    ctx.arc(d.x, d.y, r, -Math.PI/2, Math.PI/2);
-    ctx.stroke();
-
-    // kleine Linie als "geöffnet"
-    ctx.beginPath();
-    ctx.moveTo(d.x, d.y - r);
-    ctx.lineTo(d.x + r * 0.8, d.y);
-    ctx.stroke();
-
-    return;
-}
+//        case "dachluke":
+//            ctx.strokeStyle = "#00b7ff";
+ //           ctx.lineWidth = 3;
+  //          ctx.beginPath();
+   //         ctx.arc(d.x, d.y, d.width / 2, 0, Math.PI * 2);
+    //        ctx.stroke();
+        
+    //        ctx.fillStyle = "rgba(0,183,255,0.15)";
+     //       ctx.beginPath();
+      //      ctx.arc(d.x, d.y, d.width / 2.5, 0, Math.PI * 2);
+       //     ctx.fill();
+        //    return;
 
 
 
@@ -2828,15 +2788,6 @@ setTool(tool, subtype = null) {
 
     this.currentTool = tool;
 
-if (tool === "dachluke") {
-    this.mode = "dachluke";
-    this.currentDoorType = "dachluke";
-    this._placingDoor = false;
-    return;
-}
-
-
-    
     // ------------------------------------------------------------
     // ⭐ Türmodus aktivieren
     // ------------------------------------------------------------
@@ -2855,7 +2806,14 @@ if (tool === "dachluke") {
         return;
     }
 
-
+    // ------------------------------------------------------------
+    // ⭐ Dachluke
+    // ------------------------------------------------------------    
+    if (tool === "dachluke") {
+        this.mode = "dachluke";
+        return;
+    }
+    
 
 
     
