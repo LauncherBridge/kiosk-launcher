@@ -1825,7 +1825,7 @@ case "haustuer": {
         // ------------------------------------------------------------
         // ⭐ Dachluke → rund, frei platzierbar
         // ------------------------------------------------------------
-/        case "dachluke":
+//        case "dachluke":
 //            ctx.strokeStyle = "#00b7ff";
  //           ctx.lineWidth = 3;
   //          ctx.beginPath();
