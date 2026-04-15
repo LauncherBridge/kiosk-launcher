@@ -1825,18 +1825,18 @@ case "haustuer": {
         // ------------------------------------------------------------
         // ⭐ Dachluke → rund, frei platzierbar
         // ------------------------------------------------------------
-        case "dachluke":
-            ctx.strokeStyle = "#00b7ff";
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            ctx.arc(d.x, d.y, d.width / 2, 0, Math.PI * 2);
-            ctx.stroke();
+/        case "dachluke":
+//            ctx.strokeStyle = "#00b7ff";
+ //           ctx.lineWidth = 3;
+  //          ctx.beginPath();
+   //         ctx.arc(d.x, d.y, d.width / 2, 0, Math.PI * 2);
+    //        ctx.stroke();
         
-            ctx.fillStyle = "rgba(0,183,255,0.15)";
-            ctx.beginPath();
-            ctx.arc(d.x, d.y, d.width / 2.5, 0, Math.PI * 2);
-            ctx.fill();
-            return;
+    //        ctx.fillStyle = "rgba(0,183,255,0.15)";
+     //       ctx.beginPath();
+      //      ctx.arc(d.x, d.y, d.width / 2.5, 0, Math.PI * 2);
+       //     ctx.fill();
+        //    return;
 
 
 
