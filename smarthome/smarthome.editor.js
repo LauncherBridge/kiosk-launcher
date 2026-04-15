@@ -522,7 +522,6 @@ onDown(e) {
 // ⭐ DACHLUKE → EIN Klick, frei im Raum
 // ------------------------------------------------------------
 if (this.mode === "dachluke") {
-
     this.doors.push({
         wallIndex: null,
         t: null,
@@ -535,9 +534,10 @@ if (this.mode === "dachluke") {
     });
 
     this.render();
-    this.mode = "points"; // zurück in normalen Modus
+    this.mode = "points";
     return;
 }
+
 
 
 
