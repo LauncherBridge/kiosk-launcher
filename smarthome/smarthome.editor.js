@@ -657,9 +657,7 @@ if (this.mode === "doors") {
     if (type === "dachluke") {
 
         // Darf auf keine Wand geklickt werden
-        if (hit.type == "wall") {
-            return; // kein Wandtreffer → nichts tun
-        }
+     
 
         const w = hit.data;
 
