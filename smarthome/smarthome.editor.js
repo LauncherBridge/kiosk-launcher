@@ -518,6 +518,30 @@ onDown(e) {
         return;
     }
 
+// ------------------------------------------------------------
+// ⭐ DACHLUKE → EIN Klick, frei im Raum
+// ------------------------------------------------------------
+if (this.mode === "dachluke") {
+
+    this.doors.push({
+        wallIndex: null,
+        t: null,
+        x: worldX,
+        y: worldY,
+        width: 36,
+        hinge: null,
+        side: 1,
+        type: "dachluke"
+    });
+
+    this.render();
+    this.mode = "points"; // zurück in normalen Modus
+    return;
+}
+
+
+
+    
     // Hit-Test mit Screen-Koordinaten (hitTest rechnet selbst in Welt um)
     const hit = this.hitTest(mouseX, mouseY);
     const clickingObject =
@@ -587,28 +611,6 @@ onDown(e) {
         this.mode = "points";
         return;
     }
-
-// ------------------------------------------------------------
-// ⭐ DACHLUKE → EIN Klick, frei im Raum
-// ------------------------------------------------------------
-if (this.mode === "dachluke") {
-
-    this.doors.push({
-        wallIndex: null,
-        t: null,
-        x: worldX,
-        y: worldY,
-        width: 36,
-        hinge: null,
-        side: 1,
-        type: "dachluke"
-    });
-
-    this.render();
-    this.mode = "points"; // zurück in normalen Modus
-    return;
-}
-
 
 
     
