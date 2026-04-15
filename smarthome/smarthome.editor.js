@@ -2263,9 +2263,11 @@ case "garagentor": {
         // ------------------------------------------------------------
 case "gartentor": {
 
-    d.isOpen = true; // nur zum Testen
+    d.isOpen = d.isOpen ?? false;
 
+    // ------------------------------------------------------------
     // 0. Drehpunkt bestimmen (Scharnier)
+    // ------------------------------------------------------------
     const hx = (d.hinge === "start") ? x1 : x2;
     const hy = (d.hinge === "start") ? y1 : y2;
 
@@ -2281,13 +2283,15 @@ case "gartentor": {
     const nx = dx / len;
     const ny = dy / len;
 
-    // Normalenvektor (senkrecht zur Wand / geschlossenem Tor)
+    // Normalenvektor (senkrecht zur Wand)
     const px = -ny;
     const py = nx;
 
     const side = d.side || 1;
 
+    // ------------------------------------------------------------
     // 1. Rotation für Torblatt UND Normalenvektor
+    // ------------------------------------------------------------
     let rx = nx;
     let ry = ny;
 
@@ -2303,14 +2307,48 @@ case "gartentor": {
         rx = nx * cosA - ny * sinA;
         ry = nx * sinA + ny * cosA;
 
-        // Normalenvektor mitdrehen
+        // Normalenvektor mitdrehen (wichtig für offene Darstellung)
         px2 = px * cosA - py * sinA;
         py2 = px * sinA + py * cosA;
     }
 
-    // 2. Parameter des Gartentors
+    // ------------------------------------------------------------
+    // 2. Türschwelle (wie bei allen anderen Türen)
+    // ------------------------------------------------------------
+    {
+        const wallThickness = 16;
+        const extra = 10;
+        const half = (wallThickness + extra) / 2;
+
+        const s1x = hx + px * half;
+        const s1y = hy + py * half;
+
+        const s2x = ox + px * half;
+        const s2y = oy + py * half;
+
+        const s3x = ox - px * half;
+        const s3y = oy - py * half;
+
+        const s4x = hx - px * half;
+        const s4y = hy - py * half;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(s1x, s1y);
+        ctx.lineTo(s2x, s2y);
+        ctx.lineTo(s3x, s3y);
+        ctx.lineTo(s4x, s4y);
+        ctx.closePath();
+        ctx.fillStyle = "rgba(0,0,0,0.5)";
+        ctx.fill();
+        ctx.restore();
+    }
+
+    // ------------------------------------------------------------
+    // 3. Parameter des Gartentors
+    // ------------------------------------------------------------
     const torBreite = len;
-    const torHoehe = 4;
+    const torHoehe = 40;
     const streben = 6;
     const strebenBreite = 4;
     const querBreite = 6;
@@ -2320,7 +2358,9 @@ case "gartentor": {
     ctx.strokeStyle = "#8b5a2b";
     ctx.fillStyle = "#8b5a2b";
 
-    // 3. Querlatte oben
+    // ------------------------------------------------------------
+    // 4. Querlatte oben (rotiert korrekt)
+    // ------------------------------------------------------------
     const q1x = hx;
     const q1y = hy;
 
@@ -2333,10 +2373,14 @@ case "gartentor": {
     ctx.lineTo(q2x, q2y);
     ctx.stroke();
 
-    // 4. Senkrechte Latten – immer auf der GEGENÜBERLIEGENDEN Seite zum Viertelkreis
+    // ------------------------------------------------------------
+    // 5. Senkrechte Latten
+    //    → immer auf der GEGENÜBERLIEGENDEN Seite des Viertelkreises
+    //    → korrekt rotiert im offenen Zustand
+    // ------------------------------------------------------------
     ctx.lineWidth = strebenBreite;
 
-    const lattenSide = -side; // andere Seite als Viertelkreis/Scharniere
+    const lattenSide = -side; // andere Seite als Scharnier/Viertelkreis
 
     for (let i = 0; i <= streben; i++) {
         const t = i / streben;
@@ -2345,7 +2389,7 @@ case "gartentor": {
         const sx = hx + rx * (t * torBreite);
         const sy = hy + ry * (t * torBreite);
 
-        // Endpunkt der Latte: senkrecht zum gedrehten Torblatt, andere Seite als Viertelkreis
+        // Endpunkt der Latte: senkrecht zum gedrehten Torblatt
         const ex = sx + px2 * torHoehe * lattenSide;
         const ey = sy + py2 * torHoehe * lattenSide;
 
