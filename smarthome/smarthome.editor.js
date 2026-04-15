@@ -597,6 +597,59 @@ if (this.mode === "doors") {
     const type = this.currentDoorType || "default";
 
     // ------------------------------------------------------------
+    // ⭐ DURCHGANG → nur EIN Klick, kein Hinge, kein zweiter Punkt
+    // ------------------------------------------------------------
+    if (type === "durchgang") {
+
+        // Muss auf eine Wand geklickt werden
+        if (hit.type !== "wall") {
+            return; // kein Wandtreffer → nichts tun
+        }
+
+        const w = hit.data;
+
+        // Standardbreite eines Durchgangs
+        const defaultWidth = 100;
+
+        // Mittelpunkt des Durchgangs (wie bei Türen)
+        const cx = w.x;
+        const cy = w.y;
+
+        // Wandrichtung
+        const dx = w.x2 - w.x1;
+        const dy = w.y2 - w.y1;
+        const len = Math.hypot(dx, dy) || 1;
+
+        const tx = dx / len;
+        const ty = dy / len;
+
+        // Endpunkte des Durchgangs
+        const x1 = cx - tx * (defaultWidth / 2);
+        const y1 = cy - ty * (defaultWidth / 2);
+
+        const x2 = cx + tx * (defaultWidth / 2);
+        const y2 = cy + ty * (defaultWidth / 2);
+
+        // Durchgang erzeugen
+        this.doors.push({
+            type: "durchgang",
+            wallIndex: w.index,
+            t: w.t,
+            x: cx,
+            y: cy,
+            width: defaultWidth,
+            hinge: null,
+            side: null
+        });
+
+        this.render();
+        this.mode = "points"; // zurück in normalen Modus
+        return;
+    }
+
+    
+
+    // ------------------------------------------------------------
     // ⭐ 1) Dachluke → frei platzieren
     // ------------------------------------------------------------
     if (type === "dachluke") {
