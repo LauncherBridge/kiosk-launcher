@@ -588,6 +588,29 @@ onDown(e) {
         return;
     }
 
+// ------------------------------------------------------------
+// ⭐ DACHLUKE-MODUS → frei im Raum, EIN Klick
+// ------------------------------------------------------------
+if (this.mode === "dachluke") {
+
+    this.doors.push({
+        wallIndex: null,
+        t: null,
+        x: worldX,
+        y: worldY,
+        width: 36,
+        hinge: null,
+        side: 1,
+        type: "dachluke"
+    });
+
+    this.render();
+    this.mode = "points"; // zurück in normalen Modus
+    return;
+}
+
+
+    
     // ------------------------------------------------------------
     // ⭐ TÜR-MODUS (JETZT MIT TÜR-TYPEN)
     // ------------------------------------------------------------
@@ -652,22 +675,22 @@ if (this.mode === "doors") {
     // ------------------------------------------------------------
     // ⭐ 1) Dachluke → frei platzieren
     // ------------------------------------------------------------
-    if (type === "dachluke") {
-        this.doors.push({
-            wallIndex: null,
-            t: null,
-            x: worldX,
-            y: worldY,
-            width: 36,
-            hinge: null,
-            side: 1,
-            type: type
-        });
+   // if (type === "dachluke") {
+   //     this.doors.push({
+   //         wallIndex: null,
+   //         t: null,
+   //         x: worldX,
+   //         y: worldY,
+   //         width: 36,
+   //         hinge: null,
+   //         side: 1,
+   //         type: type
+   //     });
 
-        this.render();
-        this.mode = "points";
-        return;
-    }
+   //     this.render();
+   //     this.mode = "points";
+   //     return;
+   // }
 
     // ------------------------------------------------------------
     // ⭐ 2) Alle anderen Türtypen → Wandgebunden
