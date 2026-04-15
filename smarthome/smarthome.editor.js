@@ -2404,6 +2404,69 @@ case "gartentor": {
 }
 
 
+         // ------------------------------------------------------------
+        // ⭐ Durchgang
+        // ------------------------------------------------------------           
+case "durchgang": {
+
+    // ------------------------------------------------------------
+    // 0. Drehpunkt bestimmen (Scharnier irrelevant, aber wir brauchen hx/ox)
+    // ------------------------------------------------------------
+    const hx = x1;
+    const hy = y1;
+
+    const ox = x2;
+    const oy = y2;
+
+    const dx = ox - hx;
+    const dy = oy - hy;
+    const len = Math.hypot(dx, dy);
+    if (!len) return;
+
+    // Wandnormalen bestimmen
+    const nx = dx / len;
+    const ny = dy / len;
+
+    const px = -ny;
+    const py = nx;
+
+    // ------------------------------------------------------------
+    // 1. Schwelle zeichnen (identisch zu allen anderen Türen)
+    // ------------------------------------------------------------
+    const wallThickness = 16;
+    const extra = 10;
+    const half = (wallThickness + extra) / 2;
+
+    const s1x = hx + px * half;
+    const s1y = hy + py * half;
+
+    const s2x = ox + px * half;
+    const s2y = oy + py * half;
+
+    const s3x = ox - px * half;
+    const s3y = oy - py * half;
+
+    const s4x = hx - px * half;
+    const s4y = hy - py * half;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(s1x, s1y);
+    ctx.lineTo(s2x, s2y);
+    ctx.lineTo(s3x, s3y);
+    ctx.lineTo(s4x, s4y);
+    ctx.closePath();
+    ctx.fillStyle = "rgba(0,0,0,0.5)";
+    ctx.fill();
+    ctx.restore();
+
+    return;
+}
+
+
+
+            
+
 }
 },
 
