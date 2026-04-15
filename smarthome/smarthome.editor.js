@@ -588,6 +588,26 @@ onDown(e) {
         return;
     }
 
+// ------------------------------------------------------------
+// ⭐ DACHLUKE → EIN Klick, frei im Raum
+// ------------------------------------------------------------
+if (this.mode === "dachluke") {
+
+    this.doors.push({
+        wallIndex: null,
+        t: null,
+        x: worldX,
+        y: worldY,
+        width: 36,
+        hinge: null,
+        side: 1,
+        type: "dachluke"
+    });
+
+    this.render();
+    this.mode = "points"; // zurück in normalen Modus
+    return;
+}
 
 
 
@@ -651,55 +671,7 @@ if (this.mode === "doors") {
         return;
     }
 
-     // ------------------------------------------------------------
-    // ⭐ DURCHGANG → nur EIN Klick, kein Hinge, kein zweiter Punkt
-    // ------------------------------------------------------------
-    if (type === "dachluke") {
-
-        // Darf auf keine Wand geklickt werden
-     
-
-        const w = hit.data;
-
-        // Standardbreite eines Durchgangs
-        const defaultWidth = 100;
-
-        // Mittelpunkt des Durchgangs (wie bei Türen)
-        const cx = w.x;
-        const cy = w.y;
-
-        // Wandrichtung
-        const dx = w.x2 - w.x1;
-        const dy = w.y2 - w.y1;
-        const len = Math.hypot(dx, dy) || 1;
-
-        const tx = dx / len;
-        const ty = dy / len;
-
-        // Endpunkte des Durchgangs
-        const x1 = cx - tx * (defaultWidth / 2);
-        const y1 = cy - ty * (defaultWidth / 2);
-
-        const x2 = cx + tx * (defaultWidth / 2);
-        const y2 = cy + ty * (defaultWidth / 2);
-
-        // Durchgang erzeugen
-        this.doors.push({
-            type: "dachluke",
-            wallIndex: w.index,
-            t: w.t,
-            x: cx,
-            y: cy,
-            width: defaultWidth,
-            hinge: null,
-            side: null
-        });
-
-        this.render();
-        this.mode = "points"; // zurück in normalen Modus
-        return;
-    }   
-
+ 
     // ------------------------------------------------------------
     // ⭐ 1) Dachluke → frei platzieren
     // ------------------------------------------------------------
