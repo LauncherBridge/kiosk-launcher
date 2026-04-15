@@ -685,7 +685,7 @@ if (this.mode === "doors") {
 
         // Durchgang erzeugen
         this.doors.push({
-            type: "durchgang",
+            type: "dachluke",
             wallIndex: w.index,
             t: w.t,
             x: cx,
