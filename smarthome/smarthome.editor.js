@@ -3405,6 +3405,24 @@ document.getElementById("editor-close-btn")?.addEventListener("click", () => {
         });
     });
 
+// ------------------------------------------------------------
+// ⭐ Dachluke separat behandeln (NICHT als Tür!)
+// ------------------------------------------------------------
+document.querySelectorAll(".item[data-type='dachluke']").forEach(item => {
+    item.addEventListener("click", () => {
+
+        // aktive Markierung setzen
+        document.querySelectorAll(".item").forEach(i => i.classList.remove("active"));
+        item.classList.add("active");
+
+        // Dachluke aktivieren
+        RoomDesigner.setTool("dachluke");
+    });
+});
+
+
+
+
     // ===============================
     // Tools aus der Sidebar aktivieren
     // ===============================
