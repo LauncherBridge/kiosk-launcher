@@ -1217,6 +1217,7 @@ if (this.mode === "doors") {
         // Türen neu zuordnen (robust gegen Punkt-Einfügen)
         // --------------------------------------------------
         for (const d of this.doors) {
+        if (d.type === "dachluke") continue; // ⭐ NICHT an Wände binden
             let bestWall = null;
             let bestDist = Infinity;
             let bestT = 0;
