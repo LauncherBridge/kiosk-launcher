@@ -431,6 +431,13 @@ const RoomDesigner = {
             // Türen bewegen
             if (this.draggingDoorIndex !== null) {
                 const d = this.doors[this.draggingDoorIndex];
+                    // ⭐ Dachluke NICHT bewegen wie eine Tür
+                    if (d.type === "dachluke") {
+                        d.x = worldX;
+                        d.y = worldY;
+                        this.render();
+                        return;
+                    }
                 const w = this.walls[d.wallIndex];
                 const proj = this.projectOnWall(worldX, worldY, w);
                 d.t = proj.t;
@@ -490,7 +497,7 @@ const RoomDesigner = {
         // x, y im Welt-Raum
         for (let i = 0; i < this.doors.length; i++) {
             const d = this.doors[i];
-            if (Math.hypot(d.x - x, d.y - y) < 15) return i;
+if (d.type !== "dachluke" && Math.hypot(d.x - x, d.y - y) < 15) return i;
         }
         return null;
     },
@@ -737,10 +744,20 @@ if (this.mode === "doors") {
 
     // Punkt-Modus
 
-    if (hit.type === "door") {
-        this._pendingContext = { x: worldX, y: worldY, type: "door", index: hit.index };
+if (hit.type === "door") {
+
+    const d = this.doors[hit.index];
+
+    // ⭐ Dachluke NICHT als Tür behandeln
+    if (d.type === "dachluke") {
+        this._pendingContext = { x: worldX, y: worldY, type: "dachluke", index: hit.index };
         return;
     }
+
+    this._pendingContext = { x: worldX, y: worldY, type: "door", index: hit.index };
+    return;
+}
+
 
     if (hit.type === "window") {
         this._pendingContext = { x: worldX, y: worldY, type: "window", index: hit.index };
@@ -1060,7 +1077,7 @@ if (this.mode === "doors") {
     getDoorIndexAt(x, y) {
         for (let i = 0; i < this.doors.length; i++) {
             const d = this.doors[i];
-            if (Math.hypot(d.x - x, d.y - y) < 15) return i;
+if (d.type !== "dachluke" && Math.hypot(d.x - x, d.y - y) < 15) return i;
         }
         return null;
     },
