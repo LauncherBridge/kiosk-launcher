@@ -521,9 +521,6 @@ onDown(e) {
 // ------------------------------------------------------------
 // ⭐ DACHLUKE → EIN Klick, frei im Raum
 // ------------------------------------------------------------
-// ------------------------------------------------------------
-// ⭐ DACHLUKE → EIN Klick, frei im Raum
-// ------------------------------------------------------------
 if (this.mode === "dachluke") {
 
     this.doors.push({
@@ -2843,8 +2840,10 @@ setTool(tool, subtype = null) {
 if (tool === "dachluke") {
     this.mode = "dachluke";
     this.currentDoorType = "dachluke";
+    this._placingDoor = false;
     return;
 }
+
 
     
     // ------------------------------------------------------------
