@@ -521,8 +521,13 @@ onDown(e) {
 // ------------------------------------------------------------
 // ⭐ DACHLUKE → EIN Klick, frei im Raum
 // ------------------------------------------------------------
+// ------------------------------------------------------------
+// ⭐ DACHLUKE → EIN Klick, frei im Raum
+// ------------------------------------------------------------
 if (this.mode === "dachluke") {
+
     this.doors.push({
+        type: "dachluke",
         wallIndex: null,
         t: null,
         x: worldX,
@@ -530,13 +535,14 @@ if (this.mode === "dachluke") {
         width: 36,
         hinge: null,
         side: 1,
-        type: "dachluke"
+        isOpen: false   // ⭐ Zustand hinzufügen
     });
 
     this.render();
-    this.mode = "points";
+    this.mode = "points"; // zurück in normalen Modus
     return;
 }
+
 
 
 
@@ -2542,6 +2548,47 @@ case "durchgang": {
 }
 
 
+// ------------------------------------------------------------
+// ⭐ Dachluke
+// ------------------------------------------------------------     
+case "dachluke": {
+
+    const r = d.width / 2;
+
+    // Geschlossen = voller Kreis
+    if (!d.isOpen) {
+        ctx.strokeStyle = "#00b7ff";
+        ctx.lineWidth = 3;
+
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, r, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.fillStyle = "rgba(0,183,255,0.15)";
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, r * 0.6, 0, Math.PI * 2);
+        ctx.fill();
+        return;
+    }
+
+    // Offen = Halbkreis + kleine Öffnungslinie
+    ctx.strokeStyle = "#00b7ff";
+    ctx.lineWidth = 3;
+
+    // Halbkreis
+    ctx.beginPath();
+    ctx.arc(d.x, d.y, r, -Math.PI/2, Math.PI/2);
+    ctx.stroke();
+
+    // Öffnungslinie
+    ctx.beginPath();
+    ctx.moveTo(d.x, d.y - r);
+    ctx.lineTo(d.x + r * 0.8, d.y);
+    ctx.stroke();
+
+    return;
+}
+
 
             
 
@@ -2788,6 +2835,17 @@ setTool(tool, subtype = null) {
 
     this.currentTool = tool;
 
+
+    // ------------------------------------------------------------
+    // ⭐ Dachluke
+    // ------------------------------------------------------------    
+if (tool === "dachluke") {
+    this.mode = "dachluke";
+    this.currentDoorType = "dachluke";
+    return;
+}
+
+    
     // ------------------------------------------------------------
     // ⭐ Türmodus aktivieren
     // ------------------------------------------------------------
@@ -2806,14 +2864,7 @@ setTool(tool, subtype = null) {
         return;
     }
 
-    // ------------------------------------------------------------
-    // ⭐ Dachluke
-    // ------------------------------------------------------------    
-    if (tool === "dachluke") {
-        this.mode = "dachluke";
-        return;
-    }
-    
+
 
 
     
