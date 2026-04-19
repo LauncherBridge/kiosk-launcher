@@ -1624,7 +1624,7 @@ if (hit.type === "door") {
             // ⭐ Dachluke: frei im Raum, braucht keine Wandgeometrie
             if (d.type === "dachluke") {
                 // drawDoorByType nutzt bei Dachluke nur d.x/d.y, die Geometrie ist egal
-                this.drawDoorByType(ctx, d, null);
+                this.drawDoorByType(ctx, d, {});
                 continue;
             }
         
