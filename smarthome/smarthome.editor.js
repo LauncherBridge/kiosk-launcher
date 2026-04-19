@@ -428,22 +428,30 @@ const RoomDesigner = {
                 this.updateWalls();
             }
 
-            // Türen bewegen
-            if (this.draggingDoorIndex !== null) {
-                const d = this.doors[this.draggingDoorIndex];
-                    // ⭐ Dachluke NICHT bewegen wie eine Tür
-                    if (d.type === "dachluke") {
-                        d.x = worldX;
-                        d.y = worldY;
-                        this.render();
-                        return;
-                    }
-                const w = this.walls[d.wallIndex];
-                const proj = this.projectOnWall(worldX, worldY, w);
-                d.t = proj.t;
-                d.x = proj.x;
-                d.y = proj.y;
-            }
+// Türen bewegen
+if (this.draggingDoorIndex !== null) {
+    const d = this.doors[this.draggingDoorIndex];
+
+    // ⭐ DACHLUKE → immer frei bewegen, ohne Snap, ohne Wandprojektion
+    if (d.type === "dachluke") {
+        d.x = worldX;
+        d.y = worldY;
+        this.render();
+        return;
+    }
+
+    // ⭐ Normale Türen → wie bisher entlang der Wand verschieben
+    const w = this.walls[d.wallIndex];
+    if (!w) return; // Sicherheitscheck
+
+    const proj = this.projectOnWall(worldX, worldY, w);
+    d.t = proj.t;
+    d.x = proj.x;
+    d.y = proj.y;
+
+    this.render();
+    return;
+}
 
             // Fenster bewegen
             if (this.draggingWindowIndex !== null) {
@@ -526,24 +534,34 @@ onDown(e) {
     }
 
 // ------------------------------------------------------------
-// ⭐ DACHLUKE → EIN Klick, frei im Raum
+// ⭐ DACHLUKE-MODUS (frei platzierbar, nur im geschlossenen Raum)
 // ------------------------------------------------------------
 if (this.mode === "dachluke") {
 
+    // 1) Nur im geschlossenen Raum erlaubt
+    if (!this.isClosed) {
+        alert("Dachluken können nur in einem geschlossenen Raum platziert werden.");
+        this.mode = "points";
+        return;
+    }
+
+    // 2) Frei im Raum platzieren – kein Snap, keine Wandbindung
     this.doors.push({
         type: "dachluke",
         wallIndex: null,
         t: null,
         x: worldX,
         y: worldY,
-        width: 36,
+        width: 60,      // realistische Größe
         hinge: null,
         side: 1,
-        isOpen: false   // ⭐ Zustand hinzufügen
+        isOpen: false   // Startzustand: geschlossen
     });
 
     this.render();
-    this.mode = "points"; // zurück in normalen Modus
+
+    // 3) Nach einem Klick wieder in normalen Modus
+    this.mode = "points";
     return;
 }
 
@@ -622,6 +640,37 @@ if (this.mode === "dachluke") {
         return;
     }
 
+// ------------------------------------------------------------
+// ⭐ DACHLUKE-MODUS (frei platzierbar, nur im geschlossenen Raum)
+// ------------------------------------------------------------
+if (this.mode === "dachluke") {
+
+    // 1) Nur im geschlossenen Raum erlaubt
+    if (!this.isClosed) {
+        alert("Dachluken können nur in einem geschlossenen Raum platziert werden.");
+        // Modus wieder zurücksetzen
+        this.mode = "points";
+        return;
+    }
+
+    // 2) Immer frei im Raum platzieren, NICHT an Wände binden, NICHT snappen
+    this.doors.push({
+        type: "dachluke",
+        wallIndex: null,
+        t: null,
+        x: worldX,
+        y: worldY,
+        width: 60,      // oder dein Wunschdurchmesser
+        hinge: null,
+        side: 1,
+        isOpen: false   // Startzustand: geschlossen
+    });
+
+    this.render();
+    // Nach einem Klick wieder in den normalen Modus
+    this.mode = "points";
+    return;
+}
 
     
     // ------------------------------------------------------------
@@ -851,17 +900,31 @@ if (hit.type === "door") {
             return;
         }
 
-        // Kontextmenü öffnen
+        // ------------------------------------------------------------
+        // ⭐ Kontext / Klick auf Elemente
+        // ------------------------------------------------------------
         if (this._pendingContext) {
             const c = this._pendingContext;
             this._pendingContext = null;
-
+        
+            // ⭐ Dachluke: NICHT ins Kontextmenü → Zustand toggeln
+            if (c.type === "dachluke") {
+                const d = this.doors[c.index];
+                if (d && d.type === "dachluke") {
+                    d.isOpen = !d.isOpen;   // Zustand wechseln
+                    this.render();
+                }
+                return;
+            }
+        
+            // ⭐ Alle anderen Elemente → Kontextmenü wie bisher
             const screenX = (c.x + this.offsetX) * this.zoom;
             const screenY = (c.y + this.offsetY) * this.zoom;
-
+        
             this.showContextMenu(screenX, screenY, c.type, c.index);
             return;
         }
+
 
         // Wenn bereits ein Timer läuft → das hier ist der zweite Klick → Doppelklick
         if (this._clickTimer) {
@@ -1077,10 +1140,12 @@ if (hit.type === "door") {
     getDoorIndexAt(x, y) {
         for (let i = 0; i < this.doors.length; i++) {
             const d = this.doors[i];
-if (d.type !== "dachluke" && Math.hypot(d.x - x, d.y - y) < 15) return i;
+            // Dachluke darf auch getroffen werden – Typ wird später unterschieden
+            if (Math.hypot(d.x - x, d.y - y) < 15) return i;
         }
         return null;
     },
+
 
     getWindowIndexAt(x, y) {
         for (let i = 0; i < this.windows.length; i++) {
