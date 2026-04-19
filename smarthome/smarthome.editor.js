@@ -505,7 +505,7 @@ if (this.draggingDoorIndex !== null) {
         // x, y im Welt-Raum
         for (let i = 0; i < this.doors.length; i++) {
             const d = this.doors[i];
-if (d.type !== "dachluke" && Math.hypot(d.x - x, d.y - y) < 15) return i;
+            if (Math.hypot(d.x - x, d.y - y) < 15) return i;
         }
         return null;
     },
