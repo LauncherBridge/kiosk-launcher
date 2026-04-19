@@ -1619,30 +1619,37 @@ if (hit.type === "door") {
         ]);
 
         const ctx = this.ctx;
-
         for (const d of this.doors) {
+        
+            // ⭐ Dachluke: frei im Raum, braucht keine Wandgeometrie
+            if (d.type === "dachluke") {
+                // drawDoorByType nutzt bei Dachluke nur d.x/d.y, die Geometrie ist egal
+                this.drawDoorByType(ctx, d, null);
+                continue;
+            }
+        
             const w = this.walls[d.wallIndex];
             if (!w) continue;
-
+        
             const dx = w.x2 - w.x1;
             const dy = w.y2 - w.y1;
             const len = Math.sqrt(dx * dx + dy * dy);
             if (len === 0) continue;
-
+        
             const tx = dx / len;
             const ty = dy / len;
-
+        
             const cx = d.x;
             const cy = d.y;
-
+        
             const half = d.width / 2;
-
+        
             const x1 = cx - tx * half;
             const y1 = cy - ty * half;
-
+        
             const x2 = cx + tx * half;
             const y2 = cy + ty * half;
-
+        
             // ------------------------------------------------------------
             // ⭐ Tür nach Typ zeichnen
             // ------------------------------------------------------------
@@ -1650,7 +1657,7 @@ if (hit.type === "door") {
                 w, x1, y1, x2, y2, hx: null, hy: null, ox: null, oy: null, px: null, py: null, elen: null
             });
             
-            // Wenn kein Scharnier → fertig (z.B. Dachluke, Schiebetür)
+            // Wenn kein Scharnier → fertig (z.B. Schiebetür, Durchgang)
             if (!d.hinge) continue;
             
             // ------------------------------------------------------------
@@ -1689,12 +1696,13 @@ if (hit.type === "door") {
                 ctx.lineTo(sx, sy);
                 ctx.stroke();
             }
-
+        
             // Viertelkreis (nur für normale Türen)
             if (DOOR_TYPES_WITH_ARC.has(d.type)) {
                 this.drawDoorArc(ctx, d, hx, hy, px, py, elen, side);
             }
         }
+
     },
 
 drawDoorByType(ctx, d, geo) {
