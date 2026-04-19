@@ -797,15 +797,17 @@ if (hit.type === "door") {
 
     const d = this.doors[hit.index];
 
-    // ⭐ Dachluke NICHT als Tür behandeln
+    // ⭐ Dachluke → DRAGGEN statt Kontextmenü
     if (d.type === "dachluke") {
-        this._pendingContext = { x: worldX, y: worldY, type: "dachluke", index: hit.index };
+        this.draggingDoorIndex = hit.index;
         return;
     }
 
+    // ⭐ Normale Türen → Kontextmenü wie bisher
     this._pendingContext = { x: worldX, y: worldY, type: "door", index: hit.index };
     return;
 }
+
 
 
     if (hit.type === "window") {
