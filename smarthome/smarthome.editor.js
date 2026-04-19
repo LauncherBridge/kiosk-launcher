@@ -797,9 +797,9 @@ if (hit.type === "door") {
 
     const d = this.doors[hit.index];
 
-    // ⭐ Dachluke → DRAGGEN statt Kontextmenü
+    // ⭐ Dachluke → wie Tür draggen, aber kein eigenes Kontextmenü hier
     if (d.type === "dachluke") {
-        this.draggingDoorIndex = hit.index;
+        this._pendingContext = { x: worldX, y: worldY, type: "door", index: hit.index };
         return;
     }
 
@@ -807,6 +807,7 @@ if (hit.type === "door") {
     this._pendingContext = { x: worldX, y: worldY, type: "door", index: hit.index };
     return;
 }
+
 
 
 
@@ -1139,14 +1140,13 @@ if (hit.type === "door") {
         return this.points.find(p => Math.hypot(p.x - x, p.y - y) < 10);
     },
 
-    getDoorIndexAt(x, y) {
-        for (let i = 0; i < this.doors.length; i++) {
-            const d = this.doors[i];
-            // Dachluke darf auch getroffen werden – Typ wird später unterschieden
-            if (Math.hypot(d.x - x, d.y - y) < 15) return i;
-        }
-        return null;
-    },
+        getDoorIndexAt(x, y) {
+            for (let i = 0; i < this.doors.length; i++) {
+                const d = this.doors[i];
+                if (Math.hypot(d.x - x, d.y - y) < 15) return i;
+            }
+            return null;
+        },
 
 
     getWindowIndexAt(x, y) {
