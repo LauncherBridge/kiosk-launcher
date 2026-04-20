@@ -2795,18 +2795,18 @@ ctx.stroke();
 // 2) Ellipse (Klappe)
 const angle = d.hingeAngle || 0;
 
-// Abstand der Klappe vom Loch
-const offsetX = Math.cos(angle) * r * 2;
-const offsetY = Math.sin(angle) * r * 2;
-
 // Ellipsen-Radien → quer
 const rx = r;          // breit
 const ry = r * 0.35;   // flach
 
+// ⭐ Abstand exakt so, dass Ellipse tangential am Kreis anliegt
+const offsetX = Math.cos(angle) * (r + ry);
+const offsetY = Math.sin(angle) * (r + ry);
+
 ctx.save();
 ctx.translate(d.x + offsetX, d.y + offsetY);
 
-// ⭐ WICHTIG: Ellipse um 90° versetzt drehen
+// ⭐ Ellipse um 90° versetzt drehen
 ctx.rotate(angle + Math.PI / 2);
 
 // Füllung
@@ -2826,12 +2826,12 @@ ctx.restore();
 const hingeX = d.x + Math.cos(angle) * r;
 const hingeY = d.y + Math.sin(angle) * r;
 
-// Tangentenrichtung = angle + 90°
+// ⭐ Längerer Scharnierstrich
+const hingeLen = r * 0.8;
+
+// Tangentenrichtung
 const tx = Math.cos(angle + Math.PI / 2);
 const ty = Math.sin(angle + Math.PI / 2);
-
-// Länge des Scharnierstrichs
-const hingeLen = r * 0.4;
 
 ctx.beginPath();
 ctx.moveTo(hingeX - tx * hingeLen / 2, hingeY - ty * hingeLen / 2);
@@ -2840,11 +2840,7 @@ ctx.stroke();
 
 return;
 
-
 }
-
-
-
             
 
 }
