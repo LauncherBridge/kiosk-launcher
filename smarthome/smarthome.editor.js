@@ -612,6 +612,7 @@ if (this.mode === "dachluke") {
 
         // Wir merken uns, dass der nächste Klick das Scharnier setzt
         this._placingDachluke = true;
+            this.render();
         return;
     }
 
@@ -2784,7 +2785,7 @@ case "dachluke": {
             const hingeX = d.x + Math.cos(d.hingeAngle) * r;
             const hingeY = d.y + Math.sin(d.hingeAngle) * r;
 
-            const hingeLen = r * 0.8;
+            const hingeLen = r * 1.2;
             const tx = Math.cos(d.hingeAngle + Math.PI / 2);
             const ty = Math.sin(d.hingeAngle + Math.PI / 2);
 
@@ -2843,7 +2844,7 @@ case "dachluke": {
     const hingeX = d.x + Math.cos(angle) * r;
     const hingeY = d.y + Math.sin(angle) * r;
 
-    const hingeLen = r * 0.8;
+    const hingeLen = r * 1.2;
     const tx = Math.cos(angle + Math.PI / 2);
     const ty = Math.sin(angle + Math.PI / 2);
 
