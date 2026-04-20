@@ -2799,13 +2799,15 @@ const angle = d.hingeAngle || 0;
 const offsetX = Math.cos(angle) * r * 2;
 const offsetY = Math.sin(angle) * r * 2;
 
-// Ellipsen-Radien → **quer**, nicht hochkant
+// Ellipsen-Radien → quer
 const rx = r;          // breit
 const ry = r * 0.35;   // flach
 
 ctx.save();
 ctx.translate(d.x + offsetX, d.y + offsetY);
-ctx.rotate(angle);
+
+// ⭐ WICHTIG: Ellipse um 90° versetzt drehen
+ctx.rotate(angle + Math.PI / 2);
 
 // Füllung
 ctx.fillStyle = "rgba(0,183,255,0.15)";
@@ -2820,16 +2822,24 @@ ctx.stroke();
 
 ctx.restore();
 
-// 3) Scharnier-Strich
-const hx = d.x + Math.cos(angle) * r;
-const hy = d.y + Math.sin(angle) * r;
+// 3) Scharnier-Strich → TANGENTE, nicht Radius
+const hingeX = d.x + Math.cos(angle) * r;
+const hingeY = d.y + Math.sin(angle) * r;
+
+// Tangentenrichtung = angle + 90°
+const tx = Math.cos(angle + Math.PI / 2);
+const ty = Math.sin(angle + Math.PI / 2);
+
+// Länge des Scharnierstrichs
+const hingeLen = r * 0.4;
 
 ctx.beginPath();
-ctx.moveTo(d.x, d.y);
-ctx.lineTo(hx, hy);
+ctx.moveTo(hingeX - tx * hingeLen / 2, hingeY - ty * hingeLen / 2);
+ctx.lineTo(hingeX + tx * hingeLen / 2, hingeY + ty * hingeLen / 2);
 ctx.stroke();
 
 return;
+
 
 }
 
