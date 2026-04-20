@@ -1452,7 +1452,7 @@ this._roomCenterBeforeMove = this._computeRoomCenter();
         if (!this.isPointInsideRoom(x, y)) return false;
     }
     return true;
-}
+},
 
   
     // --------------------------------------------------
