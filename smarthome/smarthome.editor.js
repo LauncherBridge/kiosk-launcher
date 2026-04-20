@@ -437,7 +437,7 @@ if (d.type === "dachluke") {
 
     const radius = d.width / 2;
 
-    // 1) Prüfen, ob der äußere Rand im Raum bleibt
+    // 1) Wenn der äußere Rand im Raum bleibt → normal bewegen
     if (this._circleInsideRoom(worldX, worldY, radius)) {
         d.x = worldX;
         d.y = worldY;
@@ -446,39 +446,46 @@ if (d.type === "dachluke") {
     }
 
     // 2) Wenn nicht → an Wandkante zurückprojizieren
-    let bestWall = null;
-    let bestDist = Infinity;
     let bestProj = null;
+    let bestDist = Infinity;
 
     for (const w of this.walls) {
         const proj = this.projectOnWall(worldX, worldY, w);
 
-        // Abstand vom Mittelpunkt zur Wand
-        const dist = Math.hypot(worldX - proj.x, worldY - proj.y);
+        const dx = worldX - proj.x;
+        const dy = worldY - proj.y;
+        const dist = Math.hypot(dx, dy);
 
-        // Wir wollen: dist >= radius
         const diff = Math.abs(dist - radius);
 
         if (diff < bestDist) {
             bestDist = diff;
-            bestWall = w;
             bestProj = proj;
         }
     }
 
     if (bestProj) {
-        // Mittelpunkt so setzen, dass der Rand exakt die Wand berührt
+
+        // Mittelpunkt so setzen, dass der Rand die Wand berührt
         const dx = worldX - bestProj.x;
         const dy = worldY - bestProj.y;
         const len = Math.hypot(dx, dy) || 1;
 
-        d.x = bestProj.x + (dx / len) * radius;
-        d.y = bestProj.y + (dy / len) * radius;
+        const newX = bestProj.x + (dx / len) * radius;
+        const newY = bestProj.y + (dy / len) * radius;
+
+        // ⭐ WICHTIG: Nur akzeptieren, wenn der neue Kreis IM Raum liegt
+        if (this._circleInsideRoom(newX, newY, radius)) {
+            d.x = newX;
+            d.y = newY;
+        }
+        // sonst: NICHT bewegen
     }
 
     this.render();
     return;
 }
+
 
 
 
