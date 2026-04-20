@@ -2780,49 +2780,57 @@ case "dachluke": {
         return;
     }
 
-    // -------------------------------
-    // Offen → Ellipse als Klappe
-    // -------------------------------
+// -------------------------------
+// Offen → Ellipse als Klappe
+// -------------------------------
 
-    ctx.strokeStyle = "#00b7ff";
-    ctx.lineWidth = 3;
+ctx.strokeStyle = "#00b7ff";
+ctx.lineWidth = 3;
 
-    // 1) Hauptkreis (Loch)
-    ctx.beginPath();
-    ctx.arc(d.x, d.y, r, 0, Math.PI * 2);
-    ctx.stroke();
+// 1) Hauptkreis (Loch)
+ctx.beginPath();
+ctx.arc(d.x, d.y, r, 0, Math.PI * 2);
+ctx.stroke();
 
-    // 2) Ellipse (Klappe)
-    const angle = d.hingeAngle || 0;
+// 2) Ellipse (Klappe)
+const angle = d.hingeAngle || 0;
 
-    // Abstand der Klappe vom Loch
-    const offsetX = Math.cos(angle) * r * 2;
-    const offsetY = Math.sin(angle) * r * 2;
+// Abstand der Klappe vom Loch
+const offsetX = Math.cos(angle) * r * 2;
+const offsetY = Math.sin(angle) * r * 2;
 
-    // Ellipsen-Radien
-    const rx = r * 0.35;          // Breite = Durchmesser der Luke
-    const ry = r;
+// Ellipsen-Radien → **quer**, nicht hochkant
+const rx = r;          // breit
+const ry = r * 0.35;   // flach
 
-    ctx.save();
-    ctx.translate(d.x + offsetX, d.y + offsetY);
-    ctx.rotate(angle);
+ctx.save();
+ctx.translate(d.x + offsetX, d.y + offsetY);
+ctx.rotate(angle);
 
-    ctx.beginPath();
-    ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
-    ctx.stroke();
+// Füllung
+ctx.fillStyle = "rgba(0,183,255,0.15)";
+ctx.beginPath();
+ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
+ctx.fill();
 
-    ctx.restore();
+// Kontur
+ctx.strokeStyle = "#00b7ff";
+ctx.lineWidth = 3;
+ctx.stroke();
 
-    // 3) Scharnier-Strich
-    const hx = d.x + Math.cos(angle) * r;
-    const hy = d.y + Math.sin(angle) * r;
+ctx.restore();
 
-    ctx.beginPath();
-    ctx.moveTo(d.x, d.y);
-    ctx.lineTo(hx, hy);
-    ctx.stroke();
+// 3) Scharnier-Strich
+const hx = d.x + Math.cos(angle) * r;
+const hy = d.y + Math.sin(angle) * r;
 
-    return;
+ctx.beginPath();
+ctx.moveTo(d.x, d.y);
+ctx.lineTo(hx, hy);
+ctx.stroke();
+
+return;
+
 }
 
 
