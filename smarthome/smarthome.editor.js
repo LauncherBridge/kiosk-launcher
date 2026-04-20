@@ -432,13 +432,45 @@ const RoomDesigner = {
 if (this.draggingDoorIndex !== null) {
     const d = this.doors[this.draggingDoorIndex];
 
-    // ⭐ DACHLUKE → immer frei bewegen, ohne Snap, ohne Wandprojektion
-    if (d.type === "dachluke") {
+// ⭐ DACHLUKE → frei bewegen, aber exakt an der Innenkante stoppen
+if (d.type === "dachluke") {
+
+    // 1) Wenn der Punkt im Raum liegt → normal bewegen
+    if (this.isPointInsideRoom(worldX, worldY)) {
         d.x = worldX;
         d.y = worldY;
         this.render();
         return;
     }
+
+    // 2) Wenn der Punkt außerhalb liegt → auf die Wandkante zurückprojizieren
+    //    Wir suchen die nächste Wand und projizieren den Punkt darauf.
+    let bestWall = null;
+    let bestDist = Infinity;
+    let bestProj = null;
+
+    for (const w of this.walls) {
+        const proj = this.projectOnWall(worldX, worldY, w);
+        const dist = Math.hypot(worldX - proj.x, worldY - proj.y);
+
+        if (dist < bestDist) {
+            bestDist = dist;
+            bestWall = w;
+            bestProj = proj;
+        }
+    }
+
+    // 3) Dachluke exakt auf die Innenkante setzen
+    if (bestProj) {
+        d.x = bestProj.x;
+        d.y = bestProj.y;
+    }
+
+    this.render();
+    return;
+}
+
+
 
     // ⭐ Normale Türen → wie bisher entlang der Wand verschieben
     const w = this.walls[d.wallIndex];
@@ -538,32 +570,35 @@ onDown(e) {
 // ------------------------------------------------------------
 if (this.mode === "dachluke") {
 
-    // 1) Nur im geschlossenen Raum erlaubt
     if (!this.isClosed) {
         alert("Dachluken können nur in einem geschlossenen Raum platziert werden.");
         this.mode = "points";
         return;
     }
 
-    // 2) Frei im Raum platzieren – kein Snap, keine Wandbindung
+    // ⭐ NEU: Platzierung nur im Raum
+    if (!this.isPointInsideRoom(worldX, worldY)) {
+        alert("Dachluken müssen innerhalb des Raumes platziert werden.");
+        return;
+    }
+
     this.doors.push({
         type: "dachluke",
         wallIndex: null,
         t: null,
         x: worldX,
         y: worldY,
-        width: 60,      // realistische Größe
+        width: 60,
         hinge: null,
         side: 1,
-        isOpen: false   // Startzustand: geschlossen
+        isOpen: false
     });
 
     this.render();
-
-    // 3) Nach einem Klick wieder in normalen Modus
     this.mode = "points";
     return;
 }
+
 
 
 
@@ -640,37 +675,7 @@ if (this.mode === "dachluke") {
         return;
     }
 
-// ------------------------------------------------------------
-// ⭐ DACHLUKE-MODUS (frei platzierbar, nur im geschlossenen Raum)
-// ------------------------------------------------------------
-if (this.mode === "dachluke") {
 
-    // 1) Nur im geschlossenen Raum erlaubt
-    if (!this.isClosed) {
-        alert("Dachluken können nur in einem geschlossenen Raum platziert werden.");
-        // Modus wieder zurücksetzen
-        this.mode = "points";
-        return;
-    }
-
-    // 2) Immer frei im Raum platzieren, NICHT an Wände binden, NICHT snappen
-    this.doors.push({
-        type: "dachluke",
-        wallIndex: null,
-        t: null,
-        x: worldX,
-        y: worldY,
-        width: 60,      // oder dein Wunschdurchmesser
-        hinge: null,
-        side: 1,
-        isOpen: false   // Startzustand: geschlossen
-    });
-
-    this.render();
-    // Nach einem Klick wieder in den normalen Modus
-    this.mode = "points";
-    return;
-}
 
     
     // ------------------------------------------------------------
@@ -1201,6 +1206,27 @@ if (hit.type === "door") {
         return null;
     },
 
+    isPointInsideRoom(x, y) {
+    // Raum muss geschlossen sein
+    if (!this.isClosed || this.points.length < 3) return false;
+
+    let inside = false;
+
+    // Raycasting: prüft, ob der Punkt innerhalb des Polygons liegt
+    for (let i = 0, j = this.points.length - 1; i < this.points.length; j = i++) {
+        const xi = this.points[i].x, yi = this.points[i].y;
+        const xj = this.points[j].x, yj = this.points[j].y;
+
+        const intersect =
+            ((yi > y) !== (yj > y)) &&
+            (x < (xj - xi) * (y - yi) / ((yj - yi) || 1e-9) + xi);
+
+        if (intersect) inside = !inside;
+    }
+
+    return inside;
+    },
+
     projectOnWall(x, y, w) {
         const A = { x: w.x1, y: w.y1 };
         const B = { x: w.x2, y: w.y2 };
@@ -1275,6 +1301,27 @@ if (hit.type === "door") {
     // Wände aktualisieren
     // --------------------------------------------------
     updateWalls() {
+
+// ⭐ Dachluken relativ mitbewegen, wenn sich der Raum verändert
+for (const d of this.doors) {
+    if (d.type === "dachluke") {
+
+        // 1) Finde die alte Position relativ zum Raum-Schwerpunkt
+        if (!this._roomCenterBeforeMove) continue;
+
+        const before = this._roomCenterBeforeMove;
+        const after = this._computeRoomCenter();
+
+        const dx = after.x - before.x;
+        const dy = after.y - before.y;
+
+        // 2) Dachluke um dieselbe Verschiebung bewegen
+        d.x += dx;
+        d.y += dy;
+    }
+}
+
+        
         this.walls = [];
 
         if (this.points.length < 2) return;
@@ -1358,7 +1405,27 @@ if (hit.type === "door") {
                 win.y = A.y + (B.y - A.y) * win.t;
             }
         }
+        // ⭐ Raumzentrum für nächste Bewegung merken
+this._roomCenterBeforeMove = this._computeRoomCenter();
+
     },
+
+  
+// ------------------------------------------------------------
+// ⭐ Hilfsfunktion: Raumzentrum berechnen
+// ------------------------------------------------------------    
+    _computeRoomCenter() {
+    let sx = 0, sy = 0;
+    for (const p of this.points) {
+        sx += p.x;
+        sy += p.y;
+    }
+    return {
+        x: sx / this.points.length,
+        y: sy / this.points.length
+    };
+}
+
   
     // --------------------------------------------------
     // Canvas-Transform (für zukünftigen Zoom/Pan vorbereitet)
