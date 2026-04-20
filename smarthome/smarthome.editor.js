@@ -2800,8 +2800,8 @@ case "dachluke": {
     const offsetY = Math.sin(angle) * r * 2;
 
     // Ellipsen-Radien
-    const rx = r;          // Breite = Durchmesser der Luke
-    const ry = r * 0.35;   // Höhe = 35% → perspektivische Klappe
+    const rx = r * 0.35;          // Breite = Durchmesser der Luke
+    const ry = r;
 
     ctx.save();
     ctx.translate(d.x + offsetX, d.y + offsetY);
