@@ -435,40 +435,51 @@ if (this.draggingDoorIndex !== null) {
 // ⭐ DACHLUKE → frei bewegen, aber exakt an der Innenkante stoppen
 if (d.type === "dachluke") {
 
-    // 1) Wenn der Punkt im Raum liegt → normal bewegen
-    if (this.isPointInsideRoom(worldX, worldY)) {
+    const radius = d.width / 2;
+
+    // 1) Prüfen, ob der äußere Rand im Raum bleibt
+    if (this._circleInsideRoom(worldX, worldY, radius)) {
         d.x = worldX;
         d.y = worldY;
         this.render();
         return;
     }
 
-    // 2) Wenn der Punkt außerhalb liegt → auf die Wandkante zurückprojizieren
-    //    Wir suchen die nächste Wand und projizieren den Punkt darauf.
+    // 2) Wenn nicht → an Wandkante zurückprojizieren
     let bestWall = null;
     let bestDist = Infinity;
     let bestProj = null;
 
     for (const w of this.walls) {
         const proj = this.projectOnWall(worldX, worldY, w);
+
+        // Abstand vom Mittelpunkt zur Wand
         const dist = Math.hypot(worldX - proj.x, worldY - proj.y);
 
-        if (dist < bestDist) {
-            bestDist = dist;
+        // Wir wollen: dist >= radius
+        const diff = Math.abs(dist - radius);
+
+        if (diff < bestDist) {
+            bestDist = diff;
             bestWall = w;
             bestProj = proj;
         }
     }
 
-    // 3) Dachluke exakt auf die Innenkante setzen
     if (bestProj) {
-        d.x = bestProj.x;
-        d.y = bestProj.y;
+        // Mittelpunkt so setzen, dass der Rand exakt die Wand berührt
+        const dx = worldX - bestProj.x;
+        const dy = worldY - bestProj.y;
+        const len = Math.hypot(dx, dy) || 1;
+
+        d.x = bestProj.x + (dx / len) * radius;
+        d.y = bestProj.y + (dy / len) * radius;
     }
 
     this.render();
     return;
 }
+
 
 
 
@@ -1425,6 +1436,23 @@ this._roomCenterBeforeMove = this._computeRoomCenter();
         y: sy / this.points.length
     };
 },
+
+
+
+    // ------------------------------------------------------------
+// ⭐ Hilfsfunktion: Dachlukengröße berücksichtigen
+// ------------------------------------------------------------   
+    _circleInsideRoom(cx, cy, r) {
+    // Prüfe 8 Punkte auf dem Kreis
+    for (let i = 0; i < 8; i++) {
+        const angle = (i / 8) * Math.PI * 2;
+        const x = cx + Math.cos(angle) * r;
+        const y = cy + Math.sin(angle) * r;
+
+        if (!this.isPointInsideRoom(x, y)) return false;
+    }
+    return true;
+}
 
   
     // --------------------------------------------------
