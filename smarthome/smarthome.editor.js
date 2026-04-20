@@ -2758,7 +2758,7 @@ case "durchgang": {
 // ⭐ Dachluke
 // ------------------------------------------------------------     
 case "dachluke": {
-    d.isOpen = true; // nur zum Testen
+    d.isOpen = false; // nur zum Testen
 
     const r = d.width / 2;
 
