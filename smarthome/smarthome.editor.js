@@ -2744,43 +2744,86 @@ case "durchgang": {
 // ⭐ Dachluke
 // ------------------------------------------------------------     
 case "dachluke": {
-    d.isOpen = false; // nur zum Testen
 
     const r = d.width / 2;
 
-    // Geschlossen = voller Kreis
+    // -------------------------------
+    // Geschlossen
+    // -------------------------------
     if (!d.isOpen) {
         ctx.strokeStyle = "#00b7ff";
         ctx.lineWidth = 3;
 
+        // Außenkreis
         ctx.beginPath();
         ctx.arc(d.x, d.y, r, 0, Math.PI * 2);
         ctx.stroke();
 
+        // Innenfüllung
         ctx.fillStyle = "rgba(0,183,255,0.15)";
         ctx.beginPath();
         ctx.arc(d.x, d.y, r * 0.6, 0, Math.PI * 2);
         ctx.fill();
+
+        // Scharnier anzeigen (falls gesetzt)
+        if (d.hingeAngle !== undefined) {
+            const hx = d.x + Math.cos(d.hingeAngle) * r;
+            const hy = d.y + Math.sin(d.hingeAngle) * r;
+
+            ctx.beginPath();
+            ctx.moveTo(d.x, d.y);
+            ctx.lineTo(hx, hy);
+            ctx.stroke();
+        }
+
         return;
     }
 
-    // Offen = Halbkreis + kleine Öffnungslinie
+    // -------------------------------
+    // Offen → Ellipse als Klappe
+    // -------------------------------
+
     ctx.strokeStyle = "#00b7ff";
     ctx.lineWidth = 3;
 
-    // Halbkreis
+    // 1) Hauptkreis (Loch)
     ctx.beginPath();
-    ctx.arc(d.x, d.y, r, -Math.PI/2, Math.PI/2);
+    ctx.arc(d.x, d.y, r, 0, Math.PI * 2);
     ctx.stroke();
 
-    // Öffnungslinie
+    // 2) Ellipse (Klappe)
+    const angle = d.hingeAngle || 0;
+
+    // Abstand der Klappe vom Loch
+    const offsetX = Math.cos(angle) * r * 2;
+    const offsetY = Math.sin(angle) * r * 2;
+
+    // Ellipsen-Radien
+    const rx = r;          // Breite = Durchmesser der Luke
+    const ry = r * 0.35;   // Höhe = 35% → perspektivische Klappe
+
+    ctx.save();
+    ctx.translate(d.x + offsetX, d.y + offsetY);
+    ctx.rotate(angle);
+
     ctx.beginPath();
-    ctx.moveTo(d.x, d.y - r);
-    ctx.lineTo(d.x + r * 0.8, d.y);
+    ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.restore();
+
+    // 3) Scharnier-Strich
+    const hx = d.x + Math.cos(angle) * r;
+    const hy = d.y + Math.sin(angle) * r;
+
+    ctx.beginPath();
+    ctx.moveTo(d.x, d.y);
+    ctx.lineTo(hx, hy);
     ctx.stroke();
 
     return;
 }
+
 
 
             
