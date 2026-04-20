@@ -1424,7 +1424,7 @@ this._roomCenterBeforeMove = this._computeRoomCenter();
         x: sx / this.points.length,
         y: sy / this.points.length
     };
-}
+},
 
   
     // --------------------------------------------------
