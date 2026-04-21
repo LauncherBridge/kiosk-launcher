@@ -249,22 +249,23 @@ showContextMenu(x, y, type, index) {
             }, false);
         }
 
-        // 2) Scharnier neu setzen (nur Türtypen mit Scharnier)
-        const hingeSupported = [
-            "zimmertuer",
-            "haustuer",
-            "falttuer",
-            "dachluke"
-        ];
+// 2) Scharnier neu setzen (nur Türtypen mit Scharnier)
+const hingeSupported = [
+    "zimmertuer",
+    "haustuer",
+    "falttuer"
+    // dachluke NICHT hier – die hat ihren eigenen Flow
+];
 
-        if (hingeSupported.includes(d.type)) {
-            this.addContextButton("⟲", () => {
-                this._placingHinge = true;
-                this._hingeDoorIndex = index;
-                this.mode = "setHinge";
-                this.render();
-            }, true);
-        }
+if (hingeSupported.includes(d.type)) {
+    this.addContextButton("⟲", () => {
+        this.mode = "setHinge";
+        this._hingeDoorIndex = index;   // merken, welche Tür
+        this.hideContextMenu();
+        this.render();
+    }, true);
+}
+
 
         // 3) Breite +
         this.addContextButton("＋", () => {
@@ -628,29 +629,43 @@ onDown(e) {
         return;
     }
 
-    // ------------------------------------------------------------
-    // ⭐ SCHARNIER NEU SETZEN (für ALLE Türen)
-    // ------------------------------------------------------------
-    if (this.mode === "setHinge") {
+// ------------------------------------------------------------
+// ⭐ SCHARNIER NEU SETZEN (für normale Türen)
+// ------------------------------------------------------------
+if (this.mode === "setHinge") {
 
-        const d = this.doors[this._hingeDoorIndex];
-        if (!d) {
-            this.mode = "points";
-            this._hingeDoorIndex = null;
-            return;
-        }
-
-        const dx = worldX - d.x;
-        const dy = worldY - d.y;
-
-        d.hingeAngle = Math.atan2(dy, dx);
-
+    const d = this.doors[this._hingeDoorIndex];
+    if (!d) {
         this.mode = "points";
         this._hingeDoorIndex = null;
-
-        this.render();
         return;
     }
+
+    // Dachluke NICHT hier – die hat ihren eigenen Flow
+    if (d.type === "dachluke") {
+        // Sicherheitshalber: zurück in Normalmodus
+        this.mode = "points";
+        this._hingeDoorIndex = null;
+        return;
+    }
+
+    // Wir benutzen die bestehende Logik: setDoorHingeFromTap
+    const w = this.walls[d.wallIndex];
+    if (!w) {
+        this.mode = "points";
+        this._hingeDoorIndex = null;
+        return;
+    }
+
+    this.setDoorHingeFromTap(d, worldX, worldY, w);
+
+    this.mode = "points";
+    this._hingeDoorIndex = null;
+
+    this.render();
+    return;
+}
+
 
     // ------------------------------------------------------------
     // ⭐ DACHLUKE: 1. Klick = Luke setzen, 2. Klick = Scharnier setzen
