@@ -210,12 +210,9 @@ showContextMenu(x, y, type, index) {
 
         const d = this.doors[index];
 
-        // --------------------------------------------------------
         // ⭐ DACHLUKE → eigenes Menü + Scharnier neu setzen
-        // --------------------------------------------------------
         if (d.type === "dachluke") {
 
-            // Scharnier neu setzen
             this.addContextButton("⟲", () => {
                 this.mode = "setHinge";
                 this._hingeDoorIndex = index;
@@ -223,21 +220,18 @@ showContextMenu(x, y, type, index) {
                 this.render();
             }, true);
 
-            // Breite +
             this.addContextButton("＋", () => {
                 d.width += 10;
                 this.updateWalls();
                 this.render();
             }, false);
 
-            // Breite –
             this.addContextButton("－", () => {
                 d.width = Math.max(20, d.width - 10);
                 this.updateWalls();
                 this.render();
             }, false);
 
-            // Löschen
             this.addContextButton("🗑", () => {
                 this.doors.splice(index, 1);
                 this.updateWalls();
@@ -248,11 +242,8 @@ showContextMenu(x, y, type, index) {
             return;
         }
 
-        // --------------------------------------------------------
-        // ⭐ NORMALE TÜREN
-        // --------------------------------------------------------
+        // ⭐ NORMALE TÜREN AB HIER
 
-        // 1) Zustand ändern
         if (d.type !== "durchgang") {
             this.addContextButton(d.isOpen ? "🔒" : "🔓", () => {
                 d.isOpen = !d.isOpen;
@@ -260,7 +251,6 @@ showContextMenu(x, y, type, index) {
             }, false);
         }
 
-        // 2) Scharnier neu setzen
         const hingeSupported = [
             "zimmertuer",
             "haustuer",
@@ -280,21 +270,18 @@ showContextMenu(x, y, type, index) {
             }, true);
         }
 
-        // 3) Breite +
         this.addContextButton("＋", () => {
             d.width += 10;
             this.updateWalls();
             this.render();
         }, false);
 
-        // 4) Breite –
         this.addContextButton("－", () => {
             d.width = Math.max(20, d.width - 10);
             this.updateWalls();
             this.render();
         }, false);
 
-        // 5) Löschen
         this.addContextButton("🗑", () => {
             this.doors.splice(index, 1);
             this.updateWalls();
