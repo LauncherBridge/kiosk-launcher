@@ -253,7 +253,12 @@ showContextMenu(x, y, type, index) {
 const hingeSupported = [
     "zimmertuer",
     "haustuer",
-    "falttuer"
+    "falttuer",
+    "schiebetuer",
+    "terrassentuer",
+    "garagentor",
+    "gartentor",
+    "dachluke"
     // dachluke NICHT hier – die hat ihren eigenen Flow
 ];
 
