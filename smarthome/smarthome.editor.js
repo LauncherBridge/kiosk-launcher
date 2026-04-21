@@ -614,308 +614,297 @@ if (d.type === "dachluke") {
         return null;
     },
 
-    onDown(e) {
-        const rect = this.canvas.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
-    
-        const worldX = (mouseX / this.zoom) - this.offsetX;
-        const worldY = (mouseY / this.zoom) - this.offsetY;
-    
-        // Rechtsklick → Menü schließen
-        if (e.button === 2) {
-            this.hideContextMenu();
-            return;
-        }
-    
-// ------------------------------------------------------------
-// ⭐ SCHARNIER NEU SETZEN (für ALLE Türen)
-// ------------------------------------------------------------
-if (this.mode === "setHinge") {
+onDown(e) {
+    const rect = this.canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
 
-    const d = this.doors[this._hingeDoorIndex];
-    if (!d) {
-        this.mode = "points";
-        this._hingeDoorIndex = null;
+    const worldX = (mouseX / this.zoom) - this.offsetX;
+    const worldY = (mouseY / this.zoom) - this.offsetY;
+
+    // Rechtsklick → Menü schließen
+    if (e.button === 2) {
+        this.hideContextMenu();
         return;
     }
 
-    const dx = worldX - d.x;
-    const dy = worldY - d.y;
+    // ------------------------------------------------------------
+    // ⭐ SCHARNIER NEU SETZEN (für ALLE Türen)
+    // ------------------------------------------------------------
+    if (this.mode === "setHinge") {
 
-    d.hingeAngle = Math.atan2(dy, dx);
+        const d = this.doors[this._hingeDoorIndex];
+        if (!d) {
+            this.mode = "points";
+            this._hingeDoorIndex = null;
+            return;
+        }
 
-    this.mode = "points";
-    this._hingeDoorIndex = null;
+        const dx = worldX - d.x;
+        const dy = worldY - d.y;
 
-    this.render();
-    return;
-}
+        d.hingeAngle = Math.atan2(dy, dx);
 
-    
-        // ------------------------------------------------------------
-        // ⭐ DACHLUKE: 1. Klick = Luke setzen, 2. Klick = Scharnier setzen
-        // ------------------------------------------------------------
-        if (this.mode === "dachluke") {
-    
-            // 1) Erster Klick → Luke platzieren
-            if (!this._placingDachluke) {
-    
-                if (!this.isClosed) {
-                    alert("Dachluken können nur in einem geschlossenen Raum platziert werden.");
-                    return;
-                }
-    
-                if (!this.isPointInsideRoom(worldX, worldY)) {
-                    alert("Dachluken müssen innerhalb des Raumes platziert werden.");
-                    return;
-                }
-    
-                this.doors.push({
-                    type: "dachluke",
-                    x: worldX,
-                    y: worldY,
-                    width: 60,
-                    isOpen: false,
-                    hingeAngle: 0
-                });
-    
-                this._placingDachluke = true;
-                this.render();
+        this.mode = "points";
+        this._hingeDoorIndex = null;
+
+        this.render();
+        return;
+    }
+
+    // ------------------------------------------------------------
+    // ⭐ DACHLUKE: 1. Klick = Luke setzen, 2. Klick = Scharnier setzen
+    // ------------------------------------------------------------
+    if (this.mode === "dachluke") {
+
+        if (!this._placingDachluke) {
+
+            if (!this.isClosed) {
+                alert("Dachluken können nur in einem geschlossenen Raum platziert werden.");
                 return;
             }
-    
-            // 2) Zweiter Klick → Scharnier setzen
-            const d = this.doors[this.doors.length - 1];
-    
-            const dx = worldX - d.x;
-            const dy = worldY - d.y;
-            d.hingeAngle = Math.atan2(dy, dx);
-    
-            this._placingDachluke = false;
-            this.mode = "points";
+
+            if (!this.isPointInsideRoom(worldX, worldY)) {
+                alert("Dachluken müssen innerhalb des Raumes platziert werden.");
+                return;
+            }
+
+            this.doors.push({
+                type: "dachluke",
+                x: worldX,
+                y: worldY,
+                width: 60,
+                isOpen: false,
+                hingeAngle: 0
+            });
+
+            this._placingDachluke = true;
             this.render();
             return;
         }
-    
-        // ------------------------------------------------------------
-        // ⭐ HIT-TEST
-        // ------------------------------------------------------------
-        const hit = this.hitTest(mouseX, mouseY);
-        const clickingObject =
-            hit.type === "point" ||
-            hit.type === "door" ||
-            hit.type === "window";
-    
-        const menuWasOpen =
-            this.contextMenuEl &&
-            this.contextMenuEl.style.display === "flex";
-    
-        this.hideContextMenu();
-    
-        if (this._contextJustClosed && !clickingObject) {
-            this._contextJustClosed = false;
+
+        const d = this.doors[this.doors.length - 1];
+
+        const dx = worldX - d.x;
+        const dy = worldY - d.y;
+        d.hingeAngle = Math.atan2(dy, dx);
+
+        this._placingDachluke = false;
+        this.mode = "points";
+        this.render();
+        return;
+    }
+
+    // ------------------------------------------------------------
+    // ⭐ HIT-TEST
+    // ------------------------------------------------------------
+    const hit = this.hitTest(mouseX, mouseY);
+    const clickingObject =
+        hit.type === "point" ||
+        hit.type === "door" ||
+        hit.type === "window";
+
+    const menuWasOpen =
+        this.contextMenuEl &&
+        this.contextMenuEl.style.display === "flex";
+
+    this.hideContextMenu();
+
+    if (this._contextJustClosed && !clickingObject) {
+        this._contextJustClosed = false;
+        return;
+    }
+
+    if (this._contextJustClosed && clickingObject) {
+        this._contextJustClosed = false;
+    }
+
+    // ------------------------------------------------------------
+    // ⭐ Raum schließen durch Klick auf ersten Punkt
+    // ------------------------------------------------------------
+    if (!this.isClosed && this.points.length >= 2) {
+        const first = this.points[0];
+        if (Math.hypot(worldX - first.x, worldY - first.y) < 20) {
+
+            this.isClosed = true;
+
+            this.selectedPoint = first;
+            this.isDragging = true;
+
+            this.updateWalls();
+            this.render();
+
+            this.isDragging = false;
+            this.selectedPoint = null;
+
             return;
         }
-    
-        if (this._contextJustClosed && clickingObject) {
-            this._contextJustClosed = false;
-        }
-    
-        // ------------------------------------------------------------
-        // ⭐ Raum schließen durch Klick auf ersten Punkt
-        // ------------------------------------------------------------
-        if (!this.isClosed && this.points.length >= 2) {
-            const first = this.points[0];
-            if (Math.hypot(worldX - first.x, worldY - first.y) < 20) {
-    
-                this.isClosed = true;
-    
-                this.selectedPoint = first;
-                this.isDragging = true;
-    
-                this.updateWalls();
-                this.render();
-    
-                this.isDragging = false;
-                this.selectedPoint = null;
-    
-                return;
-            }
-        }
-    
-        // ------------------------------------------------------------
-        // ⭐ FENSTER-MODUS
-        // ------------------------------------------------------------
-        if (this.mode === "windows") {
-    
-            if (hit.type === "window") {
-                this._pendingContext = { x: worldX, y: worldY, type: "window", index: hit.index };
-                return;
-            }
-    
-            if (hit.type === "wall") {
-                const w = hit.data;
-                this.windows.push({
-                    wallIndex: w.index,
-                    t: w.t,
-                    x: w.x,
-                    y: w.y,
-                    width: 80
-                });
-                this.updateWalls();
-                this.render();
-            }
-    
-            this.mode = "points";
-            return;
-        }
-    
-        // ------------------------------------------------------------
-        // ⭐ TÜR-MODUS (ALLE Türtypen)
-        // ------------------------------------------------------------
-        if (this.mode === "doors") {
-    
-            const type = this.currentDoorType || "default";
-    
-            // ⭐ Durchgang → 1 Klick
-            if (type === "durchgang") {
-    
-                if (hit.type !== "wall") return;
-    
-                const w = hit.data;
-                const defaultWidth = 100;
-    
-                const cx = w.x;
-                const cy = w.y;
-    
-                const dx = w.x2 - w.x1;
-                const dy = w.y2 - w.y1;
-                const len = Math.hypot(dx, dy) || 1;
-    
-                const tx = dx / len;
-                const ty = dy / len;
-    
-                const x1 = cx - tx * (defaultWidth / 2);
-                const y1 = cy - ty * (defaultWidth / 2);
-    
-                const x2 = cx + tx * (defaultWidth / 2);
-                const y2 = cy + ty * (defaultWidth / 2);
-    
-                this.doors.push({
-                    type: "durchgang",
-                    wallIndex: w.index,
-                    t: w.t,
-                    x: cx,
-                    y: cy,
-                    width: defaultWidth,
-                    hinge: null,
-                    side: null
-                });
-    
-                this.render();
-                this.mode = "points";
-                return;
-            }
-    
-            // ⭐ Normale Türen → Wandgebunden
-            if (!this._placingDoor) {
-                if (hit.type === "wall") {
-                    const w = hit.data;
-                    this.doors.push({
-                        wallIndex: w.index,
-                        t: w.t,
-                        x: w.x,
-                        y: w.y,
-                        width: 36,
-                        hinge: null,
-                        side: 1,
-                        type: type
-                    });
-                    this._placingDoor = true;
-                    this.render();
-                    return;
-                }
-            }
-    
-            // ⭐ Hinge setzen (normale Türen)
-            if (this._placingDoor) {
-                const lastDoor = this.doors[this.doors.length - 1];
-                const w = this.walls[lastDoor.wallIndex];
-                this.setDoorHingeFromTap(lastDoor, worldX, worldY, w);
-    
-                this._placingDoor = false;
-                this.mode = "points";
-                this.render();
-                return;
-            }
-        }
-    
-        // ------------------------------------------------------------
-        // ⭐ Kontextmenü für Türen
-        // ------------------------------------------------------------
-        if (hit.type === "door") {
-    
-            const d = this.doors[hit.index];
-    
-            this._pendingContext = { x: worldX, y: worldY, type: "door", index: hit.index };
-            return;
-        }
-    
-        // ------------------------------------------------------------
-        // ⭐ Kontextmenü für Fenster
-        // ------------------------------------------------------------
+    }
+
+    // ------------------------------------------------------------
+    // ⭐ FENSTER-MODUS
+    // ------------------------------------------------------------
+    if (this.mode === "windows") {
+
         if (hit.type === "window") {
             this._pendingContext = { x: worldX, y: worldY, type: "window", index: hit.index };
             return;
         }
-    
-        // ------------------------------------------------------------
-        // ⭐ Kontextmenü für Punkte
-        // ------------------------------------------------------------
-        if (hit.type === "point") {
-            this._pendingContext = { x: worldX, y: worldY, type: "point", index: hit.index };
-            return;
-        }
-    
-        // ------------------------------------------------------------
-        // ⭐ Punkt auf Wand einfügen
-        // ------------------------------------------------------------
+
         if (hit.type === "wall") {
             const w = hit.data;
-            const insertPoint = { x: w.x, y: w.y };
-    
-            this.points.splice(w.index + 1, 0, insertPoint);
-    
+            this.windows.push({
+                wallIndex: w.index,
+                t: w.t,
+                x: w.x,
+                y: w.y,
+                width: 80
+            });
             this.updateWalls();
+            this.render();
+        }
+
+        this.mode = "points";
+        return;
+    }
+
+    // ------------------------------------------------------------
+    // ⭐ TÜR-MODUS (ALLE Türtypen)
+    // ------------------------------------------------------------
+    if (this.mode === "doors") {
+
+        const type = this.currentDoorType || "default";
+
+        // ⭐ Durchgang → 1 Klick
+        if (type === "durchgang") {
+
+            if (hit.type !== "wall") return;
+
+            const w = hit.data;
+            const defaultWidth = 100;
+
+            const cx = w.x;
+            const cy = w.y;
+
+            const dx = w.x2 - w.x1;
+            const dy = w.y2 - w.y1;
+            const len = Math.hypot(dx, dy) || 1;
+
+            const tx = dx / len;
+            const ty = dy / len;
+
+            this.doors.push({
+                type: "durchgang",
+                wallIndex: w.index,
+                t: w.t,
+                x: cx,
+                y: cy,
+                width: defaultWidth,
+                hinge: null,
+                side: null
+            });
+
+            this.render();
+            this.mode = "points";
+            return;
+        }
+
+        // ⭐ Normale Türen → Wandgebunden
+        if (!this._placingDoor) {
+            if (hit.type === "wall") {
+                const w = hit.data;
+                this.doors.push({
+                    wallIndex: w.index,
+                    t: w.t,
+                    x: w.x,
+                    y: w.y,
+                    width: 36,
+                    hinge: null,
+                    side: 1,
+                    type: type
+                });
+                this._placingDoor = true;
+                this.render();
+                return;
+            }
+        }
+
+        // ⭐ Hinge setzen (normale Türen)
+        if (this._placingDoor) {
+            const lastDoor = this.doors[this.doors.length - 1];
+            const w = this.walls[lastDoor.wallIndex];
+            this.setDoorHingeFromTap(lastDoor, worldX, worldY, w);
+
+            this._placingDoor = false;
+            this.mode = "points";
             this.render();
             return;
         }
-    
-        // ------------------------------------------------------------
-        // ⭐ Punkt-Kandidat im leeren Raum
-        // ------------------------------------------------------------
-        if (!this.isClosed && hit.type === "empty") {
-            let px = worldX;
-            let py = worldY;
-    
-            if (this.snapEnabled) {
-                px = this.snap(px);
-                py = this.snap(py);
-            }
-    
-            this._pendingNewPoint = { x: px, y: py };
+    }
+
+    // ------------------------------------------------------------
+    // ⭐ Kontextmenü für Türen
+    // ------------------------------------------------------------
+    if (hit.type === "door") {
+        this._pendingContext = { x: worldX, y: worldY, type: "door", index: hit.index };
+        return;
+    }
+
+    // ------------------------------------------------------------
+    // ⭐ Kontextmenü für Fenster
+    // ------------------------------------------------------------
+    if (hit.type === "window") {
+        this._pendingContext = { x: worldX, y: worldY, type: "window", index: hit.index };
+        return;
+    }
+
+    // ------------------------------------------------------------
+    // ⭐ Kontextmenü für Punkte
+    // ------------------------------------------------------------
+    if (hit.type === "point") {
+        this._pendingContext = { x: worldX, y: worldY, type: "point", index: hit.index };
+        return;
+    }
+
+    // ------------------------------------------------------------
+    // ⭐ Punkt auf Wand einfügen
+    // ------------------------------------------------------------
+    if (hit.type === "wall") {
+        const w = hit.data;
+        const insertPoint = { x: w.x, y: w.y };
+
+        this.points.splice(w.index + 1, 0, insertPoint);
+
+        this.updateWalls();
+        this.render();
+        return;
+    }
+
+    // ------------------------------------------------------------
+    // ⭐ Punkt-Kandidat im leeren Raum
+    // ------------------------------------------------------------
+    if (!this.isClosed && hit.type === "empty") {
+        let px = worldX;
+        let py = worldY;
+
+        if (this.snapEnabled) {
+            px = this.snap(px);
+            py = this.snap(py);
         }
-    
-        // ------------------------------------------------------------
-        // ⭐ PAN-Kandidat
-        // ------------------------------------------------------------
-        if (hit.type === "empty" || hit.type === "wall") {
-            this.isPanCandidate = true;
-            this.panStartX = mouseX;
-            this.panStartY = mouseY;
-        }
-    },
+
+        this._pendingNewPoint = { x: px, y: py };
+    }
+
+    // ------------------------------------------------------------
+    // ⭐ PAN-Kandidat
+    // ------------------------------------------------------------
+    if (hit.type === "empty" || hit.type === "wall") {
+        this.isPanCandidate = true;
+        this.panStartX = mouseX;
+        this.panStartY = mouseY;
+    }
+},
+
 
     onUp(e) {
         // Wenn gerade gesnapped wurde → Klick komplett ignorieren
@@ -1860,7 +1849,7 @@ drawDoorByType(ctx, d, geo) {
         // ------------------------------------------------------------
 case "zimmertuer": {
 
-    d.isOpen = true; // nur zum Testen
+ //   d.isOpen = true;  nur zum Testen
 
     // Drehpunkt bestimmen
     const hx = (d.hinge === "start") ? x1 : x2;
@@ -1949,7 +1938,7 @@ case "zimmertuer": {
         // ------------------------------------------------------------
 case "haustuer": {
 
-    d.isOpen = true; // nur zum Testen
+//    d.isOpen = true;  nur zum Testen
 
     // Drehpunkt bestimmen (Scharnier)
     const hx = (d.hinge === "start") ? x1 : x2;
@@ -2082,7 +2071,7 @@ case "haustuer": {
 // ⭐ Schiebetür → kein Viertelkreis
 // ------------------------------------------------------------
 case "schiebetuer": {
-    d.isOpen = true; // nur zum Testen
+ //   d.isOpen = true;  nur zum Testen
 
     // ------------------------------------------------------------
     // 1. Türschwelle (identisch zur Falttür)
@@ -2208,7 +2197,7 @@ case "schiebetuer": {
         // ⭐ Falttür → segmentiert
         // ------------------------------------------------------------
 case "falttuer": {
-    d.isOpen = true; // nur zum Testen
+  //  d.isOpen = true;  nur zum Testen
 
     // Wandvektor
     const dx = x2 - x1;
@@ -2336,7 +2325,7 @@ case "falttuer": {
         // ⭐ Terrassentür → Glas
         // ------------------------------------------------------------
 case "terrassentuer": {
-    d.isOpen = false; // nur zum Testen
+ //   d.isOpen = false;  nur zum Testen
 
     // ------------------------------------------------------------
     // 0. Drehpunkt bestimmen (IDENTISCH zur Zimmertür)
@@ -2450,7 +2439,7 @@ case "terrassentuer": {
         // ⭐ Garagentor → dicke Linie
         // ------------------------------------------------------------
 case "garagentor": {
-    d.isOpen = true; // nur zum Testen
+   // d.isOpen = true;  nur zum Testen
 
     // ------------------------------------------------------------
     // 0. Drehpunkt bestimmen (Scharnierseite)
@@ -2579,7 +2568,7 @@ case "garagentor": {
         // ------------------------------------------------------------
 case "gartentor": {
 
-    d.isOpen = true; // nur zum Testen
+//    d.isOpen = true;  nur zum Testen
 
     // ------------------------------------------------------------
     // 0. Drehpunkt bestimmen (Scharnier)
@@ -2784,7 +2773,7 @@ case "durchgang": {
 // ⭐ Dachluke
 // ------------------------------------------------------------     
 case "dachluke": {
-    d.isOpen = false; // nur zum Testen
+    // d.isOpen = false;  nur zum Testen
 
     const r = d.width / 2;
 
