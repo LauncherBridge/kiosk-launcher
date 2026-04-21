@@ -184,121 +184,166 @@ const RoomDesigner = {
         this.contextMenuEl.style.display = "none";
         this.contextTarget = null;
     },
+    
+showContextMenu(x, y, type, index) {
+    const menu = this.contextMenuEl;
+    menu.innerHTML = "";
+    this.contextTarget = { type, index };
 
-    showContextMenu(x, y, type, index) {
-        const menu = this.contextMenuEl;
-        menu.innerHTML = "";
-        this.contextTarget = { type, index };
+    // ------------------------------------------------------------
+    // ⭐ POINT
+    // ------------------------------------------------------------
+    if (type === "point") {
+        this.addContextButton("🗑", () => {
 
-        if (type === "point") {
-            this.addContextButton("🗑", () => {
+            const prevWall = index - 1;
+            const nextWall = index;
 
-                // 1. Betroffene Wände bestimmen
-                const prevWall = index - 1;
-                const nextWall = index;
+            const affectedDoors = this.doors.filter(d => d.wallIndex === prevWall || d.wallIndex === nextWall);
+            const affectedWindows = this.windows.filter(w => w.wallIndex === prevWall || w.wallIndex === nextWall);
 
-                // 2. Türen/Fenster merken, die auf diesen Wänden liegen
-                const affectedDoors = this.doors.filter(d => d.wallIndex === prevWall || d.wallIndex === nextWall);
-                const affectedWindows = this.windows.filter(w => w.wallIndex === prevWall || w.wallIndex === nextWall);
+            const p = this.points[index];
+            this.points = this.points.filter(pt => pt !== p);
+            if (this.points.length < 3) this.isClosed = false;
 
-                // 3. Punkt löschen
-                const p = this.points[index];
-                this.points = this.points.filter(pt => pt !== p);
-                if (this.points.length < 3) this.isClosed = false;
+            this.updateWalls();
 
-                // 4. Wände neu berechnen
-                this.updateWalls();
+            const newWallIndex = prevWall;
 
-                // 5. Neue Wand ist jetzt prevWall
-                const newWallIndex = prevWall;
+            for (const d of affectedDoors) {
+                const w = this.walls[newWallIndex];
+                if (!w) continue;
+                const proj = this.projectOnWall(d.x, d.y, w);
+                d.wallIndex = newWallIndex;
+                d.t = proj.t;
+                d.x = proj.x;
+                d.y = proj.y;
+            }
 
-                // 6. Türen neu projizieren
-                for (const d of affectedDoors) {
-                    const w = this.walls[newWallIndex];
-                    if (!w) continue;
+            for (const win of affectedWindows) {
+                const w = this.walls[newWallIndex];
+                if (!w) continue;
+                const proj = this.projectOnWall(win.x, win.y, w);
+                win.wallIndex = newWallIndex;
+                win.t = proj.t;
+                win.x = proj.x;
+                win.y = proj.y;
+            }
 
-                    const proj = this.projectOnWall(d.x, d.y, w);
+            this.render();
+        }, true);
+    }
 
-                    d.wallIndex = newWallIndex;
-                    d.t = proj.t;
-                    d.x = proj.x;
-                    d.y = proj.y;
-                }
+    // ------------------------------------------------------------
+    // ⭐ DOOR (ALLE Türen inkl. Dachluke)
+    // ------------------------------------------------------------
+    if (type === "door") {
 
-                // 7. Fenster neu projizieren
-                for (const win of affectedWindows) {
-                    const w = this.walls[newWallIndex];
-                    if (!w) continue;
+        const d = this.doors[index];
 
-                    const proj = this.projectOnWall(win.x, win.y, w);
+        // 1) Zustand ändern (offen/geschlossen)
+        if (d.type !== "durchgang") {
+            this.addContextButton(d.isOpen ? "🔒" : "🔓", () => {
+                d.isOpen = !d.isOpen;
+                this.render();
+            }, false);
+        }
 
-                    win.wallIndex = newWallIndex;
-                    win.t = proj.t;
-                    win.x = proj.x;
-                    win.y = proj.y;
-                }
+        // 2) Scharnier neu setzen (nur Türtypen mit Scharnier)
+        const hingeSupported = [
+            "zimmertuer",
+            "haustuer",
+            "falttuer",
+            "dachluke"
+        ];
 
+        if (hingeSupported.includes(d.type)) {
+            this.addContextButton("⟲", () => {
+                this._placingHinge = true;
+                this._hingeDoorIndex = index;
+                this.mode = "setHinge";
                 this.render();
             }, true);
         }
 
-        if (type === "door" || type === "window") {
-            const arr = type === "door" ? this.doors : this.windows;
+        // 3) Breite +
+        this.addContextButton("＋", () => {
+            d.width += 10;
+            this.updateWalls();
+            this.render();
+        }, false);
 
-            // PLUS → Menü bleibt offen
-            this.addContextButton("＋", () => {
-                arr[index].width += 10;
-                this.updateWalls();
-                this.render();
-            }, false);
+        // 4) Breite –
+        this.addContextButton("－", () => {
+            d.width = Math.max(20, d.width - 10);
+            this.updateWalls();
+            this.render();
+        }, false);
 
-            // MINUS → Menü bleibt offen
-            this.addContextButton("－", () => {
-                arr[index].width = Math.max(20, arr[index].width - 10);
-                this.updateWalls();
-                this.render();
-            }, false);
+        // 5) Löschen
+        this.addContextButton("🗑", () => {
+            this.doors.splice(index, 1);
+            this.updateWalls();
+            this.render();
+        }, true);
+    }
 
-            // DELETE → Menü schließt sich
-            this.addContextButton("🗑", () => {
-                arr.splice(index, 1);
-                this.updateWalls();
-                this.render();
-            }, true);
-        }
+    // ------------------------------------------------------------
+    // ⭐ WINDOW (unverändert)
+    // ------------------------------------------------------------
+    if (type === "window") {
+        const arr = this.windows;
 
-        menu.style.display = "flex";
+        this.addContextButton("＋", () => {
+            arr[index].width += 10;
+            this.updateWalls();
+            this.render();
+        }, false);
 
-        const rect = menu.getBoundingClientRect();
-        const offset = 20;
+        this.addContextButton("－", () => {
+            arr[index].width = Math.max(20, arr[index].width - 10);
+            this.updateWalls();
+            this.render();
+        }, false);
 
-        // Standard: rechts unten neben dem Objekt
-        let left = x + offset;
-        let top = y + offset;
+        this.addContextButton("🗑", () => {
+            arr.splice(index, 1);
+            this.updateWalls();
+            this.render();
+        }, true);
+    }
 
-        // Falls rechts kein Platz → links
-        if (left + rect.width > window.innerWidth) {
-            left = x - rect.width - offset;
-        }
+    // ------------------------------------------------------------
+    // ⭐ Menü anzeigen + korrekt positionieren
+    // ------------------------------------------------------------
+    menu.style.display = "flex";
 
-        // Falls unten kein Platz → oben
-        if (top + rect.height > window.innerHeight) {
-            top = y - rect.height - offset;
-        }
+    const rect = menu.getBoundingClientRect();
+    const offset = 20;
 
-        // Falls links immer noch außerhalb → rechts erzwingen
-        if (left < 0) {
-            left = x + offset;
-        }
+    let left = x + offset;
+    let top = y + offset;
 
-        // Falls oben immer noch außerhalb → unten erzwingen
-        if (top < 0) {
-            top = y + offset;
-        }
+    if (left + rect.width > window.innerWidth) {
+        left = x - rect.width - offset;
+    }
 
-        menu.style.left = left + "px";
-        menu.style.top = top + "px";
-    },
+    if (top + rect.height > window.innerHeight) {
+        top = y - rect.height - offset;
+    }
+
+    if (left < 0) {
+        left = x + offset;
+    }
+
+    if (top < 0) {
+        top = y + offset;
+    }
+
+    menu.style.left = left + "px";
+    menu.style.top = top + "px";
+},
+    
 
     addContextButton(label, fn, closeMenu = false) {
         const btn = document.createElement("button");
@@ -569,327 +614,309 @@ if (d.type === "dachluke") {
         return null;
     },
 
-onDown(e) {
-    const rect = this.canvas.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-
-    const worldX = (mouseX / this.zoom) - this.offsetX;
-    const worldY = (mouseY / this.zoom) - this.offsetY;
-
-    // Rechtsklick → Menü schließen, Klick ignorieren
-    if (e.button === 2) {
-        this.hideContextMenu();
-        return;
-    }
-
-// ------------------------------------------------------------
-// ⭐ DACHLUKE: 1. Klick = Luke setzen, 2. Klick = Scharnier setzen
-// ------------------------------------------------------------
-if (this.mode === "dachluke") {
-
-    // 1) Erster Klick → Luke platzieren
-    if (!this._placingDachluke) {
-
-        if (!this.isClosed) {
-            alert("Dachluken können nur in einem geschlossenen Raum platziert werden.");
-            return;
-        }
-
-        if (!this.isPointInsideRoom(worldX, worldY)) {
-            alert("Dachluken müssen innerhalb des Raumes platziert werden.");
-            return;
-        }
-
-        this.doors.push({
-            type: "dachluke",
-            x: worldX,
-            y: worldY,
-            width: 60,
-            isOpen: false,
-            hingeAngle: 0
-        });
-
-        // Wir merken uns, dass der nächste Klick das Scharnier setzt
-        this._placingDachluke = true;
-            this.render();
-        return;
-    }
-
-    // 2) Zweiter Klick → Scharnier setzen
-    const d = this.doors[this.doors.length - 1];
-
-    const dx = worldX - d.x;
-    const dy = worldY - d.y;
-    d.hingeAngle = Math.atan2(dy, dx);
-
-    // Fertig
-    this._placingDachluke = false;
-    this.mode = "points";
-    this.render();
-    return;
-}
-
-
-
-
-
-
-
+    onDown(e) {
+        const rect = this.canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
     
-    // Hit-Test mit Screen-Koordinaten (hitTest rechnet selbst in Welt um)
-    const hit = this.hitTest(mouseX, mouseY);
-    const clickingObject =
-        hit.type === "point" ||
-        hit.type === "door" ||
-        hit.type === "window";
-
-    const menuWasOpen =
-        this.contextMenuEl &&
-        this.contextMenuEl.style.display === "flex";
-
-    this.hideContextMenu();
-
-    if (this._contextJustClosed && !clickingObject) {
-        this._contextJustClosed = false;
-        return;
-    }
-
-    if (this._contextJustClosed && clickingObject) {
-        this._contextJustClosed = false;
-    }
-
-    // Raum schließen durch Klick auf ersten Punkt
-    if (!this.isClosed && this.points.length >= 2) {
-        const first = this.points[0];
-        if (Math.hypot(worldX - first.x, worldY - first.y) < 20) {
-
-            // this.points.push(first);
-            this.isClosed = true;
-
-            // NEU: Winkelanzeige aktivieren
-            this.selectedPoint = first;
-            this.isDragging = true;
-
-            this.updateWalls();
-            this.render();
-
-            // Reset
-            this.isDragging = false;
-            this.selectedPoint = null;
-
+        const worldX = (mouseX / this.zoom) - this.offsetX;
+        const worldY = (mouseY / this.zoom) - this.offsetY;
+    
+        // Rechtsklick → Menü schließen
+        if (e.button === 2) {
+            this.hideContextMenu();
             return;
         }
-    }
-
-    // Fenster-Modus
-    if (this.mode === "windows") {
-
+    
+        // ------------------------------------------------------------
+        // ⭐ SCHARNIER NEU SETZEN (für ALLE Türen)
+        // ------------------------------------------------------------
+        if (this.mode === "setHinge" && this._placingHinge) {
+    
+            const d = this.doors[this._hingeDoorIndex];
+            if (!d) {
+                this._placingHinge = false;
+                this._hingeDoorIndex = null;
+                this.mode = "points";
+                return;
+            }
+    
+            const dx = worldX - d.x;
+            const dy = worldY - d.y;
+    
+            d.hingeAngle = Math.atan2(dy, dx);
+    
+            this._placingHinge = false;
+            this._hingeDoorIndex = null;
+            this.mode = "points";
+    
+            this.render();
+            return;
+        }
+    
+        // ------------------------------------------------------------
+        // ⭐ DACHLUKE: 1. Klick = Luke setzen, 2. Klick = Scharnier setzen
+        // ------------------------------------------------------------
+        if (this.mode === "dachluke") {
+    
+            // 1) Erster Klick → Luke platzieren
+            if (!this._placingDachluke) {
+    
+                if (!this.isClosed) {
+                    alert("Dachluken können nur in einem geschlossenen Raum platziert werden.");
+                    return;
+                }
+    
+                if (!this.isPointInsideRoom(worldX, worldY)) {
+                    alert("Dachluken müssen innerhalb des Raumes platziert werden.");
+                    return;
+                }
+    
+                this.doors.push({
+                    type: "dachluke",
+                    x: worldX,
+                    y: worldY,
+                    width: 60,
+                    isOpen: false,
+                    hingeAngle: 0
+                });
+    
+                this._placingDachluke = true;
+                this.render();
+                return;
+            }
+    
+            // 2) Zweiter Klick → Scharnier setzen
+            const d = this.doors[this.doors.length - 1];
+    
+            const dx = worldX - d.x;
+            const dy = worldY - d.y;
+            d.hingeAngle = Math.atan2(dy, dx);
+    
+            this._placingDachluke = false;
+            this.mode = "points";
+            this.render();
+            return;
+        }
+    
+        // ------------------------------------------------------------
+        // ⭐ HIT-TEST
+        // ------------------------------------------------------------
+        const hit = this.hitTest(mouseX, mouseY);
+        const clickingObject =
+            hit.type === "point" ||
+            hit.type === "door" ||
+            hit.type === "window";
+    
+        const menuWasOpen =
+            this.contextMenuEl &&
+            this.contextMenuEl.style.display === "flex";
+    
+        this.hideContextMenu();
+    
+        if (this._contextJustClosed && !clickingObject) {
+            this._contextJustClosed = false;
+            return;
+        }
+    
+        if (this._contextJustClosed && clickingObject) {
+            this._contextJustClosed = false;
+        }
+    
+        // ------------------------------------------------------------
+        // ⭐ Raum schließen durch Klick auf ersten Punkt
+        // ------------------------------------------------------------
+        if (!this.isClosed && this.points.length >= 2) {
+            const first = this.points[0];
+            if (Math.hypot(worldX - first.x, worldY - first.y) < 20) {
+    
+                this.isClosed = true;
+    
+                this.selectedPoint = first;
+                this.isDragging = true;
+    
+                this.updateWalls();
+                this.render();
+    
+                this.isDragging = false;
+                this.selectedPoint = null;
+    
+                return;
+            }
+        }
+    
+        // ------------------------------------------------------------
+        // ⭐ FENSTER-MODUS
+        // ------------------------------------------------------------
+        if (this.mode === "windows") {
+    
+            if (hit.type === "window") {
+                this._pendingContext = { x: worldX, y: worldY, type: "window", index: hit.index };
+                return;
+            }
+    
+            if (hit.type === "wall") {
+                const w = hit.data;
+                this.windows.push({
+                    wallIndex: w.index,
+                    t: w.t,
+                    x: w.x,
+                    y: w.y,
+                    width: 80
+                });
+                this.updateWalls();
+                this.render();
+            }
+    
+            this.mode = "points";
+            return;
+        }
+    
+        // ------------------------------------------------------------
+        // ⭐ TÜR-MODUS (ALLE Türtypen)
+        // ------------------------------------------------------------
+        if (this.mode === "doors") {
+    
+            const type = this.currentDoorType || "default";
+    
+            // ⭐ Durchgang → 1 Klick
+            if (type === "durchgang") {
+    
+                if (hit.type !== "wall") return;
+    
+                const w = hit.data;
+                const defaultWidth = 100;
+    
+                const cx = w.x;
+                const cy = w.y;
+    
+                const dx = w.x2 - w.x1;
+                const dy = w.y2 - w.y1;
+                const len = Math.hypot(dx, dy) || 1;
+    
+                const tx = dx / len;
+                const ty = dy / len;
+    
+                const x1 = cx - tx * (defaultWidth / 2);
+                const y1 = cy - ty * (defaultWidth / 2);
+    
+                const x2 = cx + tx * (defaultWidth / 2);
+                const y2 = cy + ty * (defaultWidth / 2);
+    
+                this.doors.push({
+                    type: "durchgang",
+                    wallIndex: w.index,
+                    t: w.t,
+                    x: cx,
+                    y: cy,
+                    width: defaultWidth,
+                    hinge: null,
+                    side: null
+                });
+    
+                this.render();
+                this.mode = "points";
+                return;
+            }
+    
+            // ⭐ Normale Türen → Wandgebunden
+            if (!this._placingDoor) {
+                if (hit.type === "wall") {
+                    const w = hit.data;
+                    this.doors.push({
+                        wallIndex: w.index,
+                        t: w.t,
+                        x: w.x,
+                        y: w.y,
+                        width: 36,
+                        hinge: null,
+                        side: 1,
+                        type: type
+                    });
+                    this._placingDoor = true;
+                    this.render();
+                    return;
+                }
+            }
+    
+            // ⭐ Hinge setzen (normale Türen)
+            if (this._placingDoor) {
+                const lastDoor = this.doors[this.doors.length - 1];
+                const w = this.walls[lastDoor.wallIndex];
+                this.setDoorHingeFromTap(lastDoor, worldX, worldY, w);
+    
+                this._placingDoor = false;
+                this.mode = "points";
+                this.render();
+                return;
+            }
+        }
+    
+        // ------------------------------------------------------------
+        // ⭐ Kontextmenü für Türen
+        // ------------------------------------------------------------
+        if (hit.type === "door") {
+    
+            const d = this.doors[hit.index];
+    
+            this._pendingContext = { x: worldX, y: worldY, type: "door", index: hit.index };
+            return;
+        }
+    
+        // ------------------------------------------------------------
+        // ⭐ Kontextmenü für Fenster
+        // ------------------------------------------------------------
         if (hit.type === "window") {
             this._pendingContext = { x: worldX, y: worldY, type: "window", index: hit.index };
             return;
         }
-
-        if (hit.type === "wall") {
-            const w = hit.data;
-            this.windows.push({
-                wallIndex: w.index,
-                t: w.t,
-                x: w.x,
-                y: w.y,
-                width: 80
-            });
-            this.updateWalls();
-            this.render();
-        }
-
-        this.mode = "points";
-        return;
-    }
-
-
-
     
-    // ------------------------------------------------------------
-    // ⭐ TÜR-MODUS (JETZT MIT TÜR-TYPEN)
-    // ------------------------------------------------------------
-
-if (this.mode === "doors") {
-
-    const type = this.currentDoorType || "default";
-
-    // ------------------------------------------------------------
-    // ⭐ DURCHGANG → nur EIN Klick, kein Hinge, kein zweiter Punkt
-    // ------------------------------------------------------------
-    if (type === "durchgang") {
-
-        // Muss auf eine Wand geklickt werden
-        if (hit.type !== "wall") {
-            return; // kein Wandtreffer → nichts tun
+        // ------------------------------------------------------------
+        // ⭐ Kontextmenü für Punkte
+        // ------------------------------------------------------------
+        if (hit.type === "point") {
+            this._pendingContext = { x: worldX, y: worldY, type: "point", index: hit.index };
+            return;
         }
-
-        const w = hit.data;
-
-        // Standardbreite eines Durchgangs
-        const defaultWidth = 100;
-
-        // Mittelpunkt des Durchgangs (wie bei Türen)
-        const cx = w.x;
-        const cy = w.y;
-
-        // Wandrichtung
-        const dx = w.x2 - w.x1;
-        const dy = w.y2 - w.y1;
-        const len = Math.hypot(dx, dy) || 1;
-
-        const tx = dx / len;
-        const ty = dy / len;
-
-        // Endpunkte des Durchgangs
-        const x1 = cx - tx * (defaultWidth / 2);
-        const y1 = cy - ty * (defaultWidth / 2);
-
-        const x2 = cx + tx * (defaultWidth / 2);
-        const y2 = cy + ty * (defaultWidth / 2);
-
-        // Durchgang erzeugen
-        this.doors.push({
-            type: "durchgang",
-            wallIndex: w.index,
-            t: w.t,
-            x: cx,
-            y: cy,
-            width: defaultWidth,
-            hinge: null,
-            side: null
-        });
-
-        this.render();
-        this.mode = "points"; // zurück in normalen Modus
-        return;
-    }
-
- 
-    // ------------------------------------------------------------
-    // ⭐ 1) Dachluke → frei platzieren
-    // ------------------------------------------------------------
-   // if (type === "dachluke") {
-   //     this.doors.push({
-   //         wallIndex: null,
-   //         t: null,
-   //         x: worldX,
-   //         y: worldY,
-   //         width: 36,
-   //         hinge: null,
-   //         side: 1,
-   //         type: type
-   //     });
-
-   //     this.render();
-   //     this.mode = "points";
-   //     return;
-   // }
-
-    // ------------------------------------------------------------
-    // ⭐ 2) Alle anderen Türtypen → Wandgebunden
-    // ------------------------------------------------------------
-    if (!this._placingDoor) {
+    
+        // ------------------------------------------------------------
+        // ⭐ Punkt auf Wand einfügen
+        // ------------------------------------------------------------
         if (hit.type === "wall") {
             const w = hit.data;
-            this.doors.push({
-                wallIndex: w.index,
-                t: w.t,
-                x: w.x,
-                y: w.y,
-                width: 36,
-                hinge: null,
-                side: 1,
-                type: type
-            });
-            this._placingDoor = true;
+            const insertPoint = { x: w.x, y: w.y };
+    
+            this.points.splice(w.index + 1, 0, insertPoint);
+    
+            this.updateWalls();
             this.render();
             return;
         }
-    }
-
-    // ------------------------------------------------------------
-    // ⭐ 3) Hinge setzen (normale Türen)
-    // ------------------------------------------------------------
-    if (this._placingDoor) {
-        const lastDoor = this.doors[this.doors.length - 1];
-        const w = this.walls[lastDoor.wallIndex];
-        this.setDoorHingeFromTap(lastDoor, worldX, worldY, w);
-
-        this._placingDoor = false;
-        this.mode = "points";
-        this.render();
-        return;
-    }
-}
-
-
-    // Punkt-Modus
-
-if (hit.type === "door") {
-
-    const d = this.doors[hit.index];
-
-    // ⭐ Dachluke → wie Tür draggen, aber kein eigenes Kontextmenü hier
-    if (d.type === "dachluke") {
-        this._pendingContext = { x: worldX, y: worldY, type: "door", index: hit.index };
-        return;
-    }
-
-    // ⭐ Normale Türen → Kontextmenü wie bisher
-    this._pendingContext = { x: worldX, y: worldY, type: "door", index: hit.index };
-    return;
-}
-
-
-
-
-    if (hit.type === "window") {
-        this._pendingContext = { x: worldX, y: worldY, type: "window", index: hit.index };
-        return;
-    }
-
-    if (hit.type === "point") {
-        this._pendingContext = { x: worldX, y: worldY, type: "point", index: hit.index };
-        return;
-    }
-
-    // Punkt auf Wand einfügen
-    if (hit.type === "wall") {
-        const w = hit.data;
-        const insertPoint = { x: w.x, y: w.y };
-
-        this.points.splice(w.index + 1, 0, insertPoint);
-
-        this.updateWalls();
-        this.render();
-        return;
-    }
-
-    // Punkt-Kandidat im leeren Raum
-    if (!this.isClosed && hit.type === "empty") {
-        let px = worldX;
-        let py = worldY;
-
-        if (this.snapEnabled) {
-            px = this.snap(px);
-            py = this.snap(py);
+    
+        // ------------------------------------------------------------
+        // ⭐ Punkt-Kandidat im leeren Raum
+        // ------------------------------------------------------------
+        if (!this.isClosed && hit.type === "empty") {
+            let px = worldX;
+            let py = worldY;
+    
+            if (this.snapEnabled) {
+                px = this.snap(px);
+                py = this.snap(py);
+            }
+    
+            this._pendingNewPoint = { x: px, y: py };
         }
-
-        this._pendingNewPoint = { x: px, y: py };
-    }
-
-    // PAN-Kandidat merken (aber noch NICHT starten)
-    if (hit.type === "empty" || hit.type === "wall") {
-        this.isPanCandidate = true;
-        this.panStartX = mouseX;
-        this.panStartY = mouseY;
-    }
-},
+    
+        // ------------------------------------------------------------
+        // ⭐ PAN-Kandidat
+        // ------------------------------------------------------------
+        if (hit.type === "empty" || hit.type === "wall") {
+            this.isPanCandidate = true;
+            this.panStartX = mouseX;
+            this.panStartY = mouseY;
+        }
+    },
 
     onUp(e) {
         // Wenn gerade gesnapped wurde → Klick komplett ignorieren
