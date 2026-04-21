@@ -631,7 +631,7 @@ if (d.type === "dachluke") {
         // ------------------------------------------------------------
         // ⭐ SCHARNIER NEU SETZEN (für ALLE Türen)
         // ------------------------------------------------------------
-        if (this.mode === "setHinge" && this._placingHinge) {
+        if (this.mode === "setHinge") {
     
             const d = this.doors[this._hingeDoorIndex];
             if (!d) {
