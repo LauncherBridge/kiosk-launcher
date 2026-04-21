@@ -647,13 +647,13 @@ if (this.mode === "setHinge") {
     }
 
     // Dachluke NICHT hier – die hat ihren eigenen Flow
-    if (d.type === "dachluke") {
+  //  if (d.type === "dachluke") {
         // Sicherheitshalber: zurück in Normalmodus
-        this.mode = "points";
-        this._hingeDoorIndex = null;
-        return;
-    }
-
+  //      this.mode = "points";
+    //    this._hingeDoorIndex = null;
+      //  return;
+  //  }
+//
     // Wir benutzen die bestehende Logik: setDoorHingeFromTap
     const w = this.walls[d.wallIndex];
     if (!w) {
