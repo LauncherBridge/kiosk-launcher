@@ -195,43 +195,12 @@ showContextMenu(x, y, type, index) {
     // ------------------------------------------------------------
     if (type === "point") {
         this.addContextButton("🗑", () => {
-
-            const prevWall = index - 1;
-            const nextWall = index;
-
-            const affectedDoors = this.doors.filter(d => d.wallIndex === prevWall || d.wallIndex === nextWall);
-            const affectedWindows = this.windows.filter(w => w.wallIndex === prevWall || w.wallIndex === nextWall);
-
-            const p = this.points[index];
-            this.points = this.points.filter(pt => pt !== p);
-            if (this.points.length < 3) this.isClosed = false;
-
-            this.updateWalls();
-
-            const newWallIndex = prevWall;
-
-            for (const d of affectedDoors) {
-                const w = this.walls[newWallIndex];
-                if (!w) continue;
-                const proj = this.projectOnWall(d.x, d.y, w);
-                d.wallIndex = newWallIndex;
-                d.t = proj.t;
-                d.x = proj.x;
-                d.y = proj.y;
-            }
-
-            for (const win of affectedWindows) {
-                const w = this.walls[newWallIndex];
-                if (!w) continue;
-                const proj = this.projectOnWall(win.x, win.y, w);
-                win.wallIndex = newWallIndex;
-                win.t = proj.t;
-                win.x = proj.x;
-                win.y = proj.y;
-            }
-
+            this.deletePoint(index);
             this.render();
         }, true);
+
+        this.openContextMenuAt(x, y);
+        return;
     }
 
     // ------------------------------------------------------------
@@ -268,7 +237,7 @@ showContextMenu(x, y, type, index) {
 
         // ⭐ NORMALE TÜREN AB HIER
 
-        // 1) Zustand ändern (offen/geschlossen)
+        // 1) Zustand ändern
         if (d.type !== "durchgang") {
             this.addContextButton(d.isOpen ? "🔒" : "🔓", () => {
                 d.isOpen = !d.isOpen;
@@ -276,7 +245,7 @@ showContextMenu(x, y, type, index) {
             }, false);
         }
 
-        // 2) Scharnier neu setzen (nur Türtypen mit Scharnier)
+        // 2) Scharnier neu setzen
         const hingeSupported = [
             "zimmertuer",
             "haustuer",
@@ -316,62 +285,39 @@ showContextMenu(x, y, type, index) {
             this.updateWalls();
             this.render();
         }, true);
+
+        this.openContextMenuAt(x, y);
+        return;
     }
 
     // ------------------------------------------------------------
-    // ⭐ WINDOW (unverändert)
+    // ⭐ WINDOW
     // ------------------------------------------------------------
     if (type === "window") {
-        const arr = this.windows;
+
+        const w = this.windows[index];
 
         this.addContextButton("＋", () => {
-            arr[index].width += 10;
+            w.width += 10;
             this.updateWalls();
-           this.render();
+            this.render();
         }, false);
 
         this.addContextButton("－", () => {
-            arr[index].width = Math.max(20, arr[index].width - 10);
+            w.width = Math.max(20, w.width - 10);
             this.updateWalls();
             this.render();
         }, false);
 
         this.addContextButton("🗑", () => {
-            arr.splice(index, 1);
+            this.windows.splice(index, 1);
             this.updateWalls();
             this.render();
         }, true);
+
+        this.openContextMenuAt(x, y);
+        return;
     }
-
-    // ------------------------------------------------------------
-    // ⭐ Menü anzeigen + korrekt positionieren
-    // ------------------------------------------------------------
-    menu.style.display = "flex";
-
-    const rect = menu.getBoundingClientRect();
-    const offset = 20;
-
-    let left = x + offset;
-    let top = y + offset;
-
-    if (left + rect.width > window.innerWidth) {
-        left = x - rect.width - offset;
-    }
-
-    if (top + rect.height > window.innerHeight) {
-        top = y - rect.height - offset;
-    }
-
-    if (left < 0) {
-        left = x + offset;
-    }
-
-    if (top < 0) {
-        top = y + offset;
-    }
-
-    menu.style.left = left + "px";
-    menu.style.top = top + "px";
 },
     
 
