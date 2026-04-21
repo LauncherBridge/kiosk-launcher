@@ -241,6 +241,33 @@ showContextMenu(x, y, type, index) {
 
         const d = this.doors[index];
 
+        // ⭐ DACHLUKE → eigenes Menü
+        if (d.type === "dachluke") {
+
+            this.addContextButton("＋", () => {
+                d.width += 10;
+                this.updateWalls();
+                this.render();
+            }, false);
+
+            this.addContextButton("－", () => {
+                d.width = Math.max(20, d.width - 10);
+                this.updateWalls();
+                this.render();
+            }, false);
+
+            this.addContextButton("🗑", () => {
+                this.doors.splice(index, 1);
+                this.updateWalls();
+                this.render();
+            }, true);
+
+            this.openContextMenuAt(x, y);
+            return;
+        }
+
+        // ⭐ NORMALE TÜREN AB HIER
+
         // 1) Zustand ändern (offen/geschlossen)
         if (d.type !== "durchgang") {
             this.addContextButton(d.isOpen ? "🔒" : "🔓", () => {
@@ -249,28 +276,25 @@ showContextMenu(x, y, type, index) {
             }, false);
         }
 
-// 2) Scharnier neu setzen (nur Türtypen mit Scharnier)
-const hingeSupported = [
-    "zimmertuer",
-    "haustuer",
-    "falttuer",
-    "schiebetuer",
-    "terrassentuer",
-    "garagentor",
-    "gartentor",
-   // "dachluke"
-    // dachluke NICHT hier – die hat ihren eigenen Flow
-];
+        // 2) Scharnier neu setzen (nur Türtypen mit Scharnier)
+        const hingeSupported = [
+            "zimmertuer",
+            "haustuer",
+            "falttuer",
+            "schiebetuer",
+            "terrassentuer",
+            "garagentor",
+            "gartentor"
+        ];
 
-if (hingeSupported.includes(d.type)) {
-    this.addContextButton("⟲", () => {
-        this.mode = "setHinge";
-        this._hingeDoorIndex = index;   // merken, welche Tür
-        this.hideContextMenu();
-        this.render();
-    }, true);
-}
-
+        if (hingeSupported.includes(d.type)) {
+            this.addContextButton("⟲", () => {
+                this.mode = "setHinge";
+                this._hingeDoorIndex = index;
+                this.hideContextMenu();
+                this.render();
+            }, true);
+        }
 
         // 3) Breite +
         this.addContextButton("＋", () => {
@@ -303,7 +327,7 @@ if (hingeSupported.includes(d.type)) {
         this.addContextButton("＋", () => {
             arr[index].width += 10;
             this.updateWalls();
-            this.render();
+           this.render();
         }, false);
 
         this.addContextButton("－", () => {
