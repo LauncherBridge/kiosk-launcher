@@ -628,31 +628,30 @@ if (d.type === "dachluke") {
             return;
         }
     
-        // ------------------------------------------------------------
-        // ⭐ SCHARNIER NEU SETZEN (für ALLE Türen)
-        // ------------------------------------------------------------
-        if (this.mode === "setHinge") {
-    
-            const d = this.doors[this._hingeDoorIndex];
-            if (!d) {
-                this._placingHinge = false;
-                this._hingeDoorIndex = null;
-                this.mode = "points";
-                return;
-            }
-    
-            const dx = worldX - d.x;
-            const dy = worldY - d.y;
-    
-            d.hingeAngle = Math.atan2(dy, dx);
-    
-            this._placingHinge = false;
-            this._hingeDoorIndex = null;
-            this.mode = "points";
-    
-            this.render();
-            return;
-        }
+// ------------------------------------------------------------
+// ⭐ SCHARNIER NEU SETZEN (für ALLE Türen)
+// ------------------------------------------------------------
+if (this.mode === "setHinge") {
+
+    const d = this.doors[this._hingeDoorIndex];
+    if (!d) {
+        this.mode = "points";
+        this._hingeDoorIndex = null;
+        return;
+    }
+
+    const dx = worldX - d.x;
+    const dy = worldY - d.y;
+
+    d.hingeAngle = Math.atan2(dy, dx);
+
+    this.mode = "points";
+    this._hingeDoorIndex = null;
+
+    this.render();
+    return;
+}
+
     
         // ------------------------------------------------------------
         // ⭐ DACHLUKE: 1. Klick = Luke setzen, 2. Klick = Scharnier setzen
