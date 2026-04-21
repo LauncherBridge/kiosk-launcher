@@ -800,7 +800,8 @@ onDown(e) {
                 x: cx,
                 y: cy,
                 width: defaultWidth,
-                hinge: null,
+               hingeAngle: 0, // hinge: null,
+                    type: type,
                 side: null
             });
 
