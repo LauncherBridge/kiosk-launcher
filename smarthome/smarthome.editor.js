@@ -210,21 +210,34 @@ showContextMenu(x, y, type, index) {
 
         const d = this.doors[index];
 
-        // ⭐ DACHLUKE → eigenes Menü
+        // --------------------------------------------------------
+        // ⭐ DACHLUKE → eigenes Menü + Scharnier neu setzen
+        // --------------------------------------------------------
         if (d.type === "dachluke") {
 
+            // Scharnier neu setzen
+            this.addContextButton("⟲", () => {
+                this.mode = "setHinge";
+                this._hingeDoorIndex = index;
+                this.hideContextMenu();
+                this.render();
+            }, true);
+
+            // Breite +
             this.addContextButton("＋", () => {
                 d.width += 10;
                 this.updateWalls();
                 this.render();
             }, false);
 
+            // Breite –
             this.addContextButton("－", () => {
                 d.width = Math.max(20, d.width - 10);
                 this.updateWalls();
                 this.render();
             }, false);
 
+            // Löschen
             this.addContextButton("🗑", () => {
                 this.doors.splice(index, 1);
                 this.updateWalls();
@@ -235,7 +248,9 @@ showContextMenu(x, y, type, index) {
             return;
         }
 
-        // ⭐ NORMALE TÜREN AB HIER
+        // --------------------------------------------------------
+        // ⭐ NORMALE TÜREN
+        // --------------------------------------------------------
 
         // 1) Zustand ändern
         if (d.type !== "durchgang") {
@@ -610,21 +625,20 @@ onDown(e) {
 if (this.mode === "setHinge") {
 
     const d = this.doors[this._hingeDoorIndex];
+
     if (!d) {
         this.mode = "points";
         this._hingeDoorIndex = null;
         return;
     }
 
-    // ⭐ WICHTIG:
-    // Wenn es eine Dachluke ist → NICHT hier behandeln!
-    // Einfach weiterlaufen lassen, damit der Dachluken-Block weiter unten greift.
+    // ⭐ Dachluke → NICHT hier behandeln → weiterlaufen lassen
     if (d.type === "dachluke") {
         // NICHT returnen!
         // NICHT mode ändern!
-        // Einfach durchfallen lassen.
+        // Dachluke wird weiter unten im Dachluken-Block behandelt
     } else {
-        // ⭐ Normale Türen → vorhandene Logik nutzen
+        // ⭐ Normale Türen
         const w = this.walls[d.wallIndex];
         if (w) {
             this.setDoorHingeFromTap(d, worldX, worldY, w);
@@ -632,11 +646,11 @@ if (this.mode === "setHinge") {
 
         this.mode = "points";
         this._hingeDoorIndex = null;
-
         this.render();
         return;
     }
 }
+
 
 
 
