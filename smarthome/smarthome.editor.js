@@ -258,7 +258,7 @@ const hingeSupported = [
     "terrassentuer",
     "garagentor",
     "gartentor",
-    "dachluke"
+   // "dachluke"
     // dachluke NICHT hier – die hat ihren eigenen Flow
 ];
 
@@ -635,7 +635,7 @@ onDown(e) {
     }
 
 // ------------------------------------------------------------
-// ⭐ SCHARNIER NEU SETZEN (für normale Türen)
+// ⭐ SCHARNIER NEU SETZEN (für normale Türen, NICHT Dachluke)
 // ------------------------------------------------------------
 if (this.mode === "setHinge") {
 
@@ -646,30 +646,28 @@ if (this.mode === "setHinge") {
         return;
     }
 
-    // Dachluke NICHT hier – die hat ihren eigenen Flow
-  //  if (d.type === "dachluke") {
-        // Sicherheitshalber: zurück in Normalmodus
-  //      this.mode = "points";
-    //    this._hingeDoorIndex = null;
-      //  return;
-  //  }
-//
-    // Wir benutzen die bestehende Logik: setDoorHingeFromTap
-    const w = this.walls[d.wallIndex];
-    if (!w) {
+    // ⭐ WICHTIG:
+    // Wenn es eine Dachluke ist → NICHT hier behandeln!
+    // Einfach weiterlaufen lassen, damit der Dachluken-Block weiter unten greift.
+    if (d.type === "dachluke") {
+        // NICHT returnen!
+        // NICHT mode ändern!
+        // Einfach durchfallen lassen.
+    } else {
+        // ⭐ Normale Türen → vorhandene Logik nutzen
+        const w = this.walls[d.wallIndex];
+        if (w) {
+            this.setDoorHingeFromTap(d, worldX, worldY, w);
+        }
+
         this.mode = "points";
         this._hingeDoorIndex = null;
+
+        this.render();
         return;
     }
-
-    this.setDoorHingeFromTap(d, worldX, worldY, w);
-
-    this.mode = "points";
-    this._hingeDoorIndex = null;
-
-    this.render();
-    return;
 }
+
 
 
     // ------------------------------------------------------------
