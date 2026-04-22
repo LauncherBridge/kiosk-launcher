@@ -208,33 +208,44 @@ showContextMenu(x, y, type, index) {
         const d = this.doors[index];
 
         // ⭐ DACHLUKE → eigenes Menü + Scharnier neu setzen
-        if (d.type === "dachluke") {
+if (d.type === "dachluke") {
 
-            this.addContextButton("⟲", () => {
-                this.mode = "setHinge";
-                this._hingeDoorIndex = index;
-                this.hideContextMenu();
-                this.render();
-            }, true);
+    // Zustand ändern (offen/geschlossen)
+    this.addContextButton(d.isOpen ? "🔒" : "🔓", () => {
+        d.isOpen = !d.isOpen;
+        this.render();
+    }, false);
 
-            this.addContextButton("＋", () => {
-                d.width += 10;
-                this.updateWalls();
-                this.render();
-            }, false);
+    // Scharnier neu setzen
+    this.addContextButton("⟲", () => {
+        this.mode = "setHinge";
+        this._hingeDoorIndex = index;
+        this.hideContextMenu();
+        this.render();
+    }, true);
 
-            this.addContextButton("－", () => {
-                d.width = Math.max(20, d.width - 10);
-                this.updateWalls();
-                this.render();
-            }, false);
+    // Breite +
+    this.addContextButton("＋", () => {
+        d.width += 10;
+        this.updateWalls();
+        this.render();
+    }, false);
 
-            this.addContextButton("🗑", () => {
-                this.doors.splice(index, 1);
-                this.updateWalls();
-                this.render();
-            }, true);
-        }
+    // Breite –
+    this.addContextButton("－", () => {
+        d.width = Math.max(20, d.width - 10);
+        this.updateWalls();
+        this.render();
+    }, false);
+
+    // Löschen
+    this.addContextButton("🗑", () => {
+        this.doors.splice(index, 1);
+        this.updateWalls();
+        this.render();
+    }, true);
+}
+
 
         // ⭐ NORMALE TÜREN
         else {
@@ -639,24 +650,32 @@ if (this.mode === "setHinge") {
         return;
     }
 
-    // ⭐ Dachluke → NICHT hier behandeln → weiterlaufen lassen
+    // ⭐ Dachluke → hingeAngle setzen
     if (d.type === "dachluke") {
-        // NICHT returnen!
-        // NICHT mode ändern!
-        // Dachluke wird weiter unten im Dachluken-Block behandelt
-    } else {
-        // ⭐ Normale Türen
-        const w = this.walls[d.wallIndex];
-        if (w) {
-            this.setDoorHingeFromTap(d, worldX, worldY, w);
-        }
+
+        // Winkel relativ zur Luke berechnen
+        const dx = worldX - d.x;
+        const dy = worldY - d.y;
+        d.hingeAngle = Math.atan2(dy, dx);
 
         this.mode = "points";
         this._hingeDoorIndex = null;
         this.render();
         return;
     }
+
+    // ⭐ Normale Türen → setDoorHingeFromTap
+    const w = this.walls[d.wallIndex];
+    if (w) {
+        this.setDoorHingeFromTap(d, worldX, worldY, w);
+    }
+
+    this.mode = "points";
+    this._hingeDoorIndex = null;
+    this.render();
+    return;
 }
+
 
 
 
