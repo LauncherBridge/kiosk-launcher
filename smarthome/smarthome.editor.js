@@ -803,6 +803,7 @@ if (this.mode === "setHinge") {
     if (this.mode === "doors") {
 
         const type = this.currentDoorType || "default";
+isOpen: true
 
         // ⭐ Durchgang → 1 Klick
         if (type === "durchgang") {
