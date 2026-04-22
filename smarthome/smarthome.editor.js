@@ -672,6 +672,7 @@ if (this.mode === "setHinge") {
 
     this.mode = "points";
     this._hingeDoorIndex = null;
+    isOpen: true;
     this.render();
     return;
 }
@@ -702,7 +703,7 @@ if (this.mode === "setHinge") {
                 x: worldX,
                 y: worldY,
                 width: 60,
-                isOpen: false,
+                isOpen: true,
                 hingeAngle: 0
             });
 
