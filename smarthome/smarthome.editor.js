@@ -198,9 +198,6 @@ showContextMenu(x, y, type, index) {
             this.deletePoint(index);
             this.render();
         }, true);
-
-        this.openContextMenuAt(x, y);
-        return;
     }
 
     // ------------------------------------------------------------
@@ -237,59 +234,55 @@ showContextMenu(x, y, type, index) {
                 this.updateWalls();
                 this.render();
             }, true);
-
-            this.openContextMenuAt(x, y);
-            return;
         }
 
-        // ⭐ NORMALE TÜREN AB HIER
+        // ⭐ NORMALE TÜREN
+        else {
 
-        if (d.type !== "durchgang") {
-            this.addContextButton(d.isOpen ? "🔒" : "🔓", () => {
-                d.isOpen = !d.isOpen;
+            if (d.type !== "durchgang") {
+                this.addContextButton(d.isOpen ? "🔒" : "🔓", () => {
+                    d.isOpen = !d.isOpen;
+                    this.render();
+                }, false);
+            }
+
+            const hingeSupported = [
+                "zimmertuer",
+                "haustuer",
+                "falttuer",
+                "schiebetuer",
+                "terrassentuer",
+                "garagentor",
+                "gartentor"
+            ];
+
+            if (hingeSupported.includes(d.type)) {
+                this.addContextButton("⟲", () => {
+                    this.mode = "setHinge";
+                    this._hingeDoorIndex = index;
+                    this.hideContextMenu();
+                    this.render();
+                }, true);
+            }
+
+            this.addContextButton("＋", () => {
+                d.width += 10;
+                this.updateWalls();
                 this.render();
             }, false);
-        }
 
-        const hingeSupported = [
-            "zimmertuer",
-            "haustuer",
-            "falttuer",
-            "schiebetuer",
-            "terrassentuer",
-            "garagentor",
-            "gartentor"
-        ];
+            this.addContextButton("－", () => {
+                d.width = Math.max(20, d.width - 10);
+                this.updateWalls();
+                this.render();
+            }, false);
 
-        if (hingeSupported.includes(d.type)) {
-            this.addContextButton("⟲", () => {
-                this.mode = "setHinge";
-                this._hingeDoorIndex = index;
-                this.hideContextMenu();
+            this.addContextButton("🗑", () => {
+                this.doors.splice(index, 1);
+                this.updateWalls();
                 this.render();
             }, true);
         }
-
-        this.addContextButton("＋", () => {
-            d.width += 10;
-            this.updateWalls();
-            this.render();
-        }, false);
-
-        this.addContextButton("－", () => {
-            d.width = Math.max(20, d.width - 10);
-            this.updateWalls();
-            this.render();
-        }, false);
-
-        this.addContextButton("🗑", () => {
-            this.doors.splice(index, 1);
-            this.updateWalls();
-            this.render();
-        }, true);
-
-        this.openContextMenuAt(x, y);
-        return;
     }
 
     // ------------------------------------------------------------
@@ -316,10 +309,37 @@ showContextMenu(x, y, type, index) {
             this.updateWalls();
             this.render();
         }, true);
-
-        this.openContextMenuAt(x, y);
-        return;
     }
+
+    // ------------------------------------------------------------
+    // ⭐ Menü anzeigen + korrekt positionieren
+    // ------------------------------------------------------------
+    menu.style.display = "flex";
+
+    const rect = menu.getBoundingClientRect();
+    const offset = 20;
+
+    let left = x + offset;
+    let top = y + offset;
+
+    if (left + rect.width > window.innerWidth) {
+        left = x - rect.width - offset;
+    }
+
+    if (top + rect.height > window.innerHeight) {
+        top = y - rect.height - offset;
+    }
+
+    if (left < 0) {
+        left = x + offset;
+    }
+
+    if (top < 0) {
+        top = y + offset;
+    }
+
+    menu.style.left = left + "px";
+    menu.style.top = top + "px";
 },
     
 
