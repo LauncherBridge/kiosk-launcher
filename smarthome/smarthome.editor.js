@@ -63,7 +63,7 @@ function createRoomModel(id, name = null) {
         furniture: [],
         devices: [],
         color: "#AABBCC",
-        floorTexture: "default"
+        floorTexture: "default",
         isClosed: false
     };
 }
