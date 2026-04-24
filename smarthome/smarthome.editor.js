@@ -175,12 +175,19 @@ function exportFromEditor() {
     room.points = RoomDesigner.points.map(p => ({ x: p.x, y: p.y }));
 
     // Türen
-    room.doors = RoomDesigner.doors.map(d => d.id);
-    project.doors = {};
+// Türen
+project.doors = {};
+
+if (Array.isArray(RoomDesigner.doors)) {
     for (const d of RoomDesigner.doors) {
         if (!d.id) d.id = createId("door");
         project.doors[d.id] = { ...d };
     }
+    room.doors = RoomDesigner.doors.map(d => d.id);
+} else {
+    room.doors = [];
+}
+
 
     // Fenster
     room.windows = RoomDesigner.windows.map(w => w.id);
