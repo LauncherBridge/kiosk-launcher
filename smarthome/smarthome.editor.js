@@ -193,12 +193,51 @@ showContextMenu(x, y, type, index) {
     // ------------------------------------------------------------
     // ⭐ POINT
     // ------------------------------------------------------------
-    if (type === "point") {
-        this.addContextButton("🗑", () => {
-            this.deletePoint(index);
-            this.render();
-        }, true);
-    }
+if (type === "point") {
+
+    this.addContextButton("🗑", () => {
+
+        const prevWall = index - 1;
+        const nextWall = index;
+
+        const affectedDoors = this.doors.filter(d => d.wallIndex === prevWall || d.wallIndex === nextWall);
+        const affectedWindows = this.windows.filter(w => w.wallIndex === prevWall || w.wallIndex === nextWall);
+
+        const p = this.points[index];
+        this.points = this.points.filter(pt => pt !== p);
+
+        if (this.points.length < 3) {
+            this.isClosed = false;
+        }
+
+        this.updateWalls();
+
+        const newWallIndex = prevWall;
+
+        for (const d of affectedDoors) {
+            const w = this.walls[newWallIndex];
+            if (!w) continue;
+            const proj = this.projectOnWall(d.x, d.y, w);
+            d.wallIndex = newWallIndex;
+            d.t = proj.t;
+            d.x = proj.x;
+            d.y = proj.y;
+        }
+
+        for (const win of affectedWindows) {
+            const w = this.walls[newWallIndex];
+            if (!w) continue;
+            const proj = this.projectOnWall(win.x, win.y, w);
+            win.wallIndex = newWallIndex;
+            win.t = proj.t;
+            win.x = proj.x;
+            win.y = proj.y;
+        }
+
+        this.render();
+    }, true);
+}
+
 
     // ------------------------------------------------------------
     // ⭐ DOOR (ALLE Türen inkl. Dachluke)
