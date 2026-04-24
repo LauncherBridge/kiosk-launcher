@@ -28,6 +28,9 @@ const RoomDesigner = {
     doors: [],
     windows: [],
 
+hoverTarget: null,
+
+    
     hover: { x: 0, y: 0 },
 
     selectedPoint: null,
@@ -610,6 +613,30 @@ if (d.type === "dachluke") {
             return;
         }
 
+// ------------------------------------------------------------
+// ⭐ HOVER-ERKENNUNG + CURSOR-WECHSEL (ohne Leuchten)
+// ------------------------------------------------------------
+const hit = this.hitTest(mouseX, mouseY);
+
+if (hit.type !== "empty") {
+    this.hoverTarget = hit;
+
+    if (hit.type === "point") {
+        this.canvas.style.cursor = "pointer";   // Punkt anklickbar
+    } 
+    else if (hit.type === "door" || hit.type === "window") {
+        this.canvas.style.cursor = "grab";      // Tür/Fenster greifbar
+    } 
+    else {
+        this.canvas.style.cursor = "pointer";
+    }
+
+} else {
+    this.hoverTarget = null;
+    this.canvas.style.cursor = "default";        // nichts getroffen
+}
+
+        
         // Hover aktualisieren
         this.hover.x = mouseX;
         this.hover.y = mouseY;
