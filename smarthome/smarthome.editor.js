@@ -18,6 +18,227 @@ function drawDoorIcon(ctx, x, y, size = 24) {
     ctx.restore();
 }
 
+// ------------------------------------------------------------
+// Globale Projekt-Daten (Persistenz-Grundstruktur)
+// ------------------------------------------------------------
+const project = {
+    meta: {
+        version: 1,
+        created: Date.now(),
+        modified: Date.now()
+    },
+
+    objects: {},     // Häuser/Wohnungen (später)
+    floors: {},      // Etagen
+    rooms: {},       // Räume
+    doors: {},       // Türen
+    windows: {},     // Fenster
+    furniture: {},   // Möbel
+    devices: {},     // Smart-Home-Geräte
+
+    names: {}        // Alias-Namen für Titelzeile/Breadcrumbs
+};
+
+// ------------------------------------------------------------
+// ID-Generator (für Räume, Türen, Fenster, Geräte, etc.)
+// ------------------------------------------------------------
+function createId(prefix) {
+    return prefix + "_" + Math.random().toString(36).substr(2, 9);
+}
+
+// ------------------------------------------------------------
+// Datenmodelle für persistente Objekte
+// ------------------------------------------------------------
+
+// Raum
+function createRoomModel(id, name = null) {
+    return {
+        id,
+        name,
+        type: "room",
+        points: [],
+        walls: [],
+        doors: [],
+        windows: [],
+        furniture: [],
+        devices: [],
+        color: "#AABBCC",
+        floorTexture: "default"
+    };
+}
+
+// Tür
+function createDoorModel(id, type, x, y, wallIndex, t, width) {
+    return {
+        id,
+        type,
+        x,
+        y,
+        wallIndex,
+        t,
+        width,
+        hinge: null,
+        side: 1,
+        isOpen: true,
+        connectsToRoom: null,
+        color: "#ffffff",
+        customName: null
+    };
+}
+
+// Fenster
+function createWindowModel(id, type, x, y, wallIndex, t, width, height = 100) {
+    return {
+        id,
+        type,
+        x,
+        y,
+        wallIndex,
+        t,
+        width,
+        height,
+        hasRolladen: false,
+        color: "#ffffff",
+        customName: null
+    };
+}
+
+// Möbel
+function createFurnitureModel(id, type, x, y, rotation, width, height, depth) {
+    return {
+        id,
+        type,
+        x,
+        y,
+        rotation,
+        width,
+        height,
+        depth,
+        color: "#333333",
+        customName: null
+    };
+}
+
+// Smart-Home-Gerät
+function createDeviceModel(id, type, model, deviceId, roomId, x, y, rotation) {
+    return {
+        id,
+        type,
+        model,
+        deviceId,
+        roomId,
+        x,
+        y,
+        rotation,
+        state: {},
+        customName: null
+    };
+}
+
+// ------------------------------------------------------------
+// Projekt speichern & laden
+// ------------------------------------------------------------
+function saveProject() {
+    project.meta.modified = Date.now();
+    const json = JSON.stringify(project, null, 2);
+    localStorage.setItem("smarthome_project", json);
+}
+
+function loadProject() {
+    const json = localStorage.getItem("smarthome_project");
+    if (!json) return false;
+
+    try {
+        const data = JSON.parse(json);
+        Object.assign(project, data);
+        return true;
+    } catch (e) {
+        console.error("Fehler beim Laden des Projekts:", e);
+        return false;
+    }
+}
+
+// ------------------------------------------------------------
+// Editor <-> Projekt Mapping
+// ------------------------------------------------------------
+
+// Editor → Projekt
+function exportFromEditor() {
+    // Raum-ID erzeugen, falls nicht vorhanden
+    if (!project.rooms["room_main"]) {
+        project.rooms["room_main"] = createRoomModel("room_main", "Raum");
+    }
+
+    const room = project.rooms["room_main"];
+
+    // Punkte (Polygon)
+    room.points = RoomDesigner.points.map(p => ({ x: p.x, y: p.y }));
+
+    // Türen
+    room.doors = RoomDesigner.doors.map(d => d.id);
+    project.doors = {};
+    for (const d of RoomDesigner.doors) {
+        if (!d.id) d.id = createId("door");
+        project.doors[d.id] = { ...d };
+    }
+
+    // Fenster
+    room.windows = RoomDesigner.windows.map(w => w.id);
+    project.windows = {};
+    for (const w of RoomDesigner.windows) {
+        if (!w.id) w.id = createId("window");
+        project.windows[w.id] = { ...w };
+    }
+
+    project.meta.modified = Date.now();
+}
+
+
+// Projekt → Editor
+function importToEditor() {
+    const room = project.rooms["room_main"];
+    if (!room) return;
+
+    // Punkte
+    RoomDesigner.points = room.points.map(p => ({ x: p.x, y: p.y }));
+
+    // Türen
+    RoomDesigner.doors = room.doors
+        .map(id => project.doors[id])
+        .filter(Boolean)
+        .map(d => ({ ...d }));
+
+    // Fenster
+    RoomDesigner.windows = room.windows
+        .map(id => project.windows[id])
+        .filter(Boolean)
+        .map(w => ({ ...w }));
+
+    RoomDesigner.updateWalls();
+    RoomDesigner.render();
+}
+
+// ------------------------------------------------------------
+// Manuelles Speichern des aktuellen Editor-Zustands
+// ------------------------------------------------------------
+function saveCurrentRoom() {
+    exportFromEditor();
+    saveProject();
+    console.log("[Persistenz] Projekt gespeichert.");
+}
+
+// ------------------------------------------------------------
+// Manuelles Laden des aktuellen Projekts
+// ------------------------------------------------------------
+function loadCurrentRoom() {
+    if (loadProject()) {
+        importToEditor();
+        console.log("[Persistenz] Projekt geladen.");
+    } else {
+        console.log("[Persistenz] Kein gespeichertes Projekt gefunden.");
+    }
+}
+
     
 const RoomDesigner = {
     canvas: null,
@@ -3707,6 +3928,10 @@ window.addEventListener("DOMContentLoaded", () => {
 
 
         RoomDesigner.init();
+        if (loadProject()) {
+            importToEditor();
+        }
+
     });
 });
 
