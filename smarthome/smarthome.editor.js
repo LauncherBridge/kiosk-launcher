@@ -64,6 +64,7 @@ function createRoomModel(id, name = null) {
         devices: [],
         color: "#AABBCC",
         floorTexture: "default"
+        isClosed: false
     };
 }
 
@@ -173,6 +174,7 @@ function exportFromEditor() {
 
     // Punkte (Polygon)
     room.points = RoomDesigner.points.map(p => ({ x: p.x, y: p.y }));
+    room.isClosed = RoomDesigner.isClosed;
 
     // Türen
 // Türen
@@ -208,6 +210,7 @@ function importToEditor() {
 
     // Punkte
     RoomDesigner.points = room.points.map(p => ({ x: p.x, y: p.y }));
+    RoomDesigner.isClosed = room.isClosed || false;
 
     // Türen
     RoomDesigner.doors = room.doors
