@@ -3909,10 +3909,17 @@ if (tool === "dachluke") {
 // --------------------------------------------------
 // Ganz oben in der Datei oder zumindest außerhalb des Click-Handlers:
 function updateEditorTitle() {
-    const el = document.getElementById("editor-title");
-    if (!el) return;
-    el.textContent = project.meta.name || "Room Designer";
+    const proj = document.getElementById("editor-project-name");
+    const room = document.getElementById("editor-room-name");
+
+    if (proj) proj.textContent = project.meta.name || "Projekt";
+
+    const roomObj = project.rooms["room_main"];
+    if (room && roomObj) {
+        room.textContent = roomObj.name || "Raum";
+    }
 }
+
 
 function enableRoomNameEditing() {
     const el = document.getElementById("editor-room-name");
