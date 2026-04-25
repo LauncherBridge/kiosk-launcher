@@ -4111,6 +4111,57 @@ function finishRoomNameEdit(el) {
     updateEditorTitle();
 }
 
+function renderEditorSidebar() {
+    const container = document.getElementById("floor-list");
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    SmartHomeData.floors.forEach(floor => {
+        // Etagen-Header
+        const floorDiv = document.createElement("div");
+        floorDiv.textContent = floor.name;
+        floorDiv.classList.add("floor-item");
+        floorDiv.classList.add("floor-header");
+
+        if (SmartHomeData.structure.activeFloor === floor.id) {
+            floorDiv.classList.add("active");
+        }
+
+        floorDiv.addEventListener("click", () => {
+            SmartHomeData.structure.activeFloor = floor.id;
+            SmartHomeData.structure.activeRoom = null;
+            renderEditorSidebar();
+            updateEditorTitle();
+        });
+
+        container.appendChild(floorDiv);
+
+        // Räume der Etage
+        const rooms = SmartHomeData.rooms.filter(r => r.floor === floor.id);
+
+        rooms.forEach(room => {
+            const roomDiv = document.createElement("div");
+            roomDiv.textContent = "• " + room.name;
+            roomDiv.classList.add("room-item");
+
+            if (SmartHomeData.structure.activeRoom === room.id) {
+                roomDiv.classList.add("active");
+            }
+
+            roomDiv.addEventListener("click", () => {
+                SmartHomeData.structure.activeFloor = floor.id;
+                SmartHomeData.structure.activeRoom = room.id;
+                renderEditorSidebar();
+                updateEditorTitle();
+            });
+
+            container.appendChild(roomDiv);
+        });
+    });
+}
+
+
 
 window.addEventListener("DOMContentLoaded", () => {
     const openBtn = document.getElementById("btnOpenEditor");
