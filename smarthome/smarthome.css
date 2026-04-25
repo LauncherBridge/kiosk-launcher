@@ -350,7 +350,7 @@ html, body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 16px;
+    padding: 0 1px;
     font-size: 18px;
     border-bottom: 1px solid rgba(255,255,255,0.15);
     z-index: 99999;
@@ -364,6 +364,7 @@ html, body {
     color: white;
     font-size: 14px;
     cursor: pointer;
+    margin-right: 4px;
 }
 
 #editor-titlebar button:hover {
