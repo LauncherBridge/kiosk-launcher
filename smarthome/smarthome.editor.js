@@ -337,6 +337,10 @@ _snapshotState(label = "") {
 
 _pushHistory(label = "") {
     const snap = this._snapshotState(label);
+
+    // ⭐ Label am Snapshot speichern
+    snap.label = label;
+
     this._history.push(snap);
 
     // Redo-Stack leeren (neue Aktion)
@@ -352,6 +356,7 @@ _pushHistory(label = "") {
         saveCurrentRoom();
     }
 },
+
 
 undo() {
     if (this._history.length === 0) return;
@@ -4352,6 +4357,24 @@ function renderEditorSidebar() {
 }
 
 
+// Undo/Redo Buttons
+const btnUndo = document.getElementById("editor-undo-btn");
+const btnRedo = document.getElementById("editor-redo-btn");
+
+// Hover-Text dynamisch aus History
+btnUndo.addEventListener("mouseenter", () => {
+    const last = this.history[this.historyIndex - 1];
+    btnUndo.title = last ? "Undo: " + last.label : "Nichts zum Rückgängig machen";
+});
+
+btnRedo.addEventListener("mouseenter", () => {
+    const next = this.history[this.historyIndex];
+    btnRedo.title = next ? "Redo: " + next.label : "Nichts zum Wiederholen";
+});
+
+// Klick-Events
+btnUndo.addEventListener("click", () => this.undo());
+btnRedo.addEventListener("click", () => this.redo());
 
 
 
