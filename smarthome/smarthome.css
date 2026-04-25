@@ -531,3 +531,16 @@ html, body {
     opacity: 0.5;
     margin: 0 4px;
 }
+
+#editor-breadcrumb span {
+    cursor: default;
+}
+
+#editor-breadcrumb .clickable {
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+}
+
+#editor-breadcrumb .clickable:hover {
+    opacity: 0.7;
+}
