@@ -4187,6 +4187,29 @@ if (tool === "dachluke") {
         this._saveActiveRoomToProject();
     },
 
+
+        // --------------------------------------------------
+    // Aktuellen Editor-Zustand in den aktiven Raum speichern
+    // --------------------------------------------------
+    _saveActiveRoomToProject() {
+        const roomId = this._getActiveRoomId();
+        if (!roomId) return;
+
+        const room = SmartHomeData.rooms.find(r => r.id === roomId);
+        if (!room) return;
+
+        // Polygon / Türen / Fenster in den Raum schreiben
+        room.polygon = JSON.parse(JSON.stringify(this.points));
+        room.doors   = JSON.parse(JSON.stringify(this.doors));
+        room.windows = JSON.parse(JSON.stringify(this.windows));
+
+        // Projekt speichern (globale Funktion)
+        if (typeof saveProject === "function") {
+            saveProject();
+        }
+    },
+
+    
 }; // Ende RoomDesigner
 
 
