@@ -4117,7 +4117,10 @@ window.addEventListener("DOMContentLoaded", () => {
 // ===============================
 document.getElementById("editor-close-btn")?.addEventListener("click", () => {
 
-    // Editor-Layout komplett ausblenden (NEU!)
+    // Editor-Modus deaktivieren (WICHTIG!)
+    document.body.classList.remove("editor-mode");
+
+    // Editor-Layout komplett ausblenden
     const layout = document.getElementById("editor-layout");
     if (layout) layout.style.display = "none";
 
@@ -4125,7 +4128,7 @@ document.getElementById("editor-close-btn")?.addEventListener("click", () => {
     const titlebar = document.getElementById("editor-titlebar");
     if (titlebar) titlebar.style.display = "none";
 
-    // Sidebar ausblenden
+    // Rechte Sidebar ausblenden
     const sidebar = document.getElementById("editor-sidebar");
     if (sidebar) sidebar.style.display = "none";
 
@@ -4143,11 +4146,14 @@ document.getElementById("editor-close-btn")?.addEventListener("click", () => {
     const root = document.getElementById("smarthome-root");
     const header = document.getElementById("sh-group-header");
     const minimap = document.getElementById("smarthome-minimap");
+    const floorList = document.getElementById("sh-floor-list");
 
     if (root) root.style.display = "block";
-    if (header) header.style.display = "block";
+    if (header) header.style.display = "flex";
     if (minimap) minimap.style.display = "block";
+    if (floorList) floorList.style.display = "block";
 });
+
 
     
     // ===============================
