@@ -7,6 +7,16 @@ window.SmartHomeData = {
 
     floorMeta: {},
 
+    // ---------------------------------------------------------
+    // Editor-Navigation (aktive Etage & aktiver Raum)
+    // ---------------------------------------------------------
+    structure: {
+        activeFloor: 0,          // Etage 0 = Erdgeschoss
+        activeRoom: "wohnzimmer" // Start-Raum
+    },
+
+
+    
     loadFloorMeta() {
         try {
             const raw = localStorage.getItem("smarthome_floor_meta");
