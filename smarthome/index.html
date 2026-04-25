@@ -14,6 +14,27 @@
 
 <body>
 
+<!-- Editor Layout Wrapper (unsichtbar bis Editor geöffnet wird) -->
+<div id="editor-layout" style="display:none;">
+    <div id="editor-sidebar-left">
+        <div class="sidebar-section">
+            <div class="sidebar-title">Etagen</div>
+            <div id="floor-list"></div>
+        </div>
+    
+        <div class="sidebar-section">
+            <div class="sidebar-title">Räume</div>
+            <div id="room-list"></div>
+        </div>
+    </div>
+
+    <div id="editor-main-area">
+        <!-- Titelbar bleibt wo sie ist -->
+        <!-- Canvas + rechte Sidebar bleiben wo sie sind -->
+    </div>
+</div>
+
+    
 <!-- SmartHome Base Template -->
 <div id="smarthome-root">
     <div id="sh-floor-list"></div>
@@ -21,23 +42,24 @@
     <div id="smarthome-overlay"></div>
 </div>
 
-<!-- Editor Titelbar -->
-<div id="editor-titlebar" style="display:none;">
-    <div id="editor-titlebar-left">
-        <span id="editor-title">
-            <span id="editor-breadcrumb">
-                <span id="editor-project-name" class="clickable">Projekt</span>
-                <span class="breadcrumb-sep">›</span>
-                <span id="editor-room-name" class="clickable">Raum</span>
+<div id="editor-main-area">   
+    <!-- Editor Titelbar -->
+    <div id="editor-titlebar" style="display:none;">
+        <div id="editor-titlebar-left">
+            <span id="editor-title">
+                <span id="editor-breadcrumb">
+                    <span id="editor-project-name" class="clickable">Projekt</span>
+                    <span class="breadcrumb-sep">›</span>
+                    <span id="editor-room-name" class="clickable">Raum</span>
+                </span>
             </span>
-        </span>
-    </div>
-
-    <div id="editor-titlebar-right">
-        <button id="editor-close-btn">Schließen</button>
+        </div>
+    
+        <div id="editor-titlebar-right">
+            <button id="editor-close-btn">Schließen</button>
+        </div>
     </div>
 </div>
-
 
 <!-- Editor Sidebar (rechts) -->
 <div id="editor-sidebar" style="display:none;">
