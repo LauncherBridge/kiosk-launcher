@@ -4040,8 +4040,43 @@ if (tool === "dachluke") {
     profilePerformance() {
         console.log("[RoomDesigner] Performance-Profiling (Stub).");
         alert("Performance-Profiling Stub – hier könnte später ein echtes Profiling laufen.");
+    },
+
+    // --------------------------------------------------
+    // History-Grundstruktur (raumbezogen)
+    // --------------------------------------------------
+    historyByRoom: {},
+
+    _getActiveRoomId() {
+        return (window.SmartHomeData && SmartHomeData.structure?.activeRoom) || null;
+    },
+
+    _getRoomHistory(roomId) {
+        if (!roomId) return null;
+        if (!this.historyByRoom[roomId]) {
+            this.historyByRoom[roomId] = {
+                stack: [],   // hier kommen später die Snapshots rein
+                index: 0     // aktueller Zeiger in der History
+            };
+        }
+        return this.historyByRoom[roomId];
+    },
+
+    // Für Hover-Text der Buttons: liefert "letzte" und "nächste" Aktion
+    getHistoryInfoForActiveRoom() {
+        const roomId = this._getActiveRoomId();
+        const h = this._getRoomHistory(roomId);
+        if (!h || !h.stack.length) {
+            return { last: null, next: null };
+        }
+
+        const last = h.index > 0 ? h.stack[h.index - 1] : null;
+        const next = h.index < h.stack.length ? h.stack[h.index] : null;
+
+        return { last, next };
     }
 }; // Ende RoomDesigner
+
 
 
 // --------------------------------------------------
@@ -4361,20 +4396,34 @@ function renderEditorSidebar() {
 const btnUndo = document.getElementById("editor-undo-btn");
 const btnRedo = document.getElementById("editor-redo-btn");
 
-// Hover-Text dynamisch aus History
-btnUndo.addEventListener("mouseenter", () => {
-    const last = this.history[this.historyIndex - 1];
-    btnUndo.title = last ? "Undo: " + last.label : "Nichts zum Rückgängig machen";
-});
+if (btnUndo && btnRedo && window.RoomDesigner) {
 
-btnRedo.addEventListener("mouseenter", () => {
-    const next = this.history[this.historyIndex];
-    btnRedo.title = next ? "Redo: " + next.label : "Nichts zum Wiederholen";
-});
+    // Hover-Text dynamisch aus raumbezogener History
+    btnUndo.addEventListener("mouseenter", () => {
+        const info = RoomDesigner.getHistoryInfoForActiveRoom();
+        const last = info.last;
+        btnUndo.title = last ? "Undo: " + (last.label || "Letzte Aktion") : "Nichts zum Rückgängig machen";
+    });
 
-// Klick-Events
-btnUndo.addEventListener("click", () => this.undo());
-btnRedo.addEventListener("click", () => this.redo());
+    btnRedo.addEventListener("mouseenter", () => {
+        const info = RoomDesigner.getHistoryInfoForActiveRoom();
+        const next = info.next;
+        btnRedo.title = next ? "Redo: " + (next.label || "Nächste Aktion") : "Nichts zum Wiederholen";
+    });
+
+    // Klick-Events – Undo/Redo-Methoden implementieren wir in einem späteren Schritt
+    btnUndo.addEventListener("click", () => {
+        if (typeof RoomDesigner.undo === "function") {
+            RoomDesigner.undo();
+        }
+    });
+
+    btnRedo.addEventListener("click", () => {
+        if (typeof RoomDesigner.redo === "function") {
+            RoomDesigner.redo();
+        }
+    });
+}
 
 
 
