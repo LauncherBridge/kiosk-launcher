@@ -7,7 +7,7 @@ html, body {
     height: 100%;
     margin: 0;
     padding: 0;
-    background: black; /* optional, verhindert weißes Blitzen */
+    background: black;
 }
 
 /* ---------------------------------------------------------
@@ -51,7 +51,6 @@ html, body {
     font-family: sans-serif;
 }
 
-/* WICHTIG: nur eine Definition, keine Flex-Höhenbegrenzung */
 #smarthome-root {
     position: relative;
     width: 100%;
@@ -267,7 +266,7 @@ html, body {
 .sh-status-gray   { background-color: #757575; }
 
 /* ---------------------------------------------------------
-   ETAGENLISTE
+   SMART HOME – ETAGENLISTE (nur im View-Modus)
 --------------------------------------------------------- */
 
 #sh-floor-list {
@@ -305,40 +304,11 @@ html, body {
     background: rgba(255, 255, 255, 0.25);
 }
 
-.sh-floor-status {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    flex-shrink: 0;
-}
-
-.sh-floor-status.green  { background: #4CAF50; }
-.sh-floor-status.yellow { background: #FFC107; }
-.sh-floor-status.red    { background: #F44336; }
-.sh-floor-status.gray   { background: #9E9E9E; }
-
 /* ---------------------------------------------------------
-   SCHRITT 6 – EDITOR BUTTON
+   EDITOR – TITELBAR (jetzt NICHT mehr fixed!)
 --------------------------------------------------------- */
 
-.editor-btn {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    padding: 12px 20px;
-    background: #4a90e2;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 16px;
-    z-index: 9999;
-    display: none; /* wird vom Editor sichtbar geschaltet */
-}
-
 #editor-titlebar {
-    position: fixed;
-    top: 0;
-    left: 0;
     width: 100%;
     height: 48px;
     background: rgba(0,0,0,0.75);
@@ -348,7 +318,6 @@ html, body {
     align-items: center;
     justify-content: space-between;
     padding: 0 16px;
-    z-index: 99999;
     font-size: 18px;
     border-bottom: 1px solid rgba(255,255,255,0.15);
 }
@@ -367,27 +336,50 @@ html, body {
     background: #c0392b;
 }
 
-/* ============================
-   Editor Sidebar (rechts)
-   ============================ */
+/* ---------------------------------------------------------
+   EDITOR – LAYOUT (Flex)
+--------------------------------------------------------- */
+
+#editor-layout {
+    display: flex;
+    width: 100%;
+    height: 100%;
+}
+
+/* Linke Sidebar */
+#editor-sidebar-left {
+    width: 180px;
+    background: rgba(0,0,0,0.35);
+    border-right: 1px solid rgba(255,255,255,0.08);
+    padding: 12px;
+    overflow-y: auto;
+    backdrop-filter: blur(4px);
+}
+
+/* Hauptbereich */
+#editor-main-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* ---------------------------------------------------------
+   EDITOR – RECHTE SIDEBAR (jetzt NICHT mehr fixed!)
+--------------------------------------------------------- */
+
 #editor-sidebar {
-    position: fixed;
-    top: 48px; /* unter der Titelbar */
-    right: 0;
     width: 300px;
-    height: calc(100vh - 48px);
     background: rgba(0,0,0,0.82);
     backdrop-filter: blur(8px);
     border-left: 1px solid rgba(255,255,255,0.12);
     display: flex;
     flex-direction: column;
-    z-index: 99998;
     color: white;
-    padding-top: 0;
     box-shadow: -4px 0 12px rgba(0,0,0,0.4);
 }
 
-/* Tabs oben */
+/* Tabs */
 #editor-sidebar-tabs {
     display: flex;
     border-bottom: 1px solid rgba(255,255,255,0.15);
@@ -416,7 +408,6 @@ html, body {
     color: white;
 }
 
-
 /* Panel-Bereich */
 #editor-sidebar-content {
     flex: 1;
@@ -431,145 +422,10 @@ html, body {
     line-height: 1.4;
 }
 
+/* ---------------------------------------------------------
+   EDITOR – LINKER SIDEBAR INHALT
+--------------------------------------------------------- */
 
-.tool-button {
-    padding: 12px;
-    margin-bottom: 10px;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 6px;
-    cursor: pointer;
-    color: #ddd;
-    font-size: 15px;
-    transition: background 0.2s ease, border-color 0.2s ease;
-}
-
-.tool-button:hover {
-    background: rgba(255,255,255,0.18);
-}
-
-.tool-button.active {
-    background: rgba(74,144,226,0.35);
-    border-color: #4a90e2;
-    color: white;
-}
-
-
-.element-item,
-.settings-item {
-    padding: 12px;
-    margin-bottom: 10px;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 6px;
-    color: #ddd;
-    font-size: 15px;
-    cursor: pointer;
-    transition: background 0.2s ease;
-}
-
-.element-item:hover,
-.settings-item:hover {
-    background: rgba(255,255,255,0.18);
-}
-
-.category {
-    margin-bottom: 14px;
-}
-
-.category-header {
-    padding: 10px;
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: bold;
-    color: #fff;
-}
-
-.category-content {
-    padding: 10px;
-    display: none;
-}
-
-.category.open .category-content {
-    display: block;
-}
-
-.category .item {
-    padding: 8px;
-    margin-bottom: 6px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.category .item:hover {
-    background: rgba(255,255,255,0.15);
-}
-
-#editor-room-name.editing {
-    padding: 2px 4px;
-    background: rgba(255,255,255,0.15);
-    border-radius: 4px;
-}
-
-#editor-project-name.editing {
-    padding: 2px 4px;
-    background: rgba(255,255,255,0.15);
-    border-radius: 4px;
-}
-
-#editor-breadcrumb {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.breadcrumb-sep {
-    opacity: 0.5;
-    margin: 0 4px;
-}
-
-#editor-breadcrumb span {
-    cursor: default;
-}
-
-#editor-breadcrumb .clickable {
-    cursor: pointer;
-    transition: opacity 0.15s ease;
-}
-
-#editor-breadcrumb .clickable:hover {
-    opacity: 0.7;
-}
-
-/* Editor Layout */
-#editor-layout {
-    display: flex;
-    width: 100%;
-    height: calc(100vh - 40px); /* Titelbar-Höhe */
-}
-
-/* Linke Sidebar */
-#editor-sidebar-left {
-    width: 180px;
-    background: rgba(0,0,0,0.35);
-    border-right: 1px solid rgba(255,255,255,0.08);
-    padding: 12px;
-    overflow-y: auto;
-    backdrop-filter: blur(4px);
-}
-
-/* Hauptbereich (Canvas + rechte Sidebar) */
-#editor-main-area {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
-
-/* Sidebar-Elemente */
 .sidebar-section {
     margin-bottom: 20px;
 }
