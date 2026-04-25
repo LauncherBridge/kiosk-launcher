@@ -4056,6 +4056,8 @@ window.addEventListener("DOMContentLoaded", () => {
     if (!openBtn) return;
 
     openBtn.addEventListener("click", () => {
+
+        // SmartHome-UI ausblenden
         const root = document.getElementById("smarthome-root");
         const header = document.getElementById("sh-group-header");
         const minimap = document.getElementById("smarthome-minimap");
@@ -4064,6 +4066,11 @@ window.addEventListener("DOMContentLoaded", () => {
         if (header) header.style.display = "none";
         if (minimap) minimap.style.display = "none";
 
+        // ⭐ NEU: Editor-Layout einblenden
+        const layout = document.getElementById("editor-layout");
+        if (layout) layout.style.display = "flex";
+
+        // Editor-Canvas einblenden
         const canvas = document.getElementById("roomdesigner");
         const doorBtn = document.getElementById("btnDoorMode");
         const winBtn = document.getElementById("btnWindowMode");
@@ -4076,7 +4083,7 @@ window.addEventListener("DOMContentLoaded", () => {
         const titlebar = document.getElementById("editor-titlebar");
         if (titlebar) titlebar.style.display = "flex";
 
-        // Sidebar anzeigen
+        // Rechte Sidebar anzeigen
         const sidebar = document.getElementById("editor-sidebar");
         if (sidebar) sidebar.style.display = "flex";
 
@@ -4088,20 +4095,27 @@ window.addEventListener("DOMContentLoaded", () => {
             importToEditor();
         }
 
-        // Jetzt ist project.meta.name sicher verfügbar
+        // Titel aktualisieren
         updateEditorTitle();
         enableRoomNameEditing();
         enableProjectNameEditing();
 
+        // ⭐ NEU: Etagen + Räume rendern
+        renderFloorList();
+        renderRoomList();
     });
-    
 });
+
 
 
 // ===============================
 // Editor schließen
 // ===============================
 document.getElementById("editor-close-btn")?.addEventListener("click", () => {
+
+    // Editor-Layout komplett ausblenden (NEU!)
+    const layout = document.getElementById("editor-layout");
+    if (layout) layout.style.display = "none";
 
     // Titelbar ausblenden
     const titlebar = document.getElementById("editor-titlebar");
@@ -4110,7 +4124,6 @@ document.getElementById("editor-close-btn")?.addEventListener("click", () => {
     // Sidebar ausblenden
     const sidebar = document.getElementById("editor-sidebar");
     if (sidebar) sidebar.style.display = "none";
-
 
     // Editor-Canvas ausblenden
     const canvas = document.getElementById("roomdesigner");
@@ -4131,6 +4144,7 @@ document.getElementById("editor-close-btn")?.addEventListener("click", () => {
     if (header) header.style.display = "block";
     if (minimap) minimap.style.display = "block";
 });
+
     
     // ===============================
     // Sidebar Tabs umschalten
