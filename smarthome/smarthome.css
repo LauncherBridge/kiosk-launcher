@@ -514,3 +514,9 @@ html, body {
     background: rgba(255,255,255,0.15);
     border-radius: 4px;
 }
+
+#editor-project-name.editing {
+    padding: 2px 4px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 4px;
+}
