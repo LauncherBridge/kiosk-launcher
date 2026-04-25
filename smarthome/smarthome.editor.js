@@ -4074,7 +4074,7 @@ if (tool === "dachluke") {
         const next = h.index < h.stack.length ? h.stack[h.index] : null;
 
         return { last, next };
-    }
+    },
     // --------------------------------------------------
     // Snapshot des aktuellen Raums erzeugen
     // --------------------------------------------------
