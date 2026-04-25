@@ -4057,55 +4057,59 @@ window.addEventListener("DOMContentLoaded", () => {
 
     openBtn.addEventListener("click", () => {
 
+        // -----------------------------------------
+        // 1) Editor-Modus aktivieren (CSS-Schalter)
+        // -----------------------------------------
+        document.body.classList.add("editor-mode");
+
+        // -----------------------------------------
         // SmartHome-UI ausblenden
+        // -----------------------------------------
         const root = document.getElementById("smarthome-root");
         const header = document.getElementById("sh-group-header");
         const minimap = document.getElementById("smarthome-minimap");
+        const floorList = document.getElementById("sh-floor-list"); // WICHTIG
 
         if (root) root.style.display = "none";
         if (header) header.style.display = "none";
         if (minimap) minimap.style.display = "none";
+        if (floorList) floorList.style.display = "none"; // WICHTIG
 
-        // ⭐ NEU: Editor-Layout einblenden
+        // -----------------------------------------
+        // Editor-Layout einblenden
+        // -----------------------------------------
         const layout = document.getElementById("editor-layout");
-        if (layout) layout.style.display = "flex";
+        if (layout) layout.style.display = "block";
 
-        // Editor-Canvas einblenden
+        // Canvas einblenden
         const canvas = document.getElementById("roomdesigner");
-        const doorBtn = document.getElementById("btnDoorMode");
-        const winBtn = document.getElementById("btnWindowMode");
-
         if (canvas) canvas.style.display = "block";
-        if (doorBtn) doorBtn.style.display = "block";
-        if (winBtn) winBtn.style.display = "block";
 
-        // Titelbar anzeigen
+        // Titelbar einblenden
         const titlebar = document.getElementById("editor-titlebar");
         if (titlebar) titlebar.style.display = "flex";
 
-        // Rechte Sidebar anzeigen
+        // Rechte Sidebar einblenden
         const sidebar = document.getElementById("editor-sidebar");
         if (sidebar) sidebar.style.display = "flex";
 
+        // -----------------------------------------
         // Editor initialisieren
+        // -----------------------------------------
         RoomDesigner.init();
 
-        // Projekt laden
         if (loadProject()) {
             importToEditor();
         }
 
-        // Titel aktualisieren
         updateEditorTitle();
         enableRoomNameEditing();
         enableProjectNameEditing();
 
-        // ⭐ NEU: Etagen + Räume rendern
         renderFloorList();
         renderRoomList();
     });
 });
-
 
 
 // ===============================
