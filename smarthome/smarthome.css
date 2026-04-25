@@ -500,3 +500,32 @@ html, body {
     border-color: #4a90e2;
     color: white;
 }
+
+/* ---------------------------------------------------------
+   EDITOR – ELEMENTE & EINSTELLUNGEN (Buttons in allen Tabs)
+--------------------------------------------------------- */
+
+.element-item,
+.settings-item {
+    padding: 12px;
+    margin-bottom: 10px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 6px;
+    color: #ddd;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.element-item:hover,
+.settings-item:hover {
+    background: rgba(255,255,255,0.18);
+}
+
+.element-item.active,
+.settings-item.active {
+    background: rgba(74,144,226,0.35);
+    border-color: #4a90e2;
+    color: #fff;
+}
