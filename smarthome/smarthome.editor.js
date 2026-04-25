@@ -4013,6 +4013,67 @@ function enableProjectNameEditing() {
     });
 }
 
+function renderFloorList() {
+    const container = document.getElementById("floor-list");
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    if (!SmartHomeData?.floors) return;
+
+    SmartHomeData.floors.forEach(floor => {
+        const div = document.createElement("div");
+        div.textContent = floor.name;
+        div.classList.add("floor-item");
+
+        if (SmartHomeData.structure.activeFloor === floor.id) {
+            div.classList.add("active");
+        }
+
+        div.addEventListener("click", () => {
+            SmartHomeData.structure.activeFloor = floor.id;
+            renderFloorList();
+            renderRoomList();
+            updateEditorTitle();
+        });
+
+        container.appendChild(div);
+    });
+}
+
+function renderRoomList() {
+    const container = document.getElementById("room-list");
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    const activeFloor = SmartHomeData.structure.activeFloor;
+    if (!activeFloor) return;
+
+    const rooms = SmartHomeData.rooms.filter(r => r.floor === activeFloor);
+
+    rooms.forEach(room => {
+        const div = document.createElement("div");
+        div.textContent = room.name;
+        div.classList.add("room-item");
+
+        if (SmartHomeData.structure.activeRoom === room.id) {
+            div.classList.add("active");
+        }
+
+        div.addEventListener("click", () => {
+            SmartHomeData.structure.activeRoom = room.id;
+            updateEditorTitle();
+            renderRoomList();
+        });
+
+        container.appendChild(div);
+    });
+}
+
+
+
+
 function finishProjectNameEdit(el) {
     el.contentEditable = "false";
     el.classList.remove("editing");
