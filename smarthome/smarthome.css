@@ -627,43 +627,6 @@ body.editor-mode .editor-btn {
     display: none !important;
 }
 
-/* Editor Sidebar – Text sichtbar machen */
-#editor-sidebar-left {
-    color: white;
-}
-
-/* Etagen */
-.floor-item {
-    padding: 8px 6px;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    color: #fff;
-    margin-top: 10px;
-}
-
-.floor-item.active {
-    color: #4a90e2;
-}
-
-/* Räume */
-.room-item {
-    padding: 4px 12px;
-    font-size: 14px;
-    cursor: pointer;
-    color: #ccc;
-}
-
-.room-item.active {
-    color: #4a90e2;
-}
-
-/* Hover */
-.floor-item:hover,
-.room-item:hover {
-    color: #fff;
-}
-
 /* Linke Editor-Sidebar */
 #editor-location-list {
     color: white;
