@@ -338,6 +338,24 @@ html, body {
    EDITOR – TITELZEILE
 --------------------------------------------------------- */
 
+#editor-titlebar-right .titlebar-btn {
+    background: rgba(255,255,255,0.12);
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    margin-right: 6px;
+    transition: background 0.15s ease;
+}
+
+#editor-titlebar-right .titlebar-btn:hover {
+    background: rgba(255,255,255,0.22);
+}
+
+
+
 #editor-titlebar {
     position: fixed;
     top: 0;
