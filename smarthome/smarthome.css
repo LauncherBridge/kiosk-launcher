@@ -266,7 +266,7 @@ html, body {
 .sh-status-gray   { background-color: #757575; }
 
 /* ---------------------------------------------------------
-   SMART HOME – ETAGENLISTE (nur im View-Modus)
+   SMART HOME – ETAGENLISTE
 --------------------------------------------------------- */
 
 #sh-floor-list {
@@ -305,7 +305,7 @@ html, body {
 }
 
 /* ---------------------------------------------------------
-   EDITOR – TITELBAR (fixed oben)
+   EDITOR – TITELZEILE
 --------------------------------------------------------- */
 
 #editor-titlebar {
@@ -340,6 +340,27 @@ html, body {
     background: #c0392b;
 }
 
+/* Titelzeile Hover */
+#editor-breadcrumb {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+#editor-breadcrumb .clickable {
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+}
+
+#editor-breadcrumb .clickable:hover {
+    opacity: 0.7;
+}
+
+.breadcrumb-sep {
+    opacity: 0.5;
+    margin: 0 4px;
+}
+
 /* ---------------------------------------------------------
    EDITOR – LAYOUT (Overlay)
 --------------------------------------------------------- */
@@ -352,7 +373,7 @@ html, body {
 }
 
 /* ---------------------------------------------------------
-   EDITOR – LINKE SIDEBAR (unter Titelzeile)
+   EDITOR – LINKE SIDEBAR
 --------------------------------------------------------- */
 
 #editor-sidebar-left {
@@ -478,33 +499,7 @@ html, body {
     display: block;
 }
 
-/* Elemente */
-.category .item {
-    padding: 8px;
-    margin-bottom: 6px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 4px;
-    cursor: pointer;
-    color: #ddd;
-    font-size: 15px;
-    transition: background 0.2s ease, border-color 0.2s ease;
-}
-
-.category .item:hover {
-    background: rgba(255,255,255,0.15);
-}
-
-.category .item.active {
-    background: rgba(74,144,226,0.35);
-    border-color: #4a90e2;
-    color: white;
-}
-
-/* ---------------------------------------------------------
-   EDITOR – ELEMENTE & EINSTELLUNGEN (Buttons in allen Tabs)
---------------------------------------------------------- */
-
+/* Elemente & Einstellungen (Buttons in allen Tabs) */
 .element-item,
 .settings-item {
     padding: 12px;
