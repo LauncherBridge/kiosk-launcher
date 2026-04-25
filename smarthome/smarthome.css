@@ -520,3 +520,14 @@ html, body {
     background: rgba(255,255,255,0.15);
     border-radius: 4px;
 }
+
+#editor-breadcrumb {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.breadcrumb-sep {
+    opacity: 0.5;
+    margin: 0 4px;
+}
