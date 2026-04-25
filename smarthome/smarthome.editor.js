@@ -4119,6 +4119,74 @@ if (tool === "dachluke") {
         this._saveActiveRoomToProject();
     },
 
+
+        // --------------------------------------------------
+    // Undo (raumbezogen)
+    // --------------------------------------------------
+    undo() {
+        const roomId = this._getActiveRoomId();
+        if (!roomId) return;
+
+        const hist = this._getRoomHistory(roomId);
+        if (!hist) return;
+
+        // Nichts zum Undo
+        if (hist.index <= 1) {
+            return;
+        }
+
+        // Einen Schritt zurück
+        hist.index -= 1;
+        const snap = hist.stack[hist.index - 1];
+        if (!snap) return;
+
+        // Zustand wiederherstellen
+        this.points  = JSON.parse(JSON.stringify(snap.points));
+        this.doors   = JSON.parse(JSON.stringify(snap.doors));
+        this.windows = JSON.parse(JSON.stringify(snap.windows));
+        this.isClosed = snap.isClosed;
+
+        this.updateWalls();
+        this.render();
+
+        // Speichern nach Undo
+        this._saveActiveRoomToProject();
+    },
+
+        // --------------------------------------------------
+    // Redo (raumbezogen)
+    // --------------------------------------------------
+    redo() {
+        const roomId = this._getActiveRoomId();
+        if (!roomId) return;
+
+        const hist = this._getRoomHistory(roomId);
+        if (!hist) return;
+
+        // Nichts zum Redo
+        if (hist.index >= hist.stack.length) {
+            return;
+        }
+
+        // Einen Schritt vor
+        const snap = hist.stack[hist.index];
+        hist.index += 1;
+
+        if (!snap) return;
+
+        // Zustand wiederherstellen
+        this.points  = JSON.parse(JSON.stringify(snap.points));
+        this.doors   = JSON.parse(JSON.stringify(snap.doors));
+        this.windows = JSON.parse(JSON.stringify(snap.windows));
+        this.isClosed = snap.isClosed;
+
+        this.updateWalls();
+        this.render();
+
+        // Speichern nach Redo
+        this._saveActiveRoomToProject();
+    },
+
 }; // Ende RoomDesigner
 
 
