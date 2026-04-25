@@ -620,3 +620,9 @@ html, body {
 body.editor-mode #sh-floor-list {
     display: none !important;
 }
+
+/* Editor-Modus: "Editor öffnen"-Button ausblenden */
+body.editor-mode #btnOpenEditor,
+body.editor-mode .editor-btn {
+    display: none !important;
+}
