@@ -3837,6 +3837,26 @@ if (tool === "dachluke") {
         this.importObject();
     },
 
+
+    loadRoom(roomId) {
+    const room = SmartHomeData.getRoom(roomId);
+    if (!room) return;
+
+    // Raumdaten in den Editor übernehmen
+    this.points = room.polygon ? room.polygon.map(p => ({ x: p.x, y: p.y })) : [];
+    this.doors  = room.doors   ? room.doors.map(d => ({ ...d })) : [];
+    this.windows = room.windows ? room.windows.map(w => ({ ...w })) : [];
+
+    // Editor aktualisieren
+    this.updateWalls();
+    this.render();
+
+    // ⭐ Initialen Snapshot für diesen Raum erzeugen
+    this._commitChange("Raum geladen");
+},
+
+
+    
     exportScenes() {
         const store = this._getSceneStore();
         this._exportToClipboard("Szenen", store);
