@@ -4112,16 +4112,16 @@ function finishRoomNameEdit(el) {
 }
 
 function renderEditorSidebar() {
-    const container = document.getElementById("floor-list");
+    const container = document.getElementById("editor-location-list");
     if (!container) return;
 
     container.innerHTML = "";
 
     SmartHomeData.floors.forEach(floor => {
+
         // Etagen-Header
         const floorDiv = document.createElement("div");
         floorDiv.textContent = floor.name;
-        floorDiv.classList.add("floor-item");
         floorDiv.classList.add("floor-header");
 
         if (SmartHomeData.structure.activeFloor === floor.id) {
@@ -4142,8 +4142,8 @@ function renderEditorSidebar() {
 
         rooms.forEach(room => {
             const roomDiv = document.createElement("div");
-            roomDiv.textContent = "• " + room.name;
-            roomDiv.classList.add("room-item");
+            roomDiv.textContent = room.name;
+            roomDiv.classList.add("room-entry");
 
             if (SmartHomeData.structure.activeRoom === room.id) {
                 roomDiv.classList.add("active");
@@ -4160,6 +4160,7 @@ function renderEditorSidebar() {
         });
     });
 }
+
 
 
 
