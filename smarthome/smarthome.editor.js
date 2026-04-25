@@ -3907,6 +3907,10 @@ if (tool === "dachluke") {
 // --------------------------------------------------
 // Editor öffnen
 // --------------------------------------------------
+function getActiveRoom() {
+    return SmartHomeData.getRoom(SmartHomeData.structure.activeRoom);
+}
+
 // Ganz oben in der Datei oder zumindest außerhalb des Click-Handlers:
 function updateEditorTitle() {
     const proj = document.getElementById("editor-project-name");
@@ -3914,7 +3918,7 @@ function updateEditorTitle() {
 
     if (proj) proj.textContent = project.meta.name || "Projekt";
 
-    const roomObj = project.rooms["room_main"];
+    const roomObj = getActiveRoom();
     if (room && roomObj) {
         room.textContent = roomObj.name || "Raum";
     }
