@@ -643,6 +643,9 @@ body.editor-mode .editor-btn {
     cursor: pointer;
     border-radius: 4px;
     transition: background 0.15s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .floor-header:hover {
@@ -651,6 +654,15 @@ body.editor-mode .editor-btn {
 
 .floor-header.active {
     color: #4a90e2;
+}
+
+.floor-edit {
+    opacity: 0.6;
+    cursor: pointer;
+}
+
+.floor-edit:hover {
+    opacity: 1;
 }
 
 /* Räume */
@@ -670,4 +682,17 @@ body.editor-mode .editor-btn {
 
 .room-entry.active {
     color: #4a90e2;
+}
+
+/* Raum hinzufügen */
+.room-add {
+    padding: 6px 16px;
+    font-size: 14px;
+    color: #6cf;
+    cursor: pointer;
+    margin-bottom: 6px;
+}
+
+.room-add:hover {
+    color: #9ef;
 }
