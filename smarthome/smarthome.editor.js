@@ -4218,8 +4218,8 @@ window.addEventListener("DOMContentLoaded", () => {
         enableRoomNameEditing();
         enableProjectNameEditing();
 
-        renderFloorList();
-        renderRoomList();
+        renderEditorSidebar();
+
     });
 });
 
