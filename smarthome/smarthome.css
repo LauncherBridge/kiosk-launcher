@@ -351,7 +351,10 @@ html, body {
     z-index: 9000;
 }
 
-/* Linke Sidebar */
+/* ---------------------------------------------------------
+   EDITOR – LINKE SIDEBAR (unter Titelzeile)
+--------------------------------------------------------- */
+
 #editor-sidebar-left {
     position: fixed;
     top: 48px;
@@ -366,7 +369,38 @@ html, body {
     z-index: 99990;
 }
 
-/* Rechte Sidebar */
+.sidebar-section {
+    margin-bottom: 20px;
+}
+
+.sidebar-title {
+    font-size: 13px;
+    opacity: 0.7;
+    margin-bottom: 6px;
+}
+
+#floor-list div,
+#room-list div {
+    padding: 4px 6px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.15s ease;
+}
+
+#floor-list div:hover,
+#room-list div:hover {
+    background: rgba(255,255,255,0.08);
+}
+
+#floor-list .active,
+#room-list .active {
+    background: rgba(255,255,255,0.15);
+}
+
+/* ---------------------------------------------------------
+   EDITOR – RECHTE SIDEBAR (ORIGINAL)
+--------------------------------------------------------- */
+
 #editor-sidebar {
     position: fixed;
     top: 48px;
@@ -378,9 +412,10 @@ html, body {
     border-left: 1px solid rgba(255,255,255,0.12);
     display: flex;
     flex-direction: column;
+    z-index: 99998;
     color: white;
+    padding-top: 0;
     box-shadow: -4px 0 12px rgba(0,0,0,0.4);
-    z-index: 99990;
 }
 
 /* Tabs */
@@ -419,41 +454,49 @@ html, body {
     padding: 16px;
 }
 
-.sidebar-panel {
-    display: block;
-    color: #eee;
-    font-size: 14px;
-    line-height: 1.4;
+/* Kategorien */
+.category {
+    margin-bottom: 14px;
 }
 
-/* ---------------------------------------------------------
-   EDITOR – LINKER SIDEBAR INHALT
---------------------------------------------------------- */
-
-.sidebar-section {
-    margin-bottom: 20px;
-}
-
-.sidebar-title {
-    font-size: 13px;
-    opacity: 0.7;
-    margin-bottom: 6px;
-}
-
-#floor-list div,
-#room-list div {
-    padding: 4px 6px;
-    cursor: pointer;
-    border-radius: 4px;
-    transition: background 0.15s ease;
-}
-
-#floor-list div:hover,
-#room-list div:hover {
+.category-header {
+    padding: 10px;
     background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    color: #fff;
 }
 
-#floor-list .active,
-#room-list .active {
+.category-content {
+    padding: 10px;
+    display: none;
+}
+
+.category.open .category-content {
+    display: block;
+}
+
+/* Elemente */
+.category .item {
+    padding: 8px;
+    margin-bottom: 6px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 4px;
+    cursor: pointer;
+    color: #ddd;
+    font-size: 15px;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.category .item:hover {
     background: rgba(255,255,255,0.15);
+}
+
+.category .item.active {
+    background: rgba(74,144,226,0.35);
+    border-color: #4a90e2;
+    color: white;
 }
