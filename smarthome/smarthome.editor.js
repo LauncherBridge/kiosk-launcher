@@ -3914,6 +3914,110 @@ function updateEditorTitle() {
     el.textContent = project.meta.name || "Room Designer";
 }
 
+function enableRoomNameEditing() {
+    const el = document.getElementById("editor-room-name");
+    if (!el) return;
+
+    el.addEventListener("click", () => {
+        // Bereits im Edit-Modus?
+        if (el.contentEditable === "true") return;
+
+        el.contentEditable = "true";
+        el.classList.add("editing");
+        el.focus();
+
+        // Cursor ans Ende setzen
+        document.execCommand("selectAll", false, null);
+        document.getSelection().collapseToEnd();
+    });
+
+    el.addEventListener("blur", () => {
+        finishRoomNameEdit(el);
+    });
+
+    el.addEventListener("keydown", (ev) => {
+        if (ev.key === "Enter") {
+            ev.preventDefault();
+            el.blur();
+        }
+        if (ev.key === "Escape") {
+            ev.preventDefault();
+            el.textContent = project.rooms["room_main"].name || "Raum";
+            el.blur();
+        }
+    });
+}
+
+function enableProjectNameEditing() {
+    const el = document.getElementById("editor-project-name");
+    if (!el) return;
+
+    el.addEventListener("click", () => {
+        if (el.contentEditable === "true") return;
+
+        el.contentEditable = "true";
+        el.classList.add("editing");
+        el.focus();
+
+        document.execCommand("selectAll", false, null);
+        document.getSelection().collapseToEnd();
+    });
+
+    el.addEventListener("blur", () => {
+        finishProjectNameEdit(el);
+    });
+
+    el.addEventListener("keydown", (ev) => {
+        if (ev.key === "Enter") {
+            ev.preventDefault();
+            el.blur();
+        }
+        if (ev.key === "Escape") {
+            ev.preventDefault();
+            el.textContent = project.meta.name || "Projekt";
+            el.blur();
+        }
+    });
+}
+
+function finishProjectNameEdit(el) {
+    el.contentEditable = "false";
+    el.classList.remove("editing");
+
+    const newName = el.textContent.trim();
+    if (!newName) {
+        el.textContent = project.meta.name || "Projekt";
+        return;
+    }
+
+    // Persistieren
+    project.meta.name = newName;
+    saveProject();
+
+    // Titel aktualisieren
+    updateEditorTitle();
+}
+
+
+function finishRoomNameEdit(el) {
+    el.contentEditable = "false";
+    el.classList.remove("editing");
+
+    const newName = el.textContent.trim();
+    if (!newName) {
+        el.textContent = project.rooms["room_main"].name || "Raum";
+        return;
+    }
+
+    // Persistieren
+    project.rooms["room_main"].name = newName;
+    saveProject();
+
+    // Titel aktualisieren
+    updateEditorTitle();
+}
+
+
 window.addEventListener("DOMContentLoaded", () => {
     const openBtn = document.getElementById("btnOpenEditor");
     if (!openBtn) return;
@@ -3953,7 +4057,11 @@ window.addEventListener("DOMContentLoaded", () => {
 
         // Jetzt ist project.meta.name sicher verfügbar
         updateEditorTitle();
+        enableRoomNameEditing();
+        enableProjectNameEditing();
+
     });
+    
 });
 
 
