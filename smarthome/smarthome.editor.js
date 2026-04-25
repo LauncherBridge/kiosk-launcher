@@ -4117,11 +4117,14 @@ function renderEditorSidebar() {
 
     container.innerHTML = "";
 
+    // Etagen automatisch aus Rooms ableiten
+    SmartHomeData.refreshFloors();
+
     SmartHomeData.floors.forEach(floor => {
 
         // Etagen-Header
         const floorDiv = document.createElement("div");
-        floorDiv.textContent = floor.name;
+        floorDiv.textContent = SmartHomeData.getFloorDisplayName(floor.id);
         floorDiv.classList.add("floor-header");
 
         if (SmartHomeData.structure.activeFloor === floor.id) {
@@ -4137,7 +4140,7 @@ function renderEditorSidebar() {
 
         container.appendChild(floorDiv);
 
-        // Räume der Etage
+        // Räume dieser Etage
         const rooms = SmartHomeData.rooms.filter(r => r.floor === floor.id);
 
         rooms.forEach(room => {
@@ -4160,6 +4163,7 @@ function renderEditorSidebar() {
         });
     });
 }
+
 
 
 
