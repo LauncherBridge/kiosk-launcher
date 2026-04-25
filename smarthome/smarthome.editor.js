@@ -313,6 +313,88 @@ hoverTarget: null,
         lastCenterY: 0
     },
 
+    // --------------------------------------------------
+// ⭐ Undo / Redo System
+// --------------------------------------------------
+_history: [],
+_future: [],
+_historyLimit: 100,
+
+_snapshotState(label = "") {
+    return {
+        label,
+        points: JSON.parse(JSON.stringify(this.points)),
+        doors: JSON.parse(JSON.stringify(this.doors)),
+        windows: JSON.parse(JSON.stringify(this.windows)),
+        isClosed: this.isClosed,
+        currentTool: this.currentTool,
+        mode: this.mode,
+        selectedPoint: this.selectedPoint ? { ...this.selectedPoint } : null,
+        selectedDoorIndex: this.selectedDoorIndex,
+        selectedWindowIndex: this.selectedWindowIndex
+    };
+},
+
+_pushHistory(label = "") {
+    const snap = this._snapshotState(label);
+    this._history.push(snap);
+
+    // Redo-Stack leeren (neue Aktion)
+    this._future = [];
+
+    // Limit einhalten
+    if (this._history.length > this._historyLimit) {
+        this._history.shift();
+    }
+
+    // Optional: Autosave
+    if (typeof saveCurrentRoom === "function") {
+        saveCurrentRoom();
+    }
+},
+
+undo() {
+    if (this._history.length === 0) return;
+
+    const current = this._snapshotState("current");
+    this._future.push(current);
+
+    const prev = this._history.pop();
+    this._restoreSnapshot(prev);
+},
+
+redo() {
+    if (this._future.length === 0) return;
+
+    const current = this._snapshotState("current");
+    this._history.push(current);
+
+    const next = this._future.pop();
+    this._restoreSnapshot(next);
+},
+
+_restoreSnapshot(snap) {
+    this.points = JSON.parse(JSON.stringify(snap.points));
+    this.doors = JSON.parse(JSON.stringify(snap.doors));
+    this.windows = JSON.parse(JSON.stringify(snap.windows));
+    this.isClosed = snap.isClosed;
+    this.currentTool = snap.currentTool;
+    this.mode = snap.mode;
+
+    this.selectedPoint = snap.selectedPoint;
+    this.selectedDoorIndex = snap.selectedDoorIndex;
+    this.selectedWindowIndex = snap.selectedWindowIndex;
+
+    this.updateWalls();
+    this.render();
+},
+
+clearUndoRedo() {
+    this._history = [];
+    this._future = [];
+},
+
+
     _closingByButton: false,
     _contextJustClosed: false,
 
@@ -703,6 +785,17 @@ if (d.type === "dachluke") {
             if (Math.hypot(dx, dy) > 3) {
                 const c = this._pendingContext;
 
+                // ⭐ Undo-Snapshot VOR dem Draggen
+                this._pushHistory(
+                    c.type === "point"
+                        ? "drag-point"
+                        : c.type === "door"
+                        ? "drag-door"
+                        : c.type === "window"
+                        ? "drag-window"
+                        : "drag-unknown"
+                );
+
                 if (c.type === "point") this.selectedPoint = this.points[c.index];
                 if (c.type === "door") this.draggingDoorIndex = c.index;
                 if (c.type === "window") this.draggingWindowIndex = c.index;
@@ -711,6 +804,7 @@ if (d.type === "dachluke") {
                 this.isDragging = true;
             }
         }
+
 
         // Drag bewegen
         if (this.isDragging) {
@@ -934,49 +1028,51 @@ onDown(e) {
         return;
     }
 
-// ------------------------------------------------------------
-// ⭐ SCHARNIER NEU SETZEN (für normale Türen, NICHT Dachluke)
-// ------------------------------------------------------------
-if (this.mode === "setHinge") {
+    // ------------------------------------------------------------
+    // ⭐ SCHARNIER NEU SETZEN (für normale Türen, NICHT Dachluke)
+    // ------------------------------------------------------------
+    if (this.mode === "setHinge") {
 
-    const d = this.doors[this._hingeDoorIndex];
+        const d = this.doors[this._hingeDoorIndex];
 
-    if (!d) {
-        this.mode = "points";
-        this._hingeDoorIndex = null;
-        return;
-    }
+        if (!d) {
+            this.mode = "points";
+            this._hingeDoorIndex = null;
+            return;
+        }
 
-    // ⭐ Dachluke → hingeAngle setzen
-    if (d.type === "dachluke") {
+        // ⭐ Dachluke → hingeAngle setzen
+        if (d.type === "dachluke") {
 
-        // Winkel relativ zur Luke berechnen
-        const dx = worldX - d.x;
-        const dy = worldY - d.y;
-        d.hingeAngle = Math.atan2(dy, dx);
+            // ⭐ Undo vor Änderung
+            this._pushHistory("set-hinge-dachluke");
+
+            // Winkel relativ zur Luke berechnen
+            const dx = worldX - d.x;
+            const dy = worldY - d.y;
+            d.hingeAngle = Math.atan2(dy, dx);
+
+            this.mode = "points";
+            this._hingeDoorIndex = null;
+            this.render();
+            return;
+        }
+
+        // ⭐ Normale Türen → setDoorHingeFromTap
+        const w = this.walls[d.wallIndex];
+        if (w) {
+
+            // ⭐ Undo vor Änderung
+            this._pushHistory("set-hinge-door");
+
+            this.setDoorHingeFromTap(d, worldX, worldY, w);
+        }
 
         this.mode = "points";
         this._hingeDoorIndex = null;
         this.render();
         return;
     }
-
-    // ⭐ Normale Türen → setDoorHingeFromTap
-    const w = this.walls[d.wallIndex];
-    if (w) {
-        this.setDoorHingeFromTap(d, worldX, worldY, w);
-    }
-
-    this.mode = "points";
-    this._hingeDoorIndex = null;
-    isOpen: true;
-    this.render();
-    return;
-}
-
-
-
-
 
     // ------------------------------------------------------------
     // ⭐ DACHLUKE: 1. Klick = Luke setzen, 2. Klick = Scharnier setzen
@@ -995,6 +1091,9 @@ if (this.mode === "setHinge") {
                 return;
             }
 
+            // ⭐ Undo vor Hinzufügen
+            this._pushHistory("add-dachluke");
+
             this.doors.push({
                 type: "dachluke",
                 x: worldX,
@@ -1010,6 +1109,9 @@ if (this.mode === "setHinge") {
         }
 
         const d = this.doors[this.doors.length - 1];
+
+        // ⭐ Undo vor Hinge-Änderung
+        this._pushHistory("set-dachluke-hinge");
 
         const dx = worldX - d.x;
         const dy = worldY - d.y;
@@ -1052,6 +1154,9 @@ if (this.mode === "setHinge") {
         const first = this.points[0];
         if (Math.hypot(worldX - first.x, worldY - first.y) < 20) {
 
+            // ⭐ Undo vor Schließen
+            this._pushHistory("close-room");
+
             this.isClosed = true;
 
             this.selectedPoint = first;
@@ -1079,6 +1184,10 @@ if (this.mode === "setHinge") {
 
         if (hit.type === "wall") {
             const w = hit.data;
+
+            // ⭐ Undo vor Hinzufügen
+            this._pushHistory("add-window");
+
             this.windows.push({
                 wallIndex: w.index,
                 t: w.t,
@@ -1100,7 +1209,6 @@ if (this.mode === "setHinge") {
     if (this.mode === "doors") {
 
         const type = this.currentDoorType || "default";
-isOpen: true
 
         // ⭐ Durchgang → 1 Klick
         if (type === "durchgang") {
@@ -1120,6 +1228,9 @@ isOpen: true
             const tx = dx / len;
             const ty = dy / len;
 
+            // ⭐ Undo vor Hinzufügen
+            this._pushHistory("add-door-durchgang");
+
             this.doors.push({
                 type: "durchgang",
                 wallIndex: w.index,
@@ -1127,8 +1238,7 @@ isOpen: true
                 x: cx,
                 y: cy,
                 width: defaultWidth,
-               hingeAngle: 0, // hinge: null,
-                    type: type,
+                hingeAngle: 0,
                 side: null
             });
 
@@ -1141,6 +1251,10 @@ isOpen: true
         if (!this._placingDoor) {
             if (hit.type === "wall") {
                 const w = hit.data;
+
+                // ⭐ Undo vor Hinzufügen
+                this._pushHistory("add-door");
+
                 this.doors.push({
                     wallIndex: w.index,
                     t: w.t,
@@ -1161,6 +1275,10 @@ isOpen: true
         if (this._placingDoor) {
             const lastDoor = this.doors[this.doors.length - 1];
             const w = this.walls[lastDoor.wallIndex];
+
+            // ⭐ Undo vor Hinge-Änderung
+            this._pushHistory("set-door-hinge");
+
             this.setDoorHingeFromTap(lastDoor, worldX, worldY, w);
 
             this._placingDoor = false;
@@ -1201,6 +1319,9 @@ isOpen: true
         const w = hit.data;
         const insertPoint = { x: w.x, y: w.y };
 
+        // ⭐ Undo vor Einfügen
+        this._pushHistory("insert-point");
+
         this.points.splice(w.index + 1, 0, insertPoint);
 
         this.updateWalls();
@@ -1234,6 +1355,7 @@ isOpen: true
 },
 
 
+
     onUp(e) {
         // Wenn gerade gesnapped wurde → Klick komplett ignorieren
         if (this._justSnapped) {
@@ -1258,6 +1380,9 @@ isOpen: true
                 const first = this.points[0];
                 const lastIndex = this.points.length - 1;
 
+                // ⭐ Undo vor Snap-Schließen
+                this._pushHistory("snap-close-room");
+
                 // letzten Punkt entfernen
                 this.points.splice(lastIndex, 1);
 
@@ -1273,6 +1398,7 @@ isOpen: true
                 this.isDragging = false;
                 return;
             }
+
 
             // Normaler Drag-Ende
             this.isDragging = false;
@@ -1294,11 +1420,16 @@ isOpen: true
             if (c.type === "dachluke") {
                 const d = this.doors[c.index];
                 if (d && d.type === "dachluke") {
+
+                    // ⭐ Undo vor Toggle
+                    this._pushHistory("toggle-dachluke");
+
                     d.isOpen = !d.isOpen;   // Zustand wechseln
                     this.render();
                 }
                 return;
             }
+
         
             // ⭐ Alle anderen Elemente → Kontextmenü wie bisher
             const screenX = (c.x + this.offsetX) * this.zoom;
@@ -1337,11 +1468,15 @@ isOpen: true
                     }
                 }
 
+                // ⭐ Undo vor Punkt-Hinzufügen
+                this._pushHistory("add-point-click");
+
                 this.points.push({ x: px, y: py });
                 this._pendingNewPoint = null;
                 this.updateWalls();
                 this.render();
             }
+
 
             this._pendingNewPoint = null;
 
