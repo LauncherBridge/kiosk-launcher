@@ -4075,6 +4075,50 @@ if (tool === "dachluke") {
 
         return { last, next };
     }
+    // --------------------------------------------------
+    // Snapshot des aktuellen Raums erzeugen
+    // --------------------------------------------------
+    _createRoomSnapshot(label = "Änderung") {
+        const roomId = this._getActiveRoomId();
+        if (!roomId) return null;
+
+        return {
+            roomId,
+            label,
+            time: Date.now(),
+
+            // tiefe Kopien, damit Undo/Redo sauber funktioniert
+            points: JSON.parse(JSON.stringify(this.points)),
+            doors: JSON.parse(JSON.stringify(this.doors)),
+            windows: JSON.parse(JSON.stringify(this.windows)),
+            isClosed: this.isClosed
+        };
+    },
+    // --------------------------------------------------
+    // Änderung committen: Snapshot + History + Autosave
+    // --------------------------------------------------
+    _commitChange(label = "Änderung") {
+        const roomId = this._getActiveRoomId();
+        if (!roomId) return;
+
+        const snap = this._createRoomSnapshot(label);
+        if (!snap) return;
+
+        const hist = this._getRoomHistory(roomId);
+
+        // Wenn wir mitten in der History stehen → Redo-Teil abschneiden
+        if (hist.index < hist.stack.length) {
+            hist.stack = hist.stack.slice(0, hist.index);
+        }
+
+        // Snapshot anhängen
+        hist.stack.push(snap);
+        hist.index = hist.stack.length;
+
+        // Autosave: aktuellen Zustand in SmartHomeData schreiben
+        this._saveActiveRoomToProject();
+    },
+
 }; // Ende RoomDesigner
 
 
