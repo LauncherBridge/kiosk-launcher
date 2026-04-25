@@ -614,3 +614,8 @@ html, body {
     border-color: #4a90e2;
     color: #fff;
 }
+
+/* SmartHome-Floorlist im Editor immer ausblenden */
+body.editor-mode #sh-floor-list {
+    display: none !important;
+}
