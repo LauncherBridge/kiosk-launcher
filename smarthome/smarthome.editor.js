@@ -3907,6 +3907,13 @@ if (tool === "dachluke") {
 // --------------------------------------------------
 // Editor öffnen
 // --------------------------------------------------
+// Ganz oben in der Datei oder zumindest außerhalb des Click-Handlers:
+function updateEditorTitle() {
+    const el = document.getElementById("editor-title");
+    if (!el) return;
+    el.textContent = project.meta.name || "Room Designer";
+}
+
 window.addEventListener("DOMContentLoaded", () => {
     const openBtn = document.getElementById("btnOpenEditor");
     if (!openBtn) return;
@@ -3928,7 +3935,7 @@ window.addEventListener("DOMContentLoaded", () => {
         if (doorBtn) doorBtn.style.display = "block";
         if (winBtn) winBtn.style.display = "block";
 
-        // NEU: Titelbar anzeigen
+        // Titelbar anzeigen
         const titlebar = document.getElementById("editor-titlebar");
         if (titlebar) titlebar.style.display = "flex";
 
@@ -3936,14 +3943,19 @@ window.addEventListener("DOMContentLoaded", () => {
         const sidebar = document.getElementById("editor-sidebar");
         if (sidebar) sidebar.style.display = "flex";
 
-
+        // Editor initialisieren
         RoomDesigner.init();
+
+        // Projekt laden
         if (loadProject()) {
             importToEditor();
         }
 
+        // Jetzt ist project.meta.name sicher verfügbar
+        updateEditorTitle();
     });
 });
+
 
 // ===============================
 // Editor schließen
