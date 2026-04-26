@@ -3959,6 +3959,39 @@ if (tool === "dachluke") {
     }
 }; // Ende RoomDesigner
 
+// ------------------------------------------------------------
+// Fallback: RoomDesigner.loadRoom, falls nicht definiert
+// ------------------------------------------------------------
+if (!RoomDesigner.loadRoom) {
+    RoomDesigner.loadRoom = function(roomId) {
+        if (!window.SmartHomeData || !Array.isArray(SmartHomeData.rooms)) {
+            console.warn("[RoomDesigner.loadRoom] SmartHomeData.rooms nicht verfügbar");
+            return;
+        }
+
+        const room = SmartHomeData.rooms.find(r => r.id === roomId);
+        if (!room) {
+            console.warn("[RoomDesigner.loadRoom] Raum nicht gefunden:", roomId);
+            return;
+        }
+
+        // Basisdaten in den Editor übernehmen
+        RoomDesigner.points  = room.polygon || [];
+        RoomDesigner.doors   = room.doors   || [];
+        RoomDesigner.windows = room.windows || [];
+
+        if (typeof RoomDesigner.updateWalls === "function") {
+            RoomDesigner.updateWalls();
+        }
+        if (typeof RoomDesigner.render === "function") {
+            RoomDesigner.render();
+        }
+
+        console.log("[RoomDesigner] Raum geladen:", roomId);
+    };
+}
+
+
 
 // --------------------------------------------------
 // Editor öffnen
