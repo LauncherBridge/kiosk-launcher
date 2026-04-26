@@ -4591,15 +4591,30 @@ if (btnUndo && btnRedo) {
     });
 
     // Klick-Events – Undo/Redo IMMER binden
-    btnUndo.addEventListener("click", () => {
-        RoomDesigner.undo();
-    });
+btnUndo.addEventListener("click", () => {
+    RoomDesigner.undo();
+    RoomDesigner.updateUndoRedoTitles();
+});
 
-    btnRedo.addEventListener("click", () => {
-        RoomDesigner.redo();
-    });
+btnRedo.addEventListener("click", () => {
+    RoomDesigner.redo();
+    RoomDesigner.updateUndoRedoTitles();
+});
+
 }
 
+updateUndoRedoTitles() {
+    const info = this.getHistoryInfoForActiveRoom();
+
+    const last = info.last;
+    const next = info.next;
+
+    const btnUndo = document.getElementById("editor-undo-btn");
+    const btnRedo = document.getElementById("editor-redo-btn");
+
+    btnUndo.title = last ? "Undo: " + last.label : "Nichts zum Rückgängig machen";
+    btnRedo.title = next ? "Redo: " + next.label : "Nichts zum Wiederholen";
+}
 
 
 
