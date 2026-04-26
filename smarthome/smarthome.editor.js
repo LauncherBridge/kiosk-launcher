@@ -4121,17 +4121,18 @@ function finishProjectNameEdit(el) {
 
     const newName = el.textContent.trim();
     if (!newName) {
-        el.textContent = project.meta.name || "Projekt";
+        el.textContent = project.meta?.name || "Projekt";
         return;
     }
 
     // Persistieren
+    project.meta = project.meta || {};
     project.meta.name = newName;
-    saveProject();
 
-    // Titel aktualisieren
+    saveProject();
     updateEditorTitle();
 }
+
 
 
 function finishRoomNameEdit(el) {
@@ -4140,17 +4141,30 @@ function finishRoomNameEdit(el) {
 
     const newName = el.textContent.trim();
     if (!newName) {
-        el.textContent = project.rooms["room_main"].name || "Raum";
+        const activeRoomId = SmartHomeData?.structure?.activeRoom || "room_main";
+        el.textContent = project.rooms?.[activeRoomId]?.name || "Raum";
         return;
     }
 
-    // Persistieren
-    project.rooms["room_main"].name = newName;
-    saveProject();
+    const activeRoomId = SmartHomeData?.structure?.activeRoom || "room_main";
 
-    // Titel aktualisieren
+    // Projektstruktur aktualisieren
+    project.rooms = project.rooms || {};
+    if (!project.rooms[activeRoomId]) {
+        project.rooms[activeRoomId] = {};
+    }
+    project.rooms[activeRoomId].name = newName;
+
+    // SmartHomeData synchronisieren (falls vorhanden)
+    if (SmartHomeData && Array.isArray(SmartHomeData.rooms)) {
+        const roomObj = SmartHomeData.rooms.find(r => r.id === activeRoomId);
+        if (roomObj) roomObj.name = newName;
+    }
+
+    saveProject();
     updateEditorTitle();
 }
+
 
 function renderEditorSidebar() {
     const container = document.getElementById("editor-location-list");
