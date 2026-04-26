@@ -1328,13 +1328,15 @@ this._commitChange("Tür-Hinge gesetzt");
         const insertPoint = { x: w.x, y: w.y };
 
         // ⭐ Änderung speichern
-        this._commitChange("Punkt eingefügt");
-        
-        this.points.splice(w.index + 1, 0, insertPoint);
-        
-        this.updateWalls();
-        this.render();
-        return;
+this.points.splice(w.index + 1, 0, insertPoint);
+
+this.updateWalls();
+this.render();
+
+// ⭐ Änderung speichern NACH der Mutation
+this._commitChange("Punkt eingefügt");
+return;
+
 
     }
 
@@ -3842,22 +3844,26 @@ if (tool === "dachluke") {
     },
 
 
-    loadRoom(roomId) {
+loadRoom(roomId) {
     const room = SmartHomeData.getRoom(roomId);
     if (!room) return;
 
     // Raumdaten in den Editor übernehmen
-    this.points = room.polygon ? room.polygon.map(p => ({ x: p.x, y: p.y })) : [];
-    this.doors  = room.doors   ? room.doors.map(d => ({ ...d })) : [];
+    this.points  = room.polygon ? room.polygon.map(p => ({ x: p.x, y: p.y })) : [];
+    this.doors   = room.doors   ? room.doors.map(d => ({ ...d })) : [];
     this.windows = room.windows ? room.windows.map(w => ({ ...w })) : [];
+    this.isClosed = !!room.isClosed;
 
-    // Editor aktualisieren
     this.updateWalls();
     this.render();
 
-    // ⭐ Initialen Snapshot für diesen Raum erzeugen
-    this._commitChange("Raum geladen");
-},
+    // ❗ Nur dann Snapshot anlegen, wenn es für diesen Raum noch KEINE History gibt
+    const hist = this.historyByRoom && this.historyByRoom[roomId];
+    if (!hist || !hist.stack || hist.stack.length === 0) {
+        this._commitChange("Raum geladen");
+    }
+}
+,
 
 
     
