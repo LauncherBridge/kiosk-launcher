@@ -3907,45 +3907,12 @@ if (tool === "dachluke") {
 // --------------------------------------------------
 // Editor öffnen
 // --------------------------------------------------
-function getActiveRoom() {
-    return SmartHomeData.getRoom(SmartHomeData.structure.activeRoom);
-}
-
-function setActiveRoom(roomId) {
-    if (!roomId) return;
-    if (!SmartHomeData.getRoom(roomId)) return;
-
-    // Wenn der Raum schon aktiv ist, nichts tun
-    if (SmartHomeData.structure.activeRoom === roomId) return;
-
-    SmartHomeData.structure.activeRoom = roomId;
-
-    // Titelzeile aktualisieren
-    updateEditorTitle();
-
-    // Editor neu rendern (falls vorhanden)
-    if (RoomDesigner && typeof RoomDesigner.render === "function") {
-        RoomDesigner.render();
-    }
-}
-
-
 // Ganz oben in der Datei oder zumindest außerhalb des Click-Handlers:
 function updateEditorTitle() {
-    const proj = document.getElementById("editor-project-name");
-    const room = document.getElementById("editor-room-name");
-
-    if (proj) {
-        proj.textContent = project.meta.name || "Projekt";
-    }
-
-    const roomObj = getActiveRoom();
-    if (room && roomObj) {
-        room.textContent = roomObj.name || "Raum";
-    }
+    const el = document.getElementById("editor-title");
+    if (!el) return;
+    el.textContent = project.meta.name || "Room Designer";
 }
-
-
 
 function enableRoomNameEditing() {
     const el = document.getElementById("editor-room-name");
@@ -4013,67 +3980,6 @@ function enableProjectNameEditing() {
     });
 }
 
-function renderFloorList() {
-    const container = document.getElementById("floor-list");
-    if (!container) return;
-
-    container.innerHTML = "";
-
-    if (!SmartHomeData?.floors) return;
-
-    SmartHomeData.floors.forEach(floor => {
-        const div = document.createElement("div");
-        div.textContent = floor.name;
-        div.classList.add("floor-item");
-
-        if (SmartHomeData.structure.activeFloor === floor.id) {
-            div.classList.add("active");
-        }
-
-        div.addEventListener("click", () => {
-            SmartHomeData.structure.activeFloor = floor.id;
-            renderFloorList();
-            renderRoomList();
-            updateEditorTitle();
-        });
-
-        container.appendChild(div);
-    });
-}
-
-function renderRoomList() {
-    const container = document.getElementById("room-list");
-    if (!container) return;
-
-    container.innerHTML = "";
-
-    const activeFloor = SmartHomeData.structure.activeFloor;
-    if (!activeFloor) return;
-
-    const rooms = SmartHomeData.rooms.filter(r => r.floor === activeFloor);
-
-    rooms.forEach(room => {
-        const div = document.createElement("div");
-        div.textContent = room.name;
-        div.classList.add("room-item");
-
-        if (SmartHomeData.structure.activeRoom === room.id) {
-            div.classList.add("active");
-        }
-
-        div.addEventListener("click", () => {
-            SmartHomeData.structure.activeRoom = room.id;
-            updateEditorTitle();
-            renderRoomList();
-        });
-
-        container.appendChild(div);
-    });
-}
-
-
-
-
 function finishProjectNameEdit(el) {
     el.contentEditable = "false";
     el.classList.remove("editing");
@@ -4111,178 +4017,51 @@ function finishRoomNameEdit(el) {
     updateEditorTitle();
 }
 
-function renderEditorSidebar() {
-    const container = document.getElementById("editor-location-list");
-    if (!container) return;
-
-    container.innerHTML = "";
-
-    SmartHomeData.refreshFloors();
-
-    SmartHomeData.floors.forEach(floor => {
-
-        // Etagen-Header
-        const header = document.createElement("div");
-        header.classList.add("floor-header");
-
-        const nameSpan = document.createElement("span");
-        nameSpan.classList.add("floor-name");
-        nameSpan.textContent = SmartHomeData.getFloorDisplayName(floor.id);
-
-        const editBtn = document.createElement("span");
-        editBtn.classList.add("floor-edit");
-        editBtn.textContent = "✎";
-        editBtn.addEventListener("click", (ev) => {
-            ev.stopPropagation();
-            const alias = prompt("Neuer Etagenname:", SmartHomeData.getFloorDisplayName(floor.id));
-            if (alias !== null) {
-                SmartHomeData.setFloorAlias(floor.id, alias);
-                renderEditorSidebar();
-            }
-        });
-
-        header.appendChild(nameSpan);
-        header.appendChild(editBtn);
-
-        header.addEventListener("click", () => {
-            SmartHomeData.structure.activeFloor = floor.id;
-            SmartHomeData.structure.activeRoom = null;
-            renderEditorSidebar();
-            updateEditorTitle();
-        });
-
-        container.appendChild(header);
-
-        // Räume der Etage
-        const rooms = SmartHomeData.rooms.filter(r => r.floor === floor.id);
-
-        rooms.forEach(room => {
-            const roomDiv = document.createElement("div");
-            roomDiv.classList.add("room-entry");
-            roomDiv.textContent = room.name;
-
-            roomDiv.addEventListener("click", () => {
-                SmartHomeData.structure.activeFloor = floor.id;
-                SmartHomeData.structure.activeRoom = room.id;
-            
-                // Raum im Canvas laden
-                if (RoomDesigner && typeof RoomDesigner.loadRoom === "function") {
-                    RoomDesigner.loadRoom(room.id);
-                }
-            
-                renderEditorSidebar();
-                updateEditorTitle();
-            });
-
-
-            container.appendChild(roomDiv);
-        });
-
-        // Raum hinzufügen
-        const addRoom = document.createElement("div");
-        addRoom.classList.add("room-add");
-        addRoom.textContent = "+ Raum hinzufügen";
-        addRoom.addEventListener("click", () => {
-            const name = prompt("Name des neuen Raums:", "Neuer Raum");
-            if (!name) return;
-        
-            const id = name.toLowerCase().replace(/\s+/g, "_");
-        
-            SmartHomeData.rooms.push({
-                id,
-                name,
-                type: "living",
-                floor: floor.id,
-                polygon: [],
-                doors: []
-            });
-        
-            SmartHomeData.structure.activeFloor = floor.id;
-            SmartHomeData.structure.activeRoom = id;
-        
-            SmartHomeData.refreshFloors();
-        
-            // Canvas leeren für neuen Raum
-            if (RoomDesigner && typeof RoomDesigner.clear === "function") {
-                RoomDesigner.clear();
-            }
-        
-            renderEditorSidebar();
-            updateEditorTitle();
-        });
-
-
-        container.appendChild(addRoom);
-    });
-}
-
-
-
-
-
 
 window.addEventListener("DOMContentLoaded", () => {
     const openBtn = document.getElementById("btnOpenEditor");
     if (!openBtn) return;
 
     openBtn.addEventListener("click", () => {
-
-        // -----------------------------------------
-        // 1) Editor-Modus aktivieren (CSS-Schalter)
-        // -----------------------------------------
-        document.body.classList.add("editor-mode");
-
-        // -----------------------------------------
-        // SmartHome-UI ausblenden
-        // -----------------------------------------
         const root = document.getElementById("smarthome-root");
         const header = document.getElementById("sh-group-header");
         const minimap = document.getElementById("smarthome-minimap");
-        const floorList = document.getElementById("sh-floor-list"); // WICHTIG
 
         if (root) root.style.display = "none";
         if (header) header.style.display = "none";
         if (minimap) minimap.style.display = "none";
-        if (floorList) floorList.style.display = "none"; // WICHTIG
 
-        // -----------------------------------------
-        // Editor-Layout einblenden
-        // -----------------------------------------
-        const layout = document.getElementById("editor-layout");
-        if (layout) layout.style.display = "block";
-
-        // Canvas einblenden
         const canvas = document.getElementById("roomdesigner");
-        if (canvas) canvas.style.display = "block";
+        const doorBtn = document.getElementById("btnDoorMode");
+        const winBtn = document.getElementById("btnWindowMode");
 
-        // Titelbar einblenden
+        if (canvas) canvas.style.display = "block";
+        if (doorBtn) doorBtn.style.display = "block";
+        if (winBtn) winBtn.style.display = "block";
+
+        // Titelbar anzeigen
         const titlebar = document.getElementById("editor-titlebar");
         if (titlebar) titlebar.style.display = "flex";
 
-        // Rechte Sidebar einblenden
+        // Sidebar anzeigen
         const sidebar = document.getElementById("editor-sidebar");
         if (sidebar) sidebar.style.display = "flex";
 
-        // -----------------------------------------
         // Editor initialisieren
-        // -----------------------------------------
         RoomDesigner.init();
 
+        // Projekt laden
         if (loadProject()) {
             importToEditor();
         }
 
+        // Jetzt ist project.meta.name sicher verfügbar
         updateEditorTitle();
         enableRoomNameEditing();
         enableProjectNameEditing();
 
-        renderEditorSidebar();
-        // Aktiven Raum beim Öffnen laden
-        if (SmartHomeData.structure.activeRoom) {
-            RoomDesigner.loadRoom(SmartHomeData.structure.activeRoom);
-        }
-
     });
+    
 });
 
 
@@ -4291,20 +4070,14 @@ window.addEventListener("DOMContentLoaded", () => {
 // ===============================
 document.getElementById("editor-close-btn")?.addEventListener("click", () => {
 
-    // Editor-Modus deaktivieren (WICHTIG!)
-    document.body.classList.remove("editor-mode");
-
-    // Editor-Layout komplett ausblenden
-    const layout = document.getElementById("editor-layout");
-    if (layout) layout.style.display = "none";
-
     // Titelbar ausblenden
     const titlebar = document.getElementById("editor-titlebar");
     if (titlebar) titlebar.style.display = "none";
 
-    // Rechte Sidebar ausblenden
+    // Sidebar ausblenden
     const sidebar = document.getElementById("editor-sidebar");
     if (sidebar) sidebar.style.display = "none";
+
 
     // Editor-Canvas ausblenden
     const canvas = document.getElementById("roomdesigner");
@@ -4320,15 +4093,11 @@ document.getElementById("editor-close-btn")?.addEventListener("click", () => {
     const root = document.getElementById("smarthome-root");
     const header = document.getElementById("sh-group-header");
     const minimap = document.getElementById("smarthome-minimap");
-    const floorList = document.getElementById("sh-floor-list");
 
     if (root) root.style.display = "block";
-    if (header) header.style.display = "flex";
+    if (header) header.style.display = "block";
     if (minimap) minimap.style.display = "block";
-    if (floorList) floorList.style.display = "block";
 });
-
-
     
     // ===============================
     // Sidebar Tabs umschalten
