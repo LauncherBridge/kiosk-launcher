@@ -4140,30 +4140,36 @@ function finishRoomNameEdit(el) {
     el.classList.remove("editing");
 
     const newName = el.textContent.trim();
+    const activeRoomId = SmartHomeData?.structure?.activeRoom || "wohnzimmer";
+
     if (!newName) {
-        const activeRoomId = SmartHomeData?.structure?.activeRoom || "room_main";
-        el.textContent = project.rooms?.[activeRoomId]?.name || "Raum";
+        el.textContent = SmartHomeData.getRoom(activeRoomId)?.name || "Raum";
         return;
     }
 
-    const activeRoomId = SmartHomeData?.structure?.activeRoom || "room_main";
-
-    // Projektstruktur aktualisieren
-    project.rooms = project.rooms || {};
-    if (!project.rooms[activeRoomId]) {
-        project.rooms[activeRoomId] = {};
+    // 1) SmartHomeData.rooms aktualisieren (ARRAY!)
+    const roomObj = SmartHomeData.rooms.find(r => r.id === activeRoomId);
+    if (roomObj) {
+        roomObj.name = newName;
     }
+
+    // 2) project.rooms synchronisieren (für Persistenz)
+    project.rooms = project.rooms || {};
+    project.rooms[activeRoomId] = project.rooms[activeRoomId] || {};
     project.rooms[activeRoomId].name = newName;
 
-    // SmartHomeData synchronisieren (falls vorhanden)
-    if (SmartHomeData && Array.isArray(SmartHomeData.rooms)) {
-        const roomObj = SmartHomeData.rooms.find(r => r.id === activeRoomId);
-        if (roomObj) roomObj.name = newName;
-    }
-
+    // 3) Speichern
     saveProject();
+
+    // 4) Titelzeile aktualisieren
     updateEditorTitle();
+
+    // 5) Sidebar aktualisieren (damit Name sofort sichtbar wird)
+    if (typeof renderEditorSidebar === "function") {
+        renderEditorSidebar();
+    }
 }
+
 
 
 function renderEditorSidebar() {
