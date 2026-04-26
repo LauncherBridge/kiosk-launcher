@@ -1159,21 +1159,22 @@ onDown(e) {
         const first = this.points[0];
         if (Math.hypot(worldX - first.x, worldY - first.y) < 20) {
 
-            // ⭐ Undo vor Schließen
-            this._pushHistory("close-room");
-
+            // ⭐ Änderung speichern
+            this._commitChange("Raum geschlossen");
+            
             this.isClosed = true;
-
+            
             this.selectedPoint = first;
             this.isDragging = true;
-
+            
             this.updateWalls();
             this.render();
-
+            
             this.isDragging = false;
             this.selectedPoint = null;
-
+            
             return;
+
         }
     }
 
@@ -1324,14 +1325,15 @@ onDown(e) {
         const w = hit.data;
         const insertPoint = { x: w.x, y: w.y };
 
-        // ⭐ Undo vor Einfügen
-        this._pushHistory("insert-point");
-
+        // ⭐ Änderung speichern
+        this._commitChange("Punkt eingefügt");
+        
         this.points.splice(w.index + 1, 0, insertPoint);
-
+        
         this.updateWalls();
         this.render();
         return;
+
     }
 
     // ------------------------------------------------------------
