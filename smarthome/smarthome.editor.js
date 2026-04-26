@@ -4164,16 +4164,9 @@ function renderEditorSidebar() {
             roomDiv.addEventListener("click", () => {
                 SmartHomeData.structure.activeFloor = floor.id;
                 SmartHomeData.structure.activeRoom = room.id;
-            
-                // Raum im Canvas laden
-                if (RoomDesigner && typeof RoomDesigner.loadRoom === "function") {
-                    RoomDesigner.loadRoom(room.id);
-                }
-            
                 renderEditorSidebar();
                 updateEditorTitle();
             });
-
 
             container.appendChild(roomDiv);
         });
@@ -4185,32 +4178,19 @@ function renderEditorSidebar() {
         addRoom.addEventListener("click", () => {
             const name = prompt("Name des neuen Raums:", "Neuer Raum");
             if (!name) return;
-        
-            const id = name.toLowerCase().replace(/\s+/g, "_");
-        
+
             SmartHomeData.rooms.push({
-                id,
+                id: name.toLowerCase().replace(/\s+/g, "_"),
                 name,
                 type: "living",
                 floor: floor.id,
                 polygon: [],
                 doors: []
             });
-        
-            SmartHomeData.structure.activeFloor = floor.id;
-            SmartHomeData.structure.activeRoom = id;
-        
-            SmartHomeData.refreshFloors();
-        
-            // Canvas leeren für neuen Raum
-            if (RoomDesigner && typeof RoomDesigner.clear === "function") {
-                RoomDesigner.clear();
-            }
-        
-            renderEditorSidebar();
-            updateEditorTitle();
-        });
 
+            SmartHomeData.refreshFloors();
+            renderEditorSidebar();
+        });
 
         container.appendChild(addRoom);
     });
@@ -4277,10 +4257,6 @@ window.addEventListener("DOMContentLoaded", () => {
         enableProjectNameEditing();
 
         renderEditorSidebar();
-        // Aktiven Raum beim Öffnen laden
-        if (SmartHomeData.structure.activeRoom) {
-            RoomDesigner.loadRoom(SmartHomeData.structure.activeRoom);
-        }
 
     });
 });
