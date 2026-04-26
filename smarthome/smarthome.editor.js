@@ -4604,7 +4604,7 @@ RoomDesigner.updateUndoRedoTitles = function () {
     if (btnRedo) {
         btnRedo.title = next ? "Redo: " + next.label : "Nichts zum Wiederholen";
     }
-};
+}
 
 
 
