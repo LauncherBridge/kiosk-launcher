@@ -39,6 +39,47 @@ const project = {
     names: {}        // Alias-Namen für Titelzeile/Breadcrumbs
 };
 
+// ======================================================
+// Persistenz: Projekt speichern & laden (localStorage)
+// ======================================================
+
+const STORAGE_KEY = "smarthome_project_v1";
+
+// Speichert Projekt + SmartHomeData
+function saveProject() {
+    try {
+        const payload = {
+            project: project || {},
+            SmartHomeData: SmartHomeData || {}
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+        console.log("[Persistenz] Projekt gespeichert.");
+    } catch (e) {
+        console.error("[Persistenz] Fehler beim Speichern:", e);
+    }
+}
+
+// Lädt Projekt + SmartHomeData
+function loadProject() {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return false;
+
+        const data = JSON.parse(raw);
+
+        if (data.project) Object.assign(project, data.project);
+        if (data.SmartHomeData) Object.assign(SmartHomeData, data.SmartHomeData);
+
+        console.log("[Persistenz] Projekt geladen.");
+        return true;
+    } catch (e) {
+        console.error("[Persistenz] Fehler beim Laden:", e);
+        return false;
+    }
+}
+
+
+
 // ------------------------------------------------------------
 // ID-Generator (für Räume, Türen, Fenster, Geräte, etc.)
 // ------------------------------------------------------------
