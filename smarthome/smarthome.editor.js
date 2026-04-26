@@ -4230,126 +4230,95 @@ function renderEditorSidebar() {
         // Räume der Etage
         const rooms = SmartHomeData.rooms.filter(r => r.floor === floor.id);
 
-        rooms.forEach(room => {
-            const roomDiv = document.createElement("div");
-            roomDiv.classList.add("room-entry");
-            roomDiv.textContent = room.name;
-            roomDiv.appendChild(editBtn);
+rooms.forEach(room => {
+    const roomDiv = document.createElement("div");
+    roomDiv.classList.add("room-entry");
+    roomDiv.textContent = room.name;
 
-            // Edit-Button
-const editBtn = document.createElement("span");
-editBtn.classList.add("room-edit");
-editBtn.textContent = "✎";
-editBtn.title = "Raum umbenennen";
+    // --- Edit-Button ---
+    const editBtn = document.createElement("span");
+    editBtn.classList.add("room-edit");
+    editBtn.textContent = "✎";
+    editBtn.title = "Raum umbenennen";
 
-editBtn.addEventListener("click", (ev) => {
-    ev.stopPropagation();
+    editBtn.addEventListener("click", (ev) => {
+        ev.stopPropagation();
 
-    const newName = prompt("Neuer Raumname:", room.name);
-    if (!newName) return;
+        const newName = prompt("Neuer Raumname:", room.name);
+        if (!newName) return;
 
-    // 1) Namen ändern
-    room.name = newName;
+        room.name = newName;
 
-    // 2) Projekt speichern
-    if (typeof saveProject === "function") {
-        saveProject();
-    }
+        if (typeof saveProject === "function") saveProject();
 
-    // 3) Sidebar aktualisieren
-    renderEditorSidebar();
-
-    // 4) Titel aktualisieren
-    if (typeof updateEditorTitle === "function") {
-        updateEditorTitle();
-    }
-
-    console.log("[SmartHome] Raum umbenannt:", room.id, "→", newName);
-});
-
-            roomDiv.appendChild(delBtn);
-
-// Lösch-Button
-const delBtn = document.createElement("span");
-delBtn.classList.add("room-delete");
-delBtn.textContent = "🗑️";
-delBtn.title = "Raum löschen";
-
-delBtn.addEventListener("click", (ev) => {
-    ev.stopPropagation();
-
-    if (!confirm(`Raum "${room.name}" wirklich löschen?`)) return;
-
-    const roomId = room.id;
-
-    // 1) Türen entfernen, die auf diesen Raum zeigen
-    SmartHomeData.rooms.forEach(r => {
-        r.doors = r.doors?.filter(d => d.connectsTo !== roomId) || [];
+        renderEditorSidebar();
+        if (typeof updateEditorTitle === "function") updateEditorTitle();
     });
 
-    // 2) Container im Raum entfernen
-    SmartHomeData.containers = SmartHomeData.containers.filter(c => c.room !== roomId);
+    roomDiv.appendChild(editBtn);
 
-    // 3) Raum selbst entfernen
-    SmartHomeData.rooms = SmartHomeData.rooms.filter(r => r.id !== roomId);
+    // --- Lösch-Button ---
+    const delBtn = document.createElement("span");
+    delBtn.classList.add("room-delete");
+    delBtn.textContent = "🗑️";
+    delBtn.title = "Raum löschen";
 
-    // 4) Etagen aktualisieren
-    SmartHomeData.refreshFloors();
+    delBtn.addEventListener("click", (ev) => {
+        ev.stopPropagation();
 
-    // 5) Aktiven Raum neu setzen
-    const firstRoom = SmartHomeData.rooms.find(r => r.floor === floor.id);
-    SmartHomeData.structure.activeRoom = firstRoom ? firstRoom.id : null;
+        if (!confirm(`Raum "${room.name}" wirklich löschen?`)) return;
 
-    // 6) Projekt speichern
-    if (typeof saveProject === "function") {
-        saveProject();
-    }
+        const roomId = room.id;
 
-    // 7) Editor aktualisieren
-    if (SmartHomeData.structure.activeRoom) {
-        RoomDesigner.loadRoom(SmartHomeData.structure.activeRoom);
-    } else {
-        if (typeof RoomDesigner.clear === "function") {
+        SmartHomeData.rooms.forEach(r => {
+            r.doors = r.doors?.filter(d => d.connectsTo !== roomId) || [];
+        });
+
+        SmartHomeData.containers = SmartHomeData.containers.filter(c => c.room !== roomId);
+
+        SmartHomeData.rooms = SmartHomeData.rooms.filter(r => r.id !== roomId);
+
+        SmartHomeData.refreshFloors();
+
+        const firstRoom = SmartHomeData.rooms.find(r => r.floor === floor.id);
+        SmartHomeData.structure.activeRoom = firstRoom ? firstRoom.id : null;
+
+        if (typeof saveProject === "function") saveProject();
+
+        if (SmartHomeData.structure.activeRoom) {
+            RoomDesigner.loadRoom(SmartHomeData.structure.activeRoom);
+        } else if (typeof RoomDesigner.clear === "function") {
             RoomDesigner.clear();
         }
-    }
 
-    // 8) Sidebar & Titel aktualisieren
-    renderEditorSidebar();
-    updateEditorTitle();
-});
-
- roomDiv.addEventListener("click", () => {
-
-    const oldRoom = SmartHomeData.structure.activeRoom;
-
-    // 1) Alten Raum speichern
-    if (oldRoom && typeof RoomDesigner.saveRoom === "function") {
-        RoomDesigner.saveRoom(oldRoom);
-    }
-
-    // 2) Aktive Etage & Raum setzen
-    SmartHomeData.structure.activeFloor = floor.id;
-    SmartHomeData.structure.activeRoom = room.id;
-
-    // 3) Neuen Raum laden
-    if (typeof RoomDesigner.loadRoom === "function") {
-        RoomDesigner.loadRoom(room.id);
-    }
-
-    // 4) Sidebar aktualisieren
-    renderEditorSidebar();
-
-    // 5) Titel aktualisieren
-    if (typeof updateEditorTitle === "function") {
+        renderEditorSidebar();
         updateEditorTitle();
-    }
+    });
+
+    roomDiv.appendChild(delBtn);
+
+    // --- Raum-Klick ---
+    roomDiv.addEventListener("click", () => {
+        const oldRoom = SmartHomeData.structure.activeRoom;
+
+        if (oldRoom && typeof RoomDesigner.saveRoom === "function") {
+            RoomDesigner.saveRoom(oldRoom);
+        }
+
+        SmartHomeData.structure.activeFloor = floor.id;
+        SmartHomeData.structure.activeRoom = room.id;
+
+        if (typeof RoomDesigner.loadRoom === "function") {
+            RoomDesigner.loadRoom(room.id);
+        }
+
+        renderEditorSidebar();
+        if (typeof updateEditorTitle === "function") updateEditorTitle();
+    });
+
+    container.appendChild(roomDiv);
 });
 
-
-
-            container.appendChild(roomDiv);
-        });
 
         // Raum hinzufügen
         const addRoom = document.createElement("div");
