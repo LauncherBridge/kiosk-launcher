@@ -1377,7 +1377,7 @@ return;
         this.panStartY = mouseY;
     }
 }
-
+,
 
 
     onUp(e) {
