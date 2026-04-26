@@ -3496,7 +3496,81 @@ if (tool === "dachluke") {
     console.log("[RoomDesigner] setTool:", tool, "subtype:", subtype);
 },
 
+// ---------------------------------------------------------
+// Raum laden
+// ---------------------------------------------------------
+loadRoom(roomId) {
+    const room = SmartHomeData.getRoom(roomId);
+    if (!room) {
+        console.warn("[RoomDesigner] loadRoom: Raum nicht gefunden:", roomId);
+        return;
+    }
 
+    // Polygon, Türen, Fenster in den Editor übernehmen
+    this.points  = Array.isArray(room.polygon) ? JSON.parse(JSON.stringify(room.polygon)) : [];
+    this.doors   = Array.isArray(room.doors)   ? JSON.parse(JSON.stringify(room.doors))   : [];
+    this.windows = Array.isArray(room.windows) ? JSON.parse(JSON.stringify(room.windows)) : [];
+
+    // Editor‑Status zurücksetzen
+    this.selectedPoint = null;
+    this.hover = { x: 0, y: 0 };
+    this.isDragging = false;
+    this._placingDoor = false;
+    this._placingWindow = false;
+
+    // Wände neu berechnen
+    this.updateWalls();
+
+    // Rendern
+    this.render();
+
+    // Aktiven Raum setzen
+    SmartHomeData.structure.activeRoom = roomId;
+
+    // Titel aktualisieren (falls vorhanden)
+    if (typeof updateEditorTitle === "function") {
+        updateEditorTitle();
+    }
+
+    console.log("[RoomDesigner] Raum geladen:", roomId);
+},
+
+// ---------------------------------------------------------
+// Raum speichern
+// ---------------------------------------------------------
+saveRoom(roomId) {
+    const room = SmartHomeData.getRoom(roomId);
+    if (!room) {
+        console.warn("[RoomDesigner] saveRoom: Raum nicht gefunden:", roomId);
+        return;
+    }
+
+    // Polygon speichern
+    room.polygon = JSON.parse(JSON.stringify(this.points));
+
+    // Türen speichern
+    room.doors = JSON.parse(JSON.stringify(this.doors));
+
+    // Fenster speichern
+    room.windows = JSON.parse(JSON.stringify(this.windows));
+
+    // Passages sicherstellen (falls später genutzt)
+    if (!Array.isArray(room.passages)) {
+        room.passages = [];
+    }
+
+    console.log("[RoomDesigner] Raum gespeichert:", roomId);
+
+    // Sidebar aktualisieren (falls vorhanden)
+    if (typeof renderEditorSidebar === "function") {
+        renderEditorSidebar();
+    }
+
+    // Titel aktualisieren
+    if (typeof updateEditorTitle === "function") {
+        updateEditorTitle();
+    }
+},
 
     // Element-Typ setzen (z.B. "wall", "door-single", "window-standard", "smart-box")
     setElement(elementKey) {
@@ -4160,19 +4234,118 @@ function renderEditorSidebar() {
             const roomDiv = document.createElement("div");
             roomDiv.classList.add("room-entry");
             roomDiv.textContent = room.name;
+            roomDiv.appendChild(editBtn);
 
-            roomDiv.addEventListener("click", () => {
-                SmartHomeData.structure.activeFloor = floor.id;
-                SmartHomeData.structure.activeRoom = room.id;
-            
-                // Raum im Canvas laden
-                if (RoomDesigner && typeof RoomDesigner.loadRoom === "function") {
-                    RoomDesigner.loadRoom(room.id);
-                }
-            
-                renderEditorSidebar();
-                updateEditorTitle();
-            });
+            // Edit-Button
+const editBtn = document.createElement("span");
+editBtn.classList.add("room-edit");
+editBtn.textContent = "✎";
+editBtn.title = "Raum umbenennen";
+
+editBtn.addEventListener("click", (ev) => {
+    ev.stopPropagation();
+
+    const newName = prompt("Neuer Raumname:", room.name);
+    if (!newName) return;
+
+    // 1) Namen ändern
+    room.name = newName;
+
+    // 2) Projekt speichern
+    if (typeof saveProject === "function") {
+        saveProject();
+    }
+
+    // 3) Sidebar aktualisieren
+    renderEditorSidebar();
+
+    // 4) Titel aktualisieren
+    if (typeof updateEditorTitle === "function") {
+        updateEditorTitle();
+    }
+
+    console.log("[SmartHome] Raum umbenannt:", room.id, "→", newName);
+});
+
+            roomDiv.appendChild(delBtn);
+
+// Lösch-Button
+const delBtn = document.createElement("span");
+delBtn.classList.add("room-delete");
+delBtn.textContent = "🗑️";
+delBtn.title = "Raum löschen";
+
+delBtn.addEventListener("click", (ev) => {
+    ev.stopPropagation();
+
+    if (!confirm(`Raum "${room.name}" wirklich löschen?`)) return;
+
+    const roomId = room.id;
+
+    // 1) Türen entfernen, die auf diesen Raum zeigen
+    SmartHomeData.rooms.forEach(r => {
+        r.doors = r.doors?.filter(d => d.connectsTo !== roomId) || [];
+    });
+
+    // 2) Container im Raum entfernen
+    SmartHomeData.containers = SmartHomeData.containers.filter(c => c.room !== roomId);
+
+    // 3) Raum selbst entfernen
+    SmartHomeData.rooms = SmartHomeData.rooms.filter(r => r.id !== roomId);
+
+    // 4) Etagen aktualisieren
+    SmartHomeData.refreshFloors();
+
+    // 5) Aktiven Raum neu setzen
+    const firstRoom = SmartHomeData.rooms.find(r => r.floor === floor.id);
+    SmartHomeData.structure.activeRoom = firstRoom ? firstRoom.id : null;
+
+    // 6) Projekt speichern
+    if (typeof saveProject === "function") {
+        saveProject();
+    }
+
+    // 7) Editor aktualisieren
+    if (SmartHomeData.structure.activeRoom) {
+        RoomDesigner.loadRoom(SmartHomeData.structure.activeRoom);
+    } else {
+        if (typeof RoomDesigner.clear === "function") {
+            RoomDesigner.clear();
+        }
+    }
+
+    // 8) Sidebar & Titel aktualisieren
+    renderEditorSidebar();
+    updateEditorTitle();
+});
+
+ roomDiv.addEventListener("click", () => {
+
+    const oldRoom = SmartHomeData.structure.activeRoom;
+
+    // 1) Alten Raum speichern
+    if (oldRoom && typeof RoomDesigner.saveRoom === "function") {
+        RoomDesigner.saveRoom(oldRoom);
+    }
+
+    // 2) Aktive Etage & Raum setzen
+    SmartHomeData.structure.activeFloor = floor.id;
+    SmartHomeData.structure.activeRoom = room.id;
+
+    // 3) Neuen Raum laden
+    if (typeof RoomDesigner.loadRoom === "function") {
+        RoomDesigner.loadRoom(room.id);
+    }
+
+    // 4) Sidebar aktualisieren
+    renderEditorSidebar();
+
+    // 5) Titel aktualisieren
+    if (typeof updateEditorTitle === "function") {
+        updateEditorTitle();
+    }
+});
+
 
 
             container.appendChild(roomDiv);
@@ -4182,40 +4355,112 @@ function renderEditorSidebar() {
         const addRoom = document.createElement("div");
         addRoom.classList.add("room-add");
         addRoom.textContent = "+ Raum hinzufügen";
-        addRoom.addEventListener("click", () => {
-            const name = prompt("Name des neuen Raums:", "Neuer Raum");
-            if (!name) return;
-        
-            const id = name.toLowerCase().replace(/\s+/g, "_");
-        
-            SmartHomeData.rooms.push({
-                id,
-                name,
-                type: "living",
-                floor: floor.id,
-                polygon: [],
-                doors: []
-            });
-        
-            SmartHomeData.structure.activeFloor = floor.id;
-            SmartHomeData.structure.activeRoom = id;
-        
-            SmartHomeData.refreshFloors();
-        
-            // Canvas leeren für neuen Raum
-            if (RoomDesigner && typeof RoomDesigner.clear === "function") {
-                RoomDesigner.clear();
-            }
-        
-            renderEditorSidebar();
-            updateEditorTitle();
-        });
+addRoom.addEventListener("click", () => {
+
+    // 1) Alten Raum speichern
+    const oldRoom = SmartHomeData.structure.activeRoom;
+    if (oldRoom && typeof RoomDesigner.saveRoom === "function") {
+        RoomDesigner.saveRoom(oldRoom);
+    }
+
+    // 2) Benutzer nach Namen fragen
+    const name = prompt("Name des neuen Raums:", "Neuer Raum");
+    if (!name) return;
+
+    const id = name.toLowerCase().replace(/\s+/g, "_");
+
+    // 3) Neuen Raum erzeugen
+    SmartHomeData.rooms.push({
+        id,
+        name,
+        type: "living",
+        floor: floor.id,
+        polygon: [],
+        doors: [],
+        windows: [],
+        passages: []
+    });
+
+    // 4) Aktiven Raum setzen
+    SmartHomeData.structure.activeFloor = floor.id;
+    SmartHomeData.structure.activeRoom = id;
+
+    // 5) Etagen aktualisieren
+    SmartHomeData.refreshFloors();
+
+    // 6) Projekt speichern (PERSISTENZ!)
+    if (typeof saveProject === "function") {
+        saveProject();
+    }
+
+    // 7) Neuen Raum laden
+    if (typeof RoomDesigner.loadRoom === "function") {
+        RoomDesigner.loadRoom(id);
+    }
+
+    // 8) Sidebar & Titel aktualisieren
+    renderEditorSidebar();
+    updateEditorTitle();
+});
+
 
 
         container.appendChild(addRoom);
     });
 }
 
+// ---------------------------------------------------------
+// Projekt speichern (SmartHomeData → JSON → localStorage)
+// ---------------------------------------------------------
+function saveProject() {
+    try {
+        const json = JSON.stringify(SmartHomeData, null, 2);
+        localStorage.setItem("smarthome_project", json);
+        console.log("[SmartHome] Projekt gespeichert.");
+    } catch (e) {
+        console.error("[SmartHome] Fehler beim Speichern:", e);
+    }
+}
+
+// ---------------------------------------------------------
+// Projekt laden (localStorage → JSON → SmartHomeData)
+// ---------------------------------------------------------
+function loadProject() {
+    try {
+        const raw = localStorage.getItem("smarthome_project");
+        if (!raw) {
+            console.warn("[SmartHome] Kein gespeichertes Projekt gefunden.");
+            return;
+        }
+
+        const data = JSON.parse(raw);
+
+        // SmartHomeData überschreiben
+        Object.assign(SmartHomeData, data);
+
+        // Passages sicherstellen
+        SmartHomeData.rooms.forEach(room => {
+            if (!Array.isArray(room.passages)) {
+                room.passages = [];
+            }
+        });
+
+        // Etagen neu berechnen
+        SmartHomeData.refreshFloors();
+
+        // Aktiven Raum laden
+        if (SmartHomeData.structure.activeRoom) {
+            RoomDesigner.loadRoom(SmartHomeData.structure.activeRoom);
+        }
+
+        renderEditorSidebar();
+        updateEditorTitle();
+
+        console.log("[SmartHome] Projekt geladen.");
+    } catch (e) {
+        console.error("[SmartHome] Fehler beim Laden:", e);
+    }
+}
 
 
 
