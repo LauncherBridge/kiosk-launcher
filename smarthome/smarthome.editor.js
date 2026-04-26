@@ -4561,7 +4561,7 @@ function renderEditorSidebar() {
 const btnUndo = document.getElementById("editor-undo-btn");
 const btnRedo = document.getElementById("editor-redo-btn");
 
-if (btnUndo && btnRedo && window.RoomDesigner) {
+if (btnUndo && btnRedo) {
 
     // Hover-Text dynamisch aus raumbezogener History
     btnUndo.addEventListener("mouseenter", () => {
@@ -4576,19 +4576,16 @@ if (btnUndo && btnRedo && window.RoomDesigner) {
         btnRedo.title = next ? "Redo: " + (next.label || "Nächste Aktion") : "Nichts zum Wiederholen";
     });
 
-    // Klick-Events – Undo/Redo-Methoden implementieren wir in einem späteren Schritt
+    // Klick-Events – Undo/Redo IMMER binden
     btnUndo.addEventListener("click", () => {
-        if (typeof RoomDesigner.undo === "function") {
-            RoomDesigner.undo();
-        }
+        RoomDesigner.undo();
     });
 
     btnRedo.addEventListener("click", () => {
-        if (typeof RoomDesigner.redo === "function") {
-            RoomDesigner.redo();
-        }
+        RoomDesigner.redo();
     });
 }
+
 
 
 
