@@ -3849,7 +3849,7 @@ loadRoom(roomId) {
     const room = SmartHomeData.getRoom(roomId);
     if (!room) return;
 
-    // Raumdaten in den Editor übernehmen
+    // Raumdaten übernehmen
     this.points  = room.polygon ? room.polygon.map(p => ({ x: p.x, y: p.y })) : [];
     this.doors   = room.doors   ? room.doors.map(d => ({ ...d })) : [];
     this.windows = room.windows ? room.windows.map(w => ({ ...w })) : [];
@@ -3858,9 +3858,9 @@ loadRoom(roomId) {
     this.updateWalls();
     this.render();
 
-    // ❗ Nur dann Snapshot anlegen, wenn es für diesen Raum noch KEINE History gibt
-    const hist = this.historyByRoom && this.historyByRoom[roomId];
-    if (!hist || !hist.stack || hist.stack.length === 0) {
+    // ❗ Nur Snapshot anlegen, wenn es für diesen Raum noch KEINE History gibt
+    const hist = this.historyByRoom?.[roomId];
+    if (!hist || hist.stack.length === 0) {
         this._commitChange("Raum geladen");
     }
 }
