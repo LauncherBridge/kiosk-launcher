@@ -4577,44 +4577,35 @@ const btnRedo = document.getElementById("editor-redo-btn");
 
 if (btnUndo && btnRedo) {
 
-    // Hover-Text dynamisch aus raumbezogener History
-    btnUndo.addEventListener("mouseenter", () => {
-        const info = RoomDesigner.getHistoryInfoForActiveRoom();
-        const last = info.last;
-        btnUndo.title = last ? "Undo: " + (last.label || "Letzte Aktion") : "Nichts zum Rückgängig machen";
+    btnUndo.addEventListener("click", () => {
+        RoomDesigner.undo();
+        RoomDesigner.updateUndoRedoTitles();
     });
 
-    btnRedo.addEventListener("mouseenter", () => {
-        const info = RoomDesigner.getHistoryInfoForActiveRoom();
-        const next = info.next;
-        btnRedo.title = next ? "Redo: " + (next.label || "Nächste Aktion") : "Nichts zum Wiederholen";
+    btnRedo.addEventListener("click", () => {
+        RoomDesigner.redo();
+        RoomDesigner.updateUndoRedoTitles();
     });
-
-    // Klick-Events – Undo/Redo IMMER binden
-btnUndo.addEventListener("click", () => {
-    RoomDesigner.undo();
-    RoomDesigner.updateUndoRedoTitles();
-});
-
-btnRedo.addEventListener("click", () => {
-    RoomDesigner.redo();
-    RoomDesigner.updateUndoRedoTitles();
-});
-
 }
 
-updateUndoRedoTitles() {
+RoomDesigner.updateUndoRedoTitles = function () {
     const info = this.getHistoryInfoForActiveRoom();
 
     const last = info.last;
     const next = info.next;
 
     const btnUndo = document.getElementById("editor-undo-btn");
-    const btnRedo = document.getElementById("editor-redo-btn");
+    const btnRedo = document.getElementById("editor-undo-btn");
 
-    btnUndo.title = last ? "Undo: " + last.label : "Nichts zum Rückgängig machen";
-    btnRedo.title = next ? "Redo: " + next.label : "Nichts zum Wiederholen";
-}
+    if (btnUndo) {
+        btnUndo.title = last ? "Undo: " + last.label : "Nichts zum Rückgängig machen";
+    }
+
+    if (btnRedo) {
+        btnRedo.title = next ? "Redo: " + next.label : "Nichts zum Wiederholen";
+    }
+};
+
 
 
 
