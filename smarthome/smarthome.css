@@ -429,7 +429,7 @@ html, body {
 #editor-layout {
     position: fixed;
     inset: 0;
-    display: block;
+    display: flex;
     z-index: 9000;
 }
 
