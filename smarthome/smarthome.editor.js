@@ -1376,7 +1376,7 @@ return;
         this.panStartX = mouseX;
         this.panStartY = mouseY;
     }
-},
+}
 
 
 
