@@ -4573,7 +4573,7 @@ function renderEditorSidebar() {
 
 // Undo/Redo Buttons
 const btnUndo = document.getElementById("editor-undo-btn");
-const btnRedo = document.getElementById("editor-redo-btn");
+const btnRedo = document.getElementById("editor-undo-btn");
 
 if (btnUndo && btnRedo) {
 
@@ -4595,7 +4595,7 @@ RoomDesigner.updateUndoRedoTitles = function () {
     const next = info.next;
 
     const btnUndo = document.getElementById("editor-undo-btn");
-    const btnRedo = document.getElementById("editor-undo-btn");
+    const btnRedo = document.getElementById("editor-redo-btn");
 
     if (btnUndo) {
         btnUndo.title = last ? "Undo: " + last.label : "Nichts zum Rückgängig machen";
@@ -4604,7 +4604,8 @@ RoomDesigner.updateUndoRedoTitles = function () {
     if (btnRedo) {
         btnRedo.title = next ? "Redo: " + next.label : "Nichts zum Wiederholen";
     }
-}
+};
+
 
 
 
