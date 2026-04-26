@@ -70,14 +70,29 @@ function loadProject() {
         if (data.project) Object.assign(project, data.project);
         if (data.SmartHomeData) Object.assign(SmartHomeData, data.SmartHomeData);
 
+        applyProjectRoomNamesToSmartHomeData();
         console.log("[Persistenz] Projekt geladen.");
         return true;
+
     } catch (e) {
         console.error("[Persistenz] Fehler beim Laden:", e);
         return false;
     }
 }
 
+// ------------------------------------------------------------
+// Nach dem Laden: Raum-Namen aus project zurück in SmartHomeData schreiben
+// ------------------------------------------------------------
+function applyProjectRoomNamesToSmartHomeData() {
+    if (!project.rooms) return;
+
+    SmartHomeData.rooms.forEach(room => {
+        const saved = project.rooms[room.id];
+        if (saved && saved.name) {
+            room.name = saved.name;
+        }
+    });
+}
 
 
 // ------------------------------------------------------------
