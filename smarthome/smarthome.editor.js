@@ -4320,6 +4320,7 @@ rooms.forEach(room => {
 });
 
 
+
         // Raum hinzufügen
         const addRoom = document.createElement("div");
         addRoom.classList.add("room-add");
