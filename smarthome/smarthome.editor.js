@@ -4117,49 +4117,37 @@ function renderEditorSidebar() {
 
     container.innerHTML = "";
 
-    SmartHomeData.refreshFloors();
-
     SmartHomeData.floors.forEach(floor => {
 
         // Etagen-Header
-        const header = document.createElement("div");
-        header.classList.add("floor-header");
+        const floorDiv = document.createElement("div");
+        floorDiv.textContent = floor.name;
+        floorDiv.classList.add("floor-header");
 
-        const nameSpan = document.createElement("span");
-        nameSpan.classList.add("floor-name");
-        nameSpan.textContent = SmartHomeData.getFloorDisplayName(floor.id);
+        if (SmartHomeData.structure.activeFloor === floor.id) {
+            floorDiv.classList.add("active");
+        }
 
-        const editBtn = document.createElement("span");
-        editBtn.classList.add("floor-edit");
-        editBtn.textContent = "✎";
-        editBtn.addEventListener("click", (ev) => {
-            ev.stopPropagation();
-            const alias = prompt("Neuer Etagenname:", SmartHomeData.getFloorDisplayName(floor.id));
-            if (alias !== null) {
-                SmartHomeData.setFloorAlias(floor.id, alias);
-                renderEditorSidebar();
-            }
-        });
-
-        header.appendChild(nameSpan);
-        header.appendChild(editBtn);
-
-        header.addEventListener("click", () => {
+        floorDiv.addEventListener("click", () => {
             SmartHomeData.structure.activeFloor = floor.id;
             SmartHomeData.structure.activeRoom = null;
             renderEditorSidebar();
             updateEditorTitle();
         });
 
-        container.appendChild(header);
+        container.appendChild(floorDiv);
 
         // Räume der Etage
         const rooms = SmartHomeData.rooms.filter(r => r.floor === floor.id);
 
         rooms.forEach(room => {
             const roomDiv = document.createElement("div");
-            roomDiv.classList.add("room-entry");
             roomDiv.textContent = room.name;
+            roomDiv.classList.add("room-entry");
+
+            if (SmartHomeData.structure.activeRoom === room.id) {
+                roomDiv.classList.add("active");
+            }
 
             roomDiv.addEventListener("click", () => {
                 SmartHomeData.structure.activeFloor = floor.id;
@@ -4170,33 +4158,8 @@ function renderEditorSidebar() {
 
             container.appendChild(roomDiv);
         });
-
-        // Raum hinzufügen
-        const addRoom = document.createElement("div");
-        addRoom.classList.add("room-add");
-        addRoom.textContent = "+ Raum hinzufügen";
-        addRoom.addEventListener("click", () => {
-            const name = prompt("Name des neuen Raums:", "Neuer Raum");
-            if (!name) return;
-
-            SmartHomeData.rooms.push({
-                id: name.toLowerCase().replace(/\s+/g, "_"),
-                name,
-                type: "living",
-                floor: floor.id,
-                polygon: [],
-                doors: []
-            });
-
-            SmartHomeData.refreshFloors();
-            renderEditorSidebar();
-        });
-
-        container.appendChild(addRoom);
     });
 }
-
-
 
 
 
