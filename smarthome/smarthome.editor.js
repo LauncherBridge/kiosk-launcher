@@ -4203,20 +4203,21 @@ function renderEditorSidebar() {
         nameSpan.classList.add("floor-name");
         nameSpan.textContent = SmartHomeData.getFloorDisplayName(floor.id);
 
-        const editBtn = document.createElement("span");
-        editBtn.classList.add("floor-edit");
-        editBtn.textContent = "✎";
-        editBtn.addEventListener("click", (ev) => {
-            ev.stopPropagation();
-            const alias = prompt("Neuer Etagenname:", SmartHomeData.getFloorDisplayName(floor.id));
-            if (alias !== null) {
-                SmartHomeData.setFloorAlias(floor.id, alias);
-                renderEditorSidebar();
-            }
-        });
+const floorEditBtn = document.createElement("span");
+floorEditBtn.classList.add("floor-edit");
+floorEditBtn.textContent = "✎";
+floorEditBtn.addEventListener("click", (ev) => {
+    ev.stopPropagation();
+    const alias = prompt("Neuer Etagenname:", SmartHomeData.getFloorDisplayName(floor.id));
+    if (alias !== null) {
+        SmartHomeData.setFloorAlias(floor.id, alias);
+        renderEditorSidebar();
+    }
+});
 
-        header.appendChild(nameSpan);
-        header.appendChild(editBtn);
+header.appendChild(nameSpan);
+header.appendChild(floorEditBtn);
+
 
         header.addEventListener("click", () => {
             SmartHomeData.structure.activeFloor = floor.id;
@@ -4236,26 +4237,27 @@ rooms.forEach(room => {
     roomDiv.textContent = room.name;
 
     // --- Edit-Button ---
-    const editBtn = document.createElement("span");
-    editBtn.classList.add("room-edit");
-    editBtn.textContent = "✎";
-    editBtn.title = "Raum umbenennen";
+const roomEditBtn = document.createElement("span");
+roomEditBtn.classList.add("room-edit");
+roomEditBtn.textContent = "✎";
+roomEditBtn.title = "Raum umbenennen";
 
-    editBtn.addEventListener("click", (ev) => {
-        ev.stopPropagation();
+roomEditBtn.addEventListener("click", (ev) => {
+    ev.stopPropagation();
 
-        const newName = prompt("Neuer Raumname:", room.name);
-        if (!newName) return;
+    const newName = prompt("Neuer Raumname:", room.name);
+    if (!newName) return;
 
-        room.name = newName;
+    room.name = newName;
 
-        if (typeof saveProject === "function") saveProject();
+    if (typeof saveProject === "function") saveProject();
 
-        renderEditorSidebar();
-        if (typeof updateEditorTitle === "function") updateEditorTitle();
-    });
+    renderEditorSidebar();
+    if (typeof updateEditorTitle === "function") updateEditorTitle();
+});
 
-    roomDiv.appendChild(editBtn);
+roomDiv.appendChild(roomEditBtn);
+
 
     // --- Lösch-Button ---
     const delBtn = document.createElement("span");
