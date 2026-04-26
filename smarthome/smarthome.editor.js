@@ -1392,7 +1392,7 @@ return;
                 const lastIndex = this.points.length - 1;
 
                 // ⭐ Undo vor Snap-Schließen
-                this._pushHistory("snap-close-room");
+                this._commitChange("snap-close-room");
 
                 // letzten Punkt entfernen
                 this.points.splice(lastIndex, 1);
@@ -1433,7 +1433,7 @@ return;
                 if (d && d.type === "dachluke") {
 
                     // ⭐ Undo vor Toggle
-                    this._pushHistory("toggle-dachluke");
+                    this._commitChange("toggle-dachluke");
 
                     d.isOpen = !d.isOpen;   // Zustand wechseln
                     this.render();
@@ -1480,7 +1480,7 @@ return;
                 }
 
                 // ⭐ Undo vor Punkt-Hinzufügen
-                this._pushHistory("add-point-click");
+                this._commitChange("add-point-click");
 
                 this.points.push({ x: px, y: py });
                 this._pendingNewPoint = null;
