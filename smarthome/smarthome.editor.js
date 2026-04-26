@@ -4255,7 +4255,7 @@ rooms.forEach(room => {
         if (typeof updateEditorTitle === "function") updateEditorTitle();
     });
 
-    roomDiv.appendChild(editBtn);
+//    roomDiv.appendChild(editBtn)
 
     // --- Lösch-Button ---
     const delBtn = document.createElement("span");
