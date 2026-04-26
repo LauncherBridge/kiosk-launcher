@@ -1391,20 +1391,21 @@ return;
                 const first = this.points[0];
                 const lastIndex = this.points.length - 1;
 
-                // ⭐ Undo vor Snap-Schließen
-                this._commitChange("snap-close-room");
+// letzten Punkt entfernen
+this.points.splice(lastIndex, 1);
 
-                // letzten Punkt entfernen
-                this.points.splice(lastIndex, 1);
+// erster Punkt wird der aktive Punkt
+this.selectedPoint = first;
 
-                // erster Punkt wird der aktive Punkt
-                this.selectedPoint = first;
+this.isClosed = true;
+this._snapCandidate = false;
 
-                this.isClosed = true;
-                this._snapCandidate = false;
+this.updateWalls();
+this.render();
 
-                this.updateWalls();
-                this.render();
+// ⭐ Undo NACH der Mutation
+this._commitChange("snap-close-room");
+
 
                 this.isDragging = false;
                 return;
@@ -1479,13 +1480,13 @@ return;
                     }
                 }
 
-                // ⭐ Undo vor Punkt-Hinzufügen
-                this._commitChange("add-point-click");
+this.points.push({ x: px, y: py });
+this.updateWalls();
+this.render();
 
-                this.points.push({ x: px, y: py });
-                this._pendingNewPoint = null;
-                this.updateWalls();
-                this.render();
+// ⭐ Undo NACH der Mutation
+this._commitChange("add-point-click");
+
             }
 
 
