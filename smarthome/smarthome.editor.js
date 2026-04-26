@@ -1038,97 +1038,98 @@ onDown(e) {
     // ------------------------------------------------------------
     // ⭐ SCHARNIER NEU SETZEN (für normale Türen, NICHT Dachluke)
     // ------------------------------------------------------------
-    if (this.mode === "setHinge") {
+if (this.mode === "setHinge") {
 
-        const d = this.doors[this._hingeDoorIndex];
+    const d = this.doors[this._hingeDoorIndex];
 
-        if (!d) {
-            this.mode = "points";
-            this._hingeDoorIndex = null;
-            return;
-        }
-
-        // ⭐ Dachluke → hingeAngle setzen
-        if (d.type === "dachluke") {
-
-            // ⭐ Undo vor Änderung
-this._commitChange("Dachluke-Hinge gesetzt");
-
-            // Winkel relativ zur Luke berechnen
-            const dx = worldX - d.x;
-            const dy = worldY - d.y;
-            d.hingeAngle = Math.atan2(dy, dx);
-
-            this.mode = "points";
-            this._hingeDoorIndex = null;
-            this.render();
-            return;
-        }
-
-        // ⭐ Normale Türen → setDoorHingeFromTap
-        const w = this.walls[d.wallIndex];
-        if (w) {
-
-            // ⭐ Undo vor Änderung
-this._commitChange("Tür-Hinge gesetzt");
-
-            this.setDoorHingeFromTap(d, worldX, worldY, w);
-        }
-
+    if (!d) {
         this.mode = "points";
         this._hingeDoorIndex = null;
-        this.render();
         return;
     }
 
-    // ------------------------------------------------------------
-    // ⭐ DACHLUKE: 1. Klick = Luke setzen, 2. Klick = Scharnier setzen
-    // ------------------------------------------------------------
-    if (this.mode === "dachluke") {
+    // ⭐ Dachluke → hingeAngle setzen
+    if (d.type === "dachluke") {
 
-        if (!this._placingDachluke) {
-
-            if (!this.isClosed) {
-                alert("Dachluken können nur in einem geschlossenen Raum platziert werden.");
-                return;
-            }
-
-            if (!this.isPointInsideRoom(worldX, worldY)) {
-                alert("Dachluken müssen innerhalb des Raumes platziert werden.");
-                return;
-            }
-
-            // ⭐ Undo vor Hinzufügen
-this._commitChange("Dachluke hinzugefügt");
-
-            this.doors.push({
-                type: "dachluke",
-                x: worldX,
-                y: worldY,
-                width: 60,
-                isOpen: true,
-                hingeAngle: 0
-            });
-
-            this._placingDachluke = true;
-            this.render();
-            return;
-        }
-
-        const d = this.doors[this.doors.length - 1];
-
-        // ⭐ Undo vor Hinge-Änderung
-this._commitChange("Dachluke-Hinge gesetzt");
-
+        // Winkel relativ zur Luke berechnen
         const dx = worldX - d.x;
         const dy = worldY - d.y;
         d.hingeAngle = Math.atan2(dy, dx);
 
-        this._placingDachluke = false;
         this.mode = "points";
+        this._hingeDoorIndex = null;
         this.render();
+
+        // ⭐ Undo NACH der Mutation
+        this._commitChange("Dachluke-Hinge gesetzt");
         return;
     }
+
+    // ⭐ Normale Türen → setDoorHingeFromTap
+    const w = this.walls[d.wallIndex];
+    if (w) {
+        this.setDoorHingeFromTap(d, worldX, worldY, w);
+    }
+
+    this.mode = "points";
+    this._hingeDoorIndex = null;
+    this.render();
+
+    // ⭐ Undo NACH der Mutation
+    this._commitChange("Tür-Hinge gesetzt");
+    return;
+}
+
+
+    // ------------------------------------------------------------
+    // ⭐ DACHLUKE: 1. Klick = Luke setzen, 2. Klick = Scharnier setzen
+    // ------------------------------------------------------------
+if (this.mode === "dachluke") {
+
+    if (!this._placingDachluke) {
+
+        if (!this.isClosed) {
+            alert("Dachluken können nur in einem geschlossenen Raum platziert werden.");
+            return;
+        }
+
+        if (!this.isPointInsideRoom(worldX, worldY)) {
+            alert("Dachluken müssen innerhalb des Raumes platziert werden.");
+            return;
+        }
+
+        this.doors.push({
+            type: "dachluke",
+            x: worldX,
+            y: worldY,
+            width: 60,
+            isOpen: true,
+            hingeAngle: 0
+        });
+
+        this._placingDachluke = true;
+        this.render();
+
+        // ⭐ Undo NACH der Mutation
+        this._commitChange("Dachluke hinzugefügt");
+        return;
+    }
+
+    const d = this.doors[this.doors.length - 1];
+
+    const dx = worldX - d.x;
+    const dy = worldY - d.y;
+    d.hingeAngle = Math.atan2(dy, dx);
+
+    this._placingDachluke = false;
+    this.mode = "points";
+    this.render();
+
+    // ⭐ Undo NACH der Mutation
+    this._commitChange("Dachluke-Hinge gesetzt");
+    return;
+}
+
 
     // ------------------------------------------------------------
     // ⭐ HIT-TEST
@@ -1157,28 +1158,29 @@ this._commitChange("Dachluke-Hinge gesetzt");
     // ------------------------------------------------------------
     // ⭐ Raum schließen durch Klick auf ersten Punkt
     // ------------------------------------------------------------
-    if (!this.isClosed && this.points.length >= 2) {
-        const first = this.points[0];
-        if (Math.hypot(worldX - first.x, worldY - first.y) < 20) {
+if (!this.isClosed && this.points.length >= 2) {
+    const first = this.points[0];
+    if (Math.hypot(worldX - first.x, worldY - first.y) < 20) {
 
-            // ⭐ Änderung speichern
-            this._commitChange("Raum geschlossen");
-            
-            this.isClosed = true;
-            
-            this.selectedPoint = first;
-            this.isDragging = true;
-            
-            this.updateWalls();
-            this.render();
-            
-            this.isDragging = false;
-            this.selectedPoint = null;
-            
-            return;
+        // Raum schließen
+        this.isClosed = true;
 
-        }
+        this.selectedPoint = first;
+        this.isDragging = true;
+
+        this.updateWalls();
+        this.render();
+
+        this.isDragging = false;
+        this.selectedPoint = null;
+
+        // ⭐ Änderung speichern NACH der Mutation
+        this._commitChange("Raum geschlossen");
+
+        return;
     }
+}
+
 
     // ------------------------------------------------------------
     // ⭐ FENSTER-MODUS
@@ -1190,22 +1192,24 @@ this._commitChange("Dachluke-Hinge gesetzt");
             return;
         }
 
-        if (hit.type === "wall") {
-            const w = hit.data;
+if (hit.type === "wall") {
+    const w = hit.data;
 
-            // ⭐ Undo vor Hinzufügen
-this._commitChange("Fenster hinzugefügt");
+    this.windows.push({
+        wallIndex: w.index,
+        t: w.t,
+        x: w.x,
+        y: w.y,
+        width: 80
+    });
 
-            this.windows.push({
-                wallIndex: w.index,
-                t: w.t,
-                x: w.x,
-                y: w.y,
-                width: 80
-            });
-            this.updateWalls();
-            this.render();
-        }
+    this.updateWalls();
+    this.render();
+
+    // ⭐ Undo NACH der Mutation
+    this._commitChange("Fenster hinzugefügt");
+}
+
 
         this.mode = "points";
         return;
@@ -1219,82 +1223,91 @@ this._commitChange("Fenster hinzugefügt");
         const type = this.currentDoorType || "default";
 
         // ⭐ Durchgang → 1 Klick
-        if (type === "durchgang") {
+if (type === "durchgang") {
 
-            if (hit.type !== "wall") return;
+    if (hit.type !== "wall") return;
 
-            const w = hit.data;
-            const defaultWidth = 100;
+    const w = hit.data;
+    const defaultWidth = 100;
 
-            const cx = w.x;
-            const cy = w.y;
+    const cx = w.x;
+    const cy = w.y;
 
-            const dx = w.x2 - w.x1;
-            const dy = w.y2 - w.y1;
-            const len = Math.hypot(dx, dy) || 1;
+    const dx = w.x2 - w.x1;
+    const dy = w.y2 - w.y1;
+    const len = Math.hypot(dx, dy) || 1;
 
-            const tx = dx / len;
-            const ty = dy / len;
+    const tx = dx / len;
+    const ty = dy / len;
 
-            // ⭐ Undo vor Hinzufügen
-this._commitChange("Durchgang hinzugefügt");
+    // Durchgang hinzufügen
+    this.doors.push({
+        type: "durchgang",
+        wallIndex: w.index,
+        t: w.t,
+        x: cx,
+        y: cy,
+        width: defaultWidth,
+        hingeAngle: 0,
+        side: null
+    });
 
-            this.doors.push({
-                type: "durchgang",
-                wallIndex: w.index,
-                t: w.t,
-                x: cx,
-                y: cy,
-                width: defaultWidth,
-                hingeAngle: 0,
-                side: null
-            });
+    this.render();
 
-            this.render();
-            this.mode = "points";
-            return;
-        }
+    // ⭐ Undo NACH der Mutation
+    this._commitChange("Durchgang hinzugefügt");
 
-        // ⭐ Normale Türen → Wandgebunden
-        if (!this._placingDoor) {
-            if (hit.type === "wall") {
-                const w = hit.data;
+    this.mode = "points";
+    return;
+}
 
-                // ⭐ Undo vor Hinzufügen
-this._commitChange("Tür hinzugefügt");
 
-                this.doors.push({
-                    wallIndex: w.index,
-                    t: w.t,
-                    x: w.x,
-                    y: w.y,
-                    width: 36,
-                    hinge: null,
-                    side: 1,
-                    type: type
-                });
-                this._placingDoor = true;
-                this.render();
-                return;
-            }
-        }
+// ⭐ Normale Türen → Wandgebunden
+if (!this._placingDoor) {
+    if (hit.type === "wall") {
+        const w = hit.data;
 
-        // ⭐ Hinge setzen (normale Türen)
-        if (this._placingDoor) {
-            const lastDoor = this.doors[this.doors.length - 1];
-            const w = this.walls[lastDoor.wallIndex];
+        // Tür hinzufügen
+        this.doors.push({
+            wallIndex: w.index,
+            t: w.t,
+            x: w.x,
+            y: w.y,
+            width: 36,
+            hinge: null,
+            side: 1,
+            type: type
+        });
 
-            // ⭐ Undo vor Hinge-Änderung
-this._commitChange("Tür-Hinge gesetzt");
+        this._placingDoor = true;
+        this.render();
 
-            this.setDoorHingeFromTap(lastDoor, worldX, worldY, w);
+        // ⭐ Undo NACH der Mutation
+        this._commitChange("Tür hinzugefügt");
 
-            this._placingDoor = false;
-            this.mode = "points";
-            this.render();
-            return;
-        }
+        return;
     }
+}
+
+
+// ⭐ Hinge setzen (normale Türen)
+if (this._placingDoor) {
+    const lastDoor = this.doors[this.doors.length - 1];
+    const w = this.walls[lastDoor.wallIndex];
+
+    // Hinge setzen
+    this.setDoorHingeFromTap(lastDoor, worldX, worldY, w);
+
+    this._placingDoor = false;
+    this.mode = "points";
+    this.render();
+
+    // ⭐ Undo NACH der Mutation
+    this._commitChange("Tür-Hinge gesetzt");
+
+    return;
+}
+
 
     // ------------------------------------------------------------
     // ⭐ Kontextmenü für Türen
@@ -3859,11 +3872,11 @@ loadRoom(roomId) {
     this.render();
 
     // ❗ Nur Snapshot anlegen, wenn es für diesen Raum noch KEINE History gibt
-    const hist = this.historyByRoom?.[roomId];
-    if (!hist || hist.stack.length === 0) {
+    if (!this.historyByRoom[roomId] || this.historyByRoom[roomId].stack.length === 0) {
         this._commitChange("Raum geladen");
     }
 }
+
 ,
 
 
