@@ -313,93 +313,6 @@ hoverTarget: null,
         lastCenterY: 0
     },
 
-    // --------------------------------------------------
-// ⭐ Undo / Redo System
-// --------------------------------------------------
-_history: [],
-_future: [],
-_historyLimit: 100,
-
-_snapshotState(label = "") {
-    return {
-        label,
-        points: JSON.parse(JSON.stringify(this.points)),
-        doors: JSON.parse(JSON.stringify(this.doors)),
-        windows: JSON.parse(JSON.stringify(this.windows)),
-        isClosed: this.isClosed,
-        currentTool: this.currentTool,
-        mode: this.mode,
-        selectedPoint: this.selectedPoint ? { ...this.selectedPoint } : null,
-        selectedDoorIndex: this.selectedDoorIndex,
-        selectedWindowIndex: this.selectedWindowIndex
-    };
-},
-
-_pushHistory(label = "") {
-    const snap = this._snapshotState(label);
-
-    // ⭐ Label am Snapshot speichern
-    snap.label = label;
-
-    this._history.push(snap);
-
-    // Redo-Stack leeren (neue Aktion)
-    this._future = [];
-
-    // Limit einhalten
-    if (this._history.length > this._historyLimit) {
-        this._history.shift();
-    }
-
-    // Optional: Autosave
-    if (typeof saveCurrentRoom === "function") {
-        saveCurrentRoom();
-    }
-},
-
-
-undo() {
-    if (this._history.length === 0) return;
-
-    const current = this._snapshotState("current");
-    this._future.push(current);
-
-    const prev = this._history.pop();
-    this._restoreSnapshot(prev);
-},
-
-redo() {
-    if (this._future.length === 0) return;
-
-    const current = this._snapshotState("current");
-    this._history.push(current);
-
-    const next = this._future.pop();
-    this._restoreSnapshot(next);
-},
-
-_restoreSnapshot(snap) {
-    this.points = JSON.parse(JSON.stringify(snap.points));
-    this.doors = JSON.parse(JSON.stringify(snap.doors));
-    this.windows = JSON.parse(JSON.stringify(snap.windows));
-    this.isClosed = snap.isClosed;
-    this.currentTool = snap.currentTool;
-    this.mode = snap.mode;
-
-    this.selectedPoint = snap.selectedPoint;
-    this.selectedDoorIndex = snap.selectedDoorIndex;
-    this.selectedWindowIndex = snap.selectedWindowIndex;
-
-    this.updateWalls();
-    this.render();
-},
-
-clearUndoRedo() {
-    this._history = [];
-    this._future = [];
-},
-
-
     _closingByButton: false,
     _contextJustClosed: false,
 
@@ -790,19 +703,6 @@ if (d.type === "dachluke") {
             if (Math.hypot(dx, dy) > 3) {
                 const c = this._pendingContext;
 
-                // ⭐ Undo-Snapshot VOR dem Draggen
-// ⭐ Änderung speichern VOR dem Draggen
-this._commitChange(
-    c.type === "point"
-        ? "Punkt-Drag gestartet"
-        : c.type === "door"
-        ? "Tür-Drag gestartet"
-        : c.type === "window"
-        ? "Fenster-Drag gestartet"
-        : "Drag gestartet"
-);
-
-
                 if (c.type === "point") this.selectedPoint = this.points[c.index];
                 if (c.type === "door") this.draggingDoorIndex = c.index;
                 if (c.type === "window") this.draggingWindowIndex = c.index;
@@ -811,7 +711,6 @@ this._commitChange(
                 this.isDragging = true;
             }
         }
-
 
         // Drag bewegen
         if (this.isDragging) {
@@ -1035,9 +934,9 @@ onDown(e) {
         return;
     }
 
-    // ------------------------------------------------------------
-    // ⭐ SCHARNIER NEU SETZEN (für normale Türen, NICHT Dachluke)
-    // ------------------------------------------------------------
+// ------------------------------------------------------------
+// ⭐ SCHARNIER NEU SETZEN (für normale Türen, NICHT Dachluke)
+// ------------------------------------------------------------
 if (this.mode === "setHinge") {
 
     const d = this.doors[this._hingeDoorIndex];
@@ -1059,9 +958,6 @@ if (this.mode === "setHinge") {
         this.mode = "points";
         this._hingeDoorIndex = null;
         this.render();
-
-        // ⭐ Undo NACH der Mutation
-        this._commitChange("Dachluke-Hinge gesetzt");
         return;
     }
 
@@ -1073,63 +969,57 @@ if (this.mode === "setHinge") {
 
     this.mode = "points";
     this._hingeDoorIndex = null;
+    isOpen: true;
     this.render();
-
-    // ⭐ Undo NACH der Mutation
-    this._commitChange("Tür-Hinge gesetzt");
     return;
 }
+
+
+
 
 
     // ------------------------------------------------------------
     // ⭐ DACHLUKE: 1. Klick = Luke setzen, 2. Klick = Scharnier setzen
     // ------------------------------------------------------------
-if (this.mode === "dachluke") {
+    if (this.mode === "dachluke") {
 
-    if (!this._placingDachluke) {
+        if (!this._placingDachluke) {
 
-        if (!this.isClosed) {
-            alert("Dachluken können nur in einem geschlossenen Raum platziert werden.");
+            if (!this.isClosed) {
+                alert("Dachluken können nur in einem geschlossenen Raum platziert werden.");
+                return;
+            }
+
+            if (!this.isPointInsideRoom(worldX, worldY)) {
+                alert("Dachluken müssen innerhalb des Raumes platziert werden.");
+                return;
+            }
+
+            this.doors.push({
+                type: "dachluke",
+                x: worldX,
+                y: worldY,
+                width: 60,
+                isOpen: true,
+                hingeAngle: 0
+            });
+
+            this._placingDachluke = true;
+            this.render();
             return;
         }
 
-        if (!this.isPointInsideRoom(worldX, worldY)) {
-            alert("Dachluken müssen innerhalb des Raumes platziert werden.");
-            return;
-        }
+        const d = this.doors[this.doors.length - 1];
 
-        this.doors.push({
-            type: "dachluke",
-            x: worldX,
-            y: worldY,
-            width: 60,
-            isOpen: true,
-            hingeAngle: 0
-        });
+        const dx = worldX - d.x;
+        const dy = worldY - d.y;
+        d.hingeAngle = Math.atan2(dy, dx);
 
-        this._placingDachluke = true;
+        this._placingDachluke = false;
+        this.mode = "points";
         this.render();
-
-        // ⭐ Undo NACH der Mutation
-        this._commitChange("Dachluke hinzugefügt");
         return;
     }
-
-    const d = this.doors[this.doors.length - 1];
-
-    const dx = worldX - d.x;
-    const dy = worldY - d.y;
-    d.hingeAngle = Math.atan2(dy, dx);
-
-    this._placingDachluke = false;
-    this.mode = "points";
-    this.render();
-
-    // ⭐ Undo NACH der Mutation
-    this._commitChange("Dachluke-Hinge gesetzt");
-    return;
-}
-
 
     // ------------------------------------------------------------
     // ⭐ HIT-TEST
@@ -1158,29 +1048,24 @@ if (this.mode === "dachluke") {
     // ------------------------------------------------------------
     // ⭐ Raum schließen durch Klick auf ersten Punkt
     // ------------------------------------------------------------
-if (!this.isClosed && this.points.length >= 2) {
-    const first = this.points[0];
-    if (Math.hypot(worldX - first.x, worldY - first.y) < 20) {
+    if (!this.isClosed && this.points.length >= 2) {
+        const first = this.points[0];
+        if (Math.hypot(worldX - first.x, worldY - first.y) < 20) {
 
-        // Raum schließen
-        this.isClosed = true;
+            this.isClosed = true;
 
-        this.selectedPoint = first;
-        this.isDragging = true;
+            this.selectedPoint = first;
+            this.isDragging = true;
 
-        this.updateWalls();
-        this.render();
+            this.updateWalls();
+            this.render();
 
-        this.isDragging = false;
-        this.selectedPoint = null;
+            this.isDragging = false;
+            this.selectedPoint = null;
 
-        // ⭐ Änderung speichern NACH der Mutation
-        this._commitChange("Raum geschlossen");
-
-        return;
+            return;
+        }
     }
-}
-
 
     // ------------------------------------------------------------
     // ⭐ FENSTER-MODUS
@@ -1192,24 +1077,18 @@ if (!this.isClosed && this.points.length >= 2) {
             return;
         }
 
-if (hit.type === "wall") {
-    const w = hit.data;
-
-    this.windows.push({
-        wallIndex: w.index,
-        t: w.t,
-        x: w.x,
-        y: w.y,
-        width: 80
-    });
-
-    this.updateWalls();
-    this.render();
-
-    // ⭐ Undo NACH der Mutation
-    this._commitChange("Fenster hinzugefügt");
-}
-
+        if (hit.type === "wall") {
+            const w = hit.data;
+            this.windows.push({
+                wallIndex: w.index,
+                t: w.t,
+                x: w.x,
+                y: w.y,
+                width: 80
+            });
+            this.updateWalls();
+            this.render();
+        }
 
         this.mode = "points";
         return;
@@ -1221,93 +1100,75 @@ if (hit.type === "wall") {
     if (this.mode === "doors") {
 
         const type = this.currentDoorType || "default";
+isOpen: true
 
         // ⭐ Durchgang → 1 Klick
-if (type === "durchgang") {
+        if (type === "durchgang") {
 
-    if (hit.type !== "wall") return;
+            if (hit.type !== "wall") return;
 
-    const w = hit.data;
-    const defaultWidth = 100;
+            const w = hit.data;
+            const defaultWidth = 100;
 
-    const cx = w.x;
-    const cy = w.y;
+            const cx = w.x;
+            const cy = w.y;
 
-    const dx = w.x2 - w.x1;
-    const dy = w.y2 - w.y1;
-    const len = Math.hypot(dx, dy) || 1;
+            const dx = w.x2 - w.x1;
+            const dy = w.y2 - w.y1;
+            const len = Math.hypot(dx, dy) || 1;
 
-    const tx = dx / len;
-    const ty = dy / len;
+            const tx = dx / len;
+            const ty = dy / len;
 
-    // Durchgang hinzufügen
-    this.doors.push({
-        type: "durchgang",
-        wallIndex: w.index,
-        t: w.t,
-        x: cx,
-        y: cy,
-        width: defaultWidth,
-        hingeAngle: 0,
-        side: null
-    });
+            this.doors.push({
+                type: "durchgang",
+                wallIndex: w.index,
+                t: w.t,
+                x: cx,
+                y: cy,
+                width: defaultWidth,
+               hingeAngle: 0, // hinge: null,
+                    type: type,
+                side: null
+            });
 
-    this.render();
+            this.render();
+            this.mode = "points";
+            return;
+        }
 
-    // ⭐ Undo NACH der Mutation
-    this._commitChange("Durchgang hinzugefügt");
+        // ⭐ Normale Türen → Wandgebunden
+        if (!this._placingDoor) {
+            if (hit.type === "wall") {
+                const w = hit.data;
+                this.doors.push({
+                    wallIndex: w.index,
+                    t: w.t,
+                    x: w.x,
+                    y: w.y,
+                    width: 36,
+                    hinge: null,
+                    side: 1,
+                    type: type
+                });
+                this._placingDoor = true;
+                this.render();
+                return;
+            }
+        }
 
-    this.mode = "points";
-    return;
-}
+        // ⭐ Hinge setzen (normale Türen)
+        if (this._placingDoor) {
+            const lastDoor = this.doors[this.doors.length - 1];
+            const w = this.walls[lastDoor.wallIndex];
+            this.setDoorHingeFromTap(lastDoor, worldX, worldY, w);
 
-
-// ⭐ Normale Türen → Wandgebunden
-if (!this._placingDoor) {
-    if (hit.type === "wall") {
-        const w = hit.data;
-
-        // Tür hinzufügen
-        this.doors.push({
-            wallIndex: w.index,
-            t: w.t,
-            x: w.x,
-            y: w.y,
-            width: 36,
-            hinge: null,
-            side: 1,
-            type: type
-        });
-
-        this._placingDoor = true;
-        this.render();
-
-        // ⭐ Undo NACH der Mutation
-        this._commitChange("Tür hinzugefügt");
-
-        return;
+            this._placingDoor = false;
+            this.mode = "points";
+            this.render();
+            return;
+        }
     }
-}
-
-
-// ⭐ Hinge setzen (normale Türen)
-if (this._placingDoor) {
-    const lastDoor = this.doors[this.doors.length - 1];
-    const w = this.walls[lastDoor.wallIndex];
-
-    // Hinge setzen
-    this.setDoorHingeFromTap(lastDoor, worldX, worldY, w);
-
-    this._placingDoor = false;
-    this.mode = "points";
-    this.render();
-
-    // ⭐ Undo NACH der Mutation
-    this._commitChange("Tür-Hinge gesetzt");
-
-    return;
-}
-
 
     // ------------------------------------------------------------
     // ⭐ Kontextmenü für Türen
@@ -1340,17 +1201,11 @@ if (this._placingDoor) {
         const w = hit.data;
         const insertPoint = { x: w.x, y: w.y };
 
-        // ⭐ Änderung speichern
-this.points.splice(w.index + 1, 0, insertPoint);
+        this.points.splice(w.index + 1, 0, insertPoint);
 
-this.updateWalls();
-this.render();
-
-// ⭐ Änderung speichern NACH der Mutation
-this._commitChange("Punkt eingefügt");
-return;
-
-
+        this.updateWalls();
+        this.render();
+        return;
     }
 
     // ------------------------------------------------------------
@@ -1376,8 +1231,7 @@ return;
         this.panStartX = mouseX;
         this.panStartY = mouseY;
     }
-}
-,
+},
 
 
     onUp(e) {
@@ -1404,26 +1258,21 @@ return;
                 const first = this.points[0];
                 const lastIndex = this.points.length - 1;
 
-// letzten Punkt entfernen
-this.points.splice(lastIndex, 1);
+                // letzten Punkt entfernen
+                this.points.splice(lastIndex, 1);
 
-// erster Punkt wird der aktive Punkt
-this.selectedPoint = first;
+                // erster Punkt wird der aktive Punkt
+                this.selectedPoint = first;
 
-this.isClosed = true;
-this._snapCandidate = false;
+                this.isClosed = true;
+                this._snapCandidate = false;
 
-this.updateWalls();
-this.render();
-
-// ⭐ Undo NACH der Mutation
-this._commitChange("snap-close-room");
-
+                this.updateWalls();
+                this.render();
 
                 this.isDragging = false;
                 return;
             }
-
 
             // Normaler Drag-Ende
             this.isDragging = false;
@@ -1445,16 +1294,11 @@ this._commitChange("snap-close-room");
             if (c.type === "dachluke") {
                 const d = this.doors[c.index];
                 if (d && d.type === "dachluke") {
-
-                    // ⭐ Undo vor Toggle
-                    this._commitChange("toggle-dachluke");
-
                     d.isOpen = !d.isOpen;   // Zustand wechseln
                     this.render();
                 }
                 return;
             }
-
         
             // ⭐ Alle anderen Elemente → Kontextmenü wie bisher
             const screenX = (c.x + this.offsetX) * this.zoom;
@@ -1493,15 +1337,11 @@ this._commitChange("snap-close-room");
                     }
                 }
 
-this.points.push({ x: px, y: py });
-this.updateWalls();
-this.render();
-
-// ⭐ Undo NACH der Mutation
-this._commitChange("add-point-click");
-
+                this.points.push({ x: px, y: py });
+                this._pendingNewPoint = null;
+                this.updateWalls();
+                this.render();
             }
-
 
             this._pendingNewPoint = null;
 
@@ -3857,30 +3697,6 @@ if (tool === "dachluke") {
         this.importObject();
     },
 
-
-loadRoom(roomId) {
-    const room = SmartHomeData.getRoom(roomId);
-    if (!room) return;
-
-    // Raumdaten übernehmen
-    this.points  = room.polygon ? room.polygon.map(p => ({ x: p.x, y: p.y })) : [];
-    this.doors   = room.doors   ? room.doors.map(d => ({ ...d })) : [];
-    this.windows = room.windows ? room.windows.map(w => ({ ...w })) : [];
-    this.isClosed = !!room.isClosed;
-
-    this.updateWalls();
-    this.render();
-
-    // ❗ Nur Snapshot anlegen, wenn es für diesen Raum noch KEINE History gibt
-    if (!this.historyByRoom[roomId] || this.historyByRoom[roomId].stack.length === 0) {
-        this._commitChange("Raum geladen");
-    }
-}
-
-,
-
-
-    
     exportScenes() {
         const store = this._getSceneStore();
         this._exportToClipboard("Szenen", store);
@@ -4084,178 +3900,8 @@ loadRoom(roomId) {
     profilePerformance() {
         console.log("[RoomDesigner] Performance-Profiling (Stub).");
         alert("Performance-Profiling Stub – hier könnte später ein echtes Profiling laufen.");
-    },
-
-    // --------------------------------------------------
-    // History-Grundstruktur (raumbezogen)
-    // --------------------------------------------------
-    historyByRoom: {},
-
-    _getActiveRoomId() {
-        return (window.SmartHomeData && SmartHomeData.structure?.activeRoom) || null;
-    },
-
-    _getRoomHistory(roomId) {
-        if (!roomId) return null;
-        if (!this.historyByRoom[roomId]) {
-            this.historyByRoom[roomId] = {
-                stack: [],   // hier kommen später die Snapshots rein
-                index: 0     // aktueller Zeiger in der History
-            };
-        }
-        return this.historyByRoom[roomId];
-    },
-
-    // Für Hover-Text der Buttons: liefert "letzte" und "nächste" Aktion
-    getHistoryInfoForActiveRoom() {
-        const roomId = this._getActiveRoomId();
-        const h = this._getRoomHistory(roomId);
-        if (!h || !h.stack.length) {
-            return { last: null, next: null };
-        }
-
-        const last = h.index > 0 ? h.stack[h.index - 1] : null;
-        const next = h.index < h.stack.length ? h.stack[h.index] : null;
-
-        return { last, next };
-    },
-    // --------------------------------------------------
-    // Snapshot des aktuellen Raums erzeugen
-    // --------------------------------------------------
-    _createRoomSnapshot(label = "Änderung") {
-        const roomId = this._getActiveRoomId();
-        if (!roomId) return null;
-
-        return {
-            roomId,
-            label,
-            time: Date.now(),
-
-            // tiefe Kopien, damit Undo/Redo sauber funktioniert
-            points: JSON.parse(JSON.stringify(this.points)),
-            doors: JSON.parse(JSON.stringify(this.doors)),
-            windows: JSON.parse(JSON.stringify(this.windows)),
-            isClosed: this.isClosed
-        };
-    },
-    // --------------------------------------------------
-    // Änderung committen: Snapshot + History + Autosave
-    // --------------------------------------------------
-    _commitChange(label = "Änderung") {
-        const roomId = this._getActiveRoomId();
-        if (!roomId) return;
-
-        const snap = this._createRoomSnapshot(label);
-        if (!snap) return;
-
-        const hist = this._getRoomHistory(roomId);
-
-        // Wenn wir mitten in der History stehen → Redo-Teil abschneiden
-        if (hist.index < hist.stack.length) {
-            hist.stack = hist.stack.slice(0, hist.index);
-        }
-
-        // Snapshot anhängen
-        hist.stack.push(snap);
-        hist.index = hist.stack.length;
-
-        // Autosave: aktuellen Zustand in SmartHomeData schreiben
-        this._saveActiveRoomToProject();
-    },
-
-
-        // --------------------------------------------------
-    // Undo (raumbezogen)
-    // --------------------------------------------------
-    undo() {
-        const roomId = this._getActiveRoomId();
-        if (!roomId) return;
-
-        const hist = this._getRoomHistory(roomId);
-        if (!hist) return;
-
-        // Nichts zum Undo
-        if (hist.index <= 1) {
-            return;
-        }
-
-        // Einen Schritt zurück
-        hist.index -= 1;
-        const snap = hist.stack[hist.index - 1];
-        if (!snap) return;
-
-        // Zustand wiederherstellen
-        this.points  = JSON.parse(JSON.stringify(snap.points));
-        this.doors   = JSON.parse(JSON.stringify(snap.doors));
-        this.windows = JSON.parse(JSON.stringify(snap.windows));
-        this.isClosed = snap.isClosed;
-
-        this.updateWalls();
-        this.render();
-
-        // Speichern nach Undo
-        this._saveActiveRoomToProject();
-    },
-
-        // --------------------------------------------------
-    // Redo (raumbezogen)
-    // --------------------------------------------------
-    redo() {
-        const roomId = this._getActiveRoomId();
-        if (!roomId) return;
-
-        const hist = this._getRoomHistory(roomId);
-        if (!hist) return;
-
-        // Nichts zum Redo
-        if (hist.index >= hist.stack.length) {
-            return;
-        }
-
-        // Einen Schritt vor
-        const snap = hist.stack[hist.index];
-        hist.index += 1;
-
-        if (!snap) return;
-
-        // Zustand wiederherstellen
-        this.points  = JSON.parse(JSON.stringify(snap.points));
-        this.doors   = JSON.parse(JSON.stringify(snap.doors));
-        this.windows = JSON.parse(JSON.stringify(snap.windows));
-        this.isClosed = snap.isClosed;
-
-        this.updateWalls();
-        this.render();
-
-        // Speichern nach Redo
-        this._saveActiveRoomToProject();
-    },
-
-
-        // --------------------------------------------------
-    // Aktuellen Editor-Zustand in den aktiven Raum speichern
-    // --------------------------------------------------
-    _saveActiveRoomToProject() {
-        const roomId = this._getActiveRoomId();
-        if (!roomId) return;
-
-        const room = SmartHomeData.rooms.find(r => r.id === roomId);
-        if (!room) return;
-
-        // Polygon / Türen / Fenster in den Raum schreiben
-        room.polygon = JSON.parse(JSON.stringify(this.points));
-        room.doors   = JSON.parse(JSON.stringify(this.doors));
-        room.windows = JSON.parse(JSON.stringify(this.windows));
-
-        // Projekt speichern (globale Funktion)
-        if (typeof saveProject === "function") {
-            saveProject();
-        }
-    },
-
-    
+    }
 }; // Ende RoomDesigner
-
 
 
 // --------------------------------------------------
@@ -4569,42 +4215,6 @@ function renderEditorSidebar() {
         container.appendChild(addRoom);
     });
 }
-
-
-// Undo/Redo Buttons
-const btnUndo = document.getElementById("editor-undo-btn");
-const btnRedo = document.getElementById("editor-undo-btn");
-
-if (btnUndo && btnRedo) {
-
-    btnUndo.addEventListener("click", () => {
-        RoomDesigner.undo();
-        RoomDesigner.updateUndoRedoTitles();
-    });
-
-    btnRedo.addEventListener("click", () => {
-        RoomDesigner.redo();
-        RoomDesigner.updateUndoRedoTitles();
-    });
-}
-
-RoomDesigner.updateUndoRedoTitles = function () {
-    const info = this.getHistoryInfoForActiveRoom();
-
-    const last = info.last;
-    const next = info.next;
-
-    const btnUndo = document.getElementById("editor-undo-btn");
-    const btnRedo = document.getElementById("editor-redo-btn");
-
-    if (btnUndo) {
-        btnUndo.title = last ? "Undo: " + last.label : "Nichts zum Rückgängig machen";
-    }
-
-    if (btnRedo) {
-        btnRedo.title = next ? "Redo: " + next.label : "Nichts zum Wiederholen";
-    }
-};
 
 
 
