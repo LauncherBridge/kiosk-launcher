@@ -1097,7 +1097,7 @@ onDown(e) {
             }
 
             // ⭐ Undo vor Hinzufügen
-            this._pushHistory("add-dachluke");
+this._commitChange("Dachluke hinzugefügt");
 
             this.doors.push({
                 type: "dachluke",
@@ -1192,7 +1192,7 @@ onDown(e) {
             const w = hit.data;
 
             // ⭐ Undo vor Hinzufügen
-            this._pushHistory("add-window");
+this._commitChange("Fenster hinzugefügt");
 
             this.windows.push({
                 wallIndex: w.index,
@@ -1259,7 +1259,7 @@ onDown(e) {
                 const w = hit.data;
 
                 // ⭐ Undo vor Hinzufügen
-                this._pushHistory("add-door");
+this._commitChange("Tür hinzugefügt");
 
                 this.doors.push({
                     wallIndex: w.index,
