@@ -791,15 +791,17 @@ if (d.type === "dachluke") {
                 const c = this._pendingContext;
 
                 // ⭐ Undo-Snapshot VOR dem Draggen
-                this._pushHistory(
-                    c.type === "point"
-                        ? "drag-point"
-                        : c.type === "door"
-                        ? "drag-door"
-                        : c.type === "window"
-                        ? "drag-window"
-                        : "drag-unknown"
-                );
+// ⭐ Änderung speichern VOR dem Draggen
+this._commitChange(
+    c.type === "point"
+        ? "Punkt-Drag gestartet"
+        : c.type === "door"
+        ? "Tür-Drag gestartet"
+        : c.type === "window"
+        ? "Fenster-Drag gestartet"
+        : "Drag gestartet"
+);
+
 
                 if (c.type === "point") this.selectedPoint = this.points[c.index];
                 if (c.type === "door") this.draggingDoorIndex = c.index;
@@ -1050,7 +1052,7 @@ onDown(e) {
         if (d.type === "dachluke") {
 
             // ⭐ Undo vor Änderung
-            this._pushHistory("set-hinge-dachluke");
+this._commitChange("Dachluke-Hinge gesetzt");
 
             // Winkel relativ zur Luke berechnen
             const dx = worldX - d.x;
@@ -1068,7 +1070,7 @@ onDown(e) {
         if (w) {
 
             // ⭐ Undo vor Änderung
-            this._pushHistory("set-hinge-door");
+this._commitChange("Tür-Hinge gesetzt");
 
             this.setDoorHingeFromTap(d, worldX, worldY, w);
         }
@@ -1116,7 +1118,7 @@ this._commitChange("Dachluke hinzugefügt");
         const d = this.doors[this.doors.length - 1];
 
         // ⭐ Undo vor Hinge-Änderung
-        this._pushHistory("set-dachluke-hinge");
+this._commitChange("Dachluke-Hinge gesetzt");
 
         const dx = worldX - d.x;
         const dy = worldY - d.y;
@@ -1235,7 +1237,7 @@ this._commitChange("Fenster hinzugefügt");
             const ty = dy / len;
 
             // ⭐ Undo vor Hinzufügen
-            this._pushHistory("add-door-durchgang");
+this._commitChange("Durchgang hinzugefügt");
 
             this.doors.push({
                 type: "durchgang",
@@ -1283,7 +1285,7 @@ this._commitChange("Tür hinzugefügt");
             const w = this.walls[lastDoor.wallIndex];
 
             // ⭐ Undo vor Hinge-Änderung
-            this._pushHistory("set-door-hinge");
+this._commitChange("Tür-Hinge gesetzt");
 
             this.setDoorHingeFromTap(lastDoor, worldX, worldY, w);
 
