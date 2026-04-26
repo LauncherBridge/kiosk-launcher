@@ -438,7 +438,7 @@ html, body {
 --------------------------------------------------------- */
 
 #editor-sidebar-left {
-    position: fixed;
+    position: relative;
     top: 48px;
     left: 0;
     width: 180px;
