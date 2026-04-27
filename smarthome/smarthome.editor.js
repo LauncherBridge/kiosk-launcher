@@ -39,6 +39,9 @@ const project = {
     names: {}        // Alias-Namen für Titelzeile/Breadcrumbs
 };
 
+let activeRoomId = null;
+
+
 // ------------------------------------------------------------
 // Runtime-Generierung von SmartHomeData aus project
 // ------------------------------------------------------------
@@ -209,48 +212,59 @@ function loadProject() {
     }
 }
 
+// Aktiven Raum bestimmen oder erzeugen
+if (!project.rooms || Object.keys(project.rooms).length === 0) {
+    activeRoomId = "room_1";
+    project.rooms[activeRoomId] = createRoomModel(activeRoomId, "Neuer Raum");
+} else {
+    activeRoomId = Object.keys(project.rooms)[0];
+}
+
+
+
 // ------------------------------------------------------------
 // Editor <-> Projekt Mapping
 // ------------------------------------------------------------
 
 // Editor → Projekt
 function exportFromEditor() {
-    // Raum-ID erzeugen, falls nicht vorhanden
-    if (!project.rooms["room_main"]) {
-        project.rooms["room_main"] = createRoomModel("room_main", "Raum");
+
+    if (!activeRoomId) return;
+
+    // Raum erzeugen falls nicht vorhanden
+    if (!project.rooms[activeRoomId]) {
+        project.rooms[activeRoomId] = createRoomModel(activeRoomId, "Raum");
     }
 
-    const room = project.rooms["room_main"];
+    const room = project.rooms[activeRoomId];
 
-    // Punkte (Polygon)
+    // Punkte
     room.points = RoomDesigner.points.map(p => ({ x: p.x, y: p.y }));
     room.isClosed = RoomDesigner.isClosed;
 
     // Türen
-// Türen
-project.doors = {};
+    project.doors = {};
+    room.doors = [];
 
-if (Array.isArray(RoomDesigner.doors)) {
     for (const d of RoomDesigner.doors) {
         if (!d.id) d.id = createId("door");
         project.doors[d.id] = { ...d };
+        room.doors.push(d.id);
     }
-    room.doors = RoomDesigner.doors.map(d => d.id);
-} else {
-    room.doors = [];
-}
-
 
     // Fenster
-    room.windows = RoomDesigner.windows.map(w => w.id);
     project.windows = {};
+    room.windows = [];
+
     for (const w of RoomDesigner.windows) {
         if (!w.id) w.id = createId("window");
         project.windows[w.id] = { ...w };
+        room.windows.push(w.id);
     }
 
     project.meta.modified = Date.now();
 }
+
 
 
 // Projekt → Editor
