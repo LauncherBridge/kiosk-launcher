@@ -290,6 +290,12 @@ function importToEditor() {
 
     const room = project.rooms[activeRoomId];
 
+    const titleEl = document.getElementById("editor-room-name");
+    if (titleEl) {
+        titleEl.textContent = room.name || room.id;
+    }
+
+
     // Punkte
     RoomDesigner.points = (room.points || []).map(p => ({ x: p.x, y: p.y }));
     RoomDesigner.isClosed = room.isClosed || false;
