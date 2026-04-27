@@ -305,6 +305,7 @@ function importToEditor() {
 }
 
 
+
 // ------------------------------------------------------------
 // Manuelles Speichern des aktuellen Editor-Zustands
 // ------------------------------------------------------------
@@ -467,6 +468,7 @@ init() {
     this.resize();
     this.render();
 }
+
 ,
 
     resize() {
