@@ -245,6 +245,12 @@ function exportFromEditor() {
 
     const room = project.rooms[activeRoomId];
 
+    // ⭐ Raumname aus der Titelzeile speichern
+    const el = document.getElementById("editor-room-name");
+    if (el) {
+        room.name = el.textContent.trim();
+    }
+
     // Punkte
     room.points = RoomDesigner.points.map(p => ({ x: p.x, y: p.y }));
     room.isClosed = RoomDesigner.isClosed;
