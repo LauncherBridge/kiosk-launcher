@@ -200,17 +200,30 @@ function saveProject() {
 
 function loadProject() {
     const json = localStorage.getItem("smarthome_project");
+
+    // Noch kein gespeichertes Projekt → false zurückgeben
     if (!json) return false;
 
     try {
         const data = JSON.parse(json);
         Object.assign(project, data);
+
+        // Nach dem Laden: Wenn keine Räume existieren → einen erzeugen
+        if (!project.rooms || Object.keys(project.rooms).length === 0) {
+            activeRoomId = "room_1";
+            project.rooms[activeRoomId] = createRoomModel(activeRoomId, "Neuer Raum");
+        } else {
+            activeRoomId = Object.keys(project.rooms)[0];
+        }
+
         return true;
+
     } catch (e) {
         console.error("Fehler beim Laden des Projekts:", e);
         return false;
     }
 }
+
 
 // Aktiven Raum bestimmen oder erzeugen
 if (!project.rooms || Object.keys(project.rooms).length === 0) {
