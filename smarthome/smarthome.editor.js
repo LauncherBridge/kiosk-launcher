@@ -225,13 +225,7 @@ function loadProject() {
 }
 
 
-// Aktiven Raum bestimmen oder erzeugen
-if (!project.rooms || Object.keys(project.rooms).length === 0) {
-    activeRoomId = "room_1";
-    project.rooms[activeRoomId] = createRoomModel(activeRoomId, "Neuer Raum");
-} else {
-    activeRoomId = Object.keys(project.rooms)[0];
-}
+
 
 
 
@@ -282,8 +276,10 @@ function exportFromEditor() {
 
 // Projekt → Editor
 function importToEditor() {
-    const room = project.rooms["room_main"];
-    if (!room) return;
+
+    if (!activeRoomId || !project.rooms[activeRoomId]) return;
+
+    const room = project.rooms[activeRoomId];
 
     // Punkte
     RoomDesigner.points = room.points.map(p => ({ x: p.x, y: p.y }));
@@ -304,6 +300,7 @@ function importToEditor() {
     RoomDesigner.updateWalls();
     RoomDesigner.render();
 }
+
 
 // ------------------------------------------------------------
 // Manuelles Speichern des aktuellen Editor-Zustands
@@ -429,9 +426,19 @@ init() {
     if (this._initialized) return;
     this._initialized = true;
 
-    // Projekt laden + Runtime-Daten erzeugen
-    loadProject();
+    // Projekt laden
+    const loaded = loadProject();
+
+    // Falls kein Projekt existiert → ersten Raum erzeugen
+    if (!loaded) {
+        activeRoomId = "room_1";
+        project.rooms[activeRoomId] = createRoomModel(activeRoomId, "Neuer Raum");
+    }
+
+    // Runtime-Daten erzeugen
     generateSmartHomeDataFromProject();
+
+    // Editor laden
     importToEditor();
 
     // Canvas & Events
@@ -456,7 +463,8 @@ init() {
 
     this.resize();
     this.render();
-},
+}
+,
 
     resize() {
         this.canvas.width = window.innerWidth;
