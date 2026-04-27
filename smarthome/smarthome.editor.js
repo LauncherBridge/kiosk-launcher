@@ -277,22 +277,25 @@ function exportFromEditor() {
 // Projekt → Editor
 function importToEditor() {
 
-    if (!activeRoomId || !project.rooms[activeRoomId]) return;
+    if (!activeRoomId || !project.rooms[activeRoomId]) {
+        console.warn("Kein aktiver Raum gefunden:", activeRoomId);
+        return;
+    }
 
     const room = project.rooms[activeRoomId];
 
     // Punkte
-    RoomDesigner.points = room.points.map(p => ({ x: p.x, y: p.y }));
+    RoomDesigner.points = (room.points || []).map(p => ({ x: p.x, y: p.y }));
     RoomDesigner.isClosed = room.isClosed || false;
 
     // Türen
-    RoomDesigner.doors = room.doors
+    RoomDesigner.doors = (room.doors || [])
         .map(id => project.doors[id])
         .filter(Boolean)
         .map(d => ({ ...d }));
 
     // Fenster
-    RoomDesigner.windows = room.windows
+    RoomDesigner.windows = (room.windows || [])
         .map(id => project.windows[id])
         .filter(Boolean)
         .map(w => ({ ...w }));
