@@ -439,11 +439,14 @@ init() {
         project.rooms[activeRoomId] = createRoomModel(activeRoomId, "Neuer Raum");
     }
 
-    // Runtime-Daten erzeugen
-    generateSmartHomeDataFromProject();
-
-    // Editor laden
+    // Editor laden (damit RoomDesigner echte Daten hat)
     importToEditor();
+
+    // Editor-Daten zurück ins Projekt schreiben
+    exportFromEditor();
+
+    // Jetzt erst SmartHomeData generieren
+    generateSmartHomeDataFromProject();
 
     // Canvas & Events
     this.canvas = document.getElementById("roomdesigner");
@@ -468,6 +471,7 @@ init() {
     this.resize();
     this.render();
 }
+
 
 ,
 
