@@ -39,60 +39,54 @@ const project = {
     names: {}        // Alias-Namen für Titelzeile/Breadcrumbs
 };
 
+// ------------------------------------------------------------
+// Runtime-Generierung von SmartHomeData aus project
+// ------------------------------------------------------------
+function generateSmartHomeDataFromProject() {
+
+    SmartHomeData.rooms = [];
+    SmartHomeData.doors = [];
+    SmartHomeData.windows = [];
+
+    // Räume
+    for (const roomId in project.rooms) {
+        const r = project.rooms[roomId];
+        SmartHomeData.rooms.push({
+            id: r.id,
+            name: r.name || r.id,
+            points: r.points || [],
+            isClosed: r.isClosed || false,
+            doors: r.doors || [],
+            windows: r.windows || []
+        });
+    }
+
+    // Türen
+    for (const doorId in project.doors) {
+        SmartHomeData.doors.push({ ...project.doors[doorId] });
+    }
+
+    // Fenster
+    for (const winId in project.windows) {
+        SmartHomeData.windows.push({ ...project.windows[winId] });
+    }
+
+    // Floors (optional später)
+    SmartHomeData.floors = project.floors || {};
+
+    console.log("[Runtime] SmartHomeData aus project generiert.");
+}
+
+
+
 // ======================================================
 // Persistenz: Projekt speichern & laden (localStorage)
 // ======================================================
 
 const STORAGE_KEY = "smarthome_project_v1";
 
-// Speichert Projekt + SmartHomeData
-function saveProject() {
-    try {
-        const payload = {
-            project: project || {},
-            SmartHomeData: SmartHomeData || {}
-        };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-        console.log("[Persistenz] Projekt gespeichert.");
-    } catch (e) {
-        console.error("[Persistenz] Fehler beim Speichern:", e);
-    }
-}
 
-// Lädt Projekt + SmartHomeData
-function loadProject() {
-    try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return false;
 
-        const data = JSON.parse(raw);
-
-        if (data.project) Object.assign(project, data.project);
-        if (data.SmartHomeData) Object.assign(SmartHomeData, data.SmartHomeData);
-
-        applyProjectRoomNamesToSmartHomeData();
-        console.log("[Persistenz] Projekt geladen.");
-        return true;
-
-    } catch (e) {
-        console.error("[Persistenz] Fehler beim Laden:", e);
-        return false;
-    }
-}
-
-// ------------------------------------------------------------
-// Nach dem Laden: Raum-Namen aus project zurück in SmartHomeData schreiben
-// ------------------------------------------------------------
-function applyProjectRoomNamesToSmartHomeData() {
-    if (!project.rooms) return;
-
-    SmartHomeData.rooms.forEach(room => {
-        const saved = project.rooms[room.id];
-        if (saved && saved.name) {
-            room.name = saved.name;
-        }
-    });
-}
 
 
 // ------------------------------------------------------------
@@ -400,36 +394,42 @@ hoverTarget: null,
     users: [],                      // Fallback, falls kein User-Store existiert
     debugLog: [],                   // einfache Debug-Sammlung
 
-    // --------------------------------------------------
-    // Initialisierung
-    // --------------------------------------------------
-    init() {
-        if (this._initialized) return;
-        this._initialized = true;
+// --------------------------------------------------
+// Initialisierung
+// --------------------------------------------------
+init() {
 
-        this.canvas = document.getElementById("roomdesigner");
-        this.ctx = this.canvas.getContext("2d");
+    if (this._initialized) return;
+    this._initialized = true;
 
-        window.addEventListener("resize", () => this.resize());
-        this.canvas.addEventListener("mousemove", (e) => this.onMove(e));
-        this.canvas.addEventListener("mousedown", (e) => this.onDown(e));
-        this.canvas.addEventListener("mouseup", () => this.onUp());
-        this.canvas.addEventListener("contextmenu", (e) => this.onRightClick(e));
-        this.canvas.addEventListener("wheel", (e) => this.onWheelZoom(e), { passive: false });
-        this.canvas.addEventListener("dblclick", (e) => this.onDoubleClickZoom(e));
-        this.canvas.addEventListener("touchstart", (e) => this.onTouchStart(e), { passive: false });
-        this.canvas.addEventListener("touchmove", (e) => this.onTouchMove(e), { passive: false });
-        this.canvas.addEventListener("touchend", (e) => this.onTouchEnd(e));
-        //this.setupDoorButton();
-        //this.setupWindowButton();
-        this.createContextMenu();
-        this.setupSnapButton();
-        this.setupGridSlider();
-        this.setupResetButton();
+    // Projekt laden + Runtime-Daten erzeugen
+    loadProject();
+    generateSmartHomeDataFromProject();
+    importToEditor();
 
-        this.resize();
-        this.render();
-    },
+    // Canvas & Events
+    this.canvas = document.getElementById("roomdesigner");
+    this.ctx = this.canvas.getContext("2d");
+
+    window.addEventListener("resize", () => this.resize());
+    this.canvas.addEventListener("mousemove", (e) => this.onMove(e));
+    this.canvas.addEventListener("mousedown", (e) => this.onDown(e));
+    this.canvas.addEventListener("mouseup", () => this.onUp());
+    this.canvas.addEventListener("contextmenu", (e) => this.onRightClick(e));
+    this.canvas.addEventListener("wheel", (e) => this.onWheelZoom(e), { passive: false });
+    this.canvas.addEventListener("dblclick", (e) => this.onDoubleClickZoom(e));
+    this.canvas.addEventListener("touchstart", (e) => this.onTouchStart(e), { passive: false });
+    this.canvas.addEventListener("touchmove", (e) => this.onTouchMove(e), { passive: false });
+    this.canvas.addEventListener("touchend", (e) => this.onTouchEnd(e));
+
+    this.createContextMenu();
+    this.setupSnapButton();
+    this.setupGridSlider();
+    this.setupResetButton();
+
+    this.resize();
+    this.render();
+},
 
     resize() {
         this.canvas.width = window.innerWidth;
