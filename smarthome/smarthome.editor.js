@@ -218,8 +218,7 @@ function loadProject() {
 
     try {
         const data = JSON.parse(json);
-        // Object.assign(project, data);
-        project = data;
+        Object.assign(project, data);
         
         // Nach dem Laden: Wenn keine Räume existieren → einen erzeugen
         if (!project.rooms || Object.keys(project.rooms).length === 0) {
