@@ -4443,6 +4443,10 @@ function finishRoomNameEdit(el) {
 }
 
 function renderEditorProjectSidebar() {
+
+    console.log("Sidebar render:", project);
+
+    
     const container = document.getElementById("editor-location-list");
     if (!container) return;
 
