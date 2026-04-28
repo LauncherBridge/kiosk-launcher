@@ -373,17 +373,17 @@ function importToEditor() {
         roomEl.textContent = room.name || room.id;
     }
 
-    // Punkte
+    // ⭐ Punkte
     RoomDesigner.points = (room.points || []).map(p => ({ x: p.x, y: p.y }));
     RoomDesigner.isClosed = room.isClosed || false;
 
-    // Türen
+    // ⭐ Türen
     RoomDesigner.doors = (room.doors || [])
         .map(id => project.doors[id])
         .filter(Boolean)
         .map(d => ({ ...d }));
 
-    // Fenster
+    // ⭐ Fenster
     RoomDesigner.windows = (room.windows || [])
         .map(id => project.windows[id])
         .filter(Boolean)
@@ -392,6 +392,7 @@ function importToEditor() {
     RoomDesigner.updateWalls();
     RoomDesigner.render();
 }
+
 
 // ------------------------------------------------------------
 // Manuelles Speichern des aktuellen Editor-Zustands
