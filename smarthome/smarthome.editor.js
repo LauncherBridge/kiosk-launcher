@@ -104,11 +104,11 @@ function createId(prefix) {
 // ------------------------------------------------------------
 
 // Raum
-function createRoomModel(id, name = null) {
+function createRoomModel(id, name = null, floorId = null) {
     return {
         id,
         name,
-        floorId,
+        floorId,            // ⭐ jetzt korrekt
         type: "room",
         points: [],
         walls: [],
@@ -121,6 +121,7 @@ function createRoomModel(id, name = null) {
         isClosed: false
     };
 }
+
 
 function createFloorModel(id, name = null) {
     return {
