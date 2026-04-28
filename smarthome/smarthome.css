@@ -739,3 +739,17 @@ body.editor-mode .editor-btn {
 .room-entry:hover {
     opacity: 1;
 }
+
+/* Aktive Etage */
+.active-floor {
+    color: #ff4444;
+    font-weight: bold;
+    text-shadow: 0 0 6px rgba(255, 80, 80, 0.8);
+}
+
+/* Aktiver Raum */
+.active-room {
+    color: #66aaff;
+    font-weight: bold;
+    text-shadow: 0 0 6px rgba(80, 140, 255, 0.8);
+}
