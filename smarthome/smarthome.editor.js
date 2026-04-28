@@ -391,6 +391,14 @@ function importToEditor() {
 
     RoomDesigner.updateWalls();
     RoomDesigner.render();
+
+       RoomDesigner.updateWalls();
+    RoomDesigner.render();
+
+    // ⭐ Sidebar mit Etagen & Räumen aus dem Projektmodell füllen
+    renderEditorProjectSidebar();
+}
+ 
 }
 
 
@@ -4434,6 +4442,44 @@ function finishRoomNameEdit(el) {
         renderEditorSidebar();
     }
 }
+
+function renderEditorProjectSidebar() {
+    const container = document.getElementById("editor-location-list");
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    if (!project.floors) return;
+
+    const floors = Object.values(project.floors);
+
+    floors.forEach(floor => {
+        // Etagen-Header
+        const floorDiv = document.createElement("div");
+        floorDiv.className = "floor-header";
+        floorDiv.textContent = floor.name || floor.id;
+        container.appendChild(floorDiv);
+
+        // Räume der Etage
+        (floor.rooms || []).forEach(roomId => {
+            const room = project.rooms?.[roomId];
+            if (!room) return;
+
+            const roomDiv = document.createElement("div");
+            roomDiv.className = "room-entry";
+            roomDiv.textContent = room.name || room.id;
+
+            roomDiv.addEventListener("click", () => {
+                activeRoomId = roomId;
+                importToEditor();
+            });
+
+            container.appendChild(roomDiv);
+        });
+    });
+}
+
+
 
 function renderLeftSidebar() {
     const sidebar = document.getElementById("left-sidebar");
