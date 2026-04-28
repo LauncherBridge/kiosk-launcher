@@ -397,8 +397,7 @@ function importToEditor() {
 
     // ⭐ Sidebar mit Etagen & Räumen aus dem Projektmodell füllen
     renderEditorProjectSidebar();
-}
- 
+
 }
 
 
