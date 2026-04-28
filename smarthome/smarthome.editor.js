@@ -4435,6 +4435,37 @@ function finishRoomNameEdit(el) {
     }
 }
 
+function renderLeftSidebar() {
+    const sidebar = document.getElementById("left-sidebar");
+    if (!sidebar) return;
+
+    sidebar.innerHTML = "";
+
+    const floors = Object.values(project.floors);
+
+    floors.forEach(floor => {
+        const floorDiv = document.createElement("div");
+        floorDiv.className = "sidebar-floor";
+        floorDiv.textContent = floor.name;
+        sidebar.appendChild(floorDiv);
+
+        floor.rooms.forEach(roomId => {
+            const room = project.rooms[roomId];
+            if (!room) return;
+
+            const roomDiv = document.createElement("div");
+            roomDiv.className = "sidebar-room";
+            roomDiv.textContent = room.name;
+
+            roomDiv.addEventListener("click", () => {
+                activeRoomId = roomId;
+                importToEditor();
+            });
+
+            sidebar.appendChild(roomDiv);
+        });
+    });
+}
 
 
 function renderEditorSidebar() {
