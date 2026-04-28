@@ -4401,7 +4401,7 @@ function finishFloorNameEdit(el) {
 
     // 4) Sidebar aktualisieren (falls vorhanden)
     if (typeof renderEditorSidebar === "function") {
-        renderEditorSidebar();
+renderEditorProjectSidebar();
     }
 }
 
@@ -4438,7 +4438,7 @@ function finishRoomNameEdit(el) {
 
     // 5) Sidebar aktualisieren (damit Name sofort sichtbar wird)
     if (typeof renderEditorSidebar === "function") {
-        renderEditorSidebar();
+renderEditorProjectSidebar();
     }
 }
 
