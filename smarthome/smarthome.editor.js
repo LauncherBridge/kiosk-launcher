@@ -302,11 +302,24 @@ function importToEditor() {
 
     const room = project.rooms[activeRoomId];
 
-    const titleEl = document.getElementById("editor-room-name");
-    if (titleEl) {
-        titleEl.textContent = room.name || room.id;
+    // ⭐ Projektname setzen
+    const projectEl = document.getElementById("editor-project-name");
+    if (projectEl) {
+        projectEl.textContent = project.meta?.name || "Projekt";
     }
 
+    // ⭐ Etagenname setzen
+    const floorEl = document.getElementById("editor-floor-name");
+    if (floorEl) {
+        const floor = project.floors?.[room.floorId];
+        floorEl.textContent = floor?.name || "Etage";
+    }
+
+    // ⭐ Raumname setzen
+    const roomEl = document.getElementById("editor-room-name");
+    if (roomEl) {
+        roomEl.textContent = room.name || room.id;
+    }
 
     // Punkte
     RoomDesigner.points = (room.points || []).map(p => ({ x: p.x, y: p.y }));
@@ -327,8 +340,6 @@ function importToEditor() {
     RoomDesigner.updateWalls();
     RoomDesigner.render();
 }
-
-
 
 // ------------------------------------------------------------
 // Manuelles Speichern des aktuellen Editor-Zustands
