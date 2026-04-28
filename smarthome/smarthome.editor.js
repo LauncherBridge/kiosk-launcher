@@ -4312,35 +4312,39 @@ function finishFloorNameEdit(el) {
     el.classList.remove("editing");
 
     const newName = el.textContent.trim();
+    const activeRoomId = SmartHomeData?.structure?.activeRoom || "wohnzimmer";
 
-    // Aktiven Raum holen
-    const room = project.rooms[activeRoomId];
+    const room = project.rooms?.[activeRoomId];
     if (!room) return;
 
-    // Zugehörige Etage holen
-    const floor = project.floors[room.floorId];
+    const floor = project.floors?.[room.floorId];
     if (!floor) return;
 
-    // Leerer Name → alten Namen wiederherstellen
+    // leer → alten Namen wiederherstellen
     if (!newName) {
         el.textContent = floor.name || "Etage";
         return;
     }
 
-    // 1) Etagenname im Projekt speichern
+    // 1) Etagenname im Projekt aktualisieren
     floor.name = newName;
 
-    // 2) Projekt speichern
+    // 2) Speichern
     saveProject();
 
     // 3) Titelzeile aktualisieren
-    updateEditorTitle();
+    if (typeof updateEditorTitle === "function") {
+        updateEditorTitle();
+    } else {
+        importToEditor();
+    }
 
     // 4) Sidebar aktualisieren (falls vorhanden)
     if (typeof renderEditorSidebar === "function") {
         renderEditorSidebar();
     }
 }
+
 
 
 function finishRoomNameEdit(el) {
