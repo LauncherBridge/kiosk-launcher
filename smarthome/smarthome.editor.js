@@ -4683,7 +4683,7 @@ window.addEventListener("DOMContentLoaded", () => {
         enableFloorNameEditing();
         enableProjectNameEditing();
 
-        renderEditorSidebar();
+renderEditorProjectSidebar();
         // Aktiven Raum beim Öffnen laden
         if (SmartHomeData.structure.activeRoom) {
             RoomDesigner.loadRoom(SmartHomeData.structure.activeRoom);
