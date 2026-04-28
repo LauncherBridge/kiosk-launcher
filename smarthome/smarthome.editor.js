@@ -255,13 +255,23 @@ function exportFromEditor() {
         project.rooms[activeRoomId] = createRoomModel(activeRoomId, "Raum");
     }
 
-    const room = project.rooms[activeRoomId];
-
     // ⭐ Raumname aus der Titelzeile speichern
+    const room = project.rooms[activeRoomId];
     const el = document.getElementById("editor-room-name");
     if (el) {
         room.name = el.textContent.trim();
     }
+
+    // ⭐ Etagenname aus der Titelzeile speichern
+    const floorEl = document.getElementById("editor-floor-name");
+    if (floorEl) {
+        const room = project.rooms[activeRoomId];
+        const floor = project.floors?.[room.floorId];
+        if (floor) {
+            floor.name = floorEl.textContent.trim();
+        }
+    }
+
 
     // Punkte
     room.points = RoomDesigner.points.map(p => ({ x: p.x, y: p.y }));
