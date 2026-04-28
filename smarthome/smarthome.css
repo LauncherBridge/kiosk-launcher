@@ -714,3 +714,28 @@ body.editor-mode .editor-btn {
 .room-add:hover {
     color: #9ef;
 }
+
+#editor-location-list {
+    padding: 10px;
+    overflow-y: auto;
+}
+
+#editor-sidebar-left {
+    width: 220px;
+}
+
+.floor-header {
+    font-weight: bold;
+    margin-top: 12px;
+    margin-bottom: 4px;
+}
+
+.room-entry {
+    padding-left: 12px;
+    cursor: pointer;
+    opacity: 0.8;
+}
+
+.room-entry:hover {
+    opacity: 1;
+}
