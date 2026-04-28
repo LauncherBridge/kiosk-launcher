@@ -4147,6 +4147,44 @@ function enableRoomNameEditing() {
     });
 }
 
+function enableFloorNameEditing() {
+    const el = document.getElementById("editor-floor-name");
+    if (!el) return;
+
+    el.addEventListener("click", () => {
+        if (el.contentEditable === "true") return;
+
+        el.contentEditable = "true";
+        el.classList.add("editing");
+        el.focus();
+
+        document.execCommand("selectAll", false, null);
+        document.getSelection().collapseToEnd();
+    });
+
+    el.addEventListener("blur", () => {
+        finishFloorNameEdit(el);
+    });
+
+    el.addEventListener("keydown", (ev) => {
+        if (ev.key === "Enter") {
+            ev.preventDefault();
+            el.blur();
+        }
+        if (ev.key === "Escape") {
+            ev.preventDefault();
+
+            const room = project.rooms[activeRoomId];
+            const floor = project.floors[room.floorId];
+
+            el.textContent = floor?.name || "Etage";
+            el.blur();
+        }
+    });
+}
+
+
+
 function enableProjectNameEditing() {
     const el = document.getElementById("editor-project-name");
     if (!el) return;
@@ -4258,6 +4296,40 @@ function finishProjectNameEdit(el) {
     updateEditorTitle();
 }
 
+function finishFloorNameEdit(el) {
+    el.contentEditable = "false";
+    el.classList.remove("editing");
+
+    const newName = el.textContent.trim();
+
+    // Aktiven Raum holen
+    const room = project.rooms[activeRoomId];
+    if (!room) return;
+
+    // Zugehörige Etage holen
+    const floor = project.floors[room.floorId];
+    if (!floor) return;
+
+    // Leerer Name → alten Namen wiederherstellen
+    if (!newName) {
+        el.textContent = floor.name || "Etage";
+        return;
+    }
+
+    // 1) Etagenname im Projekt speichern
+    floor.name = newName;
+
+    // 2) Projekt speichern
+    saveProject();
+
+    // 3) Titelzeile aktualisieren
+    updateEditorTitle();
+
+    // 4) Sidebar aktualisieren (falls vorhanden)
+    if (typeof renderEditorSidebar === "function") {
+        renderEditorSidebar();
+    }
+}
 
 
 function finishRoomNameEdit(el) {
@@ -4460,6 +4532,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
         updateEditorTitle();
         enableRoomNameEditing();
+        enableFloorNameEditing();
         enableProjectNameEditing();
 
         renderEditorSidebar();
