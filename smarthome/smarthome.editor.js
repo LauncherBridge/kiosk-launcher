@@ -220,11 +220,40 @@ function loadProject() {
     try {
         const data = JSON.parse(json);
         Object.assign(project, data);
-        
-        // Nach dem Laden: Wenn keine Räume existieren → einen erzeugen
+
+        // ⭐ SCHRITT 1: Etagen-Grundstruktur sicherstellen
+        if (!project.floors || Object.keys(project.floors).length === 0) {
+            project.floors = {
+                "floor_0": {
+                    id: "floor_0",
+                    name: "Erdgeschoss",
+                    rooms: []
+                }
+            };
+        }
+
+        // ⭐ SCHRITT 2: Räume müssen eine floorId haben
+        if (project.rooms) {
+            for (const roomId in project.rooms) {
+                const room = project.rooms[roomId];
+
+                // Falls floorId fehlt → auf floor_0 setzen
+                if (!room.floorId) {
+                    room.floorId = "floor_0";
+                }
+
+                // Raum in die Etagenliste eintragen (falls nicht vorhanden)
+                if (!project.floors[room.floorId].rooms.includes(roomId)) {
+                    project.floors[room.floorId].rooms.push(roomId);
+                }
+            }
+        }
+
+        // ⭐ SCHRITT 3: aktiven Raum bestimmen
         if (!project.rooms || Object.keys(project.rooms).length === 0) {
             activeRoomId = "room_1";
-            project.rooms[activeRoomId] = createRoomModel(activeRoomId, "Neuer Raum");
+            project.rooms[activeRoomId] = createRoomModel(activeRoomId, "Neuer Raum", "floor_0");
+            project.floors["floor_0"].rooms.push(activeRoomId);
         } else {
             activeRoomId = Object.keys(project.rooms)[0];
         }
@@ -253,26 +282,38 @@ function exportFromEditor() {
 
     // Raum erzeugen falls nicht vorhanden
     if (!project.rooms[activeRoomId]) {
-        project.rooms[activeRoomId] = createRoomModel(activeRoomId, "Raum");
+
+        // ⭐ floorId korrekt setzen
+        const defaultFloorId = Object.keys(project.floors)[0] || "floor_0";
+
+        project.rooms[activeRoomId] = createRoomModel(
+            activeRoomId,
+            "Raum",
+            defaultFloorId
+        );
+
+        // Raum in Etage eintragen
+        if (!project.floors[defaultFloorId].rooms.includes(activeRoomId)) {
+            project.floors[defaultFloorId].rooms.push(activeRoomId);
+        }
     }
 
-    // ⭐ Raumname aus der Titelzeile speichern
     const room = project.rooms[activeRoomId];
+
+    // ⭐ Raumname speichern
     const el = document.getElementById("editor-room-name");
     if (el) {
         room.name = el.textContent.trim();
     }
 
-    // ⭐ Etagenname aus der Titelzeile speichern
+    // ⭐ Etagenname speichern
     const floorEl = document.getElementById("editor-floor-name");
     if (floorEl) {
-        const room = project.rooms[activeRoomId];
         const floor = project.floors?.[room.floorId];
         if (floor) {
             floor.name = floorEl.textContent.trim();
         }
     }
-
 
     // Punkte
     room.points = RoomDesigner.points.map(p => ({ x: p.x, y: p.y }));
