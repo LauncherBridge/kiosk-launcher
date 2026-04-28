@@ -347,6 +347,14 @@ function exportFromEditor() {
 // Projekt → Editor
 function importToEditor() {
 
+    // ⭐ Schritt 3: activeRoomId sicherstellen
+    if (!activeRoomId) {
+        const roomIds = Object.keys(project.rooms || {});
+        if (roomIds.length > 0) {
+            activeRoomId = roomIds[0];
+        }
+    }
+
     if (!activeRoomId || !project.rooms[activeRoomId]) {
         console.warn("Kein aktiver Raum gefunden:", activeRoomId);
         return;
@@ -392,13 +400,10 @@ function importToEditor() {
     RoomDesigner.updateWalls();
     RoomDesigner.render();
 
-       RoomDesigner.updateWalls();
-    RoomDesigner.render();
-
     // ⭐ Sidebar mit Etagen & Räumen aus dem Projektmodell füllen
     renderEditorProjectSidebar();
-
 }
+
 
 
 // ------------------------------------------------------------
@@ -4443,10 +4448,6 @@ renderEditorProjectSidebar();
 }
 
 function renderEditorProjectSidebar() {
-
-    console.log("Sidebar render:", project);
-
-    
     const container = document.getElementById("editor-location-list");
     if (!container) return;
 
@@ -4457,9 +4458,16 @@ function renderEditorProjectSidebar() {
     const floors = Object.values(project.floors);
 
     floors.forEach(floor => {
+
         // Etagen-Header
         const floorDiv = document.createElement("div");
         floorDiv.className = "floor-header";
+
+        // ⭐ aktive Etage hervorheben
+        if (floor.id === project.rooms[activeRoomId]?.floorId) {
+            floorDiv.classList.add("active-floor");
+        }
+
         floorDiv.textContent = floor.name || floor.id;
         container.appendChild(floorDiv);
 
@@ -4470,6 +4478,12 @@ function renderEditorProjectSidebar() {
 
             const roomDiv = document.createElement("div");
             roomDiv.className = "room-entry";
+
+            // ⭐ aktiven Raum hervorheben
+            if (roomId === activeRoomId) {
+                roomDiv.classList.add("active-room");
+            }
+
             roomDiv.textContent = room.name || room.id;
 
             roomDiv.addEventListener("click", () => {
@@ -4481,6 +4495,7 @@ function renderEditorProjectSidebar() {
         });
     });
 }
+
 
 
 
