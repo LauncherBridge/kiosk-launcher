@@ -108,6 +108,7 @@ function createRoomModel(id, name = null) {
     return {
         id,
         name,
+        floorId,
         type: "room",
         points: [],
         walls: [],
@@ -120,6 +121,17 @@ function createRoomModel(id, name = null) {
         isClosed: false
     };
 }
+
+function createFloorModel(id, name = null) {
+    return {
+        id,        // unveränderbare ID
+        name,      // editierbarer Name
+        type: "floor",
+        rooms: []  // Liste der Raum-IDs, die zu dieser Etage gehören
+    };
+}
+
+
 
 // Tür
 function createDoorModel(id, type, x, y, wallIndex, t, width) {
@@ -447,8 +459,17 @@ init() {
 
     // Falls kein Projekt existiert → ersten Raum erzeugen
     if (!loaded) {
+        // ⭐ Etage erzeugen
+        project.floors = {};
+        const floorId = "floor_1";
+        project.floors[floorId] = createFloorModel(floorId, "Erdgeschoss");
+    
+        // ⭐ Raum erzeugen und Etage zuordnen
         activeRoomId = "room_1";
-        project.rooms[activeRoomId] = createRoomModel(activeRoomId, "Neuer Raum");
+        project.rooms[activeRoomId] = createRoomModel(activeRoomId, "Neuer Raum", floorId);
+    
+        // ⭐ Raum in die Etage eintragen
+        project.floors[floorId].rooms.push(activeRoomId);
     }
 
     // Editor laden (damit RoomDesigner echte Daten hat)
