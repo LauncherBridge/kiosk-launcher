@@ -4453,46 +4453,51 @@ function renderEditorProjectSidebar() {
 
     container.innerHTML = "";
 
-    if (!project.floors) return;
+    Object.values(project.floors).forEach(floor => {
 
-    const floors = Object.values(project.floors);
+        const group = document.createElement("div");
+        group.className = "floor-group";
 
-    floors.forEach(floor => {
+        const floorHeader = document.createElement("div");
+        floorHeader.className = "floor-header";
+        floorHeader.textContent = floor.name;
 
-        // Etagen-Header
-        const floorDiv = document.createElement("div");
-        floorDiv.className = "floor-header";
-
-        // ⭐ aktive Etage hervorheben
+        // Highlight active floor
         if (floor.id === project.rooms[activeRoomId]?.floorId) {
-            floorDiv.classList.add("active-floor");
+            floorHeader.classList.add("active-floor");
         }
 
-        floorDiv.textContent = floor.name || floor.id;
-        container.appendChild(floorDiv);
+        // ⭐ Etage einklappbar
+        floorHeader.addEventListener("click", () => {
+            group.classList.toggle("open");
+        });
 
-        // Räume der Etage
+        const roomList = document.createElement("div");
+        roomList.className = "room-list";
+
         (floor.rooms || []).forEach(roomId => {
-            const room = project.rooms?.[roomId];
+            const room = project.rooms[roomId];
             if (!room) return;
 
             const roomDiv = document.createElement("div");
             roomDiv.className = "room-entry";
+            roomDiv.textContent = room.name;
 
-            // ⭐ aktiven Raum hervorheben
             if (roomId === activeRoomId) {
                 roomDiv.classList.add("active-room");
             }
-
-            roomDiv.textContent = room.name || room.id;
 
             roomDiv.addEventListener("click", () => {
                 activeRoomId = roomId;
                 importToEditor();
             });
 
-            container.appendChild(roomDiv);
+            roomList.appendChild(roomDiv);
         });
+
+        group.appendChild(floorHeader);
+        group.appendChild(roomList);
+        container.appendChild(group);
     });
 }
 
