@@ -485,6 +485,12 @@ html, body {
     z-index: 5;
 }
 
+.room-entry:hover {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+}
+
+
 /* Einklappbare Etagen */
 
 .floor-group .room-list {
