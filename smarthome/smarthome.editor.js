@@ -116,6 +116,29 @@ function closeContextMenu() {
     }
 }
 
+function attachFloorCrumbMenu() {
+    const icon = document.querySelector(".crumb-floor-icon");
+    if (!icon) return;
+
+    icon.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+
+        const rect = icon.getBoundingClientRect();
+        const x = rect.left;
+        const y = rect.bottom + 4;
+
+        openContextMenu(x, y, [
+            {
+                label: "Neue Etage",
+                action: () => editorCreateFloor()
+            },
+            {
+                label: "Etage löschen",
+                action: () => editorDeleteFloor(activeFloorId)
+            }
+        ]);
+    });
+}
 
 
 // ------------------------------------------------------------
@@ -4742,12 +4765,12 @@ window.addEventListener("DOMContentLoaded", () => {
         const root = document.getElementById("smarthome-root");
         const header = document.getElementById("sh-group-header");
         const minimap = document.getElementById("smarthome-minimap");
-        const floorList = document.getElementById("sh-floor-list"); // WICHTIG
+        const floorList = document.getElementById("sh-floor-list");
 
         if (root) root.style.display = "none";
         if (header) header.style.display = "none";
         if (minimap) minimap.style.display = "none";
-        if (floorList) floorList.style.display = "none"; // WICHTIG
+        if (floorList) floorList.style.display = "none";
 
         // -----------------------------------------
         // Editor-Layout einblenden
@@ -4755,15 +4778,12 @@ window.addEventListener("DOMContentLoaded", () => {
         const layout = document.getElementById("editor-layout");
         if (layout) layout.style.display = "block";
 
-        // Canvas einblenden
         const canvas = document.getElementById("roomdesigner");
         if (canvas) canvas.style.display = "block";
 
-        // Titelbar einblenden
         const titlebar = document.getElementById("editor-titlebar");
         if (titlebar) titlebar.style.display = "flex";
 
-        // Rechte Sidebar einblenden
         const sidebar = document.getElementById("editor-sidebar");
         if (sidebar) sidebar.style.display = "flex";
 
@@ -4781,14 +4801,18 @@ window.addEventListener("DOMContentLoaded", () => {
         enableFloorNameEditing();
         enableProjectNameEditing();
 
-renderEditorProjectSidebar();
+        renderEditorProjectSidebar();
+
         // Aktiven Raum beim Öffnen laden
         if (SmartHomeData.structure.activeRoom) {
             RoomDesigner.loadRoom(SmartHomeData.structure.activeRoom);
         }
 
+        // ⭐⭐⭐ HIER IST DIE RICHTIGE STELLE ⭐⭐⭐
+        attachFloorCrumbMenu();
     });
 });
+
 
 
 // ===============================
