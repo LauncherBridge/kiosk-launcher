@@ -4487,7 +4487,9 @@ function renderEditorProjectSidebar() {
                 roomDiv.classList.add("active-room");
             }
 
-            roomDiv.addEventListener("click", () => {
+            // ⭐ verhindert das Zusammenklappen der Etage
+            roomDiv.addEventListener("click", (ev) => {
+                ev.stopPropagation();
                 activeRoomId = roomId;
                 importToEditor();
             });
@@ -4500,7 +4502,6 @@ function renderEditorProjectSidebar() {
         container.appendChild(group);
     });
 }
-
 
 
 
