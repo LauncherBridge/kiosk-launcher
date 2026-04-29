@@ -441,8 +441,6 @@ html, body {
     z-index: 99990;
 }
 
-/* Linke Sidebar – Inhalt */
-
 #editor-location-list {
     color: white;
     padding: 10px;
@@ -450,48 +448,60 @@ html, body {
     overflow-y: auto;
 }
 
-/* Etagen wie Kategorie-Header */
+/* Etagen = category-header */
 
 .floor-header {
-    padding: 10px 16px;
-    font-size: 15px;
-    font-weight: 600;
-    text-transform: uppercase;
-    color: #ddd;
-    background: #1a1a1a;
-    border-top: 1px solid #222;
-    border-bottom: 1px solid #222;
+    padding: 10px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    color: #fff;
     margin-top: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-/* Räume wie Items */
+/* Räume = item */
 
 .room-entry {
-    padding: 8px 22px;
-    font-size: 14px;
-    color: #ccc;
+    padding: 8px;
+    margin-top: 6px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 4px;
     cursor: pointer;
-    transition: background 0.15s, color 0.15s;
+    color: #ccc;
+    transition: background 0.15s ease, color 0.15s ease;
 }
 
 .room-entry:hover {
-    background: #222;
+    background: rgba(255,255,255,0.15);
     color: #fff;
 }
 
-/* Aktive Etage */
+/* Einklappbare Etagen */
+
+.floor-group .room-list {
+    display: none;
+    padding-left: 4px;
+}
+
+.floor-group.open .room-list {
+    display: block;
+}
+
+/* Highlighting */
 
 .active-floor {
     color: #ff4444 !important;
-    font-weight: bold;
     text-shadow: 0 0 6px rgba(255, 80, 80, 0.8);
 }
 
-/* Aktiver Raum */
-
 .active-room {
     color: #66aaff !important;
-    font-weight: bold;
     text-shadow: 0 0 6px rgba(80, 140, 255, 0.8);
 }
 
