@@ -686,4 +686,7 @@ body.editor-mode #sh-floor-list {
     display: none !important;
 }
 
-body.editor-mode #btnOpen
+body.editor-mode #btnOpenEditor,
+body.editor-mode .editor-btn {
+    display: none !important;
+}
