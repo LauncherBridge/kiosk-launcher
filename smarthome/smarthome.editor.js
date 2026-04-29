@@ -4286,10 +4286,18 @@ function updateEditorTitle() {
     }
 }
 
+// ---------------------------------------------------------
+// Neue Etage erstellen
+// ---------------------------------------------------------
 function editorCreateFloor() {
+    // Floors sicherstellen
+    SmartHomeData.refreshFloors();
+
     // 1) Neue Floor-ID bestimmen
-    // Floors sind Zahlen, z.B. 0, 1, 2, -1
-    const existing = SmartHomeData.floors.map(f => f.id);
+    const existing = Array.isArray(SmartHomeData.floors)
+        ? SmartHomeData.floors.map(f => f.id)
+        : [];
+
     const max = existing.length > 0 ? Math.max(...existing) : 0;
     const newFloorId = max + 1;
 
@@ -4307,12 +4315,14 @@ function editorCreateFloor() {
         name: `Neuer Raum ${newFloorId}`,
         type: "living",
         floor: newFloorId,
+
         polygon: [
             { x: 100, y: 100 },
             { x: 300, y: 100 },
             { x: 300, y: 300 },
             { x: 100, y: 300 }
         ],
+
         minimap: {
             x: 10,
             y: 10,
@@ -4320,6 +4330,7 @@ function editorCreateFloor() {
             h: 40,
             label: "NR"
         },
+
         doors: []
     });
 
@@ -4338,9 +4349,17 @@ function editorCreateFloor() {
     RoomDesigner.loadRoom(newRoomId);
 }
 
+
+
+// ---------------------------------------------------------
+// Etage löschen
+// ---------------------------------------------------------
 function editorDeleteFloor(floorId) {
     // Sicherheitsabfrage
     if (!confirm("Diese Etage und alle Räume darauf löschen?")) return;
+
+    // Floors sicherstellen
+    SmartHomeData.refreshFloors();
 
     // 1) Alle Räume dieser Etage löschen
     SmartHomeData.rooms = SmartHomeData.rooms.filter(r => r.floor !== floorId);
@@ -4353,11 +4372,9 @@ function editorDeleteFloor(floorId) {
     SmartHomeData.refreshFloors();
 
     // 4) Editor-State korrigieren
-    // Falls die gelöschte Etage aktiv war → auf EG (0) zurücksetzen
     if (SmartHomeData.structure.activeFloor === floorId) {
         SmartHomeData.structure.activeFloor = 0;
 
-        // Falls es keinen Raum mehr gibt → null
         const firstRoom = SmartHomeData.rooms.find(r => r.floor === 0);
         SmartHomeData.structure.activeRoom = firstRoom ? firstRoom.id : null;
     }
@@ -4373,6 +4390,7 @@ function editorDeleteFloor(floorId) {
         RoomDesigner.clearCanvas();
     }
 }
+
 
 
 
