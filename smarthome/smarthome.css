@@ -688,3 +688,47 @@ body.editor-mode #btnOpenEditor,
 body.editor-mode .editor-btn {
     display: none !important;
 }
+
+/* ---------------------------------------------------------
+   GLOBAL CONTEXT MENU
+--------------------------------------------------------- */
+
+#context-menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: rgba(0,0,0,0.85);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    padding: 4px 0;
+    min-width: 160px;
+    z-index: 999999;
+    display: none;
+    backdrop-filter: blur(4px);
+}
+
+#context-menu.visible {
+    display: block;
+}
+
+.context-menu-item {
+    padding: 8px 14px;
+    color: #ddd;
+    font-size: 14px;
+    cursor: pointer;
+    white-space: nowrap;
+    background: rgba(255,255,255,0.03);
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.context-menu-item:hover {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+}
+
+.context-menu-separator {
+    height: 1px;
+    background: rgba(255,255,255,0.12);
+    margin: 4px 0;
+}
