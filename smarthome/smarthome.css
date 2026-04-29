@@ -462,6 +462,10 @@ html, body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+
+    /* >>> FIX: prevents header overlapping rooms <<< */
+    position: relative;
+    z-index: 2;
 }
 
 /* Räume = item */
@@ -475,11 +479,10 @@ html, body {
     cursor: pointer;
     color: #ccc;
     transition: background 0.15s ease, color 0.15s ease;
-}
 
-.room-entry:hover {
-    background: rgba(255,255,255,0.15);
-    color: #fff;
+    /* >>> FIX: ensures room receives click, not header <<< */
+    position: relative;
+    z-index: 1;
 }
 
 /* Einklappbare Etagen */
@@ -487,10 +490,25 @@ html, body {
 .floor-group .room-list {
     display: none;
     padding-left: 4px;
+
+    /* >>> FIX: ensures room-list is below header <<< */
+    position: relative;
+    z-index: 1;
 }
 
 .floor-group.open .room-list {
     display: block;
+}
+
+/* >>> FIX: prevents parent from catching clicks <<< */
+.floor-group {
+    pointer-events: none;
+}
+
+.floor-header,
+.room-list,
+.room-entry {
+    pointer-events: auto;
 }
 
 /* Highlighting */
@@ -668,7 +686,4 @@ body.editor-mode #sh-floor-list {
     display: none !important;
 }
 
-body.editor-mode #btnOpenEditor,
-body.editor-mode .editor-btn {
-    display: none !important;
-}
+body.editor-mode #btnOpen
