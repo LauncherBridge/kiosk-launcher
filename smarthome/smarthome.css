@@ -501,10 +501,6 @@ html, body {
 }
 
 
-/* Entfernt: pointer-events-Hack, da nicht mehr nötig */
-.floor-group {
-    pointer-events: auto;
-}
 
 
 /* Highlighting */
