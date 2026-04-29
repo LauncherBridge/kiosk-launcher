@@ -4462,14 +4462,15 @@ function renderEditorProjectSidebar() {
         floorHeader.className = "floor-header";
         floorHeader.textContent = floor.name;
 
-        // Highlight active floor
+        // Highlight active floor + automatisch geöffnet halten
         if (floor.id === project.rooms[activeRoomId]?.floorId) {
             floorHeader.classList.add("active-floor");
+            group.classList.add("open");   // ⭐ entscheidend: Etage mit aktivem Raum bleibt offen
         }
 
-        // ⭐ Etage einklappbar – NUR wenn man auf die Etage klickt
+        // Etage einklappbar – nur beim Klick auf die Etage
         floorHeader.addEventListener("click", (ev) => {
-            ev.stopPropagation();     // verhindert Bubbling nach oben
+            ev.stopPropagation();
             group.classList.toggle("open");
         });
 
@@ -4488,9 +4489,8 @@ function renderEditorProjectSidebar() {
                 roomDiv.classList.add("active-room");
             }
 
-            // ⭐ Raumklick – verhindert IMMER das Zusammenklappen
             roomDiv.addEventListener("click", (ev) => {
-                ev.stopPropagation();   // verhindert Klick auf Etage
+                ev.stopPropagation();
                 activeRoomId = roomId;
                 importToEditor();
             });
@@ -4503,7 +4503,6 @@ function renderEditorProjectSidebar() {
         container.appendChild(group);
     });
 }
-
 
 
 
