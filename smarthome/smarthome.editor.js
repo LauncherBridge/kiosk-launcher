@@ -42,6 +42,82 @@ const project = {
 let activeRoomId = null;
 
 
+/* ---------------------------------------------------------
+   GLOBAL CONTEXT MENU SYSTEM
+--------------------------------------------------------- */
+
+let contextMenuEl = null;
+let contextMenuOutsideHandler = null;
+
+function initContextMenuSystem() {
+    contextMenuEl = document.getElementById("context-menu");
+}
+
+/**
+ * Öffnet ein Kontextmenü an Position (x, y)
+ * items = [{ label: "Text", action: () => {} }, ...]
+ */
+function openContextMenu(x, y, items) {
+    if (!contextMenuEl) initContextMenuSystem();
+
+    // Vorheriges Menü schließen
+    closeContextMenu();
+
+    // Inhalt aufbauen
+    contextMenuEl.innerHTML = "";
+    for (const item of items) {
+        if (item.separator) {
+            const sep = document.createElement("div");
+            sep.className = "context-menu-separator";
+            contextMenuEl.appendChild(sep);
+            continue;
+        }
+
+        const el = document.createElement("div");
+        el.className = "context-menu-item";
+        el.textContent = item.label;
+
+        el.addEventListener("click", () => {
+            closeContextMenu();
+            item.action();
+        });
+
+        contextMenuEl.appendChild(el);
+    }
+
+    // Position setzen
+    contextMenuEl.style.left = x + "px";
+    contextMenuEl.style.top = y + "px";
+
+    // Sichtbar machen
+    contextMenuEl.classList.add("visible");
+
+    // Klick außerhalb → Menü schließen
+    contextMenuOutsideHandler = (ev) => {
+        if (!contextMenuEl.contains(ev.target)) {
+            closeContextMenu();
+        }
+    };
+    document.addEventListener("mousedown", contextMenuOutsideHandler);
+}
+
+/**
+ * Schließt das Kontextmenü
+ */
+function closeContextMenu() {
+    if (!contextMenuEl) return;
+
+    contextMenuEl.classList.remove("visible");
+    contextMenuEl.innerHTML = "";
+
+    if (contextMenuOutsideHandler) {
+        document.removeEventListener("mousedown", contextMenuOutsideHandler);
+        contextMenuOutsideHandler = null;
+    }
+}
+
+
+
 // ------------------------------------------------------------
 // Runtime-Generierung von SmartHomeData aus project
 // ------------------------------------------------------------
