@@ -4467,8 +4467,9 @@ function renderEditorProjectSidebar() {
             floorHeader.classList.add("active-floor");
         }
 
-        // ⭐ Etage einklappbar
-        floorHeader.addEventListener("click", () => {
+        // ⭐ Etage einklappbar – NUR wenn man auf die Etage klickt
+        floorHeader.addEventListener("click", (ev) => {
+            ev.stopPropagation();     // verhindert Bubbling nach oben
             group.classList.toggle("open");
         });
 
@@ -4487,9 +4488,9 @@ function renderEditorProjectSidebar() {
                 roomDiv.classList.add("active-room");
             }
 
-            // ⭐ verhindert das Zusammenklappen der Etage
+            // ⭐ Raumklick – verhindert IMMER das Zusammenklappen
             roomDiv.addEventListener("click", (ev) => {
-                ev.stopPropagation();
+                ev.stopPropagation();   // verhindert Klick auf Etage
                 activeRoomId = roomId;
                 importToEditor();
             });
@@ -4502,6 +4503,7 @@ function renderEditorProjectSidebar() {
         container.appendChild(group);
     });
 }
+
 
 
 
