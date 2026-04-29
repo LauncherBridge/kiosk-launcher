@@ -500,16 +500,12 @@ html, body {
     display: block;
 }
 
-/* >>> FIX: prevents parent from catching clicks <<< */
-.floor-group {
-    pointer-events: none;
-}
 
-.floor-header,
-.room-list,
-.room-entry {
+/* Entfernt: pointer-events-Hack, da nicht mehr nötig */
+.floor-group {
     pointer-events: auto;
 }
+
 
 /* Highlighting */
 
