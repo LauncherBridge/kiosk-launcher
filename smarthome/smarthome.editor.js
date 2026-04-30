@@ -4666,8 +4666,11 @@ function renderEditorProjectSidebar() {
 
     container.innerHTML = "";
 
-    // Floors aus SmartHomeData
+    // Floors aus SmartHomeData ableiten
     SmartHomeData.refreshFloors();
+
+    const activeFloor = SmartHomeData.structure.activeFloor;
+    const activeRoom = SmartHomeData.structure.activeRoom;
 
     SmartHomeData.floors.forEach(floor => {
 
@@ -4678,8 +4681,8 @@ function renderEditorProjectSidebar() {
         floorHeader.className = "floor-header";
         floorHeader.textContent = SmartHomeData.getFloorDisplayName(floor.id);
 
-        // Highlight active floor
-        if (floor.id === SmartHomeData.structure.activeFloor) {
+        // Aktive Etage hervorheben
+        if (floor.id === activeFloor) {
             floorHeader.classList.add("active-floor");
             group.classList.add("open");
         }
@@ -4701,7 +4704,7 @@ function renderEditorProjectSidebar() {
             roomDiv.className = "room-entry";
             roomDiv.textContent = room.name;
 
-            if (room.id === SmartHomeData.structure.activeRoom) {
+            if (room.id === activeRoom) {
                 roomDiv.classList.add("active-room");
             }
 
