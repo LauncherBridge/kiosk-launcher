@@ -48,6 +48,38 @@ const project = {
 let contextMenuEl = null;
 let contextMenuOutsideHandler = null;
 
+
+
+function loadProjectFromSmartHomeData() {
+    SmartHomeData.refreshFloors();
+
+    project.floors = {};
+    SmartHomeData.floors.forEach(f => {
+        project.floors[f.id] = {
+            id: f.id,
+            name: SmartHomeData.getFloorDisplayName(f.id),
+            rooms: [...f.rooms]
+        };
+    });
+
+    project.rooms = {};
+    SmartHomeData.rooms.forEach(r => {
+        project.rooms[r.id] = {
+            id: r.id,
+            name: r.name,
+            floorId: r.floor,
+            points: r.polygon || [],
+            doors: r.doors || [],
+            windows: r.windows || []
+        };
+    });
+
+    activeRoomId = SmartHomeData.structure.activeRoom;
+}
+
+
+
+
 function initContextMenuSystem() {
     contextMenuEl = document.getElementById("context-menu");
 }
@@ -4911,9 +4943,11 @@ window.addEventListener("DOMContentLoaded", () => {
         // -----------------------------------------
         RoomDesigner.init();
 
-        if (loadProject()) {
-            importToEditor();
-        }
+        // ⭐⭐⭐ WICHTIG: Projekt aus SmartHomeData laden ⭐⭐⭐
+        loadProjectFromSmartHomeData();
+
+        // ⭐⭐⭐ Danach Editor-Daten setzen ⭐⭐⭐
+        importToEditor();
 
         updateEditorTitle();
         enableRoomNameEditing();
@@ -4923,11 +4957,11 @@ window.addEventListener("DOMContentLoaded", () => {
         renderEditorProjectSidebar();
 
         // Aktiven Raum beim Öffnen laden
-        if (SmartHomeData.structure.activeRoom) {
-            RoomDesigner.loadRoom(SmartHomeData.structure.activeRoom);
+        if (activeRoomId) {
+            RoomDesigner.loadRoom(activeRoomId);
         }
 
-        // ⭐⭐⭐ HIER IST DIE RICHTIGE STELLE ⭐⭐⭐
+        // ⭐⭐⭐ Kontextmenü für Etagen ⭐⭐⭐
         attachFloorCrumbMenu();
     });
 });
