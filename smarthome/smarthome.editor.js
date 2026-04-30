@@ -4347,6 +4347,13 @@ function editorCreateFloor() {
 
     // 7) Canvas neu laden
     RoomDesigner.loadRoom(newRoomId);
+
+    // Tano
+setTimeout(() => {
+    RoomDesigner.loadRoom(newRoomId);
+}, 50);
+
+    
 }
 
 
