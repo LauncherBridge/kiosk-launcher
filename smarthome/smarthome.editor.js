@@ -39,17 +39,6 @@ const project = {
     names: {}        // Alias-Namen für Titelzeile/Breadcrumbs
 };
 
-let activeRoomId = null;
-
-// ------------------------------------------------------------
-// Editor-Projektmodell (lokal im Editor)
-// ------------------------------------------------------------
-let project = {
-    floors: {},   // floorId → { id, name, rooms: [] }
-    rooms: {},    // roomId → { ... }
-};
-
-let activeRoomId = null;
 
 
 /* ---------------------------------------------------------
@@ -456,83 +445,60 @@ function exportFromEditor() {
 // Projekt → Editor
 function importToEditor() {
 
-    // ---------------------------------------------------------
-    // 1) SmartHomeData → project synchronisieren
-    // ---------------------------------------------------------
-    SmartHomeData.refreshFloors();
-
-    // Floors übernehmen
-    project.floors = {};
-    SmartHomeData.floors.forEach(f => {
-        project.floors[f.id] = {
-            id: f.id,
-            name: SmartHomeData.getFloorDisplayName(f.id),
-            rooms: [...f.rooms]
-        };
-    });
-
-    // Rooms übernehmen
-    project.rooms = {};
-    SmartHomeData.rooms.forEach(r => {
-        project.rooms[r.id] = {
-            id: r.id,
-            name: r.name,
-            floorId: r.floor,
-            points: r.polygon || [],
-            doors: r.doors || [],
-            windows: r.windows || []
-        };
-    });
-
-    // ---------------------------------------------------------
-    // 2) activeRoomId sicherstellen
-    // ---------------------------------------------------------
-    if (!activeRoomId || !project.rooms[activeRoomId]) {
-        const roomIds = Object.keys(project.rooms);
-        activeRoomId = roomIds.length > 0 ? roomIds[0] : null;
+    // ⭐ Schritt 3: activeRoomId sicherstellen
+    if (!activeRoomId) {
+        const roomIds = Object.keys(project.rooms || {});
+        if (roomIds.length > 0) {
+            activeRoomId = roomIds[0];
+        }
     }
 
-    if (!activeRoomId) {
-        console.warn("Kein aktiver Raum verfügbar.");
+    if (!activeRoomId || !project.rooms[activeRoomId]) {
+        console.warn("Kein aktiver Raum gefunden:", activeRoomId);
         return;
     }
 
     const room = project.rooms[activeRoomId];
 
-    // ---------------------------------------------------------
-    // 3) Titelzeile aktualisieren
-    // ---------------------------------------------------------
+    // ⭐ Projektname setzen
     const projectEl = document.getElementById("editor-project-name");
     if (projectEl) {
-        projectEl.textContent = SmartHomeData.meta?.name || "Projekt";
+        projectEl.textContent = project.meta?.name || "Projekt";
     }
 
+    // ⭐ Etagenname setzen
     const floorEl = document.getElementById("editor-floor-name");
     if (floorEl) {
-        const floor = project.floors[room.floorId];
+        const floor = project.floors?.[room.floorId];
         floorEl.textContent = floor?.name || "Etage";
     }
 
+    // ⭐ Raumname setzen
     const roomEl = document.getElementById("editor-room-name");
     if (roomEl) {
         roomEl.textContent = room.name || room.id;
     }
 
-    // ---------------------------------------------------------
-    // 4) RoomDesigner-Daten setzen
-    // ---------------------------------------------------------
+    // ⭐ Punkte
     RoomDesigner.points = (room.points || []).map(p => ({ x: p.x, y: p.y }));
     RoomDesigner.isClosed = room.isClosed || false;
 
-    RoomDesigner.doors = (room.doors || []).map(d => ({ ...d }));
-    RoomDesigner.windows = (room.windows || []).map(w => ({ ...w }));
+    // ⭐ Türen
+    RoomDesigner.doors = (room.doors || [])
+        .map(id => project.doors[id])
+        .filter(Boolean)
+        .map(d => ({ ...d }));
+
+    // ⭐ Fenster
+    RoomDesigner.windows = (room.windows || [])
+        .map(id => project.windows[id])
+        .filter(Boolean)
+        .map(w => ({ ...w }));
 
     RoomDesigner.updateWalls();
     RoomDesigner.render();
 
-    // ---------------------------------------------------------
-    // 5) Sidebar aktualisieren
-    // ---------------------------------------------------------
+    // ⭐ Sidebar mit Etagen & Räumen aus dem Projektmodell füllen
     renderEditorProjectSidebar();
 }
 
@@ -4380,11 +4346,6 @@ function editorCreateFloor() {
 
     // 7) Canvas neu laden
     RoomDesigner.loadRoom(newRoomId);
-
-    // Tano
-setTimeout(() => {
-    RoomDesigner.loadRoom(newRoomId);
-}, 50);
 
     
 }
