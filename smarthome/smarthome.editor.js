@@ -4666,22 +4666,25 @@ function renderEditorProjectSidebar() {
 
     container.innerHTML = "";
 
-    Object.values(project.floors).forEach(floor => {
+    // Floors aus SmartHomeData
+    SmartHomeData.refreshFloors();
+
+    SmartHomeData.floors.forEach(floor => {
 
         const group = document.createElement("div");
         group.className = "floor-group";
 
         const floorHeader = document.createElement("div");
         floorHeader.className = "floor-header";
-        floorHeader.textContent = floor.name;
+        floorHeader.textContent = SmartHomeData.getFloorDisplayName(floor.id);
 
-        // Highlight active floor + automatisch geöffnet halten
-        if (floor.id === project.rooms[activeRoomId]?.floorId) {
+        // Highlight active floor
+        if (floor.id === SmartHomeData.structure.activeFloor) {
             floorHeader.classList.add("active-floor");
-            group.classList.add("open");   // ⭐ entscheidend: Etage mit aktivem Raum bleibt offen
+            group.classList.add("open");
         }
 
-        // Etage einklappbar – nur beim Klick auf die Etage
+        // Etage einklappbar
         floorHeader.addEventListener("click", (ev) => {
             ev.stopPropagation();
             group.classList.toggle("open");
@@ -4690,22 +4693,27 @@ function renderEditorProjectSidebar() {
         const roomList = document.createElement("div");
         roomList.className = "room-list";
 
-        (floor.rooms || []).forEach(roomId => {
-            const room = project.rooms[roomId];
+        floor.rooms.forEach(roomId => {
+            const room = SmartHomeData.rooms.find(r => r.id === roomId);
             if (!room) return;
 
             const roomDiv = document.createElement("div");
             roomDiv.className = "room-entry";
             roomDiv.textContent = room.name;
 
-            if (roomId === activeRoomId) {
+            if (room.id === SmartHomeData.structure.activeRoom) {
                 roomDiv.classList.add("active-room");
             }
 
             roomDiv.addEventListener("click", (ev) => {
                 ev.stopPropagation();
-                activeRoomId = roomId;
-                importToEditor();
+
+                SmartHomeData.structure.activeRoom = room.id;
+                SmartHomeData.structure.activeFloor = room.floor;
+
+                updateEditorTitle();
+                RoomDesigner.loadRoom(room.id);
+                renderEditorProjectSidebar();
             });
 
             roomList.appendChild(roomDiv);
