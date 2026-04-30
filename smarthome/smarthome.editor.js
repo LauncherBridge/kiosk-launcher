@@ -4331,6 +4331,7 @@ function editorCreateFloor() {
     // 5) Editor-Daten + UI aktualisieren
     importToEditor();            // Titelzeile + Canvas
     renderEditorProjectSidebar(); // Sidebar
+    saveProject(); 
 }
 
 
@@ -4379,6 +4380,7 @@ function editorDeleteFloor(floorId) {
     }
 
     renderEditorProjectSidebar();
+    saveProject();
 }
 
 
@@ -4554,57 +4556,71 @@ function finishProjectNameEdit(el) {
     el.contentEditable = "false";
     el.classList.remove("editing");
 
+    if (!project.meta) {
+        project.meta = {};
+    }
+
     const newName = el.textContent.trim();
+
+    // Leerer Name → alten Namen wiederherstellen
     if (!newName) {
-        el.textContent = project.meta?.name || "Projekt";
+        el.textContent = project.meta.name || "Projekt";
         return;
     }
 
-    // Persistieren
-    project.meta = project.meta || {};
+    // 1) Projektnamen speichern
     project.meta.name = newName;
 
-    saveProject();
+    // 2) Titelzeile aktualisieren
     updateEditorTitle();
+
+    // 3) Sidebar aktualisieren (falls sie Projektnamen zeigt)
+    renderEditorProjectSidebar();
+
+    // 4) Projekt speichern
+    saveProject();
 }
+
 
 function finishFloorNameEdit(el) {
     el.contentEditable = "false";
     el.classList.remove("editing");
 
-    const newName = el.textContent.trim();
-    const activeRoomId = SmartHomeData?.structure?.activeRoom || "wohnzimmer";
-
-    const room = project.rooms?.[activeRoomId];
-    if (!room) return;
-
-    const floor = project.floors?.[room.floorId];
-    if (!floor) return;
-
-    // leer → alten Namen wiederherstellen
-    if (!newName) {
-        el.textContent = floor.name || "Etage";
+    // Aktiven Raum bestimmen
+    if (!activeRoomId || !project.rooms[activeRoomId]) {
+        console.warn("finishFloorNameEdit(): Kein aktiver Raum");
         return;
     }
 
-    // 1) Etagenname im Projekt aktualisieren
-    floor.name = newName;
+    const room = project.rooms[activeRoomId];
+    const floorId = room.floorId;
 
-    // 2) Speichern
+    if (!project.floors[floorId]) {
+        console.warn("finishFloorNameEdit(): Etage existiert nicht:", floorId);
+        return;
+    }
+
+    const newName = el.textContent.trim();
+
+    // Leerer Name → alten Namen wiederherstellen
+    if (!newName) {
+        el.textContent = project.floors[floorId].name || "Etage";
+        return;
+    }
+
+    // 1) Etagenname im Projekt speichern
+    project.floors[floorId].name = newName;
+
+    // 2) Titelzeile aktualisieren
+    updateEditorTitle();
+
+    // 3) Sidebar aktualisieren
+    renderEditorProjectSidebar();
+
+    // 4) Projekt speichern
     saveProject();
-
-    // 3) Titelzeile aktualisieren
-    if (typeof updateEditorTitle === "function") {
-        updateEditorTitle();
-    } else {
-        importToEditor();
-    }
-
-    // 4) Sidebar aktualisieren (falls vorhanden)
-    if (typeof renderEditorSidebar === "function") {
-renderEditorProjectSidebar();
-    }
 }
+
 
 
 
@@ -4612,36 +4628,33 @@ function finishRoomNameEdit(el) {
     el.contentEditable = "false";
     el.classList.remove("editing");
 
-    const newName = el.textContent.trim();
-    const activeRoomId = SmartHomeData?.structure?.activeRoom || "wohnzimmer";
-
-    if (!newName) {
-        el.textContent = SmartHomeData.getRoom(activeRoomId)?.name || "Raum";
+    // Aktiven Raum bestimmen
+    if (!activeRoomId || !project.rooms[activeRoomId]) {
+        console.warn("Kein aktiver Raum für finishRoomNameEdit()");
         return;
     }
 
-    // 1) SmartHomeData.rooms aktualisieren (ARRAY!)
-    const roomObj = SmartHomeData.rooms.find(r => r.id === activeRoomId);
-    if (roomObj) {
-        roomObj.name = newName;
+    const newName = el.textContent.trim();
+
+    // Leerer Name → alten Namen wiederherstellen
+    if (!newName) {
+        el.textContent = project.rooms[activeRoomId].name || "Raum";
+        return;
     }
 
-    // 2) project.rooms synchronisieren (für Persistenz)
-    project.rooms = project.rooms || {};
-    project.rooms[activeRoomId] = project.rooms[activeRoomId] || {};
+    // 1) Namen im Projekt speichern
     project.rooms[activeRoomId].name = newName;
 
-    // 3) Speichern
-    saveProject();
-
-    // 4) Titelzeile aktualisieren
+    // 2) Titelzeile aktualisieren
     updateEditorTitle();
 
-    // 5) Sidebar aktualisieren (damit Name sofort sichtbar wird)
-    if (typeof renderEditorSidebar === "function") {
-renderEditorProjectSidebar();
-    }
+    // 3) Sidebar aktualisieren
+    renderEditorProjectSidebar();
+
+    // 4) Projekt speichern
+    saveProject();
 }
+
 
 
 function renderEditorProjectSidebar() {
