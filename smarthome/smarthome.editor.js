@@ -49,37 +49,6 @@ let contextMenuEl = null;
 let contextMenuOutsideHandler = null;
 
 
-
-function loadProjectFromSmartHomeData() {
-    SmartHomeData.refreshFloors();
-
-    project.floors = {};
-    SmartHomeData.floors.forEach(f => {
-        project.floors[f.id] = {
-            id: f.id,
-            name: SmartHomeData.getFloorDisplayName(f.id),
-            rooms: [...f.rooms]
-        };
-    });
-
-    project.rooms = {};
-    SmartHomeData.rooms.forEach(r => {
-        project.rooms[r.id] = {
-            id: r.id,
-            name: r.name,
-            floorId: r.floor,
-            points: r.polygon || [],
-            doors: r.doors || [],
-            windows: r.windows || []
-        };
-    });
-
-    activeRoomId = SmartHomeData.structure.activeRoom;
-}
-
-
-
-
 function initContextMenuSystem() {
     contextMenuEl = document.getElementById("context-menu");
 }
@@ -4321,66 +4290,49 @@ function updateEditorTitle() {
 // Neue Etage erstellen
 // ---------------------------------------------------------
 function editorCreateFloor() {
-    // Floors sicherstellen
-    SmartHomeData.refreshFloors();
-
     // 1) Neue Floor-ID bestimmen
-    const existing = Array.isArray(SmartHomeData.floors)
-        ? SmartHomeData.floors.map(f => f.id)
-        : [];
-
-    const max = existing.length > 0 ? Math.max(...existing) : 0;
+    const existingIds = Object.keys(project.floors || {}).map(id => Number(id));
+    const max = existingIds.length > 0 ? Math.max(...existingIds) : 0;
     const newFloorId = max + 1;
 
-    // 2) Floor-Meta anlegen (Alias optional)
-    SmartHomeData.floorMeta[newFloorId] = {
-        alias: `${newFloorId}. Obergeschoss`
+    // 2) Floor im Projekt anlegen
+    project.floors[newFloorId] = {
+        id: newFloorId,
+        name: `${newFloorId}. Obergeschoss`,
+        rooms: []
     };
-    SmartHomeData.saveFloorMeta();
 
     // 3) Einen neuen Raum erzeugen (Pflicht!)
     const newRoomId = `raum_${newFloorId}_1`;
 
-    SmartHomeData.rooms.push({
+    project.rooms[newRoomId] = {
         id: newRoomId,
         name: `Neuer Raum ${newFloorId}`,
-        type: "living",
-        floor: newFloorId,
+        floorId: newFloorId,
 
-        polygon: [
+        points: [
             { x: 100, y: 100 },
             { x: 300, y: 100 },
             { x: 300, y: 300 },
             { x: 100, y: 300 }
         ],
 
-        minimap: {
-            x: 10,
-            y: 10,
-            w: 40,
-            h: 40,
-            label: "NR"
-        },
+        doors: [],
+        windows: [],
+        isClosed: false
+    };
 
-        doors: []
-    });
+    // Raum in der Etage referenzieren
+    project.floors[newFloorId].rooms.push(newRoomId);
 
-    // 4) Floors neu berechnen
-    SmartHomeData.refreshFloors();
+    // 4) Editor-State setzen
+    activeRoomId = newRoomId;
 
-    // 5) Editor-State setzen
-    SmartHomeData.structure.activeFloor = newFloorId;
-    SmartHomeData.structure.activeRoom = newRoomId;
-
-    // 6) UI aktualisieren
-    renderEditorProjectSidebar();
-    updateEditorTitle();
-
-    // 7) Canvas neu laden
-    RoomDesigner.loadRoom(newRoomId);
-
-    
+    // 5) Editor-Daten + UI aktualisieren
+    importToEditor();            // Titelzeile + Canvas
+    renderEditorProjectSidebar(); // Sidebar
 }
+
 
 
 
@@ -4391,37 +4343,42 @@ function editorDeleteFloor(floorId) {
     // Sicherheitsabfrage
     if (!confirm("Diese Etage und alle Räume darauf löschen?")) return;
 
-    // Floors sicherstellen
-    SmartHomeData.refreshFloors();
+    floorId = Number(floorId);
+
+    const floor = project.floors[floorId];
+    if (!floor) return;
 
     // 1) Alle Räume dieser Etage löschen
-    SmartHomeData.rooms = SmartHomeData.rooms.filter(r => r.floor !== floorId);
+    (floor.rooms || []).forEach(roomId => {
+        delete project.rooms[roomId];
+    });
 
-    // 2) Floor-Meta löschen
-    delete SmartHomeData.floorMeta[floorId];
-    SmartHomeData.saveFloorMeta();
+    // 2) Floor aus dem Projekt löschen
+    delete project.floors[floorId];
 
-    // 3) Floors neu berechnen
-    SmartHomeData.refreshFloors();
-
-    // 4) Editor-State korrigieren
-    if (SmartHomeData.structure.activeFloor === floorId) {
-        SmartHomeData.structure.activeFloor = 0;
-
-        const firstRoom = SmartHomeData.rooms.find(r => r.floor === 0);
-        SmartHomeData.structure.activeRoom = firstRoom ? firstRoom.id : null;
+    // 3) Editor-State korrigieren
+    if (project.rooms[activeRoomId]?.floorId === floorId) {
+        const remainingRooms = Object.values(project.rooms);
+        activeRoomId = remainingRooms.length > 0 ? remainingRooms[0].id : null;
     }
 
-    // 5) UI aktualisieren
-    renderEditorProjectSidebar();
-    updateEditorTitle();
-
-    // 6) Canvas aktualisieren
-    if (SmartHomeData.structure.activeRoom) {
-        RoomDesigner.loadRoom(SmartHomeData.structure.activeRoom);
+    // 4) Editor-Daten + UI aktualisieren
+    if (activeRoomId) {
+        importToEditor();            // lädt neuen aktiven Raum
     } else {
+        // Kein Raum mehr vorhanden
+        const projectEl = document.getElementById("editor-project-name");
+        const floorEl = document.getElementById("editor-floor-name");
+        const roomEl = document.getElementById("editor-room-name");
+
+        if (projectEl) projectEl.textContent = project.meta?.name || "Projekt";
+        if (floorEl) floorEl.textContent = "Etage";
+        if (roomEl) roomEl.textContent = "Raum";
+
         RoomDesigner.clearCanvas();
     }
+
+    renderEditorProjectSidebar();
 }
 
 
@@ -4686,34 +4643,30 @@ renderEditorProjectSidebar();
     }
 }
 
+
 function renderEditorProjectSidebar() {
     const container = document.getElementById("editor-location-list");
     if (!container) return;
 
     container.innerHTML = "";
 
-    // Floors aus SmartHomeData ableiten
-    SmartHomeData.refreshFloors();
+    const activeRoom = activeRoomId;
+    const activeFloor = project.rooms[activeRoom]?.floorId;
 
-    const activeFloor = SmartHomeData.structure.activeFloor;
-    const activeRoom = SmartHomeData.structure.activeRoom;
-
-    SmartHomeData.floors.forEach(floor => {
+    Object.values(project.floors).forEach(floor => {
 
         const group = document.createElement("div");
         group.className = "floor-group";
 
         const floorHeader = document.createElement("div");
         floorHeader.className = "floor-header";
-        floorHeader.textContent = SmartHomeData.getFloorDisplayName(floor.id);
+        floorHeader.textContent = floor.name;
 
-        // Aktive Etage hervorheben
         if (floor.id === activeFloor) {
             floorHeader.classList.add("active-floor");
             group.classList.add("open");
         }
 
-        // Etage einklappbar
         floorHeader.addEventListener("click", (ev) => {
             ev.stopPropagation();
             group.classList.toggle("open");
@@ -4723,25 +4676,23 @@ function renderEditorProjectSidebar() {
         roomList.className = "room-list";
 
         floor.rooms.forEach(roomId => {
-            const room = SmartHomeData.rooms.find(r => r.id === roomId);
+            const room = project.rooms[roomId];
             if (!room) return;
 
             const roomDiv = document.createElement("div");
             roomDiv.className = "room-entry";
             roomDiv.textContent = room.name;
 
-            if (room.id === activeRoom) {
+            if (roomId === activeRoom) {
                 roomDiv.classList.add("active-room");
             }
 
             roomDiv.addEventListener("click", (ev) => {
                 ev.stopPropagation();
 
-                SmartHomeData.structure.activeRoom = room.id;
-                SmartHomeData.structure.activeFloor = room.floor;
+                activeRoomId = roomId;
 
-                updateEditorTitle();
-                RoomDesigner.loadRoom(room.id);
+                importToEditor();
                 renderEditorProjectSidebar();
             });
 
@@ -4905,14 +4856,8 @@ window.addEventListener("DOMContentLoaded", () => {
 
     openBtn.addEventListener("click", () => {
 
-        // -----------------------------------------
-        // 1) Editor-Modus aktivieren (CSS-Schalter)
-        // -----------------------------------------
         document.body.classList.add("editor-mode");
 
-        // -----------------------------------------
-        // SmartHome-UI ausblenden
-        // -----------------------------------------
         const root = document.getElementById("smarthome-root");
         const header = document.getElementById("sh-group-header");
         const minimap = document.getElementById("smarthome-minimap");
@@ -4923,9 +4868,6 @@ window.addEventListener("DOMContentLoaded", () => {
         if (minimap) minimap.style.display = "none";
         if (floorList) floorList.style.display = "none";
 
-        // -----------------------------------------
-        // Editor-Layout einblenden
-        // -----------------------------------------
         const layout = document.getElementById("editor-layout");
         if (layout) layout.style.display = "block";
 
@@ -4938,16 +4880,11 @@ window.addEventListener("DOMContentLoaded", () => {
         const sidebar = document.getElementById("editor-sidebar");
         if (sidebar) sidebar.style.display = "flex";
 
-        // -----------------------------------------
-        // Editor initialisieren
-        // -----------------------------------------
         RoomDesigner.init();
 
-        // ⭐⭐⭐ WICHTIG: Projekt aus SmartHomeData laden ⭐⭐⭐
-        loadProjectFromSmartHomeData();
-
-        // ⭐⭐⭐ Danach Editor-Daten setzen ⭐⭐⭐
-        importToEditor();
+        if (loadProject()) {
+            importToEditor();
+        }
 
         updateEditorTitle();
         enableRoomNameEditing();
@@ -4956,15 +4893,14 @@ window.addEventListener("DOMContentLoaded", () => {
 
         renderEditorProjectSidebar();
 
-        // Aktiven Raum beim Öffnen laden
-        if (activeRoomId) {
-            RoomDesigner.loadRoom(activeRoomId);
+        if (SmartHomeData.structure.activeRoom) {
+            RoomDesigner.loadRoom(SmartHomeData.structure.activeRoom);
         }
 
-        // ⭐⭐⭐ Kontextmenü für Etagen ⭐⭐⭐
         attachFloorCrumbMenu();
     });
 });
+
 
 
 
