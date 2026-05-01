@@ -422,24 +422,38 @@ function exportFromEditor() {
     room.isClosed = RoomDesigner.isClosed;
 
     // Türen
-    project.doors = {};
+    // 1. Alle Türen des aktuellen Raums aus project.doors entfernen
+    for (const id of room.doors) {
+        delete project.doors[id];
+    }
+    
+    // 2. Neue Türen des aktuellen Raums eintragen
     room.doors = [];
-
-    for (const d of RoomDesigner.doors) {
+    
+    for (const d of this.doors) {
         if (!d.id) d.id = createId("door");
+    
         project.doors[d.id] = { ...d };
         room.doors.push(d.id);
     }
 
-    // Fenster
-    project.windows = {};
-    room.windows = [];
 
+    // Fenster
+    // 1. Alte Fenster dieses Raums aus project.windows entfernen
+    for (const id of room.windows) {
+        delete project.windows[id];
+    }
+    
+    // 2. Neue Fenster eintragen
+    room.windows = [];
+    
     for (const w of RoomDesigner.windows) {
         if (!w.id) w.id = createId("window");
+    
         project.windows[w.id] = { ...w };
         room.windows.push(w.id);
     }
+
 
     project.meta.modified = Date.now();
 }
