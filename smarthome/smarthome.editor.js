@@ -308,6 +308,14 @@ function createDeviceModel(id, type, model, deviceId, roomId, x, y, rotation) {
     };
 }
 
+
+function getAllProjects() {
+    const keys = Object.keys(localStorage);
+    return keys
+        .filter(k => k.startsWith("project_"))
+        .map(k => k.replace("project_", ""));
+}
+
 function openProjectMenu(x, y) {
     const items = [];
 
@@ -387,7 +395,31 @@ function deleteProject() {
     renderSidebar();
 }
 
-function switchProject() { alert("Projekt wechseln – folgt"); }
+function switchProject() {
+    const projects = getAllProjects();
+
+    if (projects.length === 0) {
+        alert("Keine weiteren Projekte vorhanden.");
+        return;
+    }
+
+    const name = prompt(
+        "Welches Projekt möchtest du laden?\n\n" +
+        projects.map(p => "- " + p).join("\n")
+    );
+
+    if (!name) return;
+
+    const loaded = loadProject(name);
+    if (!loaded) {
+        alert("Projekt konnte nicht geladen werden.");
+        return;
+    }
+
+    updateEditorTitle();
+    renderSidebar();
+    generateSmartHomeDataFromProject();
+}
 
 
 
