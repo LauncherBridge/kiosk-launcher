@@ -309,6 +309,8 @@ function createDeviceModel(id, type, model, deviceId, roomId, x, y, rotation) {
 }
 
 
+
+
 function getAllProjects() {
     const keys = Object.keys(localStorage);
     return keys
@@ -345,13 +347,22 @@ function renameProject() {
     renderSidebar();
 }
 
-function copyProject() {
-    const clone = JSON.parse(JSON.stringify(project));
-    clone.meta.name = project.meta.name + " (Kopie)";
+function createNewProject() {
+    const name = prompt("Name des neuen Projekts:");
+    if (!name) return;
 
-    saveProjectAs(clone);
-    alert("Projekt wurde kopiert.");
+    project = {
+        meta: { name },
+        floors: {},
+        rooms: {}
+    };
+
+    saveProjectAs(project);   // ⭐ wichtig!
+    updateEditorTitle();
+    renderSidebar();
+    generateSmartHomeDataFromProject();
 }
+
 
 function createNewFloor() {
     const name = prompt("Name der neuen Etage:");
@@ -363,20 +374,25 @@ function createNewFloor() {
 
     saveProject();
     renderSidebar();
+    updateEditorTitle();
+    generateSmartHomeDataFromProject();
 }
 
+
 function createNewProject() {
-    if (!confirm("Neues Projekt erstellen? Ungespeicherte Änderungen gehen verloren.")) return;
+    const name = prompt("Name des neuen Projekts:");
+    if (!name) return;
 
     project = {
-        meta: { name: "Neues Projekt" },
+        meta: { name },
         floors: {},
         rooms: {}
     };
 
-    saveProject();
+    saveProjectAs(project);   // ⭐ wichtig: neues Projekt speichern!
     updateEditorTitle();
     renderSidebar();
+    generateSmartHomeDataFromProject();
 }
 
 function deleteProject() {
@@ -429,9 +445,16 @@ function switchProject() {
 // ------------------------------------------------------------
 function saveProject() {
     project.meta.modified = Date.now();
-    const json = JSON.stringify(project, null, 2);
-    localStorage.setItem("smarthome_project", json);
+    const key = "project_" + project.meta.name;
+    localStorage.setItem(key, JSON.stringify(project));
 }
+
+
+function saveProjectAs(proj) {
+    const key = "project_" + proj.meta.name;
+    localStorage.setItem(key, JSON.stringify(proj));
+}
+
 
 function loadProject() {
     const json = localStorage.getItem("smarthome_project");
