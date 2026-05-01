@@ -512,7 +512,7 @@ function loadProject(name) {
         Object.keys(project).forEach(k => delete project[k]);
         Object.assign(project, data);
 
-        // Falls nötig: Etagen-Grundstruktur sicherstellen
+        // Etagen-Grundstruktur sicherstellen
         if (!project.floors || Object.keys(project.floors).length === 0) {
             project.floors = {
                 "floor_0": {
@@ -538,15 +538,7 @@ function loadProject(name) {
             }
         }
 
-        // Aktiven Raum setzen
-        if (!project.rooms || Object.keys(project.rooms).length === 0) {
-            activeRoomId = "room_1";
-            project.rooms[activeRoomId] = createRoomModel(activeRoomId, "Neuer Raum", "floor_0");
-            project.floors["floor_0"].rooms.push(activeRoomId);
-        } else {
-            activeRoomId = Object.keys(project.rooms)[0];
-        }
-
+        // ⭐ WICHTIG: KEIN activeRoomId setzen!
         return true;
 
     } catch (e) {
