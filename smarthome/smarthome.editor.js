@@ -1195,7 +1195,7 @@ if (hit.type !== "empty") {
         this.canvas.style.cursor = "pointer";
     }
 
-} else {
+ else {
     this.hoverTarget = null;
     this.canvas.style.cursor = "default";        // nichts getroffen
 }
