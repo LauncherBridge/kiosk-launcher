@@ -423,9 +423,41 @@ html, body {
     z-index: 9000;
 }
 
+
+
+
 /* ---------------------------------------------------------
    EDITOR – LINKE SIDEBAR
 --------------------------------------------------------- */
+/* ⭐ Projekt-Header in der linken Sidebar */
+.editor-project-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 10px;
+    border-bottom: 1px solid #ccc;
+    background: #f7f7f7;
+    font-weight: 600;
+}
+
+.editor-project-name {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.editor-project-menu-btn {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 2px 6px;
+    font-size: 16px;
+    line-height: 1;
+}
+
+
+
 
 #editor-sidebar-left {
     position: relative;
