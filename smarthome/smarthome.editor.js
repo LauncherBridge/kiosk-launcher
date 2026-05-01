@@ -4936,7 +4936,7 @@ function renderEditorSidebar() {
     });
 }
 
-saveRoom(roomId) {
+function saveRoom(roomId) {
     if (!roomId || !project.rooms[roomId]) {
         console.warn("[RoomDesigner] saveRoom(): Raum nicht gefunden:", roomId);
         return;
