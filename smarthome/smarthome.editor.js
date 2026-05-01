@@ -4367,11 +4367,18 @@ function updateEditorTitle() {
         proj.textContent = project.meta.name || "Projekt";
     }
 
+    // ⭐ Sidebar-Projektname aktualisieren
+    const projSidebar = document.getElementById("editor-project-name-sidebar");
+    if (projSidebar) {
+        projSidebar.textContent = project.meta.name || "Projekt";
+    }
+
     const roomObj = getActiveRoom();
     if (room && roomObj) {
         room.textContent = roomObj.name || "Raum";
     }
 }
+
 
 // ---------------------------------------------------------
 // Neue Etage erstellen
