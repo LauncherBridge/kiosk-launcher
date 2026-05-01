@@ -37,6 +37,9 @@ const project = {
     devices: {},     // Smart-Home-Geräte
 
     names: {}        // Alias-Namen für Titelzeile/Breadcrumbs
+
+
+
 };
 
 
@@ -1253,6 +1256,38 @@ if (d.type === "dachluke") {
         return null;
     },
 
+saveRoom(roomId) {
+    if (!roomId || !project.rooms[roomId]) {
+        console.warn("[RoomDesigner] saveRoom(): Raum nicht gefunden:", roomId);
+        return;
+    }
+
+    const room = project.rooms[roomId];
+
+    // Polygon speichern
+    room.points = JSON.parse(JSON.stringify(this.points));
+
+    // Türen speichern
+    room.doors = JSON.parse(JSON.stringify(this.doors));
+
+    // Fenster speichern
+    room.windows = JSON.parse(JSON.stringify(this.windows));
+
+    // Raum geschlossen?
+    room.isClosed = this.isClosed === true;
+
+    console.log("[RoomDesigner] Raum gespeichert:", roomId);
+
+    // UI aktualisieren
+    updateEditorTitle();
+    renderEditorProjectSidebar();
+
+    // Persistenz
+    saveProject();
+},
+
+
+    
 onDown(e) {
     const rect = this.canvas.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
@@ -4935,36 +4970,7 @@ function renderEditorSidebar() {
         container.appendChild(addRoom);
     });
 }
-
-function saveRoom(roomId) {
-    if (!roomId || !project.rooms[roomId]) {
-        console.warn("[RoomDesigner] saveRoom(): Raum nicht gefunden:", roomId);
-        return;
-    }
-
-    const room = project.rooms[roomId];
-
-    // Polygon speichern
-    room.points = JSON.parse(JSON.stringify(this.points));
-
-    // Türen speichern
-    room.doors = JSON.parse(JSON.stringify(this.doors));
-
-    // Fenster speichern
-    room.windows = JSON.parse(JSON.stringify(this.windows));
-
-    // Raum geschlossen?
-    room.isClosed = this.isClosed === true;
-
-    console.log("[RoomDesigner] Raum gespeichert:", roomId);
-
-    // UI aktualisieren
-    updateEditorTitle();
-    renderEditorProjectSidebar();
-
-    // Persistenz
-    saveProject();
-}
+ 
 
 
 
