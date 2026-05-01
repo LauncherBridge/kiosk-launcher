@@ -433,25 +433,39 @@ function switchProject() {
     modal.classList.remove("hidden");
 
     // Laden
-    loadBtn.onclick = () => {
-        const name = list.value;
-        if (!name) return;
+loadBtn.onclick = () => {
+    const name = list.value;
+    if (!name) return;
 
-        const loaded = loadProject(name);
-        if (!loaded) {
-            alert("Projekt konnte nicht geladen werden.");
-            return;
-        }
+    const loaded = loadProject(name);
+    if (!loaded) {
+        alert("Projekt konnte nicht geladen werden.");
+        return;
+    }
 
+    modal.classList.add("hidden");
+
+    // ⭐ ERSTER RAUM WIRD AUTOMATISCH GEWÄHLT
+    const roomIds = Object.keys(project.rooms);
+    if (roomIds.length > 0) {
+        activeRoomId = roomIds[0];
+    } else {
         activeRoomId = null;
+    }
+
+    updateEditorTitle();
+    renderSidebar();
+    generateSmartHomeDataFromProject();
+
+    // ⭐ Wenn ein Raum existiert → rendern
+    if (activeRoomId) {
+        RoomDesigner.render();
+    } else {
         clearCanvas();
         showNoRoomMessage();
+    }
+};
 
-        modal.classList.add("hidden");
-        updateEditorTitle();
-        renderSidebar();
-        generateSmartHomeDataFromProject();
-    };
 
     // Abbrechen
     cancelBtn.onclick = () => {
@@ -538,7 +552,6 @@ function loadProject(name) {
             }
         }
 
-        // ⭐ WICHTIG: KEIN activeRoomId setzen!
         return true;
 
     } catch (e) {
@@ -546,6 +559,7 @@ function loadProject(name) {
         return false;
     }
 }
+
 
 
 
