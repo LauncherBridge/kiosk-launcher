@@ -56,24 +56,7 @@ function initContextMenuSystem() {
     contextMenuEl = document.getElementById("context-menu");
 }
 
-function openProjectMenu(x, y) {
-    const items = [];
 
-    // ⭐ Nur im Editor sichtbar
-    if (document.body.classList.contains("editor-mode")) {
-        items.push({ label: "Projekt umbenennen", action: renameProject });
-        items.push({ label: "Projekt kopieren", action: copyProject });
-        items.push({ label: "Neue Etage", action: createNewFloor });
-        items.push({ label: "Neues Projekt", action: createNewProject });
-        items.push({ label: "Projekt löschen", action: deleteProject });
-        items.push({ separator: true });
-    }
-
-    // ⭐ Immer sichtbar (SmartHome + Editor)
-    items.push({ label: "Projekt wechseln", action: switchProject });
-
-    openContextMenu(x, y, items);
-}
 
 
 
@@ -325,7 +308,24 @@ function createDeviceModel(id, type, model, deviceId, roomId, x, y, rotation) {
     };
 }
 
+function openProjectMenu(x, y) {
+    const items = [];
 
+    // ⭐ Nur im Editor sichtbar
+    if (document.body.classList.contains("editor-mode")) {
+        items.push({ label: "Projekt umbenennen", action: renameProject });
+        items.push({ label: "Projekt kopieren", action: copyProject });
+        items.push({ label: "Neue Etage", action: createNewFloor });
+        items.push({ label: "Neues Projekt", action: createNewProject });
+        items.push({ label: "Projekt löschen", action: deleteProject });
+        items.push({ separator: true });
+    }
+
+    // ⭐ Immer sichtbar (SmartHome + Editor)
+    items.push({ label: "Projekt wechseln", action: switchProject });
+
+    openContextMenu(x, y, items);
+}
 
 function renameProject() { alert("renameProject() – folgt"); }
 function copyProject() { alert("copyProject() – folgt"); }
