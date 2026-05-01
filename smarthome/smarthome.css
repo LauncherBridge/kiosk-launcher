@@ -429,40 +429,40 @@ html, body {
 /* ---------------------------------------------------------
    EDITOR – LINKE SIDEBAR
 --------------------------------------------------------- */
-/* ⭐ Projekt-Header in der linken Sidebar */
-.editor-project-header {
+/* ⭐ Projekt-Header (linke Sidebar) */
+.project-header {
+    padding: 10px;
+    background: rgba(255,255,255,0.08); /* wie Etagen */
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 6px;
+    font-weight: bold;
+    color: #fff;
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    padding: 8px 10px;
-    background: #2b2b2b;        /* wie Etagen/Räume */
-    color: #fff;                /* weiße Schrift */
-    border: 1px solid #444;     /* gleiche Border */
-    border-radius: 6px;         /* gleiche Rundung */
-    margin-bottom: 8px;         /* Abstand nach unten */
+    align-items: center;
+    margin-bottom: 12px;
 }
 
 /* Projektname */
-.editor-project-name {
+.project-name {
     flex: 1;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    font-weight: 600;
 }
 
 /* Drei-Punkte-Menü */
-.editor-project-menu-btn {
-    border: none;
-    background: transparent;
+.project-menu-btn {
     cursor: pointer;
-    padding: 4px 6px;
-    font-size: 18px;
-    color: #ccc;                /* helle Punkte */
+    color: #ccc;
+    font-size: 20px;
+    padding: 4px;
+    border-radius: 4px;
 }
 
-.editor-project-menu-btn:hover {
-    color: #fff;                /* beim Hover weiß */
+.project-menu-btn:hover {
+    background: rgba(255,255,255,0.12);
+    color: #fff;
 }
 
 
