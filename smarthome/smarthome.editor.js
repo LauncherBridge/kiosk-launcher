@@ -678,10 +678,7 @@ init() {
 
     this.resize();
     this.render();
-}
-
-
-,
+},
 
     resize() {
         this.canvas.width = window.innerWidth;
@@ -735,50 +732,54 @@ showContextMenu(x, y, type, index) {
     // ------------------------------------------------------------
     // ⭐ POINT
     // ------------------------------------------------------------
-if (type === "point") {
+    if (type === "point") {
 
-    this.addContextButton("🗑", () => {
+        this.addContextButton("🗑", () => {
 
-        const prevWall = index - 1;
-        const nextWall = index;
+            const prevWall = index - 1;
+            const nextWall = index;
 
-        const affectedDoors = this.doors.filter(d => d.wallIndex === prevWall || d.wallIndex === nextWall);
-        const affectedWindows = this.windows.filter(w => w.wallIndex === prevWall || w.wallIndex === nextWall);
+            const affectedDoors = this.doors.filter(d => d.wallIndex === prevWall || d.wallIndex === nextWall);
+            const affectedWindows = this.windows.filter(w => w.wallIndex === prevWall || w.wallIndex === nextWall);
 
-        const p = this.points[index];
-        this.points = this.points.filter(pt => pt !== p);
+            const p = this.points[index];
+            this.points = this.points.filter(pt => pt !== p);
 
-        if (this.points.length < 3) {
-            this.isClosed = false;
-        }
+            if (this.points.length < 3) {
+                this.isClosed = false;
+            }
 
-        this.updateWalls();
+            this.updateWalls();
 
-        const newWallIndex = prevWall;
+            const newWallIndex = prevWall;
 
-        for (const d of affectedDoors) {
-            const w = this.walls[newWallIndex];
-            if (!w) continue;
-            const proj = this.projectOnWall(d.x, d.y, w);
-            d.wallIndex = newWallIndex;
-            d.t = proj.t;
-            d.x = proj.x;
-            d.y = proj.y;
-        }
+            for (const d of affectedDoors) {
+                const w = this.walls[newWallIndex];
+                if (!w) continue;
+                const proj = this.projectOnWall(d.x, d.y, w);
+                d.wallIndex = newWallIndex;
+                d.t = proj.t;
+                d.x = proj.x;
+                d.y = proj.y;
+            }
 
-        for (const win of affectedWindows) {
-            const w = this.walls[newWallIndex];
-            if (!w) continue;
-            const proj = this.projectOnWall(win.x, win.y, w);
-            win.wallIndex = newWallIndex;
-            win.t = proj.t;
-            win.x = proj.x;
-            win.y = proj.y;
-        }
+            for (const win of affectedWindows) {
+                const w = this.walls[newWallIndex];
+                if (!w) continue;
+                const proj = this.projectOnWall(win.x, win.y, w);
+                win.wallIndex = newWallIndex;
+                win.t = proj.t;
+                win.x = proj.x;
+                win.y = proj.y;
+            }
 
-        this.render();
-    }, true);
-}
+            this.render();
+
+            // ⭐ Autosave
+            this.saveRoom(activeRoomId);
+
+        }, true);
+    }
 
 
     // ------------------------------------------------------------
@@ -789,44 +790,49 @@ if (type === "point") {
         const d = this.doors[index];
 
         // ⭐ DACHLUKE → eigenes Menü + Scharnier neu setzen
-if (d.type === "dachluke") {
+        if (d.type === "dachluke") {
 
-    // Zustand ändern (offen/geschlossen)
-    this.addContextButton(d.isOpen ? "🔒" : "🔓", () => {
-        d.isOpen = !d.isOpen;
-        this.render();
-    }, false);
+            // Zustand ändern (offen/geschlossen)
+            this.addContextButton(d.isOpen ? "🔒" : "🔓", () => {
+                d.isOpen = !d.isOpen;
+                this.render();
+                this.saveRoom(activeRoomId);   // ⭐ Autosave
+            }, false);
 
-    // Scharnier neu setzen
-    this.addContextButton("⟲", () => {
-        this.mode = "setHinge";
-        this._hingeDoorIndex = index;
-        this.hideContextMenu();
-        this.render();
-    }, true);
+            // Scharnier neu setzen
+            this.addContextButton("⟲", () => {
+                this.mode = "setHinge";
+                this._hingeDoorIndex = index;
+                this.hideContextMenu();
+                this.render();
+                // ⭐ Autosave (Hinge-Wechsel ist final)
+                this.saveRoom(activeRoomId);
+            }, true);
 
-    // Breite +
-    this.addContextButton("＋", () => {
-        d.width += 10;
-        this.updateWalls();
-        this.render();
-    }, false);
+            // Breite +
+            this.addContextButton("＋", () => {
+                d.width += 10;
+                this.updateWalls();
+                this.render();
+                this.saveRoom(activeRoomId);   // ⭐ Autosave
+            }, false);
 
-    // Breite –
-    this.addContextButton("－", () => {
-        d.width = Math.max(20, d.width - 10);
-        this.updateWalls();
-        this.render();
-    }, false);
+            // Breite –
+            this.addContextButton("－", () => {
+                d.width = Math.max(20, d.width - 10);
+                this.updateWalls();
+                this.render();
+                this.saveRoom(activeRoomId);   // ⭐ Autosave
+            }, false);
 
-    // Löschen
-    this.addContextButton("🗑", () => {
-        this.doors.splice(index, 1);
-        this.updateWalls();
-        this.render();
-    }, true);
-}
-
+            // Löschen
+            this.addContextButton("🗑", () => {
+                this.doors.splice(index, 1);
+                this.updateWalls();
+                this.render();
+                this.saveRoom(activeRoomId);   // ⭐ Autosave
+            }, true);
+        }
 
         // ⭐ NORMALE TÜREN
         else {
@@ -835,6 +841,7 @@ if (d.type === "dachluke") {
                 this.addContextButton(d.isOpen ? "🔒" : "🔓", () => {
                     d.isOpen = !d.isOpen;
                     this.render();
+                    this.saveRoom(activeRoomId);   // ⭐ Autosave
                 }, false);
             }
 
@@ -854,6 +861,7 @@ if (d.type === "dachluke") {
                     this._hingeDoorIndex = index;
                     this.hideContextMenu();
                     this.render();
+                    this.saveRoom(activeRoomId);   // ⭐ Autosave
                 }, true);
             }
 
@@ -861,18 +869,21 @@ if (d.type === "dachluke") {
                 d.width += 10;
                 this.updateWalls();
                 this.render();
+                this.saveRoom(activeRoomId);   // ⭐ Autosave
             }, false);
 
             this.addContextButton("－", () => {
                 d.width = Math.max(20, d.width - 10);
                 this.updateWalls();
                 this.render();
+                this.saveRoom(activeRoomId);   // ⭐ Autosave
             }, false);
 
             this.addContextButton("🗑", () => {
                 this.doors.splice(index, 1);
                 this.updateWalls();
                 this.render();
+                this.saveRoom(activeRoomId);   // ⭐ Autosave
             }, true);
         }
     }
@@ -888,18 +899,21 @@ if (d.type === "dachluke") {
             w.width += 10;
             this.updateWalls();
             this.render();
+            this.saveRoom(activeRoomId);   // ⭐ Autosave
         }, false);
 
         this.addContextButton("－", () => {
             w.width = Math.max(20, w.width - 10);
             this.updateWalls();
             this.render();
+            this.saveRoom(activeRoomId);   // ⭐ Autosave
         }, false);
 
         this.addContextButton("🗑", () => {
             this.windows.splice(index, 1);
             this.updateWalls();
             this.render();
+            this.saveRoom(activeRoomId);   // ⭐ Autosave
         }, true);
     }
 
@@ -932,38 +946,49 @@ if (d.type === "dachluke") {
 
     menu.style.left = left + "px";
     menu.style.top = top + "px";
-},
+}
+,
     
 
-    addContextButton(label, fn, closeMenu = false) {
-        const btn = document.createElement("button");
-        btn.textContent = label;
-        btn.style.width = "32px";
-        btn.style.height = "32px";
-        btn.style.fontSize = "18px";
-        btn.style.border = "none";
-        btn.style.borderRadius = "4px";
-        btn.style.background = "#444";
-        btn.style.color = "#fff";
-        btn.style.cursor = "pointer";
+addContextButton(label, fn, closeMenu = false) {
+    const btn = document.createElement("button");
+    btn.textContent = label;
+    btn.style.width = "32px";
+    btn.style.height = "32px";
+    btn.style.fontSize = "18px";
+    btn.style.border = "none";
+    btn.style.borderRadius = "4px";
+    btn.style.background = "#444";
+    btn.style.color = "#fff";
+    btn.style.cursor = "pointer";
 
-        btn.addEventListener("click", () => {
+    btn.addEventListener("click", () => {
 
-            // PLUS / MINUS → Menü bleibt offen
-            if (!closeMenu) {
-                fn && fn();
-                return;
-            }
-
-            // DELETE → Menü schließen
-            this._closingByButton = true;
+        // PLUS / MINUS → Menü bleibt offen
+        if (!closeMenu) {
             fn && fn();
-            this.hideContextMenu();
-            this._closingByButton = false;
-        });
 
-        this.contextMenuEl.appendChild(btn);
-    },
+            // ⭐ Autosave für alle Änderungen
+            this.saveRoom(activeRoomId);
+
+            return;
+        }
+
+        // DELETE / HINGE → Menü schließen
+        this._closingByButton = true;
+
+        fn && fn();
+
+        // ⭐ Autosave für alle finalen Aktionen
+        this.saveRoom(activeRoomId);
+
+        this.hideContextMenu();
+        this._closingByButton = false;
+    });
+
+    this.contextMenuEl.appendChild(btn);
+}
+,
 
     onMove(e) {
         const rect = this.canvas.getBoundingClientRect();
@@ -1242,55 +1267,58 @@ onDown(e) {
         return;
     }
 
-// ------------------------------------------------------------
-// ⭐ SCHARNIER NEU SETZEN (für normale Türen, NICHT Dachluke)
-// ------------------------------------------------------------
-if (this.mode === "setHinge") {
+    // ------------------------------------------------------------
+    // ⭐ SCHARNIER NEU SETZEN (für normale Türen, NICHT Dachluke)
+    // ------------------------------------------------------------
+    if (this.mode === "setHinge") {
 
-    const d = this.doors[this._hingeDoorIndex];
+        const d = this.doors[this._hingeDoorIndex];
 
-    if (!d) {
-        this.mode = "points";
-        this._hingeDoorIndex = null;
-        return;
-    }
+        if (!d) {
+            this.mode = "points";
+            this._hingeDoorIndex = null;
+            return;
+        }
 
-    // ⭐ Dachluke → hingeAngle setzen
-    if (d.type === "dachluke") {
+        // ⭐ Dachluke → hingeAngle setzen
+        if (d.type === "dachluke") {
 
-        // Winkel relativ zur Luke berechnen
-        const dx = worldX - d.x;
-        const dy = worldY - d.y;
-        d.hingeAngle = Math.atan2(dy, dx);
+            const dx = worldX - d.x;
+            const dy = worldY - d.y;
+            d.hingeAngle = Math.atan2(dy, dx);
+
+            this.mode = "points";
+            this._hingeDoorIndex = null;
+            this.render();
+
+            // ⭐ Autosave
+            this.saveRoom(activeRoomId);
+
+            return;
+        }
+
+        // ⭐ Normale Türen → setDoorHingeFromTap
+        const w = this.walls[d.wallIndex];
+        if (w) {
+            this.setDoorHingeFromTap(d, worldX, worldY, w);
+        }
 
         this.mode = "points";
         this._hingeDoorIndex = null;
         this.render();
+
+        // ⭐ Autosave
+        this.saveRoom(activeRoomId);
+
         return;
     }
-
-    // ⭐ Normale Türen → setDoorHingeFromTap
-    const w = this.walls[d.wallIndex];
-    if (w) {
-        this.setDoorHingeFromTap(d, worldX, worldY, w);
-    }
-
-    this.mode = "points";
-    this._hingeDoorIndex = null;
-    isOpen: true;
-    this.render();
-    return;
-}
-
-
-
-
 
     // ------------------------------------------------------------
     // ⭐ DACHLUKE: 1. Klick = Luke setzen, 2. Klick = Scharnier setzen
     // ------------------------------------------------------------
     if (this.mode === "dachluke") {
 
+        // 1. Klick → Luke setzen
         if (!this._placingDachluke) {
 
             if (!this.isClosed) {
@@ -1314,9 +1342,14 @@ if (this.mode === "setHinge") {
 
             this._placingDachluke = true;
             this.render();
+
+            // ⭐ Autosave
+            this.saveRoom(activeRoomId);
+
             return;
         }
 
+        // 2. Klick → hingeAngle setzen
         const d = this.doors[this.doors.length - 1];
 
         const dx = worldX - d.x;
@@ -1326,6 +1359,10 @@ if (this.mode === "setHinge") {
         this._placingDachluke = false;
         this.mode = "points";
         this.render();
+
+        // ⭐ Autosave
+        this.saveRoom(activeRoomId);
+
         return;
     }
 
@@ -1371,6 +1408,9 @@ if (this.mode === "setHinge") {
             this.isDragging = false;
             this.selectedPoint = null;
 
+            // ⭐ Autosave
+            this.saveRoom(activeRoomId);
+
             return;
         }
     }
@@ -1396,6 +1436,9 @@ if (this.mode === "setHinge") {
             });
             this.updateWalls();
             this.render();
+
+            // ⭐ Autosave
+            this.saveRoom(activeRoomId);
         }
 
         this.mode = "points";
@@ -1408,7 +1451,6 @@ if (this.mode === "setHinge") {
     if (this.mode === "doors") {
 
         const type = this.currentDoorType || "default";
-isOpen: true
 
         // ⭐ Durchgang → 1 Klick
         if (type === "durchgang") {
@@ -1435,13 +1477,16 @@ isOpen: true
                 x: cx,
                 y: cy,
                 width: defaultWidth,
-               hingeAngle: 0, // hinge: null,
-                    type: type,
+                hingeAngle: 0,
                 side: null
             });
 
             this.render();
             this.mode = "points";
+
+            // ⭐ Autosave
+            this.saveRoom(activeRoomId);
+
             return;
         }
 
@@ -1461,6 +1506,10 @@ isOpen: true
                 });
                 this._placingDoor = true;
                 this.render();
+
+                // ⭐ Autosave
+                this.saveRoom(activeRoomId);
+
                 return;
             }
         }
@@ -1474,6 +1523,10 @@ isOpen: true
             this._placingDoor = false;
             this.mode = "points";
             this.render();
+
+            // ⭐ Autosave
+            this.saveRoom(activeRoomId);
+
             return;
         }
     }
@@ -1513,6 +1566,10 @@ isOpen: true
 
         this.updateWalls();
         this.render();
+
+        // ⭐ Autosave
+        this.saveRoom(activeRoomId);
+
         return;
     }
 
@@ -1539,122 +1596,143 @@ isOpen: true
         this.panStartX = mouseX;
         this.panStartY = mouseY;
     }
-},
+}
+,
 
 
-    onUp(e) {
-        // Wenn gerade gesnapped wurde → Klick komplett ignorieren
-        if (this._justSnapped) {
-            this._justSnapped = false;
-            this._pendingNewPoint = null;
-            return;
-        }
+onUp(e) {
+    // Wenn gerade gesnapped wurde → Klick komplett ignorieren
+    if (this._justSnapped) {
+        this._justSnapped = false;
+        this._pendingNewPoint = null;
+        return;
+    }
 
-        this.isPanCandidate = false;
+    this.isPanCandidate = false;
 
-        // PAN END
-        if (this.isPanning) {
-            this.isPanning = false;
-            return;
-        }
+    // PAN END
+    if (this.isPanning) {
+        this.isPanning = false;
+        return;
+    }
 
-        // DRAG END
-        if (this.isDragging) {
+    // ------------------------------------------------------------
+    // ⭐ DRAG END
+    // ------------------------------------------------------------
+    if (this.isDragging) {
 
-            // --- SNAP beim Loslassen ---
-            if (this._snapCandidate) {
-                const first = this.points[0];
-                const lastIndex = this.points.length - 1;
+        // --- SNAP beim Loslassen ---
+        if (this._snapCandidate) {
+            const first = this.points[0];
+            const lastIndex = this.points.length - 1;
 
-                // letzten Punkt entfernen
-                this.points.splice(lastIndex, 1);
+            // letzten Punkt entfernen
+            this.points.splice(lastIndex, 1);
 
-                // erster Punkt wird der aktive Punkt
-                this.selectedPoint = first;
+            // erster Punkt wird der aktive Punkt
+            this.selectedPoint = first;
 
-                this.isClosed = true;
-                this._snapCandidate = false;
+            this.isClosed = true;
+            this._snapCandidate = false;
 
-                this.updateWalls();
-                this.render();
+            this.updateWalls();
+            this.render();
 
-                this.isDragging = false;
-                return;
-            }
-
-            // Normaler Drag-Ende
             this.isDragging = false;
-            this.selectedPoint = null;
-            this.draggingDoorIndex = null;
-            this.draggingWindowIndex = null;
-            this._pendingContext = null;
+
+            // ⭐ Autosave: Polygon geschlossen
+            this.saveRoom(activeRoomId);
+
             return;
         }
 
-        // ------------------------------------------------------------
-        // ⭐ Kontext / Klick auf Elemente
-        // ------------------------------------------------------------
-        if (this._pendingContext) {
-            const c = this._pendingContext;
-            this._pendingContext = null;
-        
-            // ⭐ Dachluke: NICHT ins Kontextmenü → Zustand toggeln
-            if (c.type === "dachluke") {
-                const d = this.doors[c.index];
-                if (d && d.type === "dachluke") {
-                    d.isOpen = !d.isOpen;   // Zustand wechseln
-                    this.render();
-                }
-                return;
-            }
-        
-            // ⭐ Alle anderen Elemente → Kontextmenü wie bisher
-            const screenX = (c.x + this.offsetX) * this.zoom;
-            const screenY = (c.y + this.offsetY) * this.zoom;
-        
-            this.showContextMenu(screenX, screenY, c.type, c.index);
-            return;
-        }
+        // Normaler Drag-Ende
+        this.isDragging = false;
+        this.selectedPoint = null;
+        this.draggingDoorIndex = null;
+        this.draggingWindowIndex = null;
+        this._pendingContext = null;
 
+        // ⭐ Autosave: Punkt/Tür/Fenster final verschoben
+        this.saveRoom(activeRoomId);
 
-        // Wenn bereits ein Timer läuft → das hier ist der zweite Klick → Doppelklick
-        if (this._clickTimer) {
-            clearTimeout(this._clickTimer);
-            this._clickTimer = null;
-            this._pendingNewPoint = null; // keinen Punkt setzen
-            return; // Doppelklick → Zoom übernimmt
-        }
+        return;
+    }
 
-        // Erster Klick → Timer starten
-        this._clickTimer = setTimeout(() => {
+    // ------------------------------------------------------------
+    // ⭐ Kontext / Klick auf Elemente
+    // ------------------------------------------------------------
+    if (this._pendingContext) {
+        const c = this._pendingContext;
+        this._pendingContext = null;
 
-            // Timer abgelaufen → es war ein einfacher Klick
-            this._clickTimer = null;
-
-            if (!this.isClosed && this._pendingNewPoint) {
-
-                let px = this._pendingNewPoint.x;
-                let py = this._pendingNewPoint.y;
-
-                // NEU: Snap auf ersten Punkt beim Setzen
-                if (this.points.length > 0) {
-                    const first = this.points[0];
-                    if (Math.hypot(px - first.x, py - first.y) < 20) {
-                        px = first.x;
-                        py = first.y;
-                    }
-                }
-
-                this.points.push({ x: px, y: py });
-                this._pendingNewPoint = null;
-                this.updateWalls();
+        // ⭐ Dachluke: NICHT ins Kontextmenü → Zustand toggeln
+        if (c.type === "dachluke") {
+            const d = this.doors[c.index];
+            if (d && d.type === "dachluke") {
+                d.isOpen = !d.isOpen;   // Zustand wechseln
                 this.render();
+                this.saveRoom(activeRoomId);   // ⭐ Autosave
+
+                // ⭐ Autosave: Dachluke toggeln
+                this.saveRoom(activeRoomId);
+            }
+            return;
+        }
+
+        // ⭐ Alle anderen Elemente → Kontextmenü wie bisher
+        const screenX = (c.x + this.offsetX) * this.zoom;
+        const screenY = (c.y + this.offsetY) * this.zoom;
+
+        this.showContextMenu(screenX, screenY, c.type, c.index);
+        return;
+    }
+
+    // ------------------------------------------------------------
+    // ⭐ Doppelklick → Zoom übernimmt
+    // ------------------------------------------------------------
+    if (this._clickTimer) {
+        clearTimeout(this._clickTimer);
+        this._clickTimer = null;
+        this._pendingNewPoint = null;
+        return;
+    }
+
+    // ------------------------------------------------------------
+    // ⭐ Einfacher Klick → Punkt setzen
+    // ------------------------------------------------------------
+    this._clickTimer = setTimeout(() => {
+
+        this._clickTimer = null;
+
+        if (!this.isClosed && this._pendingNewPoint) {
+
+            let px = this._pendingNewPoint.x;
+            let py = this._pendingNewPoint.y;
+
+            // Snap auf ersten Punkt beim Setzen
+            if (this.points.length > 0) {
+                const first = this.points[0];
+                if (Math.hypot(px - first.x, py - first.y) < 20) {
+                    px = first.x;
+                    py = first.y;
+                }
             }
 
+            this.points.push({ x: px, y: py });
             this._pendingNewPoint = null;
+            this.updateWalls();
+            this.render();
 
-        }, 220); // 220ms = Standard-Doppelklick-Fenster
-    },
+            // ⭐ Autosave: Punkt final gesetzt
+            this.saveRoom(activeRoomId);
+        }
+
+        this._pendingNewPoint = null;
+
+    }, 220); // 220ms = Standard-Doppelklick-Fenster
+}
+,
 
     // --------------------------------------------------
     // Zoom per Mausrad
@@ -4858,6 +4936,35 @@ function renderEditorSidebar() {
     });
 }
 
+saveRoom(roomId) {
+    if (!roomId || !project.rooms[roomId]) {
+        console.warn("[RoomDesigner] saveRoom(): Raum nicht gefunden:", roomId);
+        return;
+    }
+
+    const room = project.rooms[roomId];
+
+    // Polygon speichern
+    room.points = JSON.parse(JSON.stringify(this.points));
+
+    // Türen speichern
+    room.doors = JSON.parse(JSON.stringify(this.doors));
+
+    // Fenster speichern
+    room.windows = JSON.parse(JSON.stringify(this.windows));
+
+    // Raum geschlossen?
+    room.isClosed = this.isClosed === true;
+
+    console.log("[RoomDesigner] Raum gespeichert:", roomId);
+
+    // UI aktualisieren
+    updateEditorTitle();
+    renderEditorProjectSidebar();
+
+    // Persistenz
+    saveProject();
+}
 
 
 
