@@ -369,97 +369,6 @@ function loadProject() {
 }
 
 
-
-
-
-
-// ------------------------------------------------------------
-// Editor <-> Projekt Mapping
-// ------------------------------------------------------------
-
-// Editor → Projekt
-function exportFromEditor() {
-
-    if (!activeRoomId) return;
-
-    // Raum erzeugen falls nicht vorhanden
-    if (!project.rooms[activeRoomId]) {
-
-        // ⭐ floorId korrekt setzen
-        const defaultFloorId = Object.keys(project.floors)[0] || "floor_0";
-
-        project.rooms[activeRoomId] = createRoomModel(
-            activeRoomId,
-            "Raum",
-            defaultFloorId
-        );
-
-        // Raum in Etage eintragen
-        if (!project.floors[defaultFloorId].rooms.includes(activeRoomId)) {
-            project.floors[defaultFloorId].rooms.push(activeRoomId);
-        }
-    }
-
-    const room = project.rooms[activeRoomId];
-
-    // ⭐ Raumname speichern
-    const el = document.getElementById("editor-room-name");
-    if (el) {
-        room.name = el.textContent.trim();
-    }
-
-    // ⭐ Etagenname speichern
-    const floorEl = document.getElementById("editor-floor-name");
-    if (floorEl) {
-        const floor = project.floors?.[room.floorId];
-        if (floor) {
-            floor.name = floorEl.textContent.trim();
-        }
-    }
-
-    // Punkte
-    room.points = RoomDesigner.points.map(p => ({ x: p.x, y: p.y }));
-    room.isClosed = RoomDesigner.isClosed;
-
-    // Türen
-    // 1. Alle Türen des aktuellen Raums aus project.doors entfernen
-    for (const id of room.doors) {
-        delete project.doors[id];
-    }
-    
-    // 2. Neue Türen des aktuellen Raums eintragen
-    room.doors = [];
-    
-    for (const d of this.doors) {
-        if (!d.id) d.id = createId("door");
-    
-        project.doors[d.id] = { ...d };
-        room.doors.push(d.id);
-    }
-
-
-    // Fenster
-    // 1. Alte Fenster dieses Raums aus project.windows entfernen
-    for (const id of room.windows) {
-        delete project.windows[id];
-    }
-    
-    // 2. Neue Fenster eintragen
-    room.windows = [];
-    
-    for (const w of RoomDesigner.windows) {
-        if (!w.id) w.id = createId("window");
-    
-        project.windows[w.id] = { ...w };
-        room.windows.push(w.id);
-    }
-
-
-    project.meta.modified = Date.now();
-}
-
-
-
 // Projekt → Editor
 function importToEditor() {
 
@@ -526,7 +435,7 @@ function importToEditor() {
 // Manuelles Speichern des aktuellen Editor-Zustands
 // ------------------------------------------------------------
 function saveCurrentRoom() {
-    exportFromEditor();
+    this.exportFromEditor();
     saveProject();
     console.log("[Persistenz] Projekt gespeichert.");
 }
@@ -668,7 +577,7 @@ init() {
     importToEditor();
 
     // Editor-Daten zurück ins Projekt schreiben
-    exportFromEditor();
+    this.exportFromEditor();
 
     // Jetzt erst SmartHomeData generieren
     generateSmartHomeDataFromProject();
@@ -1277,7 +1186,7 @@ saveRoom(roomId) {
     }
 
     // Editor → Projekt (inkl. Türen/Fenster/Points/isClosed)
-    exportFromEditor();
+    this.exportFromEditor();
 
     // Projekt persistieren
     saveProject();
@@ -4145,6 +4054,91 @@ if (tool === "dachluke") {
             alert("Fehler beim Import: " + e.message);
         }
     },
+
+    // ------------------------------------------------------------
+// Editor <-> Projekt Mapping
+// ------------------------------------------------------------
+
+// Editor → Projekt
+exportFromEditor() {
+
+    if (!activeRoomId) return;
+
+    // Raum erzeugen falls nicht vorhanden
+    if (!project.rooms[activeRoomId]) {
+
+        // ⭐ floorId korrekt setzen
+        const defaultFloorId = Object.keys(project.floors)[0] || "floor_0";
+
+        project.rooms[activeRoomId] = createRoomModel(
+            activeRoomId,
+            "Raum",
+            defaultFloorId
+        );
+
+        // Raum in Etage eintragen
+        if (!project.floors[defaultFloorId].rooms.includes(activeRoomId)) {
+            project.floors[defaultFloorId].rooms.push(activeRoomId);
+        }
+    }
+
+    const room = project.rooms[activeRoomId];
+
+    // ⭐ Raumname speichern
+    const el = document.getElementById("editor-room-name");
+    if (el) {
+        room.name = el.textContent.trim();
+    }
+
+    // ⭐ Etagenname speichern
+    const floorEl = document.getElementById("editor-floor-name");
+    if (floorEl) {
+        const floor = project.floors?.[room.floorId];
+        if (floor) {
+            floor.name = floorEl.textContent.trim();
+        }
+    }
+
+    // Punkte
+    room.points = RoomDesigner.points.map(p => ({ x: p.x, y: p.y }));
+    room.isClosed = RoomDesigner.isClosed;
+
+    // Türen
+    // 1. Alle Türen des aktuellen Raums aus project.doors entfernen
+    for (const id of room.doors) {
+        delete project.doors[id];
+    }
+    
+    // 2. Neue Türen des aktuellen Raums eintragen
+    room.doors = [];
+    
+    for (const d of this.doors) {
+        if (!d.id) d.id = createId("door");
+    
+        project.doors[d.id] = { ...d };
+        room.doors.push(d.id);
+    }
+
+
+    // Fenster
+    // 1. Alte Fenster dieses Raums aus project.windows entfernen
+    for (const id of room.windows) {
+        delete project.windows[id];
+    }
+    
+    // 2. Neue Fenster eintragen
+    room.windows = [];
+    
+    for (const w of RoomDesigner.windows) {
+        if (!w.id) w.id = createId("window");
+    
+        project.windows[w.id] = { ...w };
+        room.windows.push(w.id);
+    }
+
+
+    project.meta.modified = Date.now();
+},
 
     // --------------------------------------------------
     // Sync
