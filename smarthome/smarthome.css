@@ -429,8 +429,8 @@ html, body {
 /* ---------------------------------------------------------
    EDITOR – LINKE SIDEBAR
 --------------------------------------------------------- */
-/* ⭐ Projekt-Header (linke Sidebar) */
-.project-header {
+/* ⭐ Projekt-Header (linke Sidebar, eindeutig) */
+.editor-projectbox {
     padding: 10px;
     background: rgba(255,255,255,0.08); /* wie Etagen */
     border: 1px solid rgba(255,255,255,0.15);
@@ -444,7 +444,7 @@ html, body {
 }
 
 /* Projektname */
-.project-name {
+.editor-projectbox-name {
     flex: 1;
     white-space: nowrap;
     overflow: hidden;
@@ -452,7 +452,7 @@ html, body {
 }
 
 /* Drei-Punkte-Menü */
-.project-menu-btn {
+.editor-projectbox-menu {
     cursor: pointer;
     color: #ccc;
     font-size: 20px;
@@ -460,10 +460,11 @@ html, body {
     border-radius: 4px;
 }
 
-.project-menu-btn:hover {
+.editor-projectbox-menu:hover {
     background: rgba(255,255,255,0.12);
     color: #fff;
 }
+
 
 
 
