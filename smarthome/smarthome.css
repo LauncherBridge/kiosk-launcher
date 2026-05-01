@@ -726,6 +726,12 @@ html, body {
 body.editor-mode #sh-floor-list {
     display: none !important;
 }
+/* Drei-Punkte-Menü nur im Editor anzeigen */
+body:not(.editor-mode) #editor-project-menu-btn-sidebar {
+    display: none !important;
+}
+
+
 
 body.editor-mode #btnOpenEditor,
 body.editor-mode .editor-btn {
