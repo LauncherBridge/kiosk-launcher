@@ -2083,27 +2083,7 @@ onUp(e) {
     // Wände aktualisieren
     // --------------------------------------------------
     updateWalls() {
-
-// ⭐ Dachluken relativ mitbewegen, wenn sich der Raum verändert
-for (const d of this.doors) {
-    if (d.type === "dachluke") {
-
-        // 1) Finde die alte Position relativ zum Raum-Schwerpunkt
-        if (!this._roomCenterBeforeMove) continue;
-
-        const before = this._roomCenterBeforeMove;
-        const after = this._computeRoomCenter();
-
-        const dx = after.x - before.x;
-        const dy = after.y - before.y;
-
-        // 2) Dachluke um dieselbe Verschiebung bewegen
-        d.x += dx;
-        d.y += dy;
-    }
-}
-
-        
+      
         this.walls = [];
 
         if (this.points.length < 2) return;
