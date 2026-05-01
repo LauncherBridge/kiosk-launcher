@@ -327,11 +327,66 @@ function openProjectMenu(x, y) {
     openContextMenu(x, y, items);
 }
 
-function renameProject() { alert("renameProject() – folgt"); }
-function copyProject() { alert("copyProject() – folgt"); }
-function createNewFloor() { alert("createNewFloor() – folgt"); }
-function createNewProject() { alert("createNewProject() – folgt"); }
-function deleteProject() { alert("deleteProject() – folgt"); }
+function renameProject() {
+    const newName = prompt("Neuer Projektname:", project.meta.name);
+    if (!newName) return;
+
+    project.meta.name = newName;
+    saveProject();
+    updateEditorTitle();
+    renderSidebar();
+}
+
+function copyProject() {
+    const clone = JSON.parse(JSON.stringify(project));
+    clone.meta.name = project.meta.name + " (Kopie)";
+
+    saveProjectAs(clone);
+    alert("Projekt wurde kopiert.");
+}
+
+function createNewFloor() {
+    const name = prompt("Name der neuen Etage:");
+    if (!name) return;
+
+    const floorId = "floor_" + Date.now();
+
+    project.floors[floorId] = createFloorModel(floorId, name);
+
+    saveProject();
+    renderSidebar();
+}
+
+function createNewProject() {
+    if (!confirm("Neues Projekt erstellen? Ungespeicherte Änderungen gehen verloren.")) return;
+
+    project = {
+        meta: { name: "Neues Projekt" },
+        floors: {},
+        rooms: {}
+    };
+
+    saveProject();
+    updateEditorTitle();
+    renderSidebar();
+}
+
+function deleteProject() {
+    if (!confirm("Projekt wirklich löschen?")) return;
+
+    deleteProjectFromStorage(project.meta.name);
+
+    project = {
+        meta: { name: "Neues Projekt" },
+        floors: {},
+        rooms: {}
+    };
+
+    saveProject();
+    updateEditorTitle();
+    renderSidebar();
+}
+
 function switchProject() { alert("Projekt wechseln – folgt"); }
 
 
