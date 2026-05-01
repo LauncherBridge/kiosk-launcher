@@ -536,13 +536,13 @@ function loadProject(name) {
         }
 
         // Aktiven Raum setzen
-        if (!project.rooms || Object.keys(project.rooms).length === 0) {
-            activeRoomId = "room_1";
-            project.rooms[activeRoomId] = createRoomModel(activeRoomId, "Neuer Raum", "floor_0");
-            project.floors["floor_0"].rooms.push(activeRoomId);
-        } else {
-            activeRoomId = Object.keys(project.rooms)[0];
-        }
+  //      if (!project.rooms || Object.keys(project.rooms).length === 0) {
+    //        activeRoomId = "room_1";
+      //      project.rooms[activeRoomId] = createRoomModel(activeRoomId, "Neuer Raum", "floor_0");
+        //    project.floors["floor_0"].rooms.push(activeRoomId);
+   //     } else {
+     //       activeRoomId = Object.keys(project.rooms)[0];
+     //   }
 
         return true;
 
