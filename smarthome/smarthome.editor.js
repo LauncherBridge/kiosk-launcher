@@ -1257,34 +1257,20 @@ if (d.type === "dachluke") {
     },
 
 saveRoom(roomId) {
-    if (!roomId || !project.rooms[roomId]) {
-        console.warn("[RoomDesigner] saveRoom(): Raum nicht gefunden:", roomId);
-        return;
+    // optional: falls du roomId mal brauchst
+    if (roomId && roomId !== activeRoomId) {
+        activeRoomId = roomId;
     }
 
-    const room = project.rooms[roomId];
+    // Editor → Projekt (inkl. Türen/Fenster/Points/isClosed)
+    exportFromEditor();
 
-    // Polygon speichern
-    room.points = JSON.parse(JSON.stringify(this.points));
-
-    // Türen speichern
-    room.doors = JSON.parse(JSON.stringify(this.doors));
-
-    // Fenster speichern
-    room.windows = JSON.parse(JSON.stringify(this.windows));
-
-    // Raum geschlossen?
-    room.isClosed = this.isClosed === true;
-
-    console.log("[RoomDesigner] Raum gespeichert:", roomId);
-
-    // UI aktualisieren
-    updateEditorTitle();
-    renderEditorProjectSidebar();
-
-    // Persistenz
+    // Projekt persistieren
     saveProject();
-},
+
+    console.log("[RoomDesigner] Autosave für Raum:", activeRoomId);
+}
+,
 
 
     
