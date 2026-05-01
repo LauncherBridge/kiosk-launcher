@@ -396,8 +396,11 @@ function createNewFloor() {
 function deleteProject() {
     if (!confirm("Projekt wirklich löschen?")) return;
 
-    deleteProjectFromStorage(project.meta.name);
+    // Projekt aus Storage löschen
+    const key = "project_" + project.meta.name;
+    localStorage.removeItem(key);
 
+    // Neues leeres Projekt anlegen
     project = {
         meta: { name: "Neues Projekt" },
         floors: {},
@@ -408,6 +411,14 @@ function deleteProject() {
     updateEditorTitle();
     renderSidebar();
 }
+
+
+function deleteProjectFromStorage(name) {
+    const key = "project_" + name;
+    localStorage.removeItem(key);
+}
+
+
 
 function switchProject() {
     const projects = getAllProjects();
