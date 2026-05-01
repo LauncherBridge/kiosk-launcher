@@ -325,6 +325,18 @@ function createDeviceModel(id, type, model, deviceId, roomId, x, y, rotation) {
     };
 }
 
+
+
+function renameProject() { alert("renameProject() – folgt"); }
+function copyProject() { alert("copyProject() – folgt"); }
+function createNewFloor() { alert("createNewFloor() – folgt"); }
+function createNewProject() { alert("createNewProject() – folgt"); }
+function deleteProject() { alert("deleteProject() – folgt"); }
+function switchProject() { alert("Projekt wechseln – folgt"); }
+
+
+
+
 // ------------------------------------------------------------
 // Projekt speichern & laden
 // ------------------------------------------------------------
