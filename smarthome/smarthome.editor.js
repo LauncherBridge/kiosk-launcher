@@ -56,6 +56,27 @@ function initContextMenuSystem() {
     contextMenuEl = document.getElementById("context-menu");
 }
 
+function openProjectMenu(x, y) {
+    const items = [];
+
+    // ⭐ Nur im Editor sichtbar
+    if (document.body.classList.contains("editor-mode")) {
+        items.push({ label: "Projekt umbenennen", action: renameProject });
+        items.push({ label: "Projekt kopieren", action: copyProject });
+        items.push({ label: "Neue Etage", action: createNewFloor });
+        items.push({ label: "Neues Projekt", action: createNewProject });
+        items.push({ label: "Projekt löschen", action: deleteProject });
+        items.push({ separator: true });
+    }
+
+    // ⭐ Immer sichtbar (SmartHome + Editor)
+    items.push({ label: "Projekt wechseln", action: switchProject });
+
+    openContextMenu(x, y, items);
+}
+
+
+
 /**
  * Öffnet ein Kontextmenü an Position (x, y)
  * items = [{ label: "Text", action: () => {} }, ...]
@@ -597,11 +618,25 @@ init() {
     this.canvas.addEventListener("touchmove", (e) => this.onTouchMove(e), { passive: false });
     this.canvas.addEventListener("touchend", (e) => this.onTouchEnd(e));
 
+
     this.createContextMenu();
     this.setupSnapButton();
     this.setupGridSlider();
     this.setupResetButton();
 
+
+    // ------------------------------------------------------------
+    // Projekt-Menü-Button (⋮) in der linken Sidebar
+    // ------------------------------------------------------------
+    const projMenuBtn = document.getElementById("editor-project-menu-btn-sidebar");
+    if (projMenuBtn) {
+        projMenuBtn.addEventListener("click", (ev) => {
+            ev.stopPropagation();
+            const rect = ev.target.getBoundingClientRect();
+            openProjectMenu(rect.left, rect.bottom + 4);
+        });
+    }
+    
     this.resize();
     this.render();
 },
