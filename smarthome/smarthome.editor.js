@@ -483,17 +483,20 @@ function saveProjectAs(proj) {
 }
 
 
-function loadProject() {
-    const json = localStorage.getItem("smarthome_project");
+function loadProject(name) {
+    const key = "project_" + name;
+    const json = localStorage.getItem(key);
 
-    // Noch kein gespeichertes Projekt → false zurückgeben
     if (!json) return false;
 
     try {
         const data = JSON.parse(json);
+
+        // Projekt komplett ersetzen
+        Object.keys(project).forEach(k => delete project[k]);
         Object.assign(project, data);
 
-        // ⭐ SCHRITT 1: Etagen-Grundstruktur sicherstellen
+        // Falls nötig: Etagen-Grundstruktur sicherstellen
         if (!project.floors || Object.keys(project.floors).length === 0) {
             project.floors = {
                 "floor_0": {
@@ -504,24 +507,22 @@ function loadProject() {
             };
         }
 
-        // ⭐ SCHRITT 2: Räume müssen eine floorId haben
+        // Räume reparieren
         if (project.rooms) {
             for (const roomId in project.rooms) {
                 const room = project.rooms[roomId];
 
-                // Falls floorId fehlt → auf floor_0 setzen
                 if (!room.floorId) {
                     room.floorId = "floor_0";
                 }
 
-                // Raum in die Etagenliste eintragen (falls nicht vorhanden)
                 if (!project.floors[room.floorId].rooms.includes(roomId)) {
                     project.floors[room.floorId].rooms.push(roomId);
                 }
             }
         }
 
-        // ⭐ SCHRITT 3: aktiven Raum bestimmen
+        // Aktiven Raum setzen
         if (!project.rooms || Object.keys(project.rooms).length === 0) {
             activeRoomId = "room_1";
             project.rooms[activeRoomId] = createRoomModel(activeRoomId, "Neuer Raum", "floor_0");
@@ -537,6 +538,7 @@ function loadProject() {
         return false;
     }
 }
+
 
 
 // Projekt → Editor
