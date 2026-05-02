@@ -5027,11 +5027,13 @@ function renderEditorProjectSidebar() {
         floorHeader.className = "floor-header";
         floorHeader.textContent = floor.name;
 
+        // Aktive Etage hervorheben
         if (floor.id === activeFloor) {
             floorHeader.classList.add("active-floor");
             group.classList.add("open");
         }
 
+        // Etage ein-/ausklappen
         floorHeader.addEventListener("click", (ev) => {
             ev.stopPropagation();
             group.classList.toggle("open");
@@ -5047,17 +5049,27 @@ function renderEditorProjectSidebar() {
             const roomDiv = document.createElement("div");
             roomDiv.className = "room-entry";
             roomDiv.textContent = room.name;
+            roomDiv.dataset.roomId = roomId;
 
+            // Aktiven Raum hervorheben
             if (roomId === activeRoom) {
                 roomDiv.classList.add("active-room");
             }
 
+            // ⭐ Raumklick – Editor synchronisieren
             roomDiv.addEventListener("click", (ev) => {
                 ev.stopPropagation();
 
+                // 1) Aktiven Raum setzen
                 activeRoomId = roomId;
 
+                // 2) Editor-Daten laden
                 importToEditor();
+
+                // 3) Titelzeile aktualisieren
+                updateEditorTitle();
+
+                // 4) Sidebar neu rendern (für aktive Markierung)
                 renderEditorProjectSidebar();
             });
 
@@ -5069,7 +5081,6 @@ function renderEditorProjectSidebar() {
         container.appendChild(group);
     });
 }
-
 
 
 function renderLeftSidebar() {
