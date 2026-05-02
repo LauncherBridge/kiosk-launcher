@@ -347,6 +347,16 @@ function renameProject() {
     renderSidebar();
 }
 
+function copyProject() {
+    const clone = JSON.parse(JSON.stringify(project));
+    clone.meta.name = project.meta.name + " (Kopie)";
+
+    saveProjectAs(clone);
+
+    alert("Projekt wurde kopiert.");
+}
+
+
 function createNewProject() {
     const name = prompt("Name des neuen Projekts:");
     if (!name) return;
