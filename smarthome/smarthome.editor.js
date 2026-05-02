@@ -505,7 +505,7 @@ function showNoRoomMessage() {
     const cy = canvas.height / 2;
 
     ctx.fillText("Keine Etage / kein Raum ausgewählt", cx, cy - 10);
-    ctx.fillText("Bitte Etage oder Raum anlegen", cx, cy + 20);
+    ctx.fillText("Bitte Etage oder Raum anlegen / auswählen", cx, cy + 20);
 
     ctx.restore();
 }
