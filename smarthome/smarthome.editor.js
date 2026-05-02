@@ -1,22 +1,7 @@
-function drawDoorIcon(ctx, x, y, size = 24) {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.scale(size / 24, size / 24);
+// ------------------------------------------------------------
+//  f388d24 waera absolutes Backup im Moment, darauf basiert diese Version vor Veränderung
+// ------------------------------------------------------------
 
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = "#ffffff";
-    ctx.fillStyle = "#ffffff";
-
-    // Türrahmen
-    ctx.strokeRect(4, 2, 16, 20);
-
-    // Türknauf
-    ctx.beginPath();
-    ctx.arc(16, 12, 2, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.restore();
-}
 
 // ------------------------------------------------------------
 // Globale Projekt-Daten (Persistenz-Grundstruktur)
@@ -50,6 +35,11 @@ const project = {
 
 let contextMenuEl = null;
 let contextMenuOutsideHandler = null;
+
+// Globale Editor-States (bulletproof)
+let activeMode = "editor";
+let activeFloorId = null;
+let activeRoomId = null;
 
 
 function initContextMenuSystem() {
@@ -454,9 +444,33 @@ function switchProject() {
             return;
         }
 
+        // Modal schließen
         modal.classList.add("hidden");
-        updateEditorTitle();
-        renderSidebar();
+
+        // ---------------------------------------------------------
+        // ⭐ Bulletproof Reset nach Projektwechsel
+        // ---------------------------------------------------------
+
+        // 1) Aktive IDs zurücksetzen
+        activeFloorId = null;
+        activeRoomId = null;
+
+        // 2) Falls Etagen existieren → erste Etage aktivieren
+        const floorIds = Object.keys(project.floors || {});
+        if (floorIds.length > 0) {
+            activeFloorId = floorIds[0];
+        }
+
+        // 3) Falls Räume existieren → ersten Raum aktivieren
+        const roomIds = Object.keys(project.rooms || {});
+        if (roomIds.length > 0) {
+            activeRoomId = roomIds[0];
+        }
+
+        // 4) Editor neu initialisieren (mit Absicherung)
+        importToEditor();
+
+        // 5) SmartHome-Daten aktualisieren
         generateSmartHomeDataFromProject();
     };
 
@@ -554,63 +568,132 @@ function loadProject(name) {
 
 // Projekt → Editor
 function importToEditor() {
-
-    // ⭐ Schritt 3: activeRoomId sicherstellen
-    if (!activeRoomId) {
-        const roomIds = Object.keys(project.rooms || {});
-        if (roomIds.length > 0) {
-            activeRoomId = roomIds[0];
+    try {
+        // ---------------------------------------------------------
+        // 1) Projekt absichern
+        // ---------------------------------------------------------
+        if (!project || typeof project !== "object") {
+            console.warn("⚠️ Projekt ungültig – neues leeres Projekt erzeugt.");
+            project = { meta: {}, floors: {}, rooms: {} };
         }
+
+        if (!project.rooms || typeof project.rooms !== "object") {
+            console.warn("⚠️ Rooms ungültig – neu initialisiert.");
+            project.rooms = {};
+        }
+
+        if (!project.floors || typeof project.floors !== "object") {
+            console.warn("⚠️ Floors ungültig – neu initialisiert.");
+            project.floors = {};
+        }
+
+        // ---------------------------------------------------------
+        // 2) Aktiven Raum bestimmen
+        // ---------------------------------------------------------
+        const roomIds = Object.keys(project.rooms);
+
+        // Falls activeRoomId fehlt oder ungültig ist → zurücksetzen
+        if (!activeRoomId || !project.rooms[activeRoomId]) {
+            activeRoomId = roomIds.length > 0 ? roomIds[0] : null;
+        }
+
+        // Wenn es GAR KEINEN Raum gibt → Editor in leeren Zustand
+        if (!activeRoomId) {
+            console.warn("⚠️ Kein aktiver Raum vorhanden – Editor wird geleert.");
+
+            // Titelzeile leeren
+            const projectEl = document.getElementById("editor-project-name");
+            if (projectEl) projectEl.textContent = project.meta?.name || "Projekt";
+
+            const floorEl = document.getElementById("editor-floor-name");
+            if (floorEl) floorEl.textContent = "Etage";
+
+            const roomEl = document.getElementById("editor-room-name");
+            if (roomEl) roomEl.textContent = "Raum";
+
+            // Canvas leeren
+            RoomDesigner.points = [];
+            RoomDesigner.doors = [];
+            RoomDesigner.windows = [];
+            RoomDesigner.isClosed = false;
+            RoomDesigner.updateWalls();
+            RoomDesigner.render();
+
+            renderEditorProjectSidebar();
+            return;
+        }
+
+        // ---------------------------------------------------------
+        // 3) Raum laden
+        // ---------------------------------------------------------
+        const room = project.rooms[activeRoomId];
+        if (!room) {
+            console.warn("⚠️ Raum existiert nicht:", activeRoomId);
+            return;
+        }
+
+        // ---------------------------------------------------------
+        // 4) Titelzeile setzen
+        // ---------------------------------------------------------
+        const projectEl = document.getElementById("editor-project-name");
+        if (projectEl) {
+            projectEl.textContent = project.meta?.name || "Projekt";
+        }
+
+        const floorEl = document.getElementById("editor-floor-name");
+        if (floorEl) {
+            const floor = project.floors?.[room.floorId];
+            floorEl.textContent = floor?.name || "Etage";
+        }
+
+        const roomEl = document.getElementById("editor-room-name");
+        if (roomEl) {
+            roomEl.textContent = room.name || room.id;
+        }
+
+        // ---------------------------------------------------------
+        // 5) Raumdaten in RoomDesigner übertragen
+        // ---------------------------------------------------------
+        RoomDesigner.points = (room.points || []).map(p => ({ x: p.x, y: p.y }));
+        RoomDesigner.isClosed = room.isClosed || false;
+
+        RoomDesigner.doors = (room.doors || [])
+            .map(id => project.doors?.[id])
+            .filter(Boolean)
+            .map(d => ({ ...d }));
+
+        RoomDesigner.windows = (room.windows || [])
+            .map(id => project.windows?.[id])
+            .filter(Boolean)
+            .map(w => ({ ...w }));
+
+        RoomDesigner.updateWalls();
+        RoomDesigner.render();
+
+        // ---------------------------------------------------------
+        // 6) Sidebar aktualisieren
+        // ---------------------------------------------------------
+        renderEditorProjectSidebar();
+
+        console.log("✔ importToEditor erfolgreich ausgeführt.");
     }
+    catch (err) {
+        console.error("❌ importToEditor() Fehler:", err);
 
-    if (!activeRoomId || !project.rooms[activeRoomId]) {
-        console.warn("Kein aktiver Raum gefunden:", activeRoomId);
-        return;
+        // Fallback: Editor in sicheren Zustand bringen
+        activeRoomId = null;
+
+        RoomDesigner.points = [];
+        RoomDesigner.doors = [];
+        RoomDesigner.windows = [];
+        RoomDesigner.isClosed = false;
+        RoomDesigner.updateWalls();
+        RoomDesigner.render();
+
+        renderEditorProjectSidebar();
     }
-
-    const room = project.rooms[activeRoomId];
-
-    // ⭐ Projektname setzen
-    const projectEl = document.getElementById("editor-project-name");
-    if (projectEl) {
-        projectEl.textContent = project.meta?.name || "Projekt";
-    }
-
-    // ⭐ Etagenname setzen
-    const floorEl = document.getElementById("editor-floor-name");
-    if (floorEl) {
-        const floor = project.floors?.[room.floorId];
-        floorEl.textContent = floor?.name || "Etage";
-    }
-
-    // ⭐ Raumname setzen
-    const roomEl = document.getElementById("editor-room-name");
-    if (roomEl) {
-        roomEl.textContent = room.name || room.id;
-    }
-
-    // ⭐ Punkte
-    RoomDesigner.points = (room.points || []).map(p => ({ x: p.x, y: p.y }));
-    RoomDesigner.isClosed = room.isClosed || false;
-
-    // ⭐ Türen
-    RoomDesigner.doors = (room.doors || [])
-        .map(id => project.doors[id])
-        .filter(Boolean)
-        .map(d => ({ ...d }));
-
-    // ⭐ Fenster
-    RoomDesigner.windows = (room.windows || [])
-        .map(id => project.windows[id])
-        .filter(Boolean)
-        .map(w => ({ ...w }));
-
-    RoomDesigner.updateWalls();
-    RoomDesigner.render();
-
-    // ⭐ Sidebar mit Etagen & Räumen aus dem Projektmodell füllen
-    renderEditorProjectSidebar();
 }
+
 
 
 
