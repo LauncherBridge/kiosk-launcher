@@ -2367,19 +2367,21 @@ render() {
     const ctx = this.ctx;
     if (!ctx || !this.canvas) return;
 
-    // ⭐ Wenn kein Raum aktiv ist → Canvas leeren und abbrechen
+    // ⭐ WICHTIG: Null-Check GANZ OBEN
     if (!activeRoomId || !project.rooms[activeRoomId]) {
+        // Canvas sofort leeren
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // Optional: Hinweis anzeigen
+        // Hinweis anzeigen (falls vorhanden)
         if (typeof showNoRoomMessage === "function") {
             showNoRoomMessage();
         }
 
-        return; // ⭐ WICHTIG: Kein weiterer Rendercode darf laufen
+        // ⭐ HARTES RETURN – kein weiterer Rendercode darf laufen
+        return;
     }
 
-    // ⭐ Ab hier: normaler Renderflow für einen aktiven Raum
+    // ⭐ Ab hier: normaler Renderflow
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     ctx.save();
