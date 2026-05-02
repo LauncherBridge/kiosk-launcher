@@ -37,6 +37,9 @@ const project = {
     devices: {},     // Smart-Home-Geräte
 
     names: {}        // Alias-Namen für Titelzeile/Breadcrumbs
+
+
+
 };
 
 
@@ -52,6 +55,10 @@ let contextMenuOutsideHandler = null;
 function initContextMenuSystem() {
     contextMenuEl = document.getElementById("context-menu");
 }
+
+
+
+
 
 /**
  * Öffnet ein Kontextmenü an Position (x, y)
@@ -301,6 +308,122 @@ function createDeviceModel(id, type, model, deviceId, roomId, x, y, rotation) {
     };
 }
 
+
+function getAllProjects() {
+    const keys = Object.keys(localStorage);
+    return keys
+        .filter(k => k.startsWith("project_"))
+        .map(k => k.replace("project_", ""));
+}
+
+function openProjectMenu(x, y) {
+    const items = [];
+
+    // ⭐ Nur im Editor sichtbar
+    if (document.body.classList.contains("editor-mode")) {
+        items.push({ label: "Projekt umbenennen", action: renameProject });
+        items.push({ label: "Projekt kopieren", action: copyProject });
+        items.push({ label: "Neue Etage", action: createNewFloor });
+        items.push({ label: "Neues Projekt", action: createNewProject });
+        items.push({ label: "Projekt löschen", action: deleteProject });
+        items.push({ separator: true });
+    }
+
+    // ⭐ Immer sichtbar (SmartHome + Editor)
+    items.push({ label: "Projekt wechseln", action: switchProject });
+
+    openContextMenu(x, y, items);
+}
+
+function renameProject() {
+    const newName = prompt("Neuer Projektname:", project.meta.name);
+    if (!newName) return;
+
+    project.meta.name = newName;
+    saveProject();
+    updateEditorTitle();
+    renderSidebar();
+}
+
+function copyProject() {
+    const clone = JSON.parse(JSON.stringify(project));
+    clone.meta.name = project.meta.name + " (Kopie)";
+
+    saveProjectAs(clone);
+    alert("Projekt wurde kopiert.");
+}
+
+function createNewFloor() {
+    const name = prompt("Name der neuen Etage:");
+    if (!name) return;
+
+    const floorId = "floor_" + Date.now();
+
+    project.floors[floorId] = createFloorModel(floorId, name);
+
+    saveProject();
+    renderSidebar();
+}
+
+function createNewProject() {
+    if (!confirm("Neues Projekt erstellen? Ungespeicherte Änderungen gehen verloren.")) return;
+
+    project = {
+        meta: { name: "Neues Projekt" },
+        floors: {},
+        rooms: {}
+    };
+
+    saveProject();
+    updateEditorTitle();
+    renderSidebar();
+}
+
+function deleteProject() {
+    if (!confirm("Projekt wirklich löschen?")) return;
+
+    deleteProjectFromStorage(project.meta.name);
+
+    project = {
+        meta: { name: "Neues Projekt" },
+        floors: {},
+        rooms: {}
+    };
+
+    saveProject();
+    updateEditorTitle();
+    renderSidebar();
+}
+
+function switchProject() {
+    const projects = getAllProjects();
+
+    if (projects.length === 0) {
+        alert("Keine weiteren Projekte vorhanden.");
+        return;
+    }
+
+    const name = prompt(
+        "Welches Projekt möchtest du laden?\n\n" +
+        projects.map(p => "- " + p).join("\n")
+    );
+
+    if (!name) return;
+
+    const loaded = loadProject(name);
+    if (!loaded) {
+        alert("Projekt konnte nicht geladen werden.");
+        return;
+    }
+
+    updateEditorTitle();
+    renderSidebar();
+    generateSmartHomeDataFromProject();
+}
+
+
+
+
 // ------------------------------------------------------------
 // Projekt speichern & laden
 // ------------------------------------------------------------
@@ -364,83 +487,6 @@ function loadProject() {
         return false;
     }
 }
-
-
-
-
-
-
-// ------------------------------------------------------------
-// Editor <-> Projekt Mapping
-// ------------------------------------------------------------
-
-// Editor → Projekt
-function exportFromEditor() {
-
-    if (!activeRoomId) return;
-
-    // Raum erzeugen falls nicht vorhanden
-    if (!project.rooms[activeRoomId]) {
-
-        // ⭐ floorId korrekt setzen
-        const defaultFloorId = Object.keys(project.floors)[0] || "floor_0";
-
-        project.rooms[activeRoomId] = createRoomModel(
-            activeRoomId,
-            "Raum",
-            defaultFloorId
-        );
-
-        // Raum in Etage eintragen
-        if (!project.floors[defaultFloorId].rooms.includes(activeRoomId)) {
-            project.floors[defaultFloorId].rooms.push(activeRoomId);
-        }
-    }
-
-    const room = project.rooms[activeRoomId];
-
-    // ⭐ Raumname speichern
-    const el = document.getElementById("editor-room-name");
-    if (el) {
-        room.name = el.textContent.trim();
-    }
-
-    // ⭐ Etagenname speichern
-    const floorEl = document.getElementById("editor-floor-name");
-    if (floorEl) {
-        const floor = project.floors?.[room.floorId];
-        if (floor) {
-            floor.name = floorEl.textContent.trim();
-        }
-    }
-
-    // Punkte
-    room.points = RoomDesigner.points.map(p => ({ x: p.x, y: p.y }));
-    room.isClosed = RoomDesigner.isClosed;
-
-    // Türen
-    project.doors = {};
-    room.doors = [];
-
-    for (const d of RoomDesigner.doors) {
-        if (!d.id) d.id = createId("door");
-        project.doors[d.id] = { ...d };
-        room.doors.push(d.id);
-    }
-
-    // Fenster
-    project.windows = {};
-    room.windows = [];
-
-    for (const w of RoomDesigner.windows) {
-        if (!w.id) w.id = createId("window");
-        project.windows[w.id] = { ...w };
-        room.windows.push(w.id);
-    }
-
-    project.meta.modified = Date.now();
-}
-
 
 
 // Projekt → Editor
@@ -509,7 +555,7 @@ function importToEditor() {
 // Manuelles Speichern des aktuellen Editor-Zustands
 // ------------------------------------------------------------
 function saveCurrentRoom() {
-    exportFromEditor();
+    this.exportFromEditor();
     saveProject();
     console.log("[Persistenz] Projekt gespeichert.");
 }
@@ -651,7 +697,7 @@ init() {
     importToEditor();
 
     // Editor-Daten zurück ins Projekt schreiben
-    exportFromEditor();
+    this.exportFromEditor();
 
     // Jetzt erst SmartHomeData generieren
     generateSmartHomeDataFromProject();
@@ -671,17 +717,28 @@ init() {
     this.canvas.addEventListener("touchmove", (e) => this.onTouchMove(e), { passive: false });
     this.canvas.addEventListener("touchend", (e) => this.onTouchEnd(e));
 
+
     this.createContextMenu();
     this.setupSnapButton();
     this.setupGridSlider();
     this.setupResetButton();
 
+
+    // ------------------------------------------------------------
+    // Projekt-Menü-Button (⋮) in der linken Sidebar
+    // ------------------------------------------------------------
+    const projMenuBtn = document.getElementById("editor-project-menu-btn-sidebar");
+    if (projMenuBtn) {
+        projMenuBtn.addEventListener("click", (ev) => {
+            ev.stopPropagation();
+            const rect = ev.target.getBoundingClientRect();
+            openProjectMenu(rect.left, rect.bottom + 4);
+        });
+    }
+    
     this.resize();
     this.render();
-}
-
-
-,
+},
 
     resize() {
         this.canvas.width = window.innerWidth;
@@ -735,50 +792,54 @@ showContextMenu(x, y, type, index) {
     // ------------------------------------------------------------
     // ⭐ POINT
     // ------------------------------------------------------------
-if (type === "point") {
+    if (type === "point") {
 
-    this.addContextButton("🗑", () => {
+        this.addContextButton("🗑", () => {
 
-        const prevWall = index - 1;
-        const nextWall = index;
+            const prevWall = index - 1;
+            const nextWall = index;
 
-        const affectedDoors = this.doors.filter(d => d.wallIndex === prevWall || d.wallIndex === nextWall);
-        const affectedWindows = this.windows.filter(w => w.wallIndex === prevWall || w.wallIndex === nextWall);
+            const affectedDoors = this.doors.filter(d => d.wallIndex === prevWall || d.wallIndex === nextWall);
+            const affectedWindows = this.windows.filter(w => w.wallIndex === prevWall || w.wallIndex === nextWall);
 
-        const p = this.points[index];
-        this.points = this.points.filter(pt => pt !== p);
+            const p = this.points[index];
+            this.points = this.points.filter(pt => pt !== p);
 
-        if (this.points.length < 3) {
-            this.isClosed = false;
-        }
+            if (this.points.length < 3) {
+                this.isClosed = false;
+            }
 
-        this.updateWalls();
+            this.updateWalls();
 
-        const newWallIndex = prevWall;
+            const newWallIndex = prevWall;
 
-        for (const d of affectedDoors) {
-            const w = this.walls[newWallIndex];
-            if (!w) continue;
-            const proj = this.projectOnWall(d.x, d.y, w);
-            d.wallIndex = newWallIndex;
-            d.t = proj.t;
-            d.x = proj.x;
-            d.y = proj.y;
-        }
+            for (const d of affectedDoors) {
+                const w = this.walls[newWallIndex];
+                if (!w) continue;
+                const proj = this.projectOnWall(d.x, d.y, w);
+                d.wallIndex = newWallIndex;
+                d.t = proj.t;
+                d.x = proj.x;
+                d.y = proj.y;
+            }
 
-        for (const win of affectedWindows) {
-            const w = this.walls[newWallIndex];
-            if (!w) continue;
-            const proj = this.projectOnWall(win.x, win.y, w);
-            win.wallIndex = newWallIndex;
-            win.t = proj.t;
-            win.x = proj.x;
-            win.y = proj.y;
-        }
+            for (const win of affectedWindows) {
+                const w = this.walls[newWallIndex];
+                if (!w) continue;
+                const proj = this.projectOnWall(win.x, win.y, w);
+                win.wallIndex = newWallIndex;
+                win.t = proj.t;
+                win.x = proj.x;
+                win.y = proj.y;
+            }
 
-        this.render();
-    }, true);
-}
+            this.render();
+
+            // ⭐ Autosave
+            this.saveRoom(activeRoomId);
+
+        }, true);
+    }
 
 
     // ------------------------------------------------------------
@@ -789,44 +850,49 @@ if (type === "point") {
         const d = this.doors[index];
 
         // ⭐ DACHLUKE → eigenes Menü + Scharnier neu setzen
-if (d.type === "dachluke") {
+        if (d.type === "dachluke") {
 
-    // Zustand ändern (offen/geschlossen)
-    this.addContextButton(d.isOpen ? "🔒" : "🔓", () => {
-        d.isOpen = !d.isOpen;
-        this.render();
-    }, false);
+            // Zustand ändern (offen/geschlossen)
+            this.addContextButton(d.isOpen ? "🔒" : "🔓", () => {
+                d.isOpen = !d.isOpen;
+                this.render();
+                this.saveRoom(activeRoomId);   // ⭐ Autosave
+            }, false);
 
-    // Scharnier neu setzen
-    this.addContextButton("⟲", () => {
-        this.mode = "setHinge";
-        this._hingeDoorIndex = index;
-        this.hideContextMenu();
-        this.render();
-    }, true);
+            // Scharnier neu setzen
+            this.addContextButton("⟲", () => {
+                this.mode = "setHinge";
+                this._hingeDoorIndex = index;
+                this.hideContextMenu();
+                this.render();
+                // ⭐ Autosave (Hinge-Wechsel ist final)
+                this.saveRoom(activeRoomId);
+            }, true);
 
-    // Breite +
-    this.addContextButton("＋", () => {
-        d.width += 10;
-        this.updateWalls();
-        this.render();
-    }, false);
+            // Breite +
+            this.addContextButton("＋", () => {
+                d.width += 10;
+                this.updateWalls();
+                this.render();
+                this.saveRoom(activeRoomId);   // ⭐ Autosave
+            }, false);
 
-    // Breite –
-    this.addContextButton("－", () => {
-        d.width = Math.max(20, d.width - 10);
-        this.updateWalls();
-        this.render();
-    }, false);
+            // Breite –
+            this.addContextButton("－", () => {
+                d.width = Math.max(20, d.width - 10);
+                this.updateWalls();
+                this.render();
+                this.saveRoom(activeRoomId);   // ⭐ Autosave
+            }, false);
 
-    // Löschen
-    this.addContextButton("🗑", () => {
-        this.doors.splice(index, 1);
-        this.updateWalls();
-        this.render();
-    }, true);
-}
-
+            // Löschen
+            this.addContextButton("🗑", () => {
+                this.doors.splice(index, 1);
+                this.updateWalls();
+                this.render();
+                this.saveRoom(activeRoomId);   // ⭐ Autosave
+            }, true);
+        }
 
         // ⭐ NORMALE TÜREN
         else {
@@ -835,6 +901,7 @@ if (d.type === "dachluke") {
                 this.addContextButton(d.isOpen ? "🔒" : "🔓", () => {
                     d.isOpen = !d.isOpen;
                     this.render();
+                    this.saveRoom(activeRoomId);   // ⭐ Autosave
                 }, false);
             }
 
@@ -854,6 +921,7 @@ if (d.type === "dachluke") {
                     this._hingeDoorIndex = index;
                     this.hideContextMenu();
                     this.render();
+                    this.saveRoom(activeRoomId);   // ⭐ Autosave
                 }, true);
             }
 
@@ -861,18 +929,21 @@ if (d.type === "dachluke") {
                 d.width += 10;
                 this.updateWalls();
                 this.render();
+                this.saveRoom(activeRoomId);   // ⭐ Autosave
             }, false);
 
             this.addContextButton("－", () => {
                 d.width = Math.max(20, d.width - 10);
                 this.updateWalls();
                 this.render();
+                this.saveRoom(activeRoomId);   // ⭐ Autosave
             }, false);
 
             this.addContextButton("🗑", () => {
                 this.doors.splice(index, 1);
                 this.updateWalls();
                 this.render();
+                this.saveRoom(activeRoomId);   // ⭐ Autosave
             }, true);
         }
     }
@@ -888,18 +959,21 @@ if (d.type === "dachluke") {
             w.width += 10;
             this.updateWalls();
             this.render();
+            this.saveRoom(activeRoomId);   // ⭐ Autosave
         }, false);
 
         this.addContextButton("－", () => {
             w.width = Math.max(20, w.width - 10);
             this.updateWalls();
             this.render();
+            this.saveRoom(activeRoomId);   // ⭐ Autosave
         }, false);
 
         this.addContextButton("🗑", () => {
             this.windows.splice(index, 1);
             this.updateWalls();
             this.render();
+            this.saveRoom(activeRoomId);   // ⭐ Autosave
         }, true);
     }
 
@@ -932,38 +1006,49 @@ if (d.type === "dachluke") {
 
     menu.style.left = left + "px";
     menu.style.top = top + "px";
-},
+}
+,
     
 
-    addContextButton(label, fn, closeMenu = false) {
-        const btn = document.createElement("button");
-        btn.textContent = label;
-        btn.style.width = "32px";
-        btn.style.height = "32px";
-        btn.style.fontSize = "18px";
-        btn.style.border = "none";
-        btn.style.borderRadius = "4px";
-        btn.style.background = "#444";
-        btn.style.color = "#fff";
-        btn.style.cursor = "pointer";
+addContextButton(label, fn, closeMenu = false) {
+    const btn = document.createElement("button");
+    btn.textContent = label;
+    btn.style.width = "32px";
+    btn.style.height = "32px";
+    btn.style.fontSize = "18px";
+    btn.style.border = "none";
+    btn.style.borderRadius = "4px";
+    btn.style.background = "#444";
+    btn.style.color = "#fff";
+    btn.style.cursor = "pointer";
 
-        btn.addEventListener("click", () => {
+    btn.addEventListener("click", () => {
 
-            // PLUS / MINUS → Menü bleibt offen
-            if (!closeMenu) {
-                fn && fn();
-                return;
-            }
-
-            // DELETE → Menü schließen
-            this._closingByButton = true;
+        // PLUS / MINUS → Menü bleibt offen
+        if (!closeMenu) {
             fn && fn();
-            this.hideContextMenu();
-            this._closingByButton = false;
-        });
 
-        this.contextMenuEl.appendChild(btn);
-    },
+            // ⭐ Autosave für alle Änderungen
+            this.saveRoom(activeRoomId);
+
+            return;
+        }
+
+        // DELETE / HINGE → Menü schließen
+        this._closingByButton = true;
+
+        fn && fn();
+
+        // ⭐ Autosave für alle finalen Aktionen
+        this.saveRoom(activeRoomId);
+
+        this.hideContextMenu();
+        this._closingByButton = false;
+    });
+
+    this.contextMenuEl.appendChild(btn);
+}
+,
 
     onMove(e) {
         const rect = this.canvas.getBoundingClientRect();
@@ -1152,35 +1237,35 @@ if (d.type === "dachluke") {
             return;
         }
 
-// ------------------------------------------------------------
-// ⭐ HOVER-ERKENNUNG + CURSOR-WECHSEL (ohne Leuchten)
-// ------------------------------------------------------------
-const hit = this.hitTest(mouseX, mouseY);
+        // ------------------------------------------------------------
+        // ⭐ HOVER-ERKENNUNG + CURSOR-WECHSEL (ohne Leuchten)
+        // ------------------------------------------------------------
+        const hit = this.hitTest(mouseX, mouseY);
 
-if (hit.type !== "empty") {
-    this.hoverTarget = hit;
+        if (hit.type !== "empty") {
+            this.hoverTarget = hit;
 
-    if (hit.type === "point") {
-        this.canvas.style.cursor = "pointer";   // Punkt anklickbar
-    } 
-    else if (hit.type === "door" || hit.type === "window") {
-        this.canvas.style.cursor = "grab";      // Tür/Fenster greifbar
-    } 
-    else {
-        this.canvas.style.cursor = "pointer";
-    }
+            if (hit.type === "point") {
+                this.canvas.style.cursor = "pointer";   // Punkt anklickbar
+            } 
+            else if (hit.type === "door" || hit.type === "window") {
+                this.canvas.style.cursor = "grab";      // Tür/Fenster greifbar
+            } 
+            else {
+                this.canvas.style.cursor = "pointer";
+            }
 
-} else {
-    this.hoverTarget = null;
-    this.canvas.style.cursor = "default";        // nichts getroffen
-}
+        } else {
+            this.hoverTarget = null;
+            this.canvas.style.cursor = "default";        // nichts getroffen
+        }
 
-        
         // Hover aktualisieren
         this.hover.x = mouseX;
         this.hover.y = mouseY;
         this.render();
     },
+
 
     // --------------------------------------------------
     // HIT-DETECTION REIHENFOLGE (wichtig!)
@@ -1228,6 +1313,24 @@ if (hit.type !== "empty") {
         return null;
     },
 
+saveRoom(roomId) {
+    // optional: falls du roomId mal brauchst
+    if (roomId && roomId !== activeRoomId) {
+        activeRoomId = roomId;
+    }
+
+    // Editor → Projekt (inkl. Türen/Fenster/Points/isClosed)
+    this.exportFromEditor();
+
+    // Projekt persistieren
+    saveProject();
+
+    console.log("[RoomDesigner] Autosave für Raum:", activeRoomId);
+}
+,
+
+
+    
 onDown(e) {
     const rect = this.canvas.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
@@ -1242,55 +1345,58 @@ onDown(e) {
         return;
     }
 
-// ------------------------------------------------------------
-// ⭐ SCHARNIER NEU SETZEN (für normale Türen, NICHT Dachluke)
-// ------------------------------------------------------------
-if (this.mode === "setHinge") {
+    // ------------------------------------------------------------
+    // ⭐ SCHARNIER NEU SETZEN (für normale Türen, NICHT Dachluke)
+    // ------------------------------------------------------------
+    if (this.mode === "setHinge") {
 
-    const d = this.doors[this._hingeDoorIndex];
+        const d = this.doors[this._hingeDoorIndex];
 
-    if (!d) {
-        this.mode = "points";
-        this._hingeDoorIndex = null;
-        return;
-    }
+        if (!d) {
+            this.mode = "points";
+            this._hingeDoorIndex = null;
+            return;
+        }
 
-    // ⭐ Dachluke → hingeAngle setzen
-    if (d.type === "dachluke") {
+        // ⭐ Dachluke → hingeAngle setzen
+        if (d.type === "dachluke") {
 
-        // Winkel relativ zur Luke berechnen
-        const dx = worldX - d.x;
-        const dy = worldY - d.y;
-        d.hingeAngle = Math.atan2(dy, dx);
+            const dx = worldX - d.x;
+            const dy = worldY - d.y;
+            d.hingeAngle = Math.atan2(dy, dx);
+
+            this.mode = "points";
+            this._hingeDoorIndex = null;
+            this.render();
+
+            // ⭐ Autosave
+            this.saveRoom(activeRoomId);
+
+            return;
+        }
+
+        // ⭐ Normale Türen → setDoorHingeFromTap
+        const w = this.walls[d.wallIndex];
+        if (w) {
+            this.setDoorHingeFromTap(d, worldX, worldY, w);
+        }
 
         this.mode = "points";
         this._hingeDoorIndex = null;
         this.render();
+
+        // ⭐ Autosave
+        this.saveRoom(activeRoomId);
+
         return;
     }
-
-    // ⭐ Normale Türen → setDoorHingeFromTap
-    const w = this.walls[d.wallIndex];
-    if (w) {
-        this.setDoorHingeFromTap(d, worldX, worldY, w);
-    }
-
-    this.mode = "points";
-    this._hingeDoorIndex = null;
-    isOpen: true;
-    this.render();
-    return;
-}
-
-
-
-
 
     // ------------------------------------------------------------
     // ⭐ DACHLUKE: 1. Klick = Luke setzen, 2. Klick = Scharnier setzen
     // ------------------------------------------------------------
     if (this.mode === "dachluke") {
 
+        // 1. Klick → Luke setzen
         if (!this._placingDachluke) {
 
             if (!this.isClosed) {
@@ -1314,9 +1420,14 @@ if (this.mode === "setHinge") {
 
             this._placingDachluke = true;
             this.render();
+
+            // ⭐ Autosave
+            this.saveRoom(activeRoomId);
+
             return;
         }
 
+        // 2. Klick → hingeAngle setzen
         const d = this.doors[this.doors.length - 1];
 
         const dx = worldX - d.x;
@@ -1326,6 +1437,10 @@ if (this.mode === "setHinge") {
         this._placingDachluke = false;
         this.mode = "points";
         this.render();
+
+        // ⭐ Autosave
+        this.saveRoom(activeRoomId);
+
         return;
     }
 
@@ -1371,6 +1486,9 @@ if (this.mode === "setHinge") {
             this.isDragging = false;
             this.selectedPoint = null;
 
+            // ⭐ Autosave
+            this.saveRoom(activeRoomId);
+
             return;
         }
     }
@@ -1396,6 +1514,9 @@ if (this.mode === "setHinge") {
             });
             this.updateWalls();
             this.render();
+
+            // ⭐ Autosave
+            this.saveRoom(activeRoomId);
         }
 
         this.mode = "points";
@@ -1408,7 +1529,6 @@ if (this.mode === "setHinge") {
     if (this.mode === "doors") {
 
         const type = this.currentDoorType || "default";
-isOpen: true
 
         // ⭐ Durchgang → 1 Klick
         if (type === "durchgang") {
@@ -1435,13 +1555,16 @@ isOpen: true
                 x: cx,
                 y: cy,
                 width: defaultWidth,
-               hingeAngle: 0, // hinge: null,
-                    type: type,
+                hingeAngle: 0,
                 side: null
             });
 
             this.render();
             this.mode = "points";
+
+            // ⭐ Autosave
+            this.saveRoom(activeRoomId);
+
             return;
         }
 
@@ -1461,6 +1584,10 @@ isOpen: true
                 });
                 this._placingDoor = true;
                 this.render();
+
+                // ⭐ Autosave
+                this.saveRoom(activeRoomId);
+
                 return;
             }
         }
@@ -1474,6 +1601,10 @@ isOpen: true
             this._placingDoor = false;
             this.mode = "points";
             this.render();
+
+            // ⭐ Autosave
+            this.saveRoom(activeRoomId);
+
             return;
         }
     }
@@ -1513,6 +1644,10 @@ isOpen: true
 
         this.updateWalls();
         this.render();
+
+        // ⭐ Autosave
+        this.saveRoom(activeRoomId);
+
         return;
     }
 
@@ -1539,122 +1674,143 @@ isOpen: true
         this.panStartX = mouseX;
         this.panStartY = mouseY;
     }
-},
+}
+,
 
 
-    onUp(e) {
-        // Wenn gerade gesnapped wurde → Klick komplett ignorieren
-        if (this._justSnapped) {
-            this._justSnapped = false;
-            this._pendingNewPoint = null;
-            return;
-        }
+onUp(e) {
+    // Wenn gerade gesnapped wurde → Klick komplett ignorieren
+    if (this._justSnapped) {
+        this._justSnapped = false;
+        this._pendingNewPoint = null;
+        return;
+    }
 
-        this.isPanCandidate = false;
+    this.isPanCandidate = false;
 
-        // PAN END
-        if (this.isPanning) {
-            this.isPanning = false;
-            return;
-        }
+    // PAN END
+    if (this.isPanning) {
+        this.isPanning = false;
+        return;
+    }
 
-        // DRAG END
-        if (this.isDragging) {
+    // ------------------------------------------------------------
+    // ⭐ DRAG END
+    // ------------------------------------------------------------
+    if (this.isDragging) {
 
-            // --- SNAP beim Loslassen ---
-            if (this._snapCandidate) {
-                const first = this.points[0];
-                const lastIndex = this.points.length - 1;
+        // --- SNAP beim Loslassen ---
+        if (this._snapCandidate) {
+            const first = this.points[0];
+            const lastIndex = this.points.length - 1;
 
-                // letzten Punkt entfernen
-                this.points.splice(lastIndex, 1);
+            // letzten Punkt entfernen
+            this.points.splice(lastIndex, 1);
 
-                // erster Punkt wird der aktive Punkt
-                this.selectedPoint = first;
+            // erster Punkt wird der aktive Punkt
+            this.selectedPoint = first;
 
-                this.isClosed = true;
-                this._snapCandidate = false;
+            this.isClosed = true;
+            this._snapCandidate = false;
 
-                this.updateWalls();
-                this.render();
+            this.updateWalls();
+            this.render();
 
-                this.isDragging = false;
-                return;
-            }
-
-            // Normaler Drag-Ende
             this.isDragging = false;
-            this.selectedPoint = null;
-            this.draggingDoorIndex = null;
-            this.draggingWindowIndex = null;
-            this._pendingContext = null;
+
+            // ⭐ Autosave: Polygon geschlossen
+            this.saveRoom(activeRoomId);
+
             return;
         }
 
-        // ------------------------------------------------------------
-        // ⭐ Kontext / Klick auf Elemente
-        // ------------------------------------------------------------
-        if (this._pendingContext) {
-            const c = this._pendingContext;
-            this._pendingContext = null;
-        
-            // ⭐ Dachluke: NICHT ins Kontextmenü → Zustand toggeln
-            if (c.type === "dachluke") {
-                const d = this.doors[c.index];
-                if (d && d.type === "dachluke") {
-                    d.isOpen = !d.isOpen;   // Zustand wechseln
-                    this.render();
-                }
-                return;
-            }
-        
-            // ⭐ Alle anderen Elemente → Kontextmenü wie bisher
-            const screenX = (c.x + this.offsetX) * this.zoom;
-            const screenY = (c.y + this.offsetY) * this.zoom;
-        
-            this.showContextMenu(screenX, screenY, c.type, c.index);
-            return;
-        }
+        // Normaler Drag-Ende
+        this.isDragging = false;
+        this.selectedPoint = null;
+        this.draggingDoorIndex = null;
+        this.draggingWindowIndex = null;
+        this._pendingContext = null;
 
+        // ⭐ Autosave: Punkt/Tür/Fenster final verschoben
+        this.saveRoom(activeRoomId);
 
-        // Wenn bereits ein Timer läuft → das hier ist der zweite Klick → Doppelklick
-        if (this._clickTimer) {
-            clearTimeout(this._clickTimer);
-            this._clickTimer = null;
-            this._pendingNewPoint = null; // keinen Punkt setzen
-            return; // Doppelklick → Zoom übernimmt
-        }
+        return;
+    }
 
-        // Erster Klick → Timer starten
-        this._clickTimer = setTimeout(() => {
+    // ------------------------------------------------------------
+    // ⭐ Kontext / Klick auf Elemente
+    // ------------------------------------------------------------
+    if (this._pendingContext) {
+        const c = this._pendingContext;
+        this._pendingContext = null;
 
-            // Timer abgelaufen → es war ein einfacher Klick
-            this._clickTimer = null;
-
-            if (!this.isClosed && this._pendingNewPoint) {
-
-                let px = this._pendingNewPoint.x;
-                let py = this._pendingNewPoint.y;
-
-                // NEU: Snap auf ersten Punkt beim Setzen
-                if (this.points.length > 0) {
-                    const first = this.points[0];
-                    if (Math.hypot(px - first.x, py - first.y) < 20) {
-                        px = first.x;
-                        py = first.y;
-                    }
-                }
-
-                this.points.push({ x: px, y: py });
-                this._pendingNewPoint = null;
-                this.updateWalls();
+        // ⭐ Dachluke: NICHT ins Kontextmenü → Zustand toggeln
+        if (c.type === "dachluke") {
+            const d = this.doors[c.index];
+            if (d && d.type === "dachluke") {
+                d.isOpen = !d.isOpen;   // Zustand wechseln
                 this.render();
+                this.saveRoom(activeRoomId);   // ⭐ Autosave
+
+                // ⭐ Autosave: Dachluke toggeln
+                this.saveRoom(activeRoomId);
+            }
+            return;
+        }
+
+        // ⭐ Alle anderen Elemente → Kontextmenü wie bisher
+        const screenX = (c.x + this.offsetX) * this.zoom;
+        const screenY = (c.y + this.offsetY) * this.zoom;
+
+        this.showContextMenu(screenX, screenY, c.type, c.index);
+        return;
+    }
+
+    // ------------------------------------------------------------
+    // ⭐ Doppelklick → Zoom übernimmt
+    // ------------------------------------------------------------
+    if (this._clickTimer) {
+        clearTimeout(this._clickTimer);
+        this._clickTimer = null;
+        this._pendingNewPoint = null;
+        return;
+    }
+
+    // ------------------------------------------------------------
+    // ⭐ Einfacher Klick → Punkt setzen
+    // ------------------------------------------------------------
+    this._clickTimer = setTimeout(() => {
+
+        this._clickTimer = null;
+
+        if (!this.isClosed && this._pendingNewPoint) {
+
+            let px = this._pendingNewPoint.x;
+            let py = this._pendingNewPoint.y;
+
+            // Snap auf ersten Punkt beim Setzen
+            if (this.points.length > 0) {
+                const first = this.points[0];
+                if (Math.hypot(px - first.x, py - first.y) < 20) {
+                    px = first.x;
+                    py = first.y;
+                }
             }
 
+            this.points.push({ x: px, y: py });
             this._pendingNewPoint = null;
+            this.updateWalls();
+            this.render();
 
-        }, 220); // 220ms = Standard-Doppelklick-Fenster
-    },
+            // ⭐ Autosave: Punkt final gesetzt
+            this.saveRoom(activeRoomId);
+        }
+
+        this._pendingNewPoint = null;
+
+    }, 220); // 220ms = Standard-Doppelklick-Fenster
+}
+,
 
     // --------------------------------------------------
     // Zoom per Mausrad
@@ -1984,27 +2140,7 @@ isOpen: true
     // Wände aktualisieren
     // --------------------------------------------------
     updateWalls() {
-
-// ⭐ Dachluken relativ mitbewegen, wenn sich der Raum verändert
-for (const d of this.doors) {
-    if (d.type === "dachluke") {
-
-        // 1) Finde die alte Position relativ zum Raum-Schwerpunkt
-        if (!this._roomCenterBeforeMove) continue;
-
-        const before = this._roomCenterBeforeMove;
-        const after = this._computeRoomCenter();
-
-        const dx = after.x - before.x;
-        const dy = after.y - before.y;
-
-        // 2) Dachluke um dieselbe Verschiebung bewegen
-        d.x += dx;
-        d.y += dy;
-    }
-}
-
-        
+      
         this.walls = [];
 
         if (this.points.length < 2) return;
@@ -4053,6 +4189,91 @@ if (tool === "dachluke") {
         }
     },
 
+    // ------------------------------------------------------------
+// Editor <-> Projekt Mapping
+// ------------------------------------------------------------
+
+// Editor → Projekt
+exportFromEditor() {
+
+    if (!activeRoomId) return;
+
+    // Raum erzeugen falls nicht vorhanden
+    if (!project.rooms[activeRoomId]) {
+
+        // ⭐ floorId korrekt setzen
+        const defaultFloorId = Object.keys(project.floors)[0] || "floor_0";
+
+        project.rooms[activeRoomId] = createRoomModel(
+            activeRoomId,
+            "Raum",
+            defaultFloorId
+        );
+
+        // Raum in Etage eintragen
+        if (!project.floors[defaultFloorId].rooms.includes(activeRoomId)) {
+            project.floors[defaultFloorId].rooms.push(activeRoomId);
+        }
+    }
+
+    const room = project.rooms[activeRoomId];
+
+    // ⭐ Raumname speichern
+    const el = document.getElementById("editor-room-name");
+    if (el) {
+        room.name = el.textContent.trim();
+    }
+
+    // ⭐ Etagenname speichern
+    const floorEl = document.getElementById("editor-floor-name");
+    if (floorEl) {
+        const floor = project.floors?.[room.floorId];
+        if (floor) {
+            floor.name = floorEl.textContent.trim();
+        }
+    }
+
+    // Punkte
+    room.points = RoomDesigner.points.map(p => ({ x: p.x, y: p.y }));
+    room.isClosed = RoomDesigner.isClosed;
+
+    // Türen
+    // 1. Alle Türen des aktuellen Raums aus project.doors entfernen
+    for (const id of room.doors) {
+        delete project.doors[id];
+    }
+    
+    // 2. Neue Türen des aktuellen Raums eintragen
+    room.doors = [];
+    
+    for (const d of this.doors) {
+        if (!d.id) d.id = createId("door");
+    
+        project.doors[d.id] = { ...d };
+        room.doors.push(d.id);
+    }
+
+
+    // Fenster
+    // 1. Alte Fenster dieses Raums aus project.windows entfernen
+    for (const id of room.windows) {
+        delete project.windows[id];
+    }
+    
+    // 2. Neue Fenster eintragen
+    room.windows = [];
+    
+    for (const w of RoomDesigner.windows) {
+        if (!w.id) w.id = createId("window");
+    
+        project.windows[w.id] = { ...w };
+        room.windows.push(w.id);
+    }
+
+
+    project.meta.modified = Date.now();
+},
+
     // --------------------------------------------------
     // Sync
     // --------------------------------------------------
@@ -4280,11 +4501,18 @@ function updateEditorTitle() {
         proj.textContent = project.meta.name || "Projekt";
     }
 
+    // ⭐ Sidebar-Projektname aktualisieren
+    const projSidebar = document.getElementById("editor-project-name-sidebar");
+    if (projSidebar) {
+        projSidebar.textContent = project.meta.name || "Projekt";
+    }
+
     const roomObj = getActiveRoom();
     if (room && roomObj) {
         room.textContent = roomObj.name || "Raum";
     }
 }
+
 
 // ---------------------------------------------------------
 // Neue Etage erstellen
@@ -4331,6 +4559,7 @@ function editorCreateFloor() {
     // 5) Editor-Daten + UI aktualisieren
     importToEditor();            // Titelzeile + Canvas
     renderEditorProjectSidebar(); // Sidebar
+    saveProject(); 
 }
 
 
@@ -4379,6 +4608,7 @@ function editorDeleteFloor(floorId) {
     }
 
     renderEditorProjectSidebar();
+    saveProject();
 }
 
 
@@ -4554,57 +4784,71 @@ function finishProjectNameEdit(el) {
     el.contentEditable = "false";
     el.classList.remove("editing");
 
+    if (!project.meta) {
+        project.meta = {};
+    }
+
     const newName = el.textContent.trim();
+
+    // Leerer Name → alten Namen wiederherstellen
     if (!newName) {
-        el.textContent = project.meta?.name || "Projekt";
+        el.textContent = project.meta.name || "Projekt";
         return;
     }
 
-    // Persistieren
-    project.meta = project.meta || {};
+    // 1) Projektnamen speichern
     project.meta.name = newName;
 
-    saveProject();
+    // 2) Titelzeile aktualisieren
     updateEditorTitle();
+
+    // 3) Sidebar aktualisieren (falls sie Projektnamen zeigt)
+    renderEditorProjectSidebar();
+
+    // 4) Projekt speichern
+    saveProject();
 }
+
 
 function finishFloorNameEdit(el) {
     el.contentEditable = "false";
     el.classList.remove("editing");
 
-    const newName = el.textContent.trim();
-    const activeRoomId = SmartHomeData?.structure?.activeRoom || "wohnzimmer";
-
-    const room = project.rooms?.[activeRoomId];
-    if (!room) return;
-
-    const floor = project.floors?.[room.floorId];
-    if (!floor) return;
-
-    // leer → alten Namen wiederherstellen
-    if (!newName) {
-        el.textContent = floor.name || "Etage";
+    // Aktiven Raum bestimmen
+    if (!activeRoomId || !project.rooms[activeRoomId]) {
+        console.warn("finishFloorNameEdit(): Kein aktiver Raum");
         return;
     }
 
-    // 1) Etagenname im Projekt aktualisieren
-    floor.name = newName;
+    const room = project.rooms[activeRoomId];
+    const floorId = room.floorId;
 
-    // 2) Speichern
+    if (!project.floors[floorId]) {
+        console.warn("finishFloorNameEdit(): Etage existiert nicht:", floorId);
+        return;
+    }
+
+    const newName = el.textContent.trim();
+
+    // Leerer Name → alten Namen wiederherstellen
+    if (!newName) {
+        el.textContent = project.floors[floorId].name || "Etage";
+        return;
+    }
+
+    // 1) Etagenname im Projekt speichern
+    project.floors[floorId].name = newName;
+
+    // 2) Titelzeile aktualisieren
+    updateEditorTitle();
+
+    // 3) Sidebar aktualisieren
+    renderEditorProjectSidebar();
+
+    // 4) Projekt speichern
     saveProject();
-
-    // 3) Titelzeile aktualisieren
-    if (typeof updateEditorTitle === "function") {
-        updateEditorTitle();
-    } else {
-        importToEditor();
-    }
-
-    // 4) Sidebar aktualisieren (falls vorhanden)
-    if (typeof renderEditorSidebar === "function") {
-renderEditorProjectSidebar();
-    }
 }
+
 
 
 
@@ -4612,36 +4856,33 @@ function finishRoomNameEdit(el) {
     el.contentEditable = "false";
     el.classList.remove("editing");
 
-    const newName = el.textContent.trim();
-    const activeRoomId = SmartHomeData?.structure?.activeRoom || "wohnzimmer";
-
-    if (!newName) {
-        el.textContent = SmartHomeData.getRoom(activeRoomId)?.name || "Raum";
+    // Aktiven Raum bestimmen
+    if (!activeRoomId || !project.rooms[activeRoomId]) {
+        console.warn("Kein aktiver Raum für finishRoomNameEdit()");
         return;
     }
 
-    // 1) SmartHomeData.rooms aktualisieren (ARRAY!)
-    const roomObj = SmartHomeData.rooms.find(r => r.id === activeRoomId);
-    if (roomObj) {
-        roomObj.name = newName;
+    const newName = el.textContent.trim();
+
+    // Leerer Name → alten Namen wiederherstellen
+    if (!newName) {
+        el.textContent = project.rooms[activeRoomId].name || "Raum";
+        return;
     }
 
-    // 2) project.rooms synchronisieren (für Persistenz)
-    project.rooms = project.rooms || {};
-    project.rooms[activeRoomId] = project.rooms[activeRoomId] || {};
+    // 1) Namen im Projekt speichern
     project.rooms[activeRoomId].name = newName;
 
-    // 3) Speichern
-    saveProject();
-
-    // 4) Titelzeile aktualisieren
+    // 2) Titelzeile aktualisieren
     updateEditorTitle();
 
-    // 5) Sidebar aktualisieren (damit Name sofort sichtbar wird)
-    if (typeof renderEditorSidebar === "function") {
-renderEditorProjectSidebar();
-    }
+    // 3) Sidebar aktualisieren
+    renderEditorProjectSidebar();
+
+    // 4) Projekt speichern
+    saveProject();
 }
+
 
 
 function renderEditorProjectSidebar() {
@@ -4844,7 +5085,7 @@ function renderEditorSidebar() {
         container.appendChild(addRoom);
     });
 }
-
+ 
 
 
 
