@@ -457,9 +457,22 @@ function switchProject() {
         }
 
         modal.classList.add("hidden");
-        updateEditorTitle();
-        renderSidebar();
+
+        // 1) Aktiven Raum deaktivieren
+        activeRoomId = null;
+
+        // 2) SmartHome-Daten aus Projekt neu generieren
         generateSmartHomeDataFromProject();
+
+        // 3) Sidebar aktualisieren (zeigt jetzt alle Etagen/Räume, aber nichts aktiv)
+        renderEditorProjectSidebar();
+
+        // 4) Titelzeile aktualisieren (nur Projekt + ggf. Etage ohne Raum)
+        updateEditorTitle();
+
+        // 5) Canvas leeren, Hinweis anzeigen
+        clearCanvas();
+        showNoRoomMessage();
     };
 
     // Abbrechen
@@ -475,6 +488,8 @@ function switchProject() {
         }
     };
 }
+
+
 
 
 
@@ -536,13 +551,13 @@ function loadProject(name) {
         }
 
         // Aktiven Raum setzen
-        if (!project.rooms || Object.keys(project.rooms).length === 0) {
-            activeRoomId = "room_1";
-            project.rooms[activeRoomId] = createRoomModel(activeRoomId, "Neuer Raum", "floor_0");
-            project.floors["floor_0"].rooms.push(activeRoomId);
-        } else {
-            activeRoomId = Object.keys(project.rooms)[0];
-        }
+  //      if (!project.rooms || Object.keys(project.rooms).length === 0) {
+    //        activeRoomId = "room_1";
+      //      project.rooms[activeRoomId] = createRoomModel(activeRoomId, "Neuer Raum", "floor_0");
+        //    project.floors["floor_0"].rooms.push(activeRoomId);
+   //     } else {
+     //       activeRoomId = Object.keys(project.rooms)[0];
+     //   }
 
         return true;
 
