@@ -563,57 +563,31 @@ function loadProject(name) {
     const key = "project_" + name;
     const json = localStorage.getItem(key);
 
-    if (!json) return false;
+    if (!json) {
+        console.warn("⚠️ Projekt nicht gefunden:", name);
+        return false;
+    }
 
     try {
-        const data = JSON.parse(json);
+        // JSON parsen
+        let data = JSON.parse(json);
 
-        // Projekt komplett ersetzen
+        // 🔥 AUTOMATISCHE REPARATUR
+        data = sanitizeProject(data);
+
+        // Projekt komplett ersetzen (sauberer Reset)
         Object.keys(project).forEach(k => delete project[k]);
         Object.assign(project, data);
 
-        // Falls nötig: Etagen-Grundstruktur sicherstellen
-        if (!project.floors || Object.keys(project.floors).length === 0) {
-            project.floors = {
-                "floor_0": {
-                    id: "floor_0",
-                    name: "Erdgeschoss",
-                    rooms: []
-                }
-            };
-        }
-
-        // Räume reparieren
-        if (project.rooms) {
-            for (const roomId in project.rooms) {
-                const room = project.rooms[roomId];
-
-                if (!room.floorId) {
-                    room.floorId = "floor_0";
-                }
-
-                if (!project.floors[room.floorId].rooms.includes(roomId)) {
-                    project.floors[room.floorId].rooms.push(roomId);
-                }
-            }
-        }
-
-        // Aktiven Raum setzen
-        if (!project.rooms || Object.keys(project.rooms).length === 0) {
-            activeRoomId = "room_1";
-            project.rooms[activeRoomId] = createRoomModel(activeRoomId, "Neuer Raum", "floor_0");
-            project.floors["floor_0"].rooms.push(activeRoomId);
-        } else {
-            activeRoomId = Object.keys(project.rooms)[0];
-        }
-
+        console.log("✔ Projekt geladen:", name);
         return true;
 
     } catch (e) {
-        console.error("Fehler beim Laden des Projekts:", e);
+        console.error("❌ Fehler beim Laden des Projekts:", e);
         return false;
     }
 }
+
 
 
 
