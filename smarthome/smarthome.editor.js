@@ -1,5 +1,3 @@
-// 6a6d5ac
-
 function drawDoorIcon(ctx, x, y, size = 24) {
     ctx.save();
     ctx.translate(x, y);
@@ -396,11 +394,8 @@ function createNewFloor() {
 function deleteProject() {
     if (!confirm("Projekt wirklich löschen?")) return;
 
-    // Projekt aus Storage löschen
-    const key = "project_" + project.meta.name;
-    localStorage.removeItem(key);
+    deleteProjectFromStorage(project.meta.name);
 
-    // Neues leeres Projekt anlegen
     project = {
         meta: { name: "Neues Projekt" },
         floors: {},
@@ -412,14 +407,6 @@ function deleteProject() {
     renderSidebar();
 }
 
-
-function deleteProjectFromStorage(name) {
-    const key = "project_" + name;
-    localStorage.removeItem(key);
-}
-
-
-
 function switchProject() {
     const projects = getAllProjects();
 
@@ -428,9 +415,9 @@ function switchProject() {
         return;
     }
 
-    const modal    = document.getElementById("project-switcher");
-    const list     = document.getElementById("project-list");
-    const loadBtn  = document.getElementById("project-load-btn");
+    const modal = document.getElementById("project-switcher");
+    const list = document.getElementById("project-list");
+    const loadBtn = document.getElementById("project-load-btn");
     const cancelBtn = document.getElementById("project-cancel-btn");
 
     // Liste füllen
@@ -445,40 +432,47 @@ function switchProject() {
     // Modal anzeigen
     modal.classList.remove("hidden");
 
-    loadBtn.onclick = () => {
-        const name = list.value;
-        if (!name) return;
+    // Laden
+loadBtn.onclick = () => {
+    const name = list.value;
+    if (!name) return;
 
-        const loaded = loadProject(name);
-        if (!loaded) {
-            alert("Projekt konnte nicht geladen werden.");
-            return;
-        }
+    const loaded = loadProject(name);
+    if (!loaded) {
+        alert("Projekt konnte nicht geladen werden.");
+        return;
+    }
 
-        modal.classList.add("hidden");
+    modal.classList.add("hidden");
 
-        // 1) Aktiven Raum deaktivieren
+    // ⭐ ERSTER RAUM WIRD AUTOMATISCH GEWÄHLT
+    const roomIds = Object.keys(project.rooms);
+    if (roomIds.length > 0) {
+        activeRoomId = roomIds[0];
+    } else {
         activeRoomId = null;
+    }
 
-        // 2) SmartHome-Daten aktualisieren
-        generateSmartHomeDataFromProject();
+    updateEditorTitle();
+    renderSidebar();
+    generateSmartHomeDataFromProject();
 
-        // 3) Sidebar aktualisieren
-        renderEditorProjectSidebar();
+    // ⭐ Wenn ein Raum existiert → rendern
+    if (activeRoomId) {
+        RoomDesigner.render();
+    } else {
+        clearCanvas();
+        showNoRoomMessage();
+    }
+};
 
-        // 4) Titelzeile aktualisieren
-        updateEditorTitle();
 
-        // 5) Canvas über RoomDesigner sofort neu zeichnen lassen
-        if (typeof RoomDesigner !== "undefined" && RoomDesigner && typeof RoomDesigner.render === "function") {
-            RoomDesigner.render();   // nutzt jetzt den Null-Check in render()
-        }
-    };
-
+    // Abbrechen
     cancelBtn.onclick = () => {
         modal.classList.add("hidden");
     };
 
+    // ESC schließt
     document.onkeydown = (ev) => {
         if (ev.key === "Escape") {
             modal.classList.add("hidden");
@@ -487,28 +481,20 @@ function switchProject() {
     };
 }
 
-function showNoRoomMessage() {
-    const canvas = RoomDesigner.canvas;
-    const ctx = RoomDesigner.ctx;
-
-    if (!canvas || !ctx) return;
-
-    ctx.save();
-
-    // Hintergrund NICHT löschen – das macht render() bereits
-    ctx.fillStyle = "#999";
-    ctx.font = "20px sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-
-    const cx = canvas.width / 2;
-    const cy = canvas.height / 2;
-
-    ctx.fillText("Keine Etage / kein Raum ausgewählt", cx, cy - 10);
-    ctx.fillText("Bitte Etage oder Raum anlegen / auswählen", cx, cy + 20);
-
-    ctx.restore();
+function clearCanvas() {
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
+
+function showNoRoomMessage() {
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#888";
+    ctx.font = "20px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("Bitte Raum anlegen oder wählen", canvas.width / 2, canvas.height / 2);
+}
+
+
 
 
 // ------------------------------------------------------------
@@ -540,7 +526,7 @@ function loadProject(name) {
         Object.keys(project).forEach(k => delete project[k]);
         Object.assign(project, data);
 
-        // Falls nötig: Etagen-Grundstruktur sicherstellen
+        // Etagen-Grundstruktur sicherstellen
         if (!project.floors || Object.keys(project.floors).length === 0) {
             project.floors = {
                 "floor_0": {
@@ -566,15 +552,6 @@ function loadProject(name) {
             }
         }
 
-        // Aktiven Raum setzen
-  //      if (!project.rooms || Object.keys(project.rooms).length === 0) {
-    //        activeRoomId = "room_1";
-      //      project.rooms[activeRoomId] = createRoomModel(activeRoomId, "Neuer Raum", "floor_0");
-        //    project.floors["floor_0"].rooms.push(activeRoomId);
-   //     } else {
-     //       activeRoomId = Object.keys(project.rooms)[0];
-     //   }
-
         return true;
 
     } catch (e) {
@@ -582,6 +559,7 @@ function loadProject(name) {
         return false;
     }
 }
+
 
 
 
@@ -2375,69 +2353,56 @@ this._roomCenterBeforeMove = this._computeRoomCenter();
     // --------------------------------------------------
     // Rendering
     // --------------------------------------------------
-render() {
-    const ctx = this.ctx;
-    if (!ctx || !this.canvas) return;
+    render() {
+        const ctx = this.ctx;
+        if (!ctx || !this.canvas) return;
 
-    // ⭐ WICHTIG: Null-Check GANZ OBEN
-    if (!activeRoomId || !project.rooms[activeRoomId]) {
-        // Canvas sofort leeren
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // Hinweis anzeigen (falls vorhanden)
-        if (typeof showNoRoomMessage === "function") {
-            showNoRoomMessage();
-        }
+        ctx.save();
+        this.applyTransform();   // Transform aktiv
 
-        // ⭐ HARTES RETURN – kein weiterer Rendercode darf laufen
-        return;
-    }
+        this.drawGrid();         // Grid im Welt-Raum
+        this.drawFloor();
+        this.drawPolygon();
+        this.drawWalls();
+        this.drawWallLengths();
+        this.drawWindows();
+        this.drawDoors();
 
-    // ⭐ Ab hier: normaler Renderflow
-    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        // Winkelanzeige beim Drag
+        if (this.isDragging && this.selectedPoint) {
+            const idx = this.points.indexOf(this.selectedPoint);
+            const affected = new Set([idx]);
 
-    ctx.save();
-    this.applyTransform();
+            if (this.isClosed) {
+                affected.add((idx - 1 + this.points.length) % this.points.length);
+                affected.add((idx + 1) % this.points.length);
+            } else {
+                if (idx > 0) affected.add(idx - 1);
+                if (idx < this.points.length - 1) affected.add(idx + 1);
+            }
 
-    this.drawGrid();
-    this.drawFloor();
-    this.drawPolygon();
-    this.drawWalls();
-    this.drawWallLengths();
-    this.drawWindows();
-    this.drawDoors();
+            for (const i of affected) {
+                const prev = this.isClosed
+                    ? this.points[(i - 1 + this.points.length) % this.points.length]
+                    : this.points[i - 1];
 
-    if (this.isDragging && this.selectedPoint) {
-        const idx = this.points.indexOf(this.selectedPoint);
-        const affected = new Set([idx]);
+                const next = this.isClosed
+                    ? this.points[(i + 1) % this.points.length]
+                    : this.points[i + 1];
 
-        if (this.isClosed) {
-            affected.add((idx - 1 + this.points.length) % this.points.length);
-            affected.add((idx + 1) % this.points.length);
-        } else {
-            if (idx > 0) affected.add(idx - 1);
-            if (idx < this.points.length - 1) affected.add(idx + 1);
-        }
-
-        for (const i of affected) {
-            const prev = this.isClosed
-                ? this.points[(i - 1 + this.points.length) % this.points.length]
-                : this.points[i - 1];
-
-            const next = this.isClosed
-                ? this.points[(i + 1) % this.points.length]
-                : this.points[i + 1];
-
-            if (prev && next) {
-                this.drawAngleAtPoint(this.points[i], prev, next);
+                if (prev && next) {
+                    this.drawAngleAtPoint(this.points[i], prev, next);
+                }
             }
         }
-    }
 
-    ctx.restore();
+        ctx.restore();
 
-    this.drawHoverCross();
-},
+        // Hover-Kreuz im Screen-Space
+        this.drawHoverCross();
+    },
 
     drawGrid() {
         const ctx = this.ctx;
@@ -4603,43 +4568,24 @@ function setActiveRoom(roomId) {
 
 // Ganz oben in der Datei oder zumindest außerhalb des Click-Handlers:
 function updateEditorTitle() {
-    const proj  = document.getElementById("editor-project-name");
-    const floor = document.getElementById("editor-floor-name");
-    const room  = document.getElementById("editor-room-name");
+    const proj = document.getElementById("editor-project-name");
+    const room = document.getElementById("editor-room-name");
 
-    // Projektname immer setzen
     if (proj) {
-        proj.textContent = project.meta?.name || "Projekt";
+        proj.textContent = project.meta.name || "Projekt";
     }
 
-    // Sidebar-Projektname aktualisieren
+    // ⭐ Sidebar-Projektname aktualisieren
     const projSidebar = document.getElementById("editor-project-name-sidebar");
     if (projSidebar) {
-        projSidebar.textContent = project.meta?.name || "Projekt";
+        projSidebar.textContent = project.meta.name || "Projekt";
     }
 
     const roomObj = getActiveRoom();
-
-    // ❌ Kein aktiver Raum → Etage + Raum leeren
-    if (!roomObj) {
-        if (floor) floor.textContent = "";
-        if (room)  room.textContent  = "";
-        return;
-    }
-
-    // ✔ Aktiver Raum → Etage + Raum setzen
-    const floorObj = project.floors?.[roomObj.floorId];
-
-    if (floor) {
-        floor.textContent = floorObj?.name || "Etage";
-    }
-
-    if (room) {
+    if (room && roomObj) {
         room.textContent = roomObj.name || "Raum";
     }
 }
-
-
 
 
 // ---------------------------------------------------------
