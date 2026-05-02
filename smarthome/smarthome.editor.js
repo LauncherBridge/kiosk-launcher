@@ -42,6 +42,57 @@ let activeFloorId = null;
 let activeRoomId = null;
 
 
+function sanitizeProject(proj) {
+    if (!proj || typeof proj !== "object") {
+        console.warn("⚠️ Projekt ungültig – neu erzeugt.");
+        return { meta:{}, floors:{}, rooms:{}, doors:{}, windows:{}, furniture:{}, devices:{} };
+    }
+
+    // Basisfelder sicherstellen
+    proj.meta = proj.meta || {};
+    proj.floors = proj.floors || {};
+    proj.rooms = proj.rooms || {};
+    proj.doors = proj.doors || {};
+    proj.windows = proj.windows || {};
+    proj.furniture = proj.furniture || {};
+    proj.devices = proj.devices || {};
+
+    // Etagen absichern (Etagen ohne Räume sind erlaubt!)
+    for (const fid in proj.floors) {
+        const f = proj.floors[fid];
+        if (!f || typeof f !== "object") {
+            proj.floors[fid] = { id: fid, name: "Etage", rooms: [] };
+            continue;
+        }
+        f.rooms = Array.isArray(f.rooms) ? f.rooms : [];
+    }
+
+    // Räume absichern
+    for (const rid in proj.rooms) {
+        const r = proj.rooms[rid];
+        if (!r || typeof r !== "object") {
+            delete proj.rooms[rid];
+            continue;
+        }
+
+        // floorId reparieren (wenn Etagen existieren)
+        if (!r.floorId) {
+            const floorIds = Object.keys(proj.floors);
+            r.floorId = floorIds.length > 0 ? floorIds[0] : null;
+        }
+
+        // Punkte/Türen/Fenster absichern
+        r.points = Array.isArray(r.points) ? r.points : [];
+        r.doors = Array.isArray(r.doors) ? r.doors : [];
+        r.windows = Array.isArray(r.windows) ? r.windows : [];
+    }
+
+    return proj;
+}
+
+
+
+
 function initContextMenuSystem() {
     contextMenuEl = document.getElementById("context-menu");
 }
