@@ -415,23 +415,54 @@ function switchProject() {
         return;
     }
 
-    const name = prompt(
-        "Welches Projekt möchtest du laden?\n\n" +
-        projects.map(p => "- " + p).join("\n")
-    );
+    const modal = document.getElementById("project-switcher");
+    const list = document.getElementById("project-list");
+    const loadBtn = document.getElementById("project-load-btn");
+    const cancelBtn = document.getElementById("project-cancel-btn");
 
-    if (!name) return;
+    // Liste füllen
+    list.innerHTML = "";
+    projects.forEach(name => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name;
+        list.appendChild(opt);
+    });
 
-    const loaded = loadProject(name);
-    if (!loaded) {
-        alert("Projekt konnte nicht geladen werden.");
-        return;
-    }
+    // Modal anzeigen
+    modal.classList.remove("hidden");
 
-    updateEditorTitle();
-    renderSidebar();
-    generateSmartHomeDataFromProject();
+    // Laden
+    loadBtn.onclick = () => {
+        const name = list.value;
+        if (!name) return;
+
+        const loaded = loadProject(name);
+        if (!loaded) {
+            alert("Projekt konnte nicht geladen werden.");
+            return;
+        }
+
+        modal.classList.add("hidden");
+        updateEditorTitle();
+        renderSidebar();
+        generateSmartHomeDataFromProject();
+    };
+
+    // Abbrechen
+    cancelBtn.onclick = () => {
+        modal.classList.add("hidden");
+    };
+
+    // ESC schließt
+    document.onkeydown = (ev) => {
+        if (ev.key === "Escape") {
+            modal.classList.add("hidden");
+            document.onkeydown = null;
+        }
+    };
 }
+
 
 
 
