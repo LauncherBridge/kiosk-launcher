@@ -429,10 +429,8 @@ function switchProject() {
         list.appendChild(opt);
     });
 
-    // Modal anzeigen
     modal.classList.remove("hidden");
 
-    // Laden
     loadBtn.onclick = () => {
         const name = list.value;
         if (!name) return;
@@ -443,29 +441,30 @@ function switchProject() {
             return;
         }
 
-        activeRoomId = null;
-        clearCanvas();
-        showNoRoomMessage();
-
         modal.classList.add("hidden");
+
+        // ⭐ AUTOMATISCH ERSTEN RAUM WÄHLEN
+        const roomIds = Object.keys(project.rooms);
+        activeRoomId = roomIds.length > 0 ? roomIds[0] : null;
+
         updateEditorTitle();
         renderSidebar();
         generateSmartHomeDataFromProject();
+
+        // ⭐ CANVAS AKTUALISIEREN (DER WICHTIGE FIX)
+        if (activeRoomId) {
+            RoomDesigner.render();
+        } else {
+            clearCanvas();
+            showNoRoomMessage();
+        }
     };
 
-    // Abbrechen
     cancelBtn.onclick = () => {
         modal.classList.add("hidden");
     };
-
-    // ESC schließt
-    document.onkeydown = (ev) => {
-        if (ev.key === "Escape") {
-            modal.classList.add("hidden");
-            document.onkeydown = null;
-        }
-    };
 }
+
 
 function clearCanvas() {
     const ctx = canvas.getContext("2d");
@@ -512,7 +511,7 @@ function loadProject(name) {
         Object.keys(project).forEach(k => delete project[k]);
         Object.assign(project, data);
 
-        // Falls nötig: Etagen-Grundstruktur sicherstellen
+        // Etagen-Grundstruktur sicherstellen
         if (!project.floors || Object.keys(project.floors).length === 0) {
             project.floors = {
                 "floor_0": {
@@ -538,15 +537,6 @@ function loadProject(name) {
             }
         }
 
-        // Aktiven Raum setzen
-        if (!project.rooms || Object.keys(project.rooms).length === 0) {
-            activeRoomId = "room_1";
-            project.rooms[activeRoomId] = createRoomModel(activeRoomId, "Neuer Raum", "floor_0");
-            project.floors["floor_0"].rooms.push(activeRoomId);
-        } else {
-            activeRoomId = Object.keys(project.rooms)[0];
-        }
-
         return true;
 
     } catch (e) {
@@ -554,6 +544,7 @@ function loadProject(name) {
         return false;
     }
 }
+
 
 
 
