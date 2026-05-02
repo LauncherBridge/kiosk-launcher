@@ -379,21 +379,7 @@ function createNewFloor() {
 }
 
 
-function createNewProject() {
-    const name = prompt("Name des neuen Projekts:");
-    if (!name) return;
 
-    project = {
-        meta: { name },
-        floors: {},
-        rooms: {}
-    };
-
-    saveProjectAs(project);   // ⭐ wichtig: neues Projekt speichern!
-    updateEditorTitle();
-    renderSidebar();
-    generateSmartHomeDataFromProject();
-}
 
 function deleteProject() {
     if (!confirm("Projekt wirklich löschen?")) return;
