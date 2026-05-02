@@ -1,5 +1,3 @@
-// 6a6d5ac
-
 function drawDoorIcon(ctx, x, y, size = 24) {
     ctx.save();
     ctx.translate(x, y);
@@ -396,11 +394,8 @@ function createNewFloor() {
 function deleteProject() {
     if (!confirm("Projekt wirklich löschen?")) return;
 
-    // Projekt aus Storage löschen
-    const key = "project_" + project.meta.name;
-    localStorage.removeItem(key);
+    deleteProjectFromStorage(project.meta.name);
 
-    // Neues leeres Projekt anlegen
     project = {
         meta: { name: "Neues Projekt" },
         floors: {},
@@ -411,14 +406,6 @@ function deleteProject() {
     updateEditorTitle();
     renderSidebar();
 }
-
-
-function deleteProjectFromStorage(name) {
-    const key = "project_" + name;
-    localStorage.removeItem(key);
-}
-
-
 
 function switchProject() {
     const projects = getAllProjects();
@@ -456,27 +443,14 @@ function switchProject() {
             return;
         }
 
+        activeRoomId = null;
+        clearCanvas();
+        showNoRoomMessage();
+
         modal.classList.add("hidden");
-
-// 1) Projekt laden
-loadProject(name);
-
-// 2) Aktiven Raum deaktivieren
-activeRoomId = null;
-
-// 3) SmartHome-Daten aktualisieren
-generateSmartHomeDataFromProject();
-
-// 4) Sidebar aktualisieren
-renderEditorProjectSidebar();
-
-// 5) Titelzeile aktualisieren
-updateEditorTitle();
-
-// 6) Canvas leeren
-clearCanvas();
-showNoRoomMessage();
-
+        updateEditorTitle();
+        renderSidebar();
+        generateSmartHomeDataFromProject();
     };
 
     // Abbrechen
@@ -493,8 +467,18 @@ showNoRoomMessage();
     };
 }
 
+function clearCanvas() {
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
 
-
+function showNoRoomMessage() {
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#888";
+    ctx.font = "20px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("Bitte Raum anlegen oder wählen", canvas.width / 2, canvas.height / 2);
+}
 
 
 
@@ -555,13 +539,13 @@ function loadProject(name) {
         }
 
         // Aktiven Raum setzen
-  //      if (!project.rooms || Object.keys(project.rooms).length === 0) {
-    //        activeRoomId = "room_1";
-      //      project.rooms[activeRoomId] = createRoomModel(activeRoomId, "Neuer Raum", "floor_0");
-        //    project.floors["floor_0"].rooms.push(activeRoomId);
-   //     } else {
-     //       activeRoomId = Object.keys(project.rooms)[0];
-     //   }
+        if (!project.rooms || Object.keys(project.rooms).length === 0) {
+            activeRoomId = "room_1";
+            project.rooms[activeRoomId] = createRoomModel(activeRoomId, "Neuer Raum", "floor_0");
+            project.floors["floor_0"].rooms.push(activeRoomId);
+        } else {
+            activeRoomId = Object.keys(project.rooms)[0];
+        }
 
         return true;
 
@@ -2363,66 +2347,56 @@ this._roomCenterBeforeMove = this._computeRoomCenter();
     // --------------------------------------------------
     // Rendering
     // --------------------------------------------------
-render() {
-    const ctx = this.ctx;
-    if (!ctx || !this.canvas) return;
+    render() {
+        const ctx = this.ctx;
+        if (!ctx || !this.canvas) return;
 
-    // ⭐ Wenn kein Raum aktiv ist → Canvas leeren und abbrechen
-    if (!activeRoomId || !project.rooms[activeRoomId]) {
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        if (typeof showNoRoomMessage === "function") {
-            showNoRoomMessage();
-        }
-        return;
-    }
 
-    // ⭐ Ab hier: normaler Renderflow für einen aktiven Raum
-    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        ctx.save();
+        this.applyTransform();   // Transform aktiv
 
-    ctx.save();
-    this.applyTransform();   // Transform aktiv
+        this.drawGrid();         // Grid im Welt-Raum
+        this.drawFloor();
+        this.drawPolygon();
+        this.drawWalls();
+        this.drawWallLengths();
+        this.drawWindows();
+        this.drawDoors();
 
-    this.drawGrid();         // Grid im Welt-Raum
-    this.drawFloor();
-    this.drawPolygon();
-    this.drawWalls();
-    this.drawWallLengths();
-    this.drawWindows();
-    this.drawDoors();
+        // Winkelanzeige beim Drag
+        if (this.isDragging && this.selectedPoint) {
+            const idx = this.points.indexOf(this.selectedPoint);
+            const affected = new Set([idx]);
 
-    // Winkelanzeige beim Drag
-    if (this.isDragging && this.selectedPoint) {
-        const idx = this.points.indexOf(this.selectedPoint);
-        const affected = new Set([idx]);
+            if (this.isClosed) {
+                affected.add((idx - 1 + this.points.length) % this.points.length);
+                affected.add((idx + 1) % this.points.length);
+            } else {
+                if (idx > 0) affected.add(idx - 1);
+                if (idx < this.points.length - 1) affected.add(idx + 1);
+            }
 
-        if (this.isClosed) {
-            affected.add((idx - 1 + this.points.length) % this.points.length);
-            affected.add((idx + 1) % this.points.length);
-        } else {
-            if (idx > 0) affected.add(idx - 1);
-            if (idx < this.points.length - 1) affected.add(idx + 1);
-        }
+            for (const i of affected) {
+                const prev = this.isClosed
+                    ? this.points[(i - 1 + this.points.length) % this.points.length]
+                    : this.points[i - 1];
 
-        for (const i of affected) {
-            const prev = this.isClosed
-                ? this.points[(i - 1 + this.points.length) % this.points.length]
-                : this.points[i - 1];
+                const next = this.isClosed
+                    ? this.points[(i + 1) % this.points.length]
+                    : this.points[i + 1];
 
-            const next = this.isClosed
-                ? this.points[(i + 1) % this.points.length]
-                : this.points[i + 1];
-
-            if (prev && next) {
-                this.drawAngleAtPoint(this.points[i], prev, next);
+                if (prev && next) {
+                    this.drawAngleAtPoint(this.points[i], prev, next);
+                }
             }
         }
-    }
 
-    ctx.restore();
+        ctx.restore();
 
-    // Hover-Kreuz im Screen-Space
-    this.drawHoverCross();
-},
+        // Hover-Kreuz im Screen-Space
+        this.drawHoverCross();
+    },
 
     drawGrid() {
         const ctx = this.ctx;
@@ -4591,30 +4565,21 @@ function updateEditorTitle() {
     const proj = document.getElementById("editor-project-name");
     const room = document.getElementById("editor-room-name");
 
-    // Projektname immer setzen
     if (proj) {
         proj.textContent = project.meta.name || "Projekt";
     }
 
-    // Sidebar-Projektname aktualisieren
+    // ⭐ Sidebar-Projektname aktualisieren
     const projSidebar = document.getElementById("editor-project-name-sidebar");
     if (projSidebar) {
         projSidebar.textContent = project.meta.name || "Projekt";
     }
 
-    // Wenn KEIN Raum aktiv ist → Raumtitel leeren
     const roomObj = getActiveRoom();
-    if (!roomObj) {
-        if (room) room.textContent = "";
-        return;
-    }
-
-    // Wenn Raum aktiv → Namen anzeigen
-    if (room) {
+    if (room && roomObj) {
         room.textContent = roomObj.name || "Raum";
     }
 }
-
 
 
 // ---------------------------------------------------------
