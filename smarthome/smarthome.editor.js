@@ -428,9 +428,9 @@ function switchProject() {
         return;
     }
 
-    const modal = document.getElementById("project-switcher");
-    const list = document.getElementById("project-list");
-    const loadBtn = document.getElementById("project-load-btn");
+    const modal    = document.getElementById("project-switcher");
+    const list     = document.getElementById("project-list");
+    const loadBtn  = document.getElementById("project-load-btn");
     const cancelBtn = document.getElementById("project-cancel-btn");
 
     // Liste füllen
@@ -445,7 +445,6 @@ function switchProject() {
     // Modal anzeigen
     modal.classList.remove("hidden");
 
-    // Laden
     loadBtn.onclick = () => {
         const name = list.value;
         if (!name) return;
@@ -458,33 +457,28 @@ function switchProject() {
 
         modal.classList.add("hidden");
 
-// 1) Projekt laden
-loadProject(name);
+        // 1) Aktiven Raum deaktivieren
+        activeRoomId = null;
 
-// 2) Aktiven Raum deaktivieren
-activeRoomId = null;
+        // 2) SmartHome-Daten aktualisieren
+        generateSmartHomeDataFromProject();
 
-// 3) SmartHome-Daten aktualisieren
-generateSmartHomeDataFromProject();
+        // 3) Sidebar aktualisieren
+        renderEditorProjectSidebar();
 
-// 4) Sidebar aktualisieren
-renderEditorProjectSidebar();
+        // 4) Titelzeile aktualisieren
+        updateEditorTitle();
 
-// 5) Titelzeile aktualisieren
-updateEditorTitle();
-
-// 6) Canvas leeren
-clearCanvas();
-showNoRoomMessage();
-
+        // 5) Canvas über RoomDesigner sofort neu zeichnen lassen
+        if (typeof RoomDesigner !== "undefined" && RoomDesigner && typeof RoomDesigner.render === "function") {
+            RoomDesigner.render();   // nutzt jetzt den Null-Check in render()
+        }
     };
 
-    // Abbrechen
     cancelBtn.onclick = () => {
         modal.classList.add("hidden");
     };
 
-    // ESC schließt
     document.onkeydown = (ev) => {
         if (ev.key === "Escape") {
             modal.classList.add("hidden");
@@ -492,10 +486,6 @@ showNoRoomMessage();
         }
     };
 }
-
-
-
-
 
 
 
