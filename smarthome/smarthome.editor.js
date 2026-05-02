@@ -458,21 +458,25 @@ function switchProject() {
 
         modal.classList.add("hidden");
 
-        // 1) Aktiven Raum deaktivieren
-        activeRoomId = null;
+// 1) Projekt laden
+loadProject(name);
 
-        // 2) SmartHome-Daten aus Projekt neu generieren
-        generateSmartHomeDataFromProject();
+// 2) Aktiven Raum deaktivieren
+activeRoomId = null;
 
-        // 3) Sidebar aktualisieren (zeigt jetzt alle Etagen/Räume, aber nichts aktiv)
-        renderEditorProjectSidebar();
+// 3) SmartHome-Daten aktualisieren
+generateSmartHomeDataFromProject();
 
-        // 4) Titelzeile aktualisieren (nur Projekt + ggf. Etage ohne Raum)
-        updateEditorTitle();
+// 4) Sidebar aktualisieren
+renderEditorProjectSidebar();
 
-        // 5) Canvas leeren, Hinweis anzeigen
-        clearCanvas();
-        showNoRoomMessage();
+// 5) Titelzeile aktualisieren
+updateEditorTitle();
+
+// 6) Canvas leeren
+clearCanvas();
+showNoRoomMessage();
+
     };
 
     // Abbrechen
@@ -2359,56 +2363,66 @@ this._roomCenterBeforeMove = this._computeRoomCenter();
     // --------------------------------------------------
     // Rendering
     // --------------------------------------------------
-    render() {
-        const ctx = this.ctx;
-        if (!ctx || !this.canvas) return;
+render() {
+    const ctx = this.ctx;
+    if (!ctx || !this.canvas) return;
 
+    // ⭐ Wenn kein Raum aktiv ist → Canvas leeren und abbrechen
+    if (!activeRoomId || !project.rooms[activeRoomId]) {
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        if (typeof showNoRoomMessage === "function") {
+            showNoRoomMessage();
+        }
+        return;
+    }
 
-        ctx.save();
-        this.applyTransform();   // Transform aktiv
+    // ⭐ Ab hier: normaler Renderflow für einen aktiven Raum
+    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        this.drawGrid();         // Grid im Welt-Raum
-        this.drawFloor();
-        this.drawPolygon();
-        this.drawWalls();
-        this.drawWallLengths();
-        this.drawWindows();
-        this.drawDoors();
+    ctx.save();
+    this.applyTransform();   // Transform aktiv
 
-        // Winkelanzeige beim Drag
-        if (this.isDragging && this.selectedPoint) {
-            const idx = this.points.indexOf(this.selectedPoint);
-            const affected = new Set([idx]);
+    this.drawGrid();         // Grid im Welt-Raum
+    this.drawFloor();
+    this.drawPolygon();
+    this.drawWalls();
+    this.drawWallLengths();
+    this.drawWindows();
+    this.drawDoors();
 
-            if (this.isClosed) {
-                affected.add((idx - 1 + this.points.length) % this.points.length);
-                affected.add((idx + 1) % this.points.length);
-            } else {
-                if (idx > 0) affected.add(idx - 1);
-                if (idx < this.points.length - 1) affected.add(idx + 1);
-            }
+    // Winkelanzeige beim Drag
+    if (this.isDragging && this.selectedPoint) {
+        const idx = this.points.indexOf(this.selectedPoint);
+        const affected = new Set([idx]);
 
-            for (const i of affected) {
-                const prev = this.isClosed
-                    ? this.points[(i - 1 + this.points.length) % this.points.length]
-                    : this.points[i - 1];
-
-                const next = this.isClosed
-                    ? this.points[(i + 1) % this.points.length]
-                    : this.points[i + 1];
-
-                if (prev && next) {
-                    this.drawAngleAtPoint(this.points[i], prev, next);
-                }
-            }
+        if (this.isClosed) {
+            affected.add((idx - 1 + this.points.length) % this.points.length);
+            affected.add((idx + 1) % this.points.length);
+        } else {
+            if (idx > 0) affected.add(idx - 1);
+            if (idx < this.points.length - 1) affected.add(idx + 1);
         }
 
-        ctx.restore();
+        for (const i of affected) {
+            const prev = this.isClosed
+                ? this.points[(i - 1 + this.points.length) % this.points.length]
+                : this.points[i - 1];
 
-        // Hover-Kreuz im Screen-Space
-        this.drawHoverCross();
-    },
+            const next = this.isClosed
+                ? this.points[(i + 1) % this.points.length]
+                : this.points[i + 1];
+
+            if (prev && next) {
+                this.drawAngleAtPoint(this.points[i], prev, next);
+            }
+        }
+    }
+
+    ctx.restore();
+
+    // Hover-Kreuz im Screen-Space
+    this.drawHoverCross();
+},
 
     drawGrid() {
         const ctx = this.ctx;
@@ -4577,21 +4591,30 @@ function updateEditorTitle() {
     const proj = document.getElementById("editor-project-name");
     const room = document.getElementById("editor-room-name");
 
+    // Projektname immer setzen
     if (proj) {
         proj.textContent = project.meta.name || "Projekt";
     }
 
-    // ⭐ Sidebar-Projektname aktualisieren
+    // Sidebar-Projektname aktualisieren
     const projSidebar = document.getElementById("editor-project-name-sidebar");
     if (projSidebar) {
         projSidebar.textContent = project.meta.name || "Projekt";
     }
 
+    // Wenn KEIN Raum aktiv ist → Raumtitel leeren
     const roomObj = getActiveRoom();
-    if (room && roomObj) {
+    if (!roomObj) {
+        if (room) room.textContent = "";
+        return;
+    }
+
+    // Wenn Raum aktiv → Namen anzeigen
+    if (room) {
         room.textContent = roomObj.name || "Raum";
     }
 }
+
 
 
 // ---------------------------------------------------------
