@@ -2370,19 +2370,22 @@ render() {
     // ⭐ Wenn kein Raum aktiv ist → Canvas leeren und abbrechen
     if (!activeRoomId || !project.rooms[activeRoomId]) {
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // Optional: Hinweis anzeigen
         if (typeof showNoRoomMessage === "function") {
             showNoRoomMessage();
         }
-        return;
+
+        return; // ⭐ WICHTIG: Kein weiterer Rendercode darf laufen
     }
 
     // ⭐ Ab hier: normaler Renderflow für einen aktiven Raum
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     ctx.save();
-    this.applyTransform();   // Transform aktiv
+    this.applyTransform();
 
-    this.drawGrid();         // Grid im Welt-Raum
+    this.drawGrid();
     this.drawFloor();
     this.drawPolygon();
     this.drawWalls();
@@ -2390,7 +2393,6 @@ render() {
     this.drawWindows();
     this.drawDoors();
 
-    // Winkelanzeige beim Drag
     if (this.isDragging && this.selectedPoint) {
         const idx = this.points.indexOf(this.selectedPoint);
         const affected = new Set([idx]);
@@ -2420,7 +2422,6 @@ render() {
 
     ctx.restore();
 
-    // Hover-Kreuz im Screen-Space
     this.drawHoverCross();
 },
 
@@ -4588,32 +4589,42 @@ function setActiveRoom(roomId) {
 
 // Ganz oben in der Datei oder zumindest außerhalb des Click-Handlers:
 function updateEditorTitle() {
-    const proj = document.getElementById("editor-project-name");
-    const room = document.getElementById("editor-room-name");
+    const proj  = document.getElementById("editor-project-name");
+    const floor = document.getElementById("editor-floor-name");
+    const room  = document.getElementById("editor-room-name");
 
     // Projektname immer setzen
     if (proj) {
-        proj.textContent = project.meta.name || "Projekt";
+        proj.textContent = project.meta?.name || "Projekt";
     }
 
     // Sidebar-Projektname aktualisieren
     const projSidebar = document.getElementById("editor-project-name-sidebar");
     if (projSidebar) {
-        projSidebar.textContent = project.meta.name || "Projekt";
+        projSidebar.textContent = project.meta?.name || "Projekt";
     }
 
-    // Wenn KEIN Raum aktiv ist → Raumtitel leeren
     const roomObj = getActiveRoom();
+
+    // ❌ Kein aktiver Raum → Etage + Raum leeren
     if (!roomObj) {
-        if (room) room.textContent = "";
+        if (floor) floor.textContent = "";
+        if (room)  room.textContent  = "";
         return;
     }
 
-    // Wenn Raum aktiv → Namen anzeigen
+    // ✔ Aktiver Raum → Etage + Raum setzen
+    const floorObj = project.floors?.[roomObj.floorId];
+
+    if (floor) {
+        floor.textContent = floorObj?.name || "Etage";
+    }
+
     if (room) {
         room.textContent = roomObj.name || "Raum";
     }
 }
+
 
 
 
