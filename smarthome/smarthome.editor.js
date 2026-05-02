@@ -588,52 +588,49 @@ function loadProject(name) {
 // Projekt → Editor
 function importToEditor() {
 
-// Wenn wir aus dem SmartHome kommen, activeRoomId NICHT überschreiben
-if (!activeRoomId && !SmartHomeData.structure.activeRoom) {
-    const roomIds = Object.keys(project.rooms || {});
-    if (roomIds.length > 0) {
+    // 0) Wenn kein Projekt existiert → Editor in leeren Zustand versetzen
+    if (!project || !project.rooms || Object.keys(project.rooms).length === 0) {
+        console.warn("Kein Projekt oder keine Räume vorhanden.");
+        activeRoomId = null;
+
+        RoomDesigner.points = [];
+        RoomDesigner.doors = [];
+        RoomDesigner.windows = [];
+        RoomDesigner.isClosed = false;
+        RoomDesigner.updateWalls();
+        RoomDesigner.render();
+
+        return; // Editor bleibt leer
+    }
+
+    // 1) Wenn SmartHome einen aktiven Raum hat → diesen übernehmen
+    if (SmartHomeData.structure.activeRoom) {
+        activeRoomId = SmartHomeData.structure.activeRoom;
+    }
+
+    // 2) Wenn immer noch kein aktiver Raum → ersten Raum aus Projekt wählen
+    if (!activeRoomId) {
+        const roomIds = Object.keys(project.rooms);
         activeRoomId = roomIds[0];
     }
-}
 
-
-    if (!activeRoomId || !project.rooms[activeRoomId]) {
-        console.warn("Kein aktiver Raum gefunden:", activeRoomId);
-        return;
+    // 3) Falls der Raum nicht existiert → Fallback auf ersten Raum
+    if (!project.rooms[activeRoomId]) {
+        const roomIds = Object.keys(project.rooms);
+        activeRoomId = roomIds[0];
     }
 
     const room = project.rooms[activeRoomId];
 
-    // ⭐ Projektname setzen
-    const projectEl = document.getElementById("editor-project-name");
-    if (projectEl) {
-        projectEl.textContent = project.meta?.name || "Projekt";
-    }
-
-    // ⭐ Etagenname setzen
-    const floorEl = document.getElementById("editor-floor-name");
-    if (floorEl) {
-        const floor = project.floors?.[room.floorId];
-        floorEl.textContent = floor?.name || "Etage";
-    }
-
-    // ⭐ Raumname setzen
-    const roomEl = document.getElementById("editor-room-name");
-    if (roomEl) {
-        roomEl.textContent = room.name || room.id;
-    }
-
-    // ⭐ Punkte
+    // 4) Editor-Daten setzen (KEIN DOM!)
     RoomDesigner.points = (room.points || []).map(p => ({ x: p.x, y: p.y }));
     RoomDesigner.isClosed = room.isClosed || false;
 
-    // ⭐ Türen
     RoomDesigner.doors = (room.doors || [])
         .map(id => project.doors[id])
         .filter(Boolean)
         .map(d => ({ ...d }));
 
-    // ⭐ Fenster
     RoomDesigner.windows = (room.windows || [])
         .map(id => project.windows[id])
         .filter(Boolean)
@@ -641,10 +638,8 @@ if (!activeRoomId && !SmartHomeData.structure.activeRoom) {
 
     RoomDesigner.updateWalls();
     RoomDesigner.render();
-
-    // ⭐ Sidebar mit Etagen & Räumen aus dem Projektmodell füllen
-    renderEditorProjectSidebar();
 }
+
 
 
 
