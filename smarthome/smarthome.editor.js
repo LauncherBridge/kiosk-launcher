@@ -1,4 +1,4 @@
-// ee72602
+// ff
 
 function drawDoorIcon(ctx, x, y, size = 24) {
     ctx.save();
@@ -5249,33 +5249,28 @@ window.addEventListener("DOMContentLoaded", () => {
         const sidebar = document.getElementById("editor-sidebar");
         if (sidebar) sidebar.style.display = "flex";
 
-        // Editor initialisieren
         RoomDesigner.init();
 
-        // Projekt laden
         if (loadProject()) {
             importToEditor();
         }
 
-        // Sidebar rendern (damit der aktive Raum markiert wird)
-        renderEditorProjectSidebar();
-
-        // Wenn aus SmartHome ein Raum aktiv war → diesen laden
-        if (SmartHomeData.structure.activeRoom) {
-            RoomDesigner.loadRoom(SmartHomeData.structure.activeRoom);
-        }
-
-        // ⭐ Jetzt erst Titelzeile aktualisieren (nach loadRoom!)
         updateEditorTitle();
-
-        // Titelzeile editierbar machen
         enableRoomNameEditing();
         enableFloorNameEditing();
         enableProjectNameEditing();
 
+        renderEditorProjectSidebar();
+
+        if (SmartHomeData.structure.activeRoom) {
+            RoomDesigner.loadRoom(SmartHomeData.structure.activeRoom);
+        }
+
         attachFloorCrumbMenu();
     });
 });
+
+
 
 
 // ===============================
