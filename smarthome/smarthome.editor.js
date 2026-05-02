@@ -429,57 +429,42 @@ function switchProject() {
         list.appendChild(opt);
     });
 
-    // Modal anzeigen
     modal.classList.remove("hidden");
 
-    // Laden
-loadBtn.onclick = () => {
-    const name = list.value;
-    if (!name) return;
+    loadBtn.onclick = () => {
+        const name = list.value;
+        if (!name) return;
 
-    const loaded = loadProject(name);
-    if (!loaded) {
-        alert("Projekt konnte nicht geladen werden.");
-        return;
-    }
+        const loaded = loadProject(name);
+        if (!loaded) {
+            alert("Projekt konnte nicht geladen werden.");
+            return;
+        }
 
-    modal.classList.add("hidden");
+        modal.classList.add("hidden");
 
-    // ⭐ ERSTER RAUM WIRD AUTOMATISCH GEWÄHLT
-    const roomIds = Object.keys(project.rooms);
-    if (roomIds.length > 0) {
-        activeRoomId = roomIds[0];
-    } else {
-        activeRoomId = null;
-    }
+        // ⭐ AUTOMATISCH ERSTEN RAUM WÄHLEN
+        const roomIds = Object.keys(project.rooms);
+        activeRoomId = roomIds.length > 0 ? roomIds[0] : null;
 
-    updateEditorTitle();
-    renderSidebar();
-    generateSmartHomeDataFromProject();
+        updateEditorTitle();
+        renderSidebar();
+        generateSmartHomeDataFromProject();
 
-    // ⭐ Wenn ein Raum existiert → rendern
-    if (activeRoomId) {
-        RoomDesigner.render();
-    } else {
-        clearCanvas();
-        showNoRoomMessage();
-    }
-};
+        // ⭐ CANVAS AKTUALISIEREN (DER WICHTIGE FIX)
+        if (activeRoomId) {
+            RoomDesigner.render();
+        } else {
+            clearCanvas();
+            showNoRoomMessage();
+        }
+    };
 
-
-    // Abbrechen
     cancelBtn.onclick = () => {
         modal.classList.add("hidden");
     };
-
-    // ESC schließt
-    document.onkeydown = (ev) => {
-        if (ev.key === "Escape") {
-            modal.classList.add("hidden");
-            document.onkeydown = null;
-        }
-    };
 }
+
 
 function clearCanvas() {
     const ctx = canvas.getContext("2d");
