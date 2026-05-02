@@ -588,13 +588,14 @@ function loadProject(name) {
 // Projekt → Editor
 function importToEditor() {
 
-    // ⭐ Schritt 3: activeRoomId sicherstellen
-    if (!activeRoomId) {
-        const roomIds = Object.keys(project.rooms || {});
-        if (roomIds.length > 0) {
-            activeRoomId = roomIds[0];
-        }
+// Wenn wir aus dem SmartHome kommen, activeRoomId NICHT überschreiben
+if (!activeRoomId && !SmartHomeData.structure.activeRoom) {
+    const roomIds = Object.keys(project.rooms || {});
+    if (roomIds.length > 0) {
+        activeRoomId = roomIds[0];
     }
+}
+
 
     if (!activeRoomId || !project.rooms[activeRoomId]) {
         console.warn("Kein aktiver Raum gefunden:", activeRoomId);
