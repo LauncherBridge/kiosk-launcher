@@ -487,6 +487,28 @@ function switchProject() {
     };
 }
 
+function showNoRoomMessage() {
+    const canvas = RoomDesigner.canvas;
+    const ctx = RoomDesigner.ctx;
+
+    if (!canvas || !ctx) return;
+
+    ctx.save();
+
+    // Hintergrund NICHT löschen – das macht render() bereits
+    ctx.fillStyle = "#999";
+    ctx.font = "20px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+
+    ctx.fillText("Keine Etage / kein Raum ausgewählt", cx, cy - 10);
+    ctx.fillText("Bitte Etage oder Raum anlegen", cx, cy + 20);
+
+    ctx.restore();
+}
 
 
 // ------------------------------------------------------------
