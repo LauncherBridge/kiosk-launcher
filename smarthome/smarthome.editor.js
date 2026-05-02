@@ -458,26 +458,27 @@ function switchProject() {
 
         modal.classList.add("hidden");
 
-        // 1) Aktiven Raum setzen (MUSS zuerst passieren)
-        const roomIds = Object.keys(project.rooms);
-        activeRoomId = roomIds.length > 0 ? roomIds[0] : null;
+// 1) Aktiven Raum setzen
+const roomIds = Object.keys(project.rooms);
+activeRoomId = roomIds.length > 0 ? roomIds[0] : null;
 
-        // 2) Sidebar aktualisieren (richtige Funktion!)
-        renderEditorProjectSidebar();
+// 2) SmartHome-Daten aktualisieren (MUSS VOR dem Rendern passieren)
+generateSmartHomeDataFromProject();
 
-        // 3) Titelzeile aktualisieren
-        updateEditorTitle();
+// 3) Sidebar aktualisieren
+renderEditorProjectSidebar();
 
-        // 4) SmartHome-Daten aktualisieren
-        generateSmartHomeDataFromProject();
+// 4) Titelzeile aktualisieren
+updateEditorTitle();
 
-        // 5) Canvas aktualisieren
-        if (activeRoomId) {
-            RoomDesigner.render();
-        } else {
-            clearCanvas();
-            showNoRoomMessage();
-        }
+// 5) Canvas aktualisieren (JETZT erst!)
+if (activeRoomId) {
+    RoomDesigner.render();
+} else {
+    clearCanvas();
+    showNoRoomMessage();
+}
+
     };
 
     // Abbrechen
