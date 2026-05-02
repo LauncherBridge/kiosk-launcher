@@ -446,21 +446,40 @@ function switchProject() {
     modal.classList.remove("hidden");
 
     // Laden
-    loadBtn.onclick = () => {
-        const name = list.value;
-        if (!name) return;
+loadBtn.onclick = () => {
+    const name = list.value;
+    if (!name) return;
 
-        const loaded = loadProject(name);
-        if (!loaded) {
-            alert("Projekt konnte nicht geladen werden.");
-            return;
-        }
+    const loaded = loadProject(name);
+    if (!loaded) {
+        alert("Projekt konnte nicht geladen werden.");
+        return;
+    }
 
-        modal.classList.add("hidden");
-        updateEditorTitle();
-        renderSidebar();
-        generateSmartHomeDataFromProject();
-    };
+    modal.classList.add("hidden");
+
+    // 1) Aktiven Raum setzen (MUSS zuerst passieren)
+    const roomIds = Object.keys(project.rooms);
+    activeRoomId = roomIds.length > 0 ? roomIds[0] : null;
+
+    // 2) Sidebar aktualisieren (jetzt hat sie korrekte Daten)
+    renderSidebar();
+
+    // 3) Titelzeile aktualisieren
+    updateEditorTitle();
+
+    // 4) SmartHome-Daten aktualisieren
+    generateSmartHomeDataFromProject();
+
+    // 5) Canvas aktualisieren
+    if (activeRoomId) {
+        RoomDesigner.render();
+    } else {
+        clearCanvas();
+        showNoRoomMessage();
+    }
+};
+
 
     // Abbrechen
     cancelBtn.onclick = () => {
