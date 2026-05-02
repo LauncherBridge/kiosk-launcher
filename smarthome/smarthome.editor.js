@@ -1,5 +1,3 @@
-// 6a6d5ac
-
 function drawDoorIcon(ctx, x, y, size = 24) {
     ctx.save();
     ctx.translate(x, y);
@@ -24,18 +22,11 @@ function drawDoorIcon(ctx, x, y, size = 24) {
 // Globale Projekt-Daten (Persistenz-Grundstruktur)
 // ------------------------------------------------------------
 const project = {
-
-
     meta: {
         version: 1,
         created: Date.now(),
         modified: Date.now()
     },
-
-    // Globale Editor-States
-let activeMode = "editor";
-let activeFloorId = null;
-let activeRoomId = null;
 
     objects: {},     // Häuser/Wohnungen (später)
     floors: {},      // Etagen
@@ -464,28 +455,9 @@ function switchProject() {
         }
 
         modal.classList.add("hidden");
-
-// 1) Aktiven Raum setzen
-const roomIds = Object.keys(project.rooms);
-activeRoomId = roomIds.length > 0 ? roomIds[0] : null;
-
-// 2) SmartHome-Daten aktualisieren (MUSS VOR dem Rendern passieren)
-generateSmartHomeDataFromProject();
-
-// 3) Sidebar aktualisieren
-renderEditorProjectSidebar();
-
-// 4) Titelzeile aktualisieren
-updateEditorTitle();
-
-// 5) Canvas aktualisieren (JETZT erst!)
-if (activeRoomId) {
-    RoomDesigner.render();
-} else {
-    clearCanvas();
-    showNoRoomMessage();
-}
-
+        updateEditorTitle();
+        renderSidebar();
+        generateSmartHomeDataFromProject();
     };
 
     // Abbrechen
@@ -501,7 +473,6 @@ if (activeRoomId) {
         }
     };
 }
-
 
 
 
@@ -563,13 +534,13 @@ function loadProject(name) {
         }
 
         // Aktiven Raum setzen
-  //      if (!project.rooms || Object.keys(project.rooms).length === 0) {
-    //        activeRoomId = "room_1";
-      //      project.rooms[activeRoomId] = createRoomModel(activeRoomId, "Neuer Raum", "floor_0");
-        //    project.floors["floor_0"].rooms.push(activeRoomId);
-   //     } else {
-     //       activeRoomId = Object.keys(project.rooms)[0];
-     //   }
+        if (!project.rooms || Object.keys(project.rooms).length === 0) {
+            activeRoomId = "room_1";
+            project.rooms[activeRoomId] = createRoomModel(activeRoomId, "Neuer Raum", "floor_0");
+            project.floors["floor_0"].rooms.push(activeRoomId);
+        } else {
+            activeRoomId = Object.keys(project.rooms)[0];
+        }
 
         return true;
 
