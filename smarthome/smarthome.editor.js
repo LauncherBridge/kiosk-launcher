@@ -1,3 +1,5 @@
+// 6a6d5ac
+
 function drawDoorIcon(ctx, x, y, size = 24) {
     ctx.save();
     ctx.translate(x, y);
@@ -429,8 +431,10 @@ function switchProject() {
         list.appendChild(opt);
     });
 
+    // Modal anzeigen
     modal.classList.remove("hidden");
 
+    // Laden
     loadBtn.onclick = () => {
         const name = list.value;
         if (!name) return;
@@ -442,42 +446,25 @@ function switchProject() {
         }
 
         modal.classList.add("hidden");
-
-        // ⭐ AUTOMATISCH ERSTEN RAUM WÄHLEN
-        const roomIds = Object.keys(project.rooms);
-        activeRoomId = roomIds.length > 0 ? roomIds[0] : null;
-
         updateEditorTitle();
         renderSidebar();
         generateSmartHomeDataFromProject();
-
-        // ⭐ CANVAS AKTUALISIEREN (DER WICHTIGE FIX)
-        if (activeRoomId) {
-            RoomDesigner.render();
-        } else {
-            clearCanvas();
-            showNoRoomMessage();
-        }
     };
 
+    // Abbrechen
     cancelBtn.onclick = () => {
         modal.classList.add("hidden");
     };
+
+    // ESC schließt
+    document.onkeydown = (ev) => {
+        if (ev.key === "Escape") {
+            modal.classList.add("hidden");
+            document.onkeydown = null;
+        }
+    };
 }
 
-
-function clearCanvas() {
-    const ctx = canvas.getContext("2d");
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-}
-
-function showNoRoomMessage() {
-    const ctx = canvas.getContext("2d");
-    ctx.fillStyle = "#888";
-    ctx.font = "20px Arial";
-    ctx.textAlign = "center";
-    ctx.fillText("Bitte Raum anlegen oder wählen", canvas.width / 2, canvas.height / 2);
-}
 
 
 
@@ -511,7 +498,7 @@ function loadProject(name) {
         Object.keys(project).forEach(k => delete project[k]);
         Object.assign(project, data);
 
-        // Etagen-Grundstruktur sicherstellen
+        // Falls nötig: Etagen-Grundstruktur sicherstellen
         if (!project.floors || Object.keys(project.floors).length === 0) {
             project.floors = {
                 "floor_0": {
@@ -537,6 +524,15 @@ function loadProject(name) {
             }
         }
 
+        // Aktiven Raum setzen
+        if (!project.rooms || Object.keys(project.rooms).length === 0) {
+            activeRoomId = "room_1";
+            project.rooms[activeRoomId] = createRoomModel(activeRoomId, "Neuer Raum", "floor_0");
+            project.floors["floor_0"].rooms.push(activeRoomId);
+        } else {
+            activeRoomId = Object.keys(project.rooms)[0];
+        }
+
         return true;
 
     } catch (e) {
@@ -544,7 +540,6 @@ function loadProject(name) {
         return false;
     }
 }
-
 
 
 
