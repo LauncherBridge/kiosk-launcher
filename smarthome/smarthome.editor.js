@@ -1,4 +1,4 @@
-// 6a6d5ac
+// ee72602
 
 function drawDoorIcon(ctx, x, y, size = 24) {
     ctx.save();
@@ -588,49 +588,51 @@ function loadProject(name) {
 // Projekt → Editor
 function importToEditor() {
 
-    // 0) Wenn kein Projekt existiert → Editor in leeren Zustand versetzen
-    if (!project || !project.rooms || Object.keys(project.rooms).length === 0) {
-        console.warn("Kein Projekt oder keine Räume vorhanden.");
-        activeRoomId = null;
-
-        RoomDesigner.points = [];
-        RoomDesigner.doors = [];
-        RoomDesigner.windows = [];
-        RoomDesigner.isClosed = false;
-        RoomDesigner.updateWalls();
-        RoomDesigner.render();
-
-        return; // Editor bleibt leer
-    }
-
-    // 1) Wenn SmartHome einen aktiven Raum hat → diesen übernehmen
-    if (SmartHomeData.structure.activeRoom) {
-        activeRoomId = SmartHomeData.structure.activeRoom;
-    }
-
-    // 2) Wenn immer noch kein aktiver Raum → ersten Raum aus Projekt wählen
+    // ⭐ Schritt 3: activeRoomId sicherstellen
     if (!activeRoomId) {
-        const roomIds = Object.keys(project.rooms);
-        activeRoomId = roomIds[0];
+        const roomIds = Object.keys(project.rooms || {});
+        if (roomIds.length > 0) {
+            activeRoomId = roomIds[0];
+        }
     }
 
-    // 3) Falls der Raum nicht existiert → Fallback auf ersten Raum
-    if (!project.rooms[activeRoomId]) {
-        const roomIds = Object.keys(project.rooms);
-        activeRoomId = roomIds[0];
+    if (!activeRoomId || !project.rooms[activeRoomId]) {
+        console.warn("Kein aktiver Raum gefunden:", activeRoomId);
+        return;
     }
 
     const room = project.rooms[activeRoomId];
 
-    // 4) Editor-Daten setzen (KEIN DOM!)
+    // ⭐ Projektname setzen
+    const projectEl = document.getElementById("editor-project-name");
+    if (projectEl) {
+        projectEl.textContent = project.meta?.name || "Projekt";
+    }
+
+    // ⭐ Etagenname setzen
+    const floorEl = document.getElementById("editor-floor-name");
+    if (floorEl) {
+        const floor = project.floors?.[room.floorId];
+        floorEl.textContent = floor?.name || "Etage";
+    }
+
+    // ⭐ Raumname setzen
+    const roomEl = document.getElementById("editor-room-name");
+    if (roomEl) {
+        roomEl.textContent = room.name || room.id;
+    }
+
+    // ⭐ Punkte
     RoomDesigner.points = (room.points || []).map(p => ({ x: p.x, y: p.y }));
     RoomDesigner.isClosed = room.isClosed || false;
 
+    // ⭐ Türen
     RoomDesigner.doors = (room.doors || [])
         .map(id => project.doors[id])
         .filter(Boolean)
         .map(d => ({ ...d }));
 
+    // ⭐ Fenster
     RoomDesigner.windows = (room.windows || [])
         .map(id => project.windows[id])
         .filter(Boolean)
@@ -638,8 +640,10 @@ function importToEditor() {
 
     RoomDesigner.updateWalls();
     RoomDesigner.render();
-}
 
+    // ⭐ Sidebar mit Etagen & Räumen aus dem Projektmodell füllen
+    renderEditorProjectSidebar();
+}
 
 
 
@@ -5027,13 +5031,11 @@ function renderEditorProjectSidebar() {
         floorHeader.className = "floor-header";
         floorHeader.textContent = floor.name;
 
-        // Aktive Etage hervorheben
         if (floor.id === activeFloor) {
             floorHeader.classList.add("active-floor");
             group.classList.add("open");
         }
 
-        // Etage ein-/ausklappen
         floorHeader.addEventListener("click", (ev) => {
             ev.stopPropagation();
             group.classList.toggle("open");
@@ -5049,27 +5051,17 @@ function renderEditorProjectSidebar() {
             const roomDiv = document.createElement("div");
             roomDiv.className = "room-entry";
             roomDiv.textContent = room.name;
-            roomDiv.dataset.roomId = roomId;
 
-            // Aktiven Raum hervorheben
             if (roomId === activeRoom) {
                 roomDiv.classList.add("active-room");
             }
 
-            // ⭐ Raumklick – Editor synchronisieren
             roomDiv.addEventListener("click", (ev) => {
                 ev.stopPropagation();
 
-                // 1) Aktiven Raum setzen
                 activeRoomId = roomId;
 
-                // 2) Editor-Daten laden
                 importToEditor();
-
-                // 3) Titelzeile aktualisieren
-                updateEditorTitle();
-
-                // 4) Sidebar neu rendern (für aktive Markierung)
                 renderEditorProjectSidebar();
             });
 
@@ -5081,6 +5073,7 @@ function renderEditorProjectSidebar() {
         container.appendChild(group);
     });
 }
+
 
 
 function renderLeftSidebar() {
@@ -5223,6 +5216,9 @@ function renderEditorSidebar() {
  
 
 
+
+
+
 window.addEventListener("DOMContentLoaded", () => {
     const openBtn = document.getElementById("btnOpenEditor");
     if (!openBtn) return;
@@ -5253,24 +5249,26 @@ window.addEventListener("DOMContentLoaded", () => {
         const sidebar = document.getElementById("editor-sidebar");
         if (sidebar) sidebar.style.display = "flex";
 
+        // Editor initialisieren
         RoomDesigner.init();
 
+        // Projekt laden
         if (loadProject()) {
             importToEditor();
         }
 
-        // Sidebar zuerst rendern
+        // Sidebar rendern (damit der aktive Raum markiert wird)
         renderEditorProjectSidebar();
 
-        // ⭐ WICHTIG: aktiven Raum aus SmartHome übernehmen
+        // Wenn aus SmartHome ein Raum aktiv war → diesen laden
         if (SmartHomeData.structure.activeRoom) {
-            activeRoomId = SmartHomeData.structure.activeRoom;   // ⭐ FIX
-            RoomDesigner.loadRoom(activeRoomId);
+            RoomDesigner.loadRoom(SmartHomeData.structure.activeRoom);
         }
 
-        // ⭐ Jetzt erst Titelzeile aktualisieren
+        // ⭐ Jetzt erst Titelzeile aktualisieren (nach loadRoom!)
         updateEditorTitle();
 
+        // Titelzeile editierbar machen
         enableRoomNameEditing();
         enableFloorNameEditing();
         enableProjectNameEditing();
@@ -5278,7 +5276,6 @@ window.addEventListener("DOMContentLoaded", () => {
         attachFloorCrumbMenu();
     });
 });
-
 
 
 // ===============================
