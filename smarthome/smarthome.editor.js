@@ -5216,9 +5216,6 @@ function renderEditorSidebar() {
  
 
 
-
-
-
 window.addEventListener("DOMContentLoaded", () => {
     const openBtn = document.getElementById("btnOpenEditor");
     if (!openBtn) return;
@@ -5249,26 +5246,24 @@ window.addEventListener("DOMContentLoaded", () => {
         const sidebar = document.getElementById("editor-sidebar");
         if (sidebar) sidebar.style.display = "flex";
 
-        // Editor initialisieren
         RoomDesigner.init();
 
-        // Projekt laden
         if (loadProject()) {
             importToEditor();
         }
 
-        // Sidebar rendern (damit der aktive Raum markiert wird)
+        // Sidebar zuerst rendern
         renderEditorProjectSidebar();
 
-        // Wenn aus SmartHome ein Raum aktiv war → diesen laden
+        // ⭐ WICHTIG: aktiven Raum aus SmartHome übernehmen
         if (SmartHomeData.structure.activeRoom) {
-            RoomDesigner.loadRoom(SmartHomeData.structure.activeRoom);
+            activeRoomId = SmartHomeData.structure.activeRoom;   // ⭐ FIX
+            RoomDesigner.loadRoom(activeRoomId);
         }
 
-        // ⭐ Jetzt erst Titelzeile aktualisieren (nach loadRoom!)
+        // ⭐ Jetzt erst Titelzeile aktualisieren
         updateEditorTitle();
 
-        // Titelzeile editierbar machen
         enableRoomNameEditing();
         enableFloorNameEditing();
         enableProjectNameEditing();
@@ -5276,6 +5271,7 @@ window.addEventListener("DOMContentLoaded", () => {
         attachFloorCrumbMenu();
     });
 });
+
 
 
 // ===============================
