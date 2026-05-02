@@ -458,27 +458,21 @@ function switchProject() {
 
         modal.classList.add("hidden");
 
-// 1) Aktiven Raum setzen
-const roomIds = Object.keys(project.rooms);
-activeRoomId = roomIds.length > 0 ? roomIds[0] : null;
+        // 1) Aktiven Raum deaktivieren
+        activeRoomId = null;
 
-// 2) SmartHome-Daten aktualisieren (MUSS VOR dem Rendern passieren)
-generateSmartHomeDataFromProject();
+        // 2) SmartHome-Daten aus Projekt neu generieren
+        generateSmartHomeDataFromProject();
 
-// 3) Sidebar aktualisieren
-renderEditorProjectSidebar();
+        // 3) Sidebar aktualisieren (zeigt jetzt alle Etagen/Räume, aber nichts aktiv)
+        renderEditorProjectSidebar();
 
-// 4) Titelzeile aktualisieren
-updateEditorTitle();
+        // 4) Titelzeile aktualisieren (nur Projekt + ggf. Etage ohne Raum)
+        updateEditorTitle();
 
-// 5) Canvas aktualisieren (JETZT erst!)
-if (activeRoomId) {
-    RoomDesigner.render();
-} else {
-    clearCanvas();
-    showNoRoomMessage();
-}
-
+        // 5) Canvas leeren, Hinweis anzeigen
+        clearCanvas();
+        showNoRoomMessage();
     };
 
     // Abbrechen
@@ -494,6 +488,7 @@ if (activeRoomId) {
         }
     };
 }
+
 
 
 
