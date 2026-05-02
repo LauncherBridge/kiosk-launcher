@@ -443,6 +443,10 @@ function switchProject() {
             return;
         }
 
+        activeRoomId = null;
+        clearCanvas();
+        showNoRoomMessage();
+
         modal.classList.add("hidden");
         updateEditorTitle();
         renderSidebar();
@@ -463,6 +467,18 @@ function switchProject() {
     };
 }
 
+function clearCanvas() {
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function showNoRoomMessage() {
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#888";
+    ctx.font = "20px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("Bitte Raum anlegen oder wählen", canvas.width / 2, canvas.height / 2);
+}
 
 
 
