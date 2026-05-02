@@ -24,6 +24,10 @@ function drawDoorIcon(ctx, x, y, size = 24) {
 // Globale Projekt-Daten (Persistenz-Grundstruktur)
 // ------------------------------------------------------------
 const project = {
+    // Globale Editor-States
+let activeFloorId = null;
+let activeRoomId = null;
+
     meta: {
         version: 1,
         created: Date.now(),
