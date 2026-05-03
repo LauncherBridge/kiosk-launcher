@@ -694,9 +694,16 @@ function importToEditor() {
         const roomIds = Object.keys(project.rooms);
 
         // Falls activeRoomId fehlt oder ungültig ist → zurücksetzen
-        if (!activeRoomId || !project.rooms[activeRoomId]) {
-            activeRoomId = roomIds.length > 0 ? roomIds[0] : null;
-        }
+// Falls activeRoomId fehlt → aus SmartHomeData übernehmen
+if (!activeRoomId || !project.rooms[activeRoomId]) {
+    const rid = SmartHomeData.structure.activeRoom;
+    if (rid && project.rooms[rid]) {
+        activeRoomId = rid;
+    } else {
+        activeRoomId = roomIds.length > 0 ? roomIds[0] : null;
+    }
+}
+
 
         // Wenn es GAR KEINEN Raum gibt → Editor in leeren Zustand
         if (!activeRoomId) {
