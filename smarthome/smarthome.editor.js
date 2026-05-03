@@ -641,7 +641,7 @@ function loadProject(name) {
     const json = localStorage.getItem(key);
 
     if (!json) {
-        console.warn("⚠️ Projekt nicht gefunden:", name,
+        console.warn("⚠️ Hinweis-Service: Projekt nicht gefunden:", name,
              " – loadProject gibt false zurück. Fallback in der Editor-Initialisierung lädt das erste vorhandene Projekt oder legt ein neues Projekt an.");
         return false;
     }
