@@ -1018,7 +1018,7 @@ init() {
 
     this.resize();
     this.render();
-}
+},
 
 
     resize() {
