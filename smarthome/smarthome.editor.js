@@ -4759,7 +4759,7 @@ RoomDesigner.loadRoom = function(roomId) {
 // Editor öffnen
 // --------------------------------------------------
 function getActiveRoom() {
-    return SmartHomeData.getRoom(SmartHomeData.structure.activeRoom);
+ //   return SmartHomeData.getRoom(SmartHomeData.structure.activeRoom);
 }
 
 function setActiveRoom(roomId) {
