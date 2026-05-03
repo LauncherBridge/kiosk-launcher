@@ -4603,39 +4603,47 @@ exportFromEditor() {
     }
 }; // Ende RoomDesigner
 
-// ------------------------------------------------------------
-// Fallback: RoomDesigner.loadRoom, falls nicht definiert
-// ------------------------------------------------------------
-if (!RoomDesigner.loadRoom) {
-    RoomDesigner.loadRoom = function(roomId) {
-        if (!window.SmartHomeData || !Array.isArray(SmartHomeData.rooms)) {
-            console.warn("[RoomDesigner.loadRoom] SmartHomeData.rooms nicht verfügbar");
-            return;
-        }
+RoomDesigner.loadRoom = function(roomId) {
+    const room = project.rooms?.[roomId];
 
-        const room = SmartHomeData.rooms.find(r => r.id === roomId);
-        if (!room) {
-            console.warn("[RoomDesigner.loadRoom] Raum nicht gefunden:", roomId);
-            return;
-        }
+    if (!room) {
+        console.warn("[RoomDesigner.loadRoom] Raum nicht gefunden:", roomId);
 
-        // Basisdaten in den Editor übernehmen
-        RoomDesigner.points  = room.polygon || [];
-        RoomDesigner.doors   = room.doors   || [];
-        RoomDesigner.windows = room.windows || [];
+        activeRoomId = null;
 
-        if (typeof RoomDesigner.updateWalls === "function") {
-            RoomDesigner.updateWalls();
-        }
-        if (typeof RoomDesigner.render === "function") {
-            RoomDesigner.render();
-        }
+        RoomDesigner.points = [];
+        RoomDesigner.doors = [];
+        RoomDesigner.windows = [];
+        RoomDesigner.isClosed = false;
 
-        console.log("[RoomDesigner] Raum geladen:", roomId);
-    };
-}
+        RoomDesigner.updateWalls();
+        RoomDesigner.render();
+        return;
+    }
 
+    RoomDesigner.points = Array.isArray(room.points)
+        ? room.points.map(p => ({ x: p.x, y: p.y }))
+        : [];
 
+    RoomDesigner.doors = Array.isArray(room.doors)
+        ? room.doors
+            .map(id => project.doors?.[id])
+            .filter(Boolean)
+            .map(d => ({ ...d }))
+        : [];
+
+    RoomDesigner.windows = Array.isArray(room.windows)
+        ? room.windows
+            .map(id => project.windows?.[id])
+            .filter(Boolean)
+            .map(w => ({ ...w }))
+        : [];
+
+    RoomDesigner.isClosed = !!room.isClosed;
+
+    RoomDesigner.updateWalls();
+    RoomDesigner.render();
+};
 
 // --------------------------------------------------
 // Editor öffnen
