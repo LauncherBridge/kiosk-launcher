@@ -4773,8 +4773,11 @@ function updateEditorTitle() {
 // Neue Etage erstellen
 // ---------------------------------------------------------
 function editorCreateFloor() {
-    // 1) Neue Floor-ID bestimmen
-    const existingIds = Object.keys(project.floors || {}).map(id => Number(id));
+    // 1) Neue Floor-ID bestimmen (bulletproof)
+    const existingIds = Object.keys(project.floors || {})
+        .map(id => Number(id))
+        .filter(n => Number.isFinite(n) && n > 0);
+
     const max = existingIds.length > 0 ? Math.max(...existingIds) : 0;
     const newFloorId = max + 1;
 
@@ -4812,11 +4815,10 @@ function editorCreateFloor() {
     activeRoomId = newRoomId;
 
     // 5) Editor-Daten + UI aktualisieren
-    importToEditor();            // Titelzeile + Canvas
-    renderEditorProjectSidebar(); // Sidebar
-    saveProject(); 
+    importToEditor();
+    renderEditorProjectSidebar();
+    saveProject();
 }
-
 
 
 
@@ -5234,114 +5236,6 @@ function renderLeftSidebar() {
         });
     });
 }
-
-
-function renderEditorSidebar() {
-    const container = document.getElementById("editor-location-list");
-    if (!container) return;
-
-    container.innerHTML = "";
-
-    SmartHomeData.refreshFloors();
-
-    SmartHomeData.floors.forEach(floor => {
-
-        // Etagen-Header
-        const header = document.createElement("div");
-        header.classList.add("floor-header");
-
-        const nameSpan = document.createElement("span");
-        nameSpan.classList.add("floor-name");
-        nameSpan.textContent = SmartHomeData.getFloorDisplayName(floor.id);
-
-        const editBtn = document.createElement("span");
-        editBtn.classList.add("floor-edit");
-        editBtn.textContent = "✎";
-        editBtn.addEventListener("click", (ev) => {
-            ev.stopPropagation();
-            const alias = prompt("Neuer Etagenname:", SmartHomeData.getFloorDisplayName(floor.id));
-            if (alias !== null) {
-                SmartHomeData.setFloorAlias(floor.id, alias);
-                renderEditorSidebar();
-            }
-        });
-
-        header.appendChild(nameSpan);
-        header.appendChild(editBtn);
-
-        header.addEventListener("click", () => {
-            SmartHomeData.structure.activeFloor = floor.id;
-            SmartHomeData.structure.activeRoom = null;
-            renderEditorSidebar();
-            updateEditorTitle();
-        });
-
-        container.appendChild(header);
-
-        // Räume der Etage
-        const rooms = SmartHomeData.rooms.filter(r => r.floor === floor.id);
-
-        rooms.forEach(room => {
-            const roomDiv = document.createElement("div");
-            roomDiv.classList.add("room-entry");
-            roomDiv.textContent = room.name;
-
-            roomDiv.addEventListener("click", () => {
-                SmartHomeData.structure.activeFloor = floor.id;
-                SmartHomeData.structure.activeRoom = room.id;
-            
-                // Raum im Canvas laden
-                if (RoomDesigner && typeof RoomDesigner.loadRoom === "function") {
-                    RoomDesigner.loadRoom(room.id);
-                }
-            
-                renderEditorSidebar();
-                updateEditorTitle();
-            });
-
-
-            container.appendChild(roomDiv);
-        });
-
-        // Raum hinzufügen
-        const addRoom = document.createElement("div");
-        addRoom.classList.add("room-add");
-        addRoom.textContent = "+ Raum hinzufügen";
-        addRoom.addEventListener("click", () => {
-            const name = prompt("Name des neuen Raums:", "Neuer Raum");
-            if (!name) return;
-        
-            const id = name.toLowerCase().replace(/\s+/g, "_");
-        
-            SmartHomeData.rooms.push({
-                id,
-                name,
-                type: "living",
-                floor: floor.id,
-                polygon: [],
-                doors: []
-            });
-        
-            SmartHomeData.structure.activeFloor = floor.id;
-            SmartHomeData.structure.activeRoom = id;
-        
-            SmartHomeData.refreshFloors();
-        
-            // Canvas leeren für neuen Raum
-            if (RoomDesigner && typeof RoomDesigner.clear === "function") {
-                RoomDesigner.clear();
-            }
-        
-            renderEditorSidebar();
-            updateEditorTitle();
-        });
-
-
-        container.appendChild(addRoom);
-    });
-}
- 
-
 
 
 
