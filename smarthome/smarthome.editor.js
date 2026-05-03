@@ -4755,30 +4755,7 @@ RoomDesigner.loadRoom = function(roomId) {
     RoomDesigner.render();
 };
 
-// --------------------------------------------------
-// Editor öffnen
-// --------------------------------------------------
-function getActiveRoom() {
-    return SmartHomeData.getRoom(SmartHomeData.structure.activeRoom);
-}
 
-function setActiveRoom(roomId) {
-    if (!roomId) return;
-    if (!SmartHomeData.getRoom(roomId)) return;
-
-    // Wenn der Raum schon aktiv ist, nichts tun
-    if (SmartHomeData.structure.activeRoom === roomId) return;
-
-    SmartHomeData.structure.activeRoom = roomId;
-
-    // Titelzeile aktualisieren
-    updateEditorTitle();
-
-    // Editor neu rendern (falls vorhanden)
-    if (RoomDesigner && typeof RoomDesigner.render === "function") {
-        RoomDesigner.render();
-    }
-}
 
 
 // Ganz oben in der Datei oder zumindest außerhalb des Click-Handlers:
@@ -4786,21 +4763,26 @@ function updateEditorTitle() {
     const proj = document.getElementById("editor-project-name");
     const room = document.getElementById("editor-room-name");
 
+    // Projektname setzen
     if (proj) {
         proj.textContent = project.meta.name || "Projekt";
     }
 
-    // ⭐ Sidebar-Projektname aktualisieren
+    // Sidebar-Projektname setzen
     const projSidebar = document.getElementById("editor-project-name-sidebar");
     if (projSidebar) {
         projSidebar.textContent = project.meta.name || "Projekt";
     }
 
-    const roomObj = getActiveRoom();
-    if (room && roomObj) {
-        room.textContent = roomObj.name || "Raum";
+    // Aktiven Raum holen (NEU, ohne SmartHomeData)
+    const roomObj = activeRoomId ? project.rooms[activeRoomId] : null;
+
+    // Raumname setzen
+    if (room) {
+        room.textContent = roomObj ? (roomObj.name || "Raum") : "";
     }
 }
+
 
 
 // ---------------------------------------------------------
