@@ -4759,24 +4759,26 @@ RoomDesigner.loadRoom = function(roomId) {
 // Editor öffnen
 // --------------------------------------------------
 function getActiveRoom() {
-    return activeRoomId ? project.rooms[activeRoomId] : null;
+    const rid = SmartHomeData.structure.activeRoom;
+    return rid ? project.rooms[rid] : null;
 }
 
 
 function setActiveRoom(roomId) {
     if (!roomId) return;
 
+    // Persistenz für Moduswechsel
+    SmartHomeData.structure.activeRoom = roomId;
+
     // Editor-State
     activeRoomId = roomId;
-
-    // Persistenz für Modus-Wechsel
-    SmartHomeData.structure.activeRoom = roomId;
 
     // Editor aktualisieren
     RoomDesigner.loadRoom(roomId);
     updateEditorTitle();
     RoomDesigner.render();
 }
+
 
 
 // Ganz oben in der Datei oder zumindest außerhalb des Click-Handlers:
