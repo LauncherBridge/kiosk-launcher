@@ -922,34 +922,69 @@ init() {
     if (this._initialized) return;
     this._initialized = true;
 
-    // Projekt laden
-    const loaded = loadProject();
+    // ------------------------------------------------------------
+    // 1) Letztes Projekt ermitteln
+    // ------------------------------------------------------------
+    let last = localStorage.getItem("last_project");
 
-    // Falls kein Projekt existiert → ersten Raum erzeugen
-    if (!loaded) {
-        // ⭐ Etage erzeugen
-        project.floors = {};
-        const floorId = "floor_1";
-        project.floors[floorId] = createFloorModel(floorId, "Erdgeschoss");
-    
-        // ⭐ Raum erzeugen und Etage zuordnen
-        activeRoomId = "room_1";
-        project.rooms[activeRoomId] = createRoomModel(activeRoomId, "Neuer Raum", floorId);
-    
-        // ⭐ Raum in die Etage eintragen
-        project.floors[floorId].rooms.push(activeRoomId);
+    // Falls "undefined" oder leer → ignorieren
+    if (!last || last === "undefined") {
+        last = null;
     }
 
-    // Editor laden (damit RoomDesigner echte Daten hat)
+    // ------------------------------------------------------------
+    // 2) Projekt laden (nur wenn gültiger Name existiert)
+    // ------------------------------------------------------------
+    let loaded = false;
+    if (last) {
+        loaded = loadProject(last);
+    }
+
+    // ------------------------------------------------------------
+    // 3) Falls kein Projekt existiert → neues Default-Projekt erzeugen
+    // ------------------------------------------------------------
+    if (!loaded) {
+
+        // Neues Projekt erzeugen
+        const defaultName = "NeuesProjekt";
+        localStorage.setItem("last_project", defaultName);
+
+        // Projekt-Grundstruktur erzeugen
+        project.meta.name = defaultName;
+        project.floors = {};
+        project.rooms = {};
+
+        // Etage erzeugen
+        const floorId = "floor_1";
+        project.floors[floorId] = createFloorModel(floorId, "Erdgeschoss");
+
+        // Raum erzeugen
+        activeRoomId = "room_1";
+        project.rooms[activeRoomId] = createRoomModel(activeRoomId, "Neuer Raum", floorId);
+
+        // Raum in Etage eintragen
+        project.floors[floorId].rooms = [activeRoomId];
+
+        // Projekt speichern
+        saveProject(defaultName);
+
+        loaded = true;
+    }
+
+    // ------------------------------------------------------------
+    // 4) Editor laden
+    // ------------------------------------------------------------
     importToEditor();
 
     // Editor-Daten zurück ins Projekt schreiben
     this.exportFromEditor();
 
-    // Jetzt erst SmartHomeData generieren
+    // SmartHomeData generieren
     generateSmartHomeDataFromProject();
 
-    // Canvas & Events
+    // ------------------------------------------------------------
+    // 5) Canvas & Events
+    // ------------------------------------------------------------
     this.canvas = document.getElementById("roomdesigner");
     this.ctx = this.canvas.getContext("2d");
 
@@ -964,12 +999,10 @@ init() {
     this.canvas.addEventListener("touchmove", (e) => this.onTouchMove(e), { passive: false });
     this.canvas.addEventListener("touchend", (e) => this.onTouchEnd(e));
 
-
     this.createContextMenu();
     this.setupSnapButton();
     this.setupGridSlider();
     this.setupResetButton();
-
 
     // ------------------------------------------------------------
     // Projekt-Menü-Button (⋮) in der linken Sidebar
@@ -982,10 +1015,11 @@ init() {
             openProjectMenu(rect.left, rect.bottom + 4);
         });
     }
-    
+
     this.resize();
     this.render();
-},
+}
+
 
     resize() {
         this.canvas.width = window.innerWidth;
