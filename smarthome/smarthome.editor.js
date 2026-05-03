@@ -5318,8 +5318,21 @@ window.addEventListener("DOMContentLoaded", () => {
         renderEditorProjectSidebar();
 
         if (SmartHomeData.structure.activeRoom) {
-            RoomDesigner.loadRoom(SmartHomeData.structure.activeRoom);
+            const rid = SmartHomeData.structure.activeRoom;
+        
+            // 1. Editor-State setzen
+            activeRoomId = rid;
+        
+            // 2. Raum in den Canvas laden
+            RoomDesigner.loadRoom(rid);
+        
+            // 3. Titelzeile aktualisieren
+            updateEditorTitle();
+        
+            // 4. Canvas neu zeichnen
+            RoomDesigner.render();
         }
+
 
         attachFloorCrumbMenu();
     });
