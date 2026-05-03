@@ -5304,34 +5304,35 @@ window.addEventListener("DOMContentLoaded", () => {
         const sidebar = document.getElementById("editor-sidebar");
         if (sidebar) sidebar.style.display = "flex";
 
-        RoomDesigner.init();
+RoomDesigner.init();
 
-        if (loadProject()) {
-            importToEditor();
-        }
+if (loadProject()) {
+    importToEditor();
+}
 
-        updateEditorTitle();
-        enableRoomNameEditing();
-        enableFloorNameEditing();
-        enableProjectNameEditing();
+// Sidebar neu aufbauen
+renderEditorProjectSidebar();
 
-        renderEditorProjectSidebar();
+// AKTIVEN RAUM WIEDERHERSTELLEN
+if (SmartHomeData.structure.activeRoom) {
+    const rid = SmartHomeData.structure.activeRoom;
 
-        if (SmartHomeData.structure.activeRoom) {
-            const rid = SmartHomeData.structure.activeRoom;
-        
-            // 1. Editor-State setzen
-            activeRoomId = rid;
-        
-            // 2. Raum in den Canvas laden
-            RoomDesigner.loadRoom(rid);
-        
-            // 3. Titelzeile aktualisieren
-            updateEditorTitle();
-        
-            // 4. Canvas neu zeichnen
-            RoomDesigner.render();
-        }
+    activeRoomId = rid;
+    RoomDesigner.loadRoom(rid);
+}
+
+// Titelzeile aktualisieren
+updateEditorTitle();
+
+// Canvas neu zeichnen
+RoomDesigner.render();
+
+// Rest
+enableRoomNameEditing();
+enableFloorNameEditing();
+enableProjectNameEditing();
+attachFloorCrumbMenu();
+
 
 
         attachFloorCrumbMenu();
