@@ -826,249 +826,264 @@ _bindEvents() {
     // ---------------------------------------------------------
     // Haupt‑Rendering
     // ---------------------------------------------------------
-    _drawMainView() {
-        const ctx = this.ctx;
-        if (!ctx) return;
+_drawMainView() {
+    const ctx = this.ctx;
+    if (!ctx) return;
 
-        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        ctx.save();
-        ctx.translate(this.offsetX, this.offsetY);
-        ctx.scale(this.scale, this.scale);
+    ctx.save();
+    ctx.translate(this.offsetX, this.offsetY);
+    ctx.scale(this.scale, this.scale);
 
-        this.rooms = this.activeFloor
-            ? SmartHomeData.rooms.filter(r => r.floor === this.activeFloor)
-            : SmartHomeData.rooms;
+    this.rooms = this.activeFloor
+        ? SmartHomeData.rooms.filter(r => r.floor === this.activeFloor)
+        : SmartHomeData.rooms;
 
-        const activeGroup = this.activeGroup ? this.activeGroup.roomIds : null;
+    const activeGroup = this.activeGroup ? this.activeGroup.roomIds : null;
 
-        this.rooms.forEach(room => {
-            const type = SmartHomeData.roomTypes[room.type];
-            const fillColor = type?.color || "#444";
+    this.rooms.forEach(room => {
 
-            const isInGroup = activeGroup && activeGroup.includes(room.id);
-
-            if (this.activeRoom === room.id) {
-                ctx.fillStyle = `rgba(255, 184, 108, ${0.3 + this.highlightAlpha * 0.4})`;
-            } else {
-                ctx.fillStyle = fillColor;
-            }
-
-            ctx.beginPath();
-            ctx.moveTo(room.polygon[0].x, room.polygon[0].y);
-
-            for (let i = 1; i < room.polygon.length; i++) {
-                ctx.lineTo(room.polygon[i].x, room.polygon[i].y);
-            }
-
-            ctx.closePath();
-            ctx.fill();
-
-            if (isInGroup) {
-                ctx.save();
-                ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
-                ctx.fill();
-                ctx.restore();
-
-                ctx.save();
-                ctx.lineWidth = 3;
-                ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
-                ctx.stroke();
-                ctx.restore();
-            }
-
-            ctx.fillStyle = "var(--sh-text)";
-            ctx.font = "20px sans-serif";
-            ctx.textBaseline = "top";
-            ctx.fillText(room.name, room.polygon[0].x + 12, room.polygon[0].y + 12);
-
-            if (type?.icon) {
-                ctx.fillStyle = "var(--sh-text)";
-                ctx.font = "28px MaterialIcons";
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
-
-                const cx = (room.polygon[0].x + room.polygon[2].x) / 2;
-                const cy = (room.polygon[0].y + room.polygon[2].y) / 2;
-
-                ctx.fillText(type.icon, cx, cy);
-            }
-
-            // Container rendern
-            SmartHomeData.containers.forEach(container => {
-                if (container.room !== room.id) return;
-
-                const ctype = SmartHomeData.deviceTypes[container.type];
-                const icon = ctype?.icon || "device_unknown";
-                const color = ctype?.color || "#FFFFFF";
-
-                const dx = container.position.x;
-                const dy = container.position.y;
-
-                ctx.fillStyle = color;
-                ctx.font = "26px MaterialIcons";
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
-                ctx.fillText(icon, dx, dy);
-
-                ctx.fillStyle = "#FFFFFF";
-                ctx.beginPath();
-                ctx.arc(dx, dy + 18, 3, 0, Math.PI * 2);
-                ctx.fill();
-            });
-        });
-
-        // 3.2c – gemergte Türen im Main‑View rendern (Rechteck‑Steg entlang der Wand)
-        const mergedDoors = SmartHomeData.getMergedDoorsForFloor(this.activeFloor);
-        if (mergedDoors && mergedDoors.length) {
-            mergedDoors.forEach(d => {
-                const { posA, posB, mergedPos } = d;
-                const dx = posB.x - posA.x;
-                const dy = posB.y - posA.y;
-                const angle = Math.atan2(dy, dx);
-
-                ctx.save();
-                ctx.translate(mergedPos.x, mergedPos.y);
-                ctx.rotate(angle);
-
-                ctx.fillStyle = "#FFD28A";
-                ctx.fillRect(-10, -3, 20, 6); // 20×6 px Steg
-
-                ctx.restore();
-            });
+        // 🛡️ Räume ohne gültige Geometrie überspringen
+        if (!room || !room.polygon || room.polygon.length < 3) {
+            // Optional: Debug
+            // console.warn("SmartHomeView: Raum übersprungen (ungültige Geometrie):", room?.id);
+            return;
         }
 
-        ctx.restore();
-    },
+        const type = SmartHomeData.roomTypes[room.type];
+        const fillColor = type?.color || "#444";
+
+        const isInGroup = activeGroup && activeGroup.includes(room.id);
+
+        if (this.activeRoom === room.id) {
+            ctx.fillStyle = `rgba(255, 184, 108, ${0.3 + this.highlightAlpha * 0.4})`;
+        } else {
+            ctx.fillStyle = fillColor;
+        }
+
+        ctx.beginPath();
+        ctx.moveTo(room.polygon[0].x, room.polygon[0].y);
+
+        for (let i = 1; i < room.polygon.length; i++) {
+            ctx.lineTo(room.polygon[i].x, room.polygon[i].y);
+        }
+
+        ctx.closePath();
+        ctx.fill();
+
+        if (isInGroup) {
+            ctx.save();
+            ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
+            ctx.fill();
+            ctx.restore();
+
+            ctx.save();
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        ctx.fillStyle = "var(--sh-text)";
+        ctx.font = "20px sans-serif";
+        ctx.textBaseline = "top";
+        ctx.fillText(room.name, room.polygon[0].x + 12, room.polygon[0].y + 12);
+
+        if (type?.icon) {
+            ctx.fillStyle = "var(--sh-text)";
+            ctx.font = "28px MaterialIcons";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+
+            const cx = (room.polygon[0].x + room.polygon[2].x) / 2;
+            const cy = (room.polygon[0].y + room.polygon[2].y) / 2;
+
+            ctx.fillText(type.icon, cx, cy);
+        }
+
+        // Container rendern
+        SmartHomeData.containers.forEach(container => {
+            if (container.room !== room.id) return;
+
+            const ctype = SmartHomeData.deviceTypes[container.type];
+            const icon = ctype?.icon || "device_unknown";
+            const color = ctype?.color || "#FFFFFF";
+
+            const dx = container.position.x;
+            const dy = container.position.y;
+
+            ctx.fillStyle = color;
+            ctx.font = "26px MaterialIcons";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(icon, dx, dy);
+
+            ctx.fillStyle = "#FFFFFF";
+            ctx.beginPath();
+            ctx.arc(dx, dy + 18, 3, 0, Math.PI * 2);
+            ctx.fill();
+        });
+    });
+
+    // 3.2c – gemergte Türen im Main‑View rendern (Rechteck‑Steg entlang der Wand)
+    const mergedDoors = SmartHomeData.getMergedDoorsForFloor(this.activeFloor);
+    if (mergedDoors && mergedDoors.length) {
+        mergedDoors.forEach(d => {
+            const { posA, posB, mergedPos } = d;
+            const dx = posB.x - posA.x;
+            const dy = posB.y - posA.y;
+            const angle = Math.atan2(dy, dx);
+
+            ctx.save();
+            ctx.translate(mergedPos.x, mergedPos.y);
+            ctx.rotate(angle);
+
+            ctx.fillStyle = "#FFD28A";
+            ctx.fillRect(-10, -3, 20, 6); // 20×6 px Steg
+
+            ctx.restore();
+        });
+    }
+
+    ctx.restore();
+},
 
     // ---------------------------------------------------------
     // Mini‑Map Rendering
     // ---------------------------------------------------------
-    _drawMiniMap() {
-        const ctx = this.minimapCtx;
-        if (!ctx) return;
+_drawMiniMap() {
+    const ctx = this.minimapCtx;
+    if (!ctx) return;
 
-        const w = this.minimapCanvas.width;
-        const h = this.minimapCanvas.height;
+    const w = this.minimapCanvas.width;
+    const h = this.minimapCanvas.height;
 
-        ctx.clearRect(0, 0, w, h);
+    ctx.clearRect(0, 0, w, h);
 
-        const rooms = this.activeFloor
-            ? SmartHomeData.rooms.filter(r => r.floor === this.activeFloor)
-            : SmartHomeData.rooms;
+    const rooms = this.activeFloor
+        ? SmartHomeData.rooms.filter(r => r.floor === this.activeFloor)
+        : SmartHomeData.rooms;
 
-        this.minimapRooms = rooms.map(r => ({
-            id: r.id,
-            x: r.minimap.x,
-            y: r.minimap.y,
-            w: r.minimap.w,
-            h: r.minimap.h,
-            label: r.minimap.label,
-            polygon: r.polygon,
-            type: r.type
-        }));
+    this.minimapRooms = rooms.map(r => ({
+        id: r.id,
+        x: r.minimap.x,
+        y: r.minimap.y,
+        w: r.minimap.w,
+        h: r.minimap.h,
+        label: r.minimap.label,
+        polygon: r.polygon,
+        type: r.type
+    }));
 
-        const activeGroup = this.activeGroup ? this.activeGroup.roomIds : null;
+    const activeGroup = this.activeGroup ? this.activeGroup.roomIds : null;
 
-        this.minimapRooms.forEach(r => {
-            const type = SmartHomeData.roomTypes[r.type];
-            const fillColor = type?.color || "#444";
+    this.minimapRooms.forEach(r => {
 
-            const isInGroup = activeGroup && activeGroup.includes(r.id);
-
-            ctx.fillStyle = (this.activeRoom === r.id)
-                ? `rgba(255, 184, 108, ${0.3 + this.highlightAlpha * 0.4})`
-                : fillColor;
-
-            ctx.fillRect(r.x, r.y, r.w, r.h);
-
-            if (isInGroup) {
-                ctx.fillStyle = "rgba(255, 255, 255, 0.15)";
-                ctx.fillRect(r.x, r.y, r.w, r.h);
-
-                ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
-                ctx.lineWidth = 2;
-                ctx.strokeRect(r.x, r.y, r.w, r.h);
-            }
-
-            ctx.fillStyle = "#FFFFFF";
-            ctx.font = "12px sans-serif";
-            ctx.textBaseline = "top";
-            ctx.fillText(r.label, r.x + 5, r.y + 5);
-
-            if (type?.icon) {
-                ctx.fillStyle = "#FFFFFF";
-                ctx.font = "14px MaterialIcons";
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
-
-                const cx = r.x + r.w / 2;
-                const cy = r.y + r.h / 2;
-
-                ctx.fillText(type.icon, cx, cy);
-            }
-
-            // Container rendern (Mini‑Map)
-            SmartHomeData.containers.forEach(container => {
-                if (container.room !== r.id) return;
-
-                const ctype = SmartHomeData.deviceTypes[container.type];
-                const icon = ctype?.icon || "device_unknown";
-                const color = ctype?.color || "#FFFFFF";
-
-                const poly = r.polygon;
-                const scaleX = r.w / (poly[1].x - poly[0].x);
-                const scaleY = r.h / (poly[2].y - poly[1].y);
-
-                const mx = r.x + (container.position.x - poly[0].x) * scaleX;
-                const my = r.y + (container.position.y - poly[0].y) * scaleY;
-
-                ctx.fillStyle = color;
-                ctx.font = "12px MaterialIcons";
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
-                ctx.fillText(icon, mx, my);
-            });
-        });
-
-        // 3.2c – gemergte Türen in der Mini‑Map rendern (kleiner Steg)
-        const mergedDoorsMini = SmartHomeData.getMergedDoorsForFloor(this.activeFloor);
-        if (mergedDoorsMini && mergedDoorsMini.length) {
-            mergedDoorsMini.forEach(d => {
-                const { posA, posB, mergedPos, roomA } = d;
-
-                const room = SmartHomeData.getRoom(roomA);
-                if (!room) return;
-
-                const rMini = this.minimapRooms.find(r => r.id === room.id);
-                if (!rMini) return;
-
-                const poly = rMini.polygon;
-                const scaleX = rMini.w / (poly[1].x - poly[0].x);
-                const scaleY = rMini.h / (poly[2].y - poly[1].y);
-
-                const mx = rMini.x + (mergedPos.x - poly[0].x) * scaleX;
-                const my = rMini.y + (mergedPos.y - poly[0].y) * scaleY;
-
-                const dx = posB.x - posA.x;
-                const dy = posB.y - posA.y;
-                const angle = Math.atan2(dy, dx);
-
-                ctx.save();
-                ctx.translate(mx, my);
-                ctx.rotate(angle);
-
-                ctx.fillStyle = "#FFD28A";
-                ctx.fillRect(-4, -2, 8, 4); // kleiner Steg
-
-                ctx.restore();
-            });
+        // 🛡️ Räume ohne gültige Geometrie überspringen
+        if (!r || !r.polygon || r.polygon.length < 3) {
+            return;
         }
 
-        ctx.strokeStyle = "#FFFFFF55";
-        ctx.lineWidth = 2;
-        ctx.strokeRect(0, 0, w, h);
-    },
+        const type = SmartHomeData.roomTypes[r.type];
+        const fillColor = type?.color || "#444";
+
+        const isInGroup = activeGroup && activeGroup.includes(r.id);
+
+        ctx.fillStyle = (this.activeRoom === r.id)
+            ? `rgba(255, 184, 108, ${0.3 + this.highlightAlpha * 0.4})`
+            : fillColor;
+
+        ctx.fillRect(r.x, r.y, r.w, r.h);
+
+        if (isInGroup) {
+            ctx.fillStyle = "rgba(255, 255, 255, 0.15)";
+            ctx.fillRect(r.x, r.y, r.w, r.h);
+
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(r.x, r.y, r.w, r.h);
+        }
+
+        ctx.fillStyle = "#FFFFFF";
+        ctx.font = "12px sans-serif";
+        ctx.textBaseline = "top";
+        ctx.fillText(r.label, r.x + 5, r.y + 5);
+
+        if (type?.icon) {
+            ctx.fillStyle = "#FFFFFF";
+            ctx.font = "14px MaterialIcons";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+
+            const cx = r.x + r.w / 2;
+            const cy = r.y + r.h / 2;
+
+            ctx.fillText(type.icon, cx, cy);
+        }
+
+        // Container rendern (Mini‑Map)
+        SmartHomeData.containers.forEach(container => {
+            if (container.room !== r.id) return;
+
+            const ctype = SmartHomeData.deviceTypes[container.type];
+            const icon = ctype?.icon || "device_unknown";
+            const color = ctype?.color || "#FFFFFF";
+
+            const poly = r.polygon;
+            const scaleX = r.w / (poly[1].x - poly[0].x);
+            const scaleY = r.h / (poly[2].y - poly[1].y);
+
+            const mx = r.x + (container.position.x - poly[0].x) * scaleX;
+            const my = r.y + (container.position.y - poly[0].y) * scaleY;
+
+            ctx.fillStyle = color;
+            ctx.font = "12px MaterialIcons";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(icon, mx, my);
+        });
+    });
+
+    // 3.2c – gemergte Türen in der Mini‑Map rendern (kleiner Steg)
+    const mergedDoorsMini = SmartHomeData.getMergedDoorsForFloor(this.activeFloor);
+    if (mergedDoorsMini && mergedDoorsMini.length) {
+        mergedDoorsMini.forEach(d => {
+            const { posA, posB, mergedPos, roomA } = d;
+
+            const room = SmartHomeData.getRoom(roomA);
+            if (!room) return;
+
+            const rMini = this.minimapRooms.find(r => r.id === room.id);
+            if (!rMini || !rMini.polygon || rMini.polygon.length < 3) return;
+
+            const poly = rMini.polygon;
+            const scaleX = rMini.w / (poly[1].x - poly[0].x);
+            const scaleY = rMini.h / (poly[2].y - poly[1].y);
+
+            const mx = rMini.x + (mergedPos.x - poly[0].x) * scaleX;
+            const my = rMini.y + (mergedPos.y - poly[0].y) * scaleY;
+
+            const dx = posB.x - posA.x;
+            const dy = posB.y - posA.y;
+            const angle = Math.atan2(dy, dx);
+
+            ctx.save();
+            ctx.translate(mx, my);
+            ctx.rotate(angle);
+
+            ctx.fillStyle = "#FFD28A";
+            ctx.fillRect(-4, -2, 8, 4); // kleiner Steg
+
+            ctx.restore();
+        });
+    }
+
+    ctx.strokeStyle = "#FFFFFF55";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(0, 0, w, h);
+}
+,
 
     _pointInPolygon(point, vs) {
         let inside = false;
