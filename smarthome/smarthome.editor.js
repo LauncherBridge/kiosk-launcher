@@ -1,5 +1,6 @@
 // ------------------------------------------------------------
-//  f388d24 waera absolutes Backup im Moment, darauf basiert diese Version vor Veränderung
+//  Fallback-Lösung - hier funktioniert "zuletzt geöffnetes Projekt anzeigen" wieder - trotz oder gerade weil
+//  die falschen Get/SetActiveRoom Funktionen drin sind..
 // ------------------------------------------------------------
 
 
@@ -694,16 +695,9 @@ function importToEditor() {
         const roomIds = Object.keys(project.rooms);
 
         // Falls activeRoomId fehlt oder ungültig ist → zurücksetzen
-// Falls activeRoomId fehlt → aus SmartHomeData übernehmen
-if (activeRoomId == null || !project.rooms[activeRoomId]) {
-    const rid = SmartHomeData.structure.activeRoom;
-    if (rid && project.rooms[rid]) {
-        activeRoomId = rid;
-    } else {
-        activeRoomId = roomIds.length > 0 ? roomIds[0] : null;
-    }
-}
-
+        if (!activeRoomId || !project.rooms[activeRoomId]) {
+            activeRoomId = roomIds.length > 0 ? roomIds[0] : null;
+        }
 
         // Wenn es GAR KEINEN Raum gibt → Editor in leeren Zustand
         if (!activeRoomId) {
@@ -4766,26 +4760,26 @@ RoomDesigner.loadRoom = function(roomId) {
 // Editor öffnen
 // --------------------------------------------------
 function getActiveRoom() {
-    const rid = SmartHomeData.structure.activeRoom;
-    return rid ? project.rooms[rid] : null;
+    return SmartHomeData.getRoom(SmartHomeData.structure.activeRoom);
 }
-
 
 function setActiveRoom(roomId) {
     if (!roomId) return;
+    if (!SmartHomeData.getRoom(roomId)) return;
 
-    // Persistenz für Moduswechsel
+    // Wenn der Raum schon aktiv ist, nichts tun
+    if (SmartHomeData.structure.activeRoom === roomId) return;
+
     SmartHomeData.structure.activeRoom = roomId;
 
-    // Editor-State
-    activeRoomId = roomId;
-
-    // Editor aktualisieren
-    RoomDesigner.loadRoom(roomId);
+    // Titelzeile aktualisieren
     updateEditorTitle();
-    RoomDesigner.render();
-}
 
+    // Editor neu rendern (falls vorhanden)
+    if (RoomDesigner && typeof RoomDesigner.render === "function") {
+        RoomDesigner.render();
+    }
+}
 
 
 // Ganz oben in der Datei oder zumindest außerhalb des Click-Handlers:
@@ -5311,36 +5305,22 @@ window.addEventListener("DOMContentLoaded", () => {
         const sidebar = document.getElementById("editor-sidebar");
         if (sidebar) sidebar.style.display = "flex";
 
-RoomDesigner.init();
+        RoomDesigner.init();
 
-if (loadProject()) {
-    importToEditor();
-}
+        if (loadProject()) {
+            importToEditor();
+        }
 
-// Sidebar neu aufbauen
-renderEditorProjectSidebar();
+        updateEditorTitle();
+        enableRoomNameEditing();
+        enableFloorNameEditing();
+        enableProjectNameEditing();
 
-// AKTIVEN RAUM WIEDERHERSTELLEN
-if (SmartHomeData.structure.activeRoom) {
-    const rid = SmartHomeData.structure.activeRoom;
+        renderEditorProjectSidebar();
 
-    activeRoomId = rid;
-    RoomDesigner.loadRoom(rid);
-}
-
-// Titelzeile aktualisieren
-updateEditorTitle();
-
-// Canvas neu zeichnen
-RoomDesigner.render();
-
-// Rest
-enableRoomNameEditing();
-enableFloorNameEditing();
-enableProjectNameEditing();
-attachFloorCrumbMenu();
-
-
+        if (SmartHomeData.structure.activeRoom) {
+            RoomDesigner.loadRoom(SmartHomeData.structure.activeRoom);
+        }
 
         attachFloorCrumbMenu();
     });
