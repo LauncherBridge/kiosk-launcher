@@ -695,7 +695,7 @@ function importToEditor() {
 
         // Falls activeRoomId fehlt oder ungültig ist → zurücksetzen
 // Falls activeRoomId fehlt → aus SmartHomeData übernehmen
-if (!activeRoomId || !project.rooms[activeRoomId]) {
+if (activeRoomId == null || !project.rooms[activeRoomId]) {
     const rid = SmartHomeData.structure.activeRoom;
     if (rid && project.rooms[rid]) {
         activeRoomId = rid;
