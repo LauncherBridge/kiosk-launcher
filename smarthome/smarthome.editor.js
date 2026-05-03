@@ -1,6 +1,6 @@
 // ------------------------------------------------------------
-//  Fallback-Lösung - hier funktioniert "zuletzt geöffnetes Projekt anzeigen" wieder - trotz oder gerade weil
-//  die falschen Get/SetActiveRoom Funktionen drin sind..
+//  ECHTE Fallback-Variante - hier funktioniert "zuletzt geöffnetes Projekt anzeigen" wieder.
+//  Die Functions sind korrigiert!
 // ------------------------------------------------------------
 
 
