@@ -183,7 +183,7 @@ init() {
             this.floorScroll.isTouching = true;
         };
 
-        list.addEventListener("touchstart", (ev) => start(ev.touches[0].clientY));
+        list.addEventListener("touchstart", (ev) => start(ev.touches[0].clientY), { passive: true });
         list.addEventListener("mousedown", (ev) => start(ev.clientY));
 
         const move = (y) => {
@@ -196,7 +196,7 @@ init() {
             this.floorScroll.lastTime = now;
         };
 
-        list.addEventListener("touchmove", (ev) => move(ev.touches[0].clientY));
+        list.addEventListener("touchmove",  (ev) => move(ev.touches[0].clientY),   { passive: true });
         window.addEventListener("mousemove", (ev) => move(ev.clientY));
 
         const end = () => {
