@@ -193,38 +193,93 @@ function attachFloorCrumbMenu() {
 // Runtime-Generierung von SmartHomeData aus project
 // ------------------------------------------------------------
 function generateSmartHomeDataFromProject() {
+    const data = {
+        floors: [],
+        rooms: [],
+        doors: [],
+        windows: [],
+        furniture: [],
+        devices: []
+    };
 
-    SmartHomeData.rooms = [];
-    SmartHomeData.doors = [];
-    SmartHomeData.windows = [];
+    // ---------------------------------------------------------
+    // 1) Etagen sammeln
+    // ---------------------------------------------------------
+    for (const fid in project.floors) {
+        const f = project.floors[fid];
+        if (!f || typeof f !== "object") continue;
 
-    // Räume
-    for (const roomId in project.rooms) {
-        const r = project.rooms[roomId];
-        SmartHomeData.rooms.push({
-            id: r.id,
-            name: r.name || r.id,
-            points: r.points || [],
-            isClosed: r.isClosed || false,
-            doors: r.doors || [],
-            windows: r.windows || []
+        data.floors.push({
+            id: f.id,
+            name: f.name || "Etage",
+            rooms: Array.isArray(f.rooms) ? [...f.rooms] : []
         });
     }
 
-    // Türen
-    for (const doorId in project.doors) {
-        SmartHomeData.doors.push({ ...project.doors[doorId] });
+    // ---------------------------------------------------------
+    // 2) Räume sammeln
+    // ---------------------------------------------------------
+    for (const rid in project.rooms) {
+        const r = project.rooms[rid];
+        if (!r || typeof r !== "object") continue;
+
+        // Räume ohne Etage ignorieren
+        if (!r.floorId || !project.floors[r.floorId]) {
+            console.warn("[generateSmartHomeData] Raum ohne gültige Etage ignoriert:", rid);
+            continue;
+        }
+
+        data.rooms.push({
+            id: r.id,
+            name: r.name || "Raum",
+            floorId: r.floorId,
+            polygon: Array.isArray(r.points) ? r.points.map(p => ({ x: p.x, y: p.y })) : [],
+            doors: Array.isArray(r.doors) ? [...r.doors] : [],
+            windows: Array.isArray(r.windows) ? [...r.windows] : []
+        });
     }
 
-    // Fenster
-    for (const winId in project.windows) {
-        SmartHomeData.windows.push({ ...project.windows[winId] });
+    // ---------------------------------------------------------
+    // 3) Türen sammeln
+    // ---------------------------------------------------------
+    for (const did in project.doors) {
+        const d = project.doors[did];
+        if (!d || typeof d !== "object") continue;
+
+        data.doors.push({ ...d });
     }
 
-    // Floors (optional später)
-    SmartHomeData.floors = project.floors || {};
+    // ---------------------------------------------------------
+    // 4) Fenster sammeln
+    // ---------------------------------------------------------
+    for (const wid in project.windows) {
+        const w = project.windows[wid];
+        if (!w || typeof w !== "object") continue;
 
-    console.log("[Runtime] SmartHomeData aus project generiert.");
+        data.windows.push({ ...w });
+    }
+
+    // ---------------------------------------------------------
+    // 5) Möbel sammeln
+    // ---------------------------------------------------------
+    for (const fid in project.furniture) {
+        const f = project.furniture[fid];
+        if (!f || typeof f !== "object") continue;
+
+        data.furniture.push({ ...f });
+    }
+
+    // ---------------------------------------------------------
+    // 6) Geräte sammeln
+    // ---------------------------------------------------------
+    for (const did in project.devices) {
+        const d = project.devices[did];
+        if (!d || typeof d !== "object") continue;
+
+        data.devices.push({ ...d });
+    }
+
+    return data;
 }
 
 
