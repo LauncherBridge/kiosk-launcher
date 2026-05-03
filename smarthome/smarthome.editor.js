@@ -694,10 +694,11 @@ function importToEditor() {
         // ---------------------------------------------------------
         const roomIds = Object.keys(project.rooms);
 
-        // Falls activeRoomId fehlt oder ungültig ist → zurücksetzen
-        if (!activeRoomId || !project.rooms[activeRoomId]) {
+        // Falls activeRoomId fehlt oder ungültig ist → ersten Raum nehmen
+        if (activeRoomId == null || !project.rooms[activeRoomId]) {
             activeRoomId = roomIds.length > 0 ? roomIds[0] : null;
         }
+
 
         // Wenn es GAR KEINEN Raum gibt → Editor in leeren Zustand
         if (!activeRoomId) {
@@ -4760,26 +4761,31 @@ RoomDesigner.loadRoom = function(roomId) {
 // Editor öffnen
 // --------------------------------------------------
 function getActiveRoom() {
-    return SmartHomeData.getRoom(SmartHomeData.structure.activeRoom);
+    if (!activeRoomId) return null;
+    return project.rooms?.[activeRoomId] || null;
 }
+
 
 function setActiveRoom(roomId) {
     if (!roomId) return;
-    if (!SmartHomeData.getRoom(roomId)) return;
+    if (!project.rooms[roomId]) return;
 
-    // Wenn der Raum schon aktiv ist, nichts tun
-    if (SmartHomeData.structure.activeRoom === roomId) return;
+    // Wenn der Raum schon aktiv ist → nichts tun
+    if (activeRoomId === roomId) return;
 
-    SmartHomeData.structure.activeRoom = roomId;
+    activeRoomId = roomId;
 
-    // Titelzeile aktualisieren
+    // Titel aktualisieren
     updateEditorTitle();
 
-    // Editor neu rendern (falls vorhanden)
-    if (RoomDesigner && typeof RoomDesigner.render === "function") {
-        RoomDesigner.render();
-    }
+    // Canvas neu laden
+    RoomDesigner.points = (project.rooms[roomId].points || []).map(p => ({ x: p.x, y: p.y }));
+    RoomDesigner.isClosed = project.rooms[roomId].isClosed || false;
+
+    RoomDesigner.updateWalls();
+    RoomDesigner.render();
 }
+
 
 
 // Ganz oben in der Datei oder zumindest außerhalb des Click-Handlers:
@@ -5305,23 +5311,24 @@ window.addEventListener("DOMContentLoaded", () => {
         const sidebar = document.getElementById("editor-sidebar");
         if (sidebar) sidebar.style.display = "flex";
 
+        // Editor initialisieren
         RoomDesigner.init();
 
+        // Projekt laden + aktiven Raum übernehmen
         if (loadProject()) {
-            importToEditor();
+            importToEditor();   // lädt den richtigen Raum
         }
 
+        // Titel aktualisieren
         updateEditorTitle();
+
+        // Sidebar aufbauen
+        renderEditorProjectSidebar();
+
+        // Editor-Funktionen aktivieren
         enableRoomNameEditing();
         enableFloorNameEditing();
         enableProjectNameEditing();
-
-        renderEditorProjectSidebar();
-
-        if (SmartHomeData.structure.activeRoom) {
-            RoomDesigner.loadRoom(SmartHomeData.structure.activeRoom);
-        }
-
         attachFloorCrumbMenu();
     });
 });
