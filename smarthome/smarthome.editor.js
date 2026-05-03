@@ -4764,20 +4764,17 @@ function getActiveRoom() {
 
 function setActiveRoom(roomId) {
     if (!roomId) return;
-    if (!SmartHomeData.getRoom(roomId)) return;
 
-    // Wenn der Raum schon aktiv ist, nichts tun
-    if (SmartHomeData.structure.activeRoom === roomId) return;
+    // Editor-State
+    activeRoomId = roomId;
 
+    // Persistenz für Modus-Wechsel
     SmartHomeData.structure.activeRoom = roomId;
 
-    // Titelzeile aktualisieren
+    // Editor aktualisieren
+    RoomDesigner.loadRoom(roomId);
     updateEditorTitle();
-
-    // Editor neu rendern (falls vorhanden)
-    if (RoomDesigner && typeof RoomDesigner.render === "function") {
-        RoomDesigner.render();
-    }
+    RoomDesigner.render();
 }
 
 
