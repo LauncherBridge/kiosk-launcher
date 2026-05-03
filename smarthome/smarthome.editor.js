@@ -4762,33 +4762,33 @@ function getActiveRoom() {
     return activeRoomId ? project.rooms[activeRoomId] : null;
 }
 
-// function setActiveRoom(roomId) {
-//    if (!roomId) return;
+ function setActiveRoom(roomId) {
+    if (!roomId) return;
 //    if (!SmartHomeData.getRoom(roomId)) return;
 
     // Wenn der Raum schon aktiv ist, nichts tun
-//    if (SmartHomeData.structure.activeRoom === roomId) return;
+    if (SmartHomeData.structure.activeRoom === roomId) return;
 
- //   SmartHomeData.structure.activeRoom = roomId;
+   SmartHomeData.structure.activeRoom = roomId;
 
     // Titelzeile aktualisieren
- //   updateEditorTitle();
+   updateEditorTitle();
 
     // Editor neu rendern (falls vorhanden)
- //   if (RoomDesigner && typeof RoomDesigner.render === "function") {
- //       RoomDesigner.render();
- //   }
+   if (RoomDesigner && typeof RoomDesigner.render === "function") {
+       RoomDesigner.render();
+   }
+ }
+
+// function setActiveRoom(roomId) {
+//    if (!roomId) return;
+
+//    activeRoomId = roomId;
+
+   // RoomDesigner.loadRoom(roomId);
+  //  updateEditorTitle();
+  //  RoomDesigner.render();
 // }
-
-function setActiveRoom(roomId) {
-    if (!roomId) return;
-
-    activeRoomId = roomId;
-
-    RoomDesigner.loadRoom(roomId);
-    updateEditorTitle();
-    RoomDesigner.render();
-}
 
 
 // Ganz oben in der Datei oder zumindest außerhalb des Click-Handlers:
