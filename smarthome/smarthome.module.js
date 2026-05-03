@@ -149,30 +149,3 @@ window.SmartHomeModule = {
         `;
     }
 };
-        }
-
-        // Starte das Rendering
-        if (window.SmartHomeView) {
-            SmartHomeView.init();
-        } else {
-            console.error("SmartHomeView not found");
-        }
-    },
-
-    _showPlaceholder() {
-        const container = document.getElementById(this.state.panelId);
-        if (!container) return;
-
-        container.innerHTML = `
-            <div style="
-                color: white;
-                font-size: 20px;
-                padding: 20px;
-                font-family: sans-serif;
-            ">
-                SmartHome Modul geladen.<br>
-                (Rendering folgt in Schritt 2)
-            </div>
-        `;
-    }
-};
