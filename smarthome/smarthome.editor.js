@@ -573,11 +573,31 @@ function switchProject() {
             activeRoomId = roomIds[0];
         }
 
-        // 4) Editor neu initialisieren (mit Absicherung)
+        // 4) Editor neu initialisieren
         importToEditor();
 
-        // 5) SmartHome-Daten aktualisieren
-        generateSmartHomeDataFromProject();
+        // 5) SmartHome-Daten NUR aus dem Projekt generieren
+        SmartHomeData = generateSmartHomeDataFromProject();
+
+        // 6) SmartHomeData.structure zurücksetzen
+        SmartHomeData.structure = {
+            activeFloor: activeFloorId,
+            activeRoom: activeRoomId
+        };
+
+        // 7) Editor-Raum laden, aber NUR wenn er existiert
+        if (activeRoomId && project.rooms?.[activeRoomId]) {
+            RoomDesigner.loadRoom(activeRoomId);
+        } else {
+            // Canvas leeren, falls kein Raum existiert
+            if (RoomDesigner && typeof RoomDesigner.clear === "function") {
+                RoomDesigner.clear();
+            }
+        }
+
+        // 8) Sidebar aktualisieren
+        renderEditorProjectSidebar();
+        updateEditorTitle();
     };
 
     // Abbrechen
@@ -593,6 +613,7 @@ function switchProject() {
         }
     };
 }
+
 
 
 
