@@ -948,7 +948,7 @@ init() {
     if (!loaded) {
 
         // Neues Projekt erzeugen
-        const defaultName = "NeuesProjekt";
+        const defaultName = "Neues Projekt";
         localStorage.setItem("last_project", defaultName);
 
         // Projekt-Grundstruktur erzeugen
