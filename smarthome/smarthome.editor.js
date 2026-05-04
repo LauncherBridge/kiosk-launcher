@@ -1,7 +1,7 @@
 migrateProjectsToID(); 
 // ------------------------------------------------------------
-//  ECHTE Fallback-Variante - hier funktioniert "zuletzt geöffnetes Projekt anzeigen" wieder.
-//  Die Functions sind korrigiert!
+//  ECHTE Fallback-Variante - JSON sind migriert
+//  Noch klappen nicht alle Projektkontextmenü-items
 // ------------------------------------------------------------
 
 
