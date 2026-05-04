@@ -521,23 +521,25 @@ function createNewProject() {
         rooms: {}
     };
 
+    // Projekt ersetzen
     Object.keys(project).forEach(k => delete project[k]);
     Object.assign(project, newProject);
 
-    saveProject();
-
-    // ⭐ FIX: Editor-State zurücksetzen
+    // ⭐ Editor-State zurücksetzen
     activeRoomId = null;
     activeFloorId = null;
 
     importToEditor();        // Editor leeren
     RoomDesigner.clear();    // Canvas leeren
 
-    // ⭐ FIX: UI + SmartHomeData aktualisieren
+    saveProject();
+
+    // ⭐ FIX: SmartHomeData + Sidebar + Titelzeile sofort aktualisieren
     SmartHomeData = generateSmartHomeDataFromProject();
     renderEditorProjectSidebar();
     updateEditorTitle();
 }
+
 
 
 
@@ -5063,11 +5065,12 @@ function editorCreateFloor() {
     importToEditor();
     saveProject();
 
-    // ⭐ FIX: UI + SmartHomeData aktualisieren
+    // ⭐ FIX: SmartHomeData + Sidebar + Titelzeile sofort aktualisieren
     SmartHomeData = generateSmartHomeDataFromProject();
     renderEditorProjectSidebar();
     updateEditorTitle();
 }
+
 
 
 
