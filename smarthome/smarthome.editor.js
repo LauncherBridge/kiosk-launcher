@@ -509,7 +509,6 @@ function createNewProject() {
     const name = prompt("Name des neuen Projekts:");
     if (!name) return;
 
-    // ⭐ Neues Projekt mit neuer ID erzeugen
     const newProject = {
         meta: {
             id: "proj_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8),
@@ -522,20 +521,24 @@ function createNewProject() {
         rooms: {}
     };
 
-    // ⭐ Projekt aktiv machen (globales project-Objekt ersetzen)
     Object.keys(project).forEach(k => delete project[k]);
     Object.assign(project, newProject);
 
-    // ⭐ Projekt speichern (ID-basiert)
     saveProject();
 
-    // ⭐ Editor-UI aktualisieren
-    updateEditorTitle();
-    renderEditorProjectSidebar();
+    // ⭐ FIX: Editor-State zurücksetzen
+    activeRoomId = null;
+    activeFloorId = null;
 
-    // ⭐ SmartHomeData neu generieren
+    importToEditor();        // Editor leeren
+    RoomDesigner.clear();    // Canvas leeren
+
+    // ⭐ FIX: UI + SmartHomeData aktualisieren
     SmartHomeData = generateSmartHomeDataFromProject();
+    renderEditorProjectSidebar();
+    updateEditorTitle();
 }
+
 
 
 
@@ -559,15 +562,35 @@ function createNewFloor() {
 function deleteProject() {
     if (!confirm("Projekt wirklich löschen?")) return;
 
-    // ⭐ Projekt anhand der ID löschen
-    const key = "project_" + project.meta.id;
+    const currentId = project.meta.id;
+    const key = "project_" + currentId;
+
+    // 1) Projekt löschen
     localStorage.removeItem(key);
 
-    // ⭐ Neues leeres Projekt erzeugen (Projekt-Objekt NICHT ersetzen!)
+    // 2) Alle verbleibenden Projekte ermitteln
+    const all = getAllProjects(); // liefert [{id, name}, ...]
+
+    // 3) Wenn noch Projekte existieren → nächstes laden
+    if (all.length > 0) {
+        const next = all[0].id; // nimm das erste verbleibende Projekt
+        loadProject(next);
+        localStorage.setItem("last_project", next);
+
+        importToEditor();
+        updateEditorTitle();
+        renderEditorProjectSidebar();
+        SmartHomeData = generateSmartHomeDataFromProject();
+        return;
+    }
+
+    // 4) Wenn KEIN Projekt mehr existiert → neues leeres Projekt erzeugen
+    const newId = "proj_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
+
     Object.keys(project).forEach(k => delete project[k]);
     Object.assign(project, {
         meta: {
-            id: "proj_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8),
+            id: newId,
             name: "Neues Projekt",
             version: 1,
             created: Date.now(),
@@ -577,16 +600,15 @@ function deleteProject() {
         rooms: {}
     });
 
-    // ⭐ Neues Projekt speichern (ID-basiert)
     saveProject();
+    localStorage.setItem("last_project", newId);
 
-    // ⭐ UI aktualisieren
+    importToEditor();
     updateEditorTitle();
     renderEditorProjectSidebar();
-
-    // ⭐ SmartHomeData neu generieren
     SmartHomeData = generateSmartHomeDataFromProject();
 }
+
 
 
 
@@ -5005,7 +5027,6 @@ function updateEditorTitle() {
 // Neue Etage erstellen
 // ---------------------------------------------------------
 function editorCreateFloor() {
-    // 1) Neue Floor-ID bestimmen (bulletproof)
     const existingIds = Object.keys(project.floors || {})
         .map(id => Number(id))
         .filter(n => Number.isFinite(n) && n > 0);
@@ -5013,44 +5034,41 @@ function editorCreateFloor() {
     const max = existingIds.length > 0 ? Math.max(...existingIds) : 0;
     const newFloorId = max + 1;
 
-    // 2) Floor im Projekt anlegen
     project.floors[newFloorId] = {
         id: newFloorId,
         name: `${newFloorId}. Obergeschoss`,
         rooms: []
     };
 
-    // 3) Einen neuen Raum erzeugen (Pflicht!)
     const newRoomId = `raum_${newFloorId}_1`;
 
     project.rooms[newRoomId] = {
         id: newRoomId,
         name: `Neuer Raum ${newFloorId}`,
         floorId: newFloorId,
-
         points: [
             { x: 100, y: 100 },
             { x: 300, y: 100 },
             { x: 300, y: 300 },
             { x: 100, y: 300 }
         ],
-
         doors: [],
         windows: [],
         isClosed: false
     };
 
-    // Raum in der Etage referenzieren
     project.floors[newFloorId].rooms.push(newRoomId);
-
-    // 4) Editor-State setzen
     activeRoomId = newRoomId;
 
-    // 5) Editor-Daten + UI aktualisieren
     importToEditor();
-    renderEditorProjectSidebar();
     saveProject();
+
+    // ⭐ FIX: UI + SmartHomeData aktualisieren
+    SmartHomeData = generateSmartHomeDataFromProject();
+    renderEditorProjectSidebar();
+    updateEditorTitle();
 }
+
 
 
 
