@@ -1,3 +1,4 @@
+migrateProjectsToID(); 
 // ------------------------------------------------------------
 //  ECHTE Fallback-Variante - hier funktioniert "zuletzt geöffnetes Projekt anzeigen" wieder.
 //  Die Functions sind korrigiert!
@@ -409,11 +410,34 @@ function createDeviceModel(id, type, model, deviceId, roomId, x, y, rotation) {
 
 
 function getAllProjects() {
-    const keys = Object.keys(localStorage);
-    return keys
-        .filter(k => k.startsWith("project_"))
-        .map(k => k.replace("project_", ""));
+    const list = [];
+
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+
+        if (key.startsWith("project_")) {
+            const json = localStorage.getItem(key);
+
+            try {
+                const data = JSON.parse(json);
+
+                // ID aus meta oder aus Key ableiten
+                const id = data.meta?.id || key.replace("project_", "");
+
+                // Name aus meta
+                const name = data.meta?.name || "(Unbenannt)";
+
+                list.push({ id, name });
+
+            } catch (e) {
+                console.warn("⚠️ Ungültiges Projekt im Storage:", key);
+            }
+        }
+    }
+
+    return list;
 }
+
 
 function openProjectMenu(x, y) {
     const items = [];
@@ -436,39 +460,83 @@ function openProjectMenu(x, y) {
 
 function renameProject() {
     const newName = prompt("Neuer Projektname:", project.meta.name);
-    if (!newName) return;
+    if (!newName || newName === project.meta.name) return;
 
     project.meta.name = newName;
     saveProject();
+
     updateEditorTitle();
     renderSidebar();
 }
 
 function copyProject() {
+    // ⭐ Tiefenkopie des aktuellen Projekts
     const clone = JSON.parse(JSON.stringify(project));
+
+    // ⭐ Neuer Name
     clone.meta.name = project.meta.name + " (Kopie)";
 
-    saveProjectAs(clone);
+    // ⭐ Neue ID erzeugen
+    clone.meta.id = "proj_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
+    clone.meta.created = Date.now();
+    clone.meta.modified = Date.now();
+
+    // ⭐ Speichern unter neuer ID
+    const key = "project_" + clone.meta.id;
+    localStorage.setItem(key, JSON.stringify(clone));
+
+    // ⭐ Kopie zum aktiven Projekt machen
+    Object.keys(project).forEach(k => delete project[k]);
+    Object.assign(project, clone);
+
+    // ⭐ last_project aktualisieren
+    localStorage.setItem("last_project", clone.meta.id);
+
+    // ⭐ UI aktualisieren
+    updateEditorTitle();
+    renderEditorProjectSidebar();
+
+    // ⭐ SmartHomeData neu generieren
+    SmartHomeData = generateSmartHomeDataFromProject();
 
     alert("Projekt wurde kopiert.");
 }
+
+
 
 
 function createNewProject() {
     const name = prompt("Name des neuen Projekts:");
     if (!name) return;
 
-    project = {
-        meta: { name },
+    // ⭐ Neues Projekt mit neuer ID erzeugen
+    const newProject = {
+        meta: {
+            id: "proj_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8),
+            name: name,
+            version: 1,
+            created: Date.now(),
+            modified: Date.now()
+        },
         floors: {},
         rooms: {}
     };
 
-    saveProjectAs(project);   // ⭐ wichtig!
+    // ⭐ Projekt aktiv machen (globales project-Objekt ersetzen)
+    Object.keys(project).forEach(k => delete project[k]);
+    Object.assign(project, newProject);
+
+    // ⭐ Projekt speichern (ID-basiert)
+    saveProject();
+
+    // ⭐ Editor-UI aktualisieren
     updateEditorTitle();
-    renderSidebar();
-    generateSmartHomeDataFromProject();
+    renderEditorProjectSidebar();
+
+    // ⭐ SmartHomeData neu generieren
+    SmartHomeData = generateSmartHomeDataFromProject();
 }
+
 
 
 function createNewFloor() {
@@ -491,21 +559,35 @@ function createNewFloor() {
 function deleteProject() {
     if (!confirm("Projekt wirklich löschen?")) return;
 
-    // Projekt aus Storage löschen
-    const key = "project_" + project.meta.name;
+    // ⭐ Projekt anhand der ID löschen
+    const key = "project_" + project.meta.id;
     localStorage.removeItem(key);
 
-    // Neues leeres Projekt anlegen
-    project = {
-        meta: { name: "Neues Projekt" },
+    // ⭐ Neues leeres Projekt erzeugen (Projekt-Objekt NICHT ersetzen!)
+    Object.keys(project).forEach(k => delete project[k]);
+    Object.assign(project, {
+        meta: {
+            id: "proj_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8),
+            name: "Neues Projekt",
+            version: 1,
+            created: Date.now(),
+            modified: Date.now()
+        },
         floors: {},
         rooms: {}
-    };
+    });
 
+    // ⭐ Neues Projekt speichern (ID-basiert)
     saveProject();
+
+    // ⭐ UI aktualisieren
     updateEditorTitle();
-    renderSidebar();
+    renderEditorProjectSidebar();
+
+    // ⭐ SmartHomeData neu generieren
+    SmartHomeData = generateSmartHomeDataFromProject();
 }
+
 
 
 function deleteProjectFromStorage(name) {
@@ -528,12 +610,12 @@ function switchProject() {
     const loadBtn = document.getElementById("project-load-btn");
     const cancelBtn = document.getElementById("project-cancel-btn");
 
-    // Liste füllen
+    // Liste füllen (ID als value, Name als Anzeige)
     list.innerHTML = "";
-    projects.forEach(name => {
+    projects.forEach(p => {
         const opt = document.createElement("option");
-        opt.value = name;
-        opt.textContent = name;
+        opt.value = p.id;        // ID
+        opt.textContent = p.name; // Name
         list.appendChild(opt);
     });
 
@@ -542,10 +624,10 @@ function switchProject() {
 
     // Laden
     loadBtn.onclick = () => {
-        const name = list.value;
-        if (!name) return;
+        const id = list.value;
+        if (!id) return;
 
-        const loaded = loadProject(name);
+        const loaded = loadProject(id);
         if (!loaded) {
             alert("Projekt konnte nicht geladen werden.");
             return;
@@ -620,44 +702,88 @@ function switchProject() {
 
 
 
+
 // ------------------------------------------------------------
 // Projekt speichern & laden
 // ------------------------------------------------------------
 function saveProject() {
     project.meta.modified = Date.now();
-    const key = "project_" + project.meta.name;
+
+    // ID sicherstellen
+    if (!project.meta.id) {
+        project.meta.id = "proj_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
+        console.warn("⚠️ Projekt hatte keine ID – neue ID vergeben:", project.meta.id);
+    }
+
+    // Neuer ID-basierter Key
+    const key = "project_" + project.meta.id;
+
+    // Speichern
     localStorage.setItem(key, JSON.stringify(project));
 }
 
 
+
 function saveProjectAs(proj) {
-    const key = "project_" + proj.meta.name;
+    // ⭐ Neue ID erzeugen
+    proj.meta.id = "proj_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
+    proj.meta.created = Date.now();
+    proj.meta.modified = Date.now();
+
+    // ⭐ Speichern unter ID-Key
+    const key = "project_" + proj.meta.id;
     localStorage.setItem(key, JSON.stringify(proj));
+
+    // ⭐ Projekt aktiv machen
+    Object.keys(project).forEach(k => delete project[k]);
+    Object.assign(project, proj);
+
+    // ⭐ last_project aktualisieren
+    localStorage.setItem("last_project", proj.meta.id);
+
+    // ⭐ UI aktualisieren
+    updateEditorTitle();
+    renderEditorProjectSidebar();
+
+    // ⭐ SmartHomeData neu generieren
+    SmartHomeData = generateSmartHomeDataFromProject();
 }
 
 
-function loadProject(name) {
-    const key = "project_" + name;
+
+
+function loadProject(id) {
+    const key = "project_" + id;
     const json = localStorage.getItem(key);
 
     if (!json) {
-        console.warn("⚠️ Hinweis-Service: Projekt nicht gefunden:", name,
-             " – loadProject gibt false zurück. Fallback in der Editor-Initialisierung lädt das erste vorhandene Projekt oder legt ein neues Projekt an.");
+        console.warn("⚠️ Projekt nicht gefunden:", id);
         return false;
     }
 
     try {
-        // JSON parsen
         let data = JSON.parse(json);
 
-        // 🔥 AUTOMATISCHE REPARATUR
-        data = sanitizeProject(data);
+        // 🔥 Reparatur: ID sicherstellen
+        if (!data.meta.id) {
+            const newId = "proj_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
+            data.meta.id = newId;
 
-        // Projekt komplett ersetzen (sauberer Reset)
+            // alten Key löschen, neuen Key speichern
+            localStorage.removeItem(key);
+            localStorage.setItem("project_" + newId, JSON.stringify(data));
+
+            console.warn("⚠️ Projekt hatte keine ID – neue ID vergeben:", newId);
+        }
+
+        // Projekt-Objekt sauber ersetzen
         Object.keys(project).forEach(k => delete project[k]);
         Object.assign(project, data);
 
-        console.log("✔ Projekt geladen:", name);
+        // last_project aktualisieren
+        localStorage.setItem("last_project", project.meta.id);
+
+        console.log("✔ Projekt geladen:", project.meta.name);
         return true;
 
     } catch (e) {
@@ -666,6 +792,61 @@ function loadProject(name) {
     }
 }
 
+
+function migrateProjectsToID() {
+    console.group("🔧 Migration: Name-basierte Keys → ID-basierte Keys");
+
+    const toDelete = [];
+    const toCreate = [];
+
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+
+        if (!key.startsWith("project_")) continue;
+
+        const json = localStorage.getItem(key);
+        if (!json) continue;
+
+        try {
+            const data = JSON.parse(json);
+
+            // ID aus meta oder aus Key ableiten
+            let id = data.meta?.id;
+
+            if (!id) {
+                // Neue ID erzeugen
+                id = "proj_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
+                data.meta.id = id;
+                console.warn("⚠️ Projekt ohne ID gefunden – neue ID vergeben:", id);
+            }
+
+            const newKey = "project_" + id;
+
+            // Wenn alter Key != neuer Key → Migration nötig
+            if (key !== newKey) {
+                toCreate.push({ key: newKey, data });
+                toDelete.push(key);
+            }
+
+        } catch (e) {
+            console.error("❌ Fehler beim Migrieren von:", key, e);
+        }
+    }
+
+    // Neue Keys anlegen
+    toCreate.forEach(entry => {
+        localStorage.setItem(entry.key, JSON.stringify(entry.data));
+        console.log("✔ Neues Projekt gespeichert:", entry.key);
+    });
+
+    // Alte Keys löschen
+    toDelete.forEach(key => {
+        localStorage.removeItem(key);
+        console.log("🗑️ Alter Key gelöscht:", key);
+    });
+
+    console.groupEnd();
+}
 
 
 
@@ -814,13 +995,25 @@ function saveCurrentRoom() {
 // Manuelles Laden des aktuellen Projekts
 // ------------------------------------------------------------
 function loadCurrentRoom() {
-    if (loadProject()) {
+    const id = localStorage.getItem("last_project");
+
+    if (!id) {
+        console.log("[Persistenz] Kein last_project gefunden.");
+        return false;
+    }
+
+    const loaded = loadProject(id);
+
+    if (loaded) {
         importToEditor();
-        console.log("[Persistenz] Projekt geladen.");
+        console.log("[Persistenz] Projekt geladen:", id);
+        return true;
     } else {
-        console.log("[Persistenz] Kein gespeichertes Projekt gefunden.");
+        console.log("[Persistenz] Projekt konnte nicht geladen werden:", id);
+        return false;
     }
 }
+
 
     
 const RoomDesigner = {
@@ -926,17 +1119,13 @@ init() {
     this._initialized = true;
 
     // ------------------------------------------------------------
-    // 1) Letztes Projekt ermitteln
+    // 1) Letztes Projekt (ID-basiert)
     // ------------------------------------------------------------
     let last = localStorage.getItem("last_project");
-
-    // Falls "undefined" oder leer → ignorieren
-    if (!last || last === "undefined") {
-        last = null;
-    }
+    if (!last || last === "undefined") last = null;
 
     // ------------------------------------------------------------
-    // 2) Projekt laden (nur wenn gültiger Name existiert)
+    // 2) Projekt laden
     // ------------------------------------------------------------
     let loaded = false;
     if (last) {
@@ -944,18 +1133,24 @@ init() {
     }
 
     // ------------------------------------------------------------
-    // 3) Falls kein Projekt existiert → neues Default-Projekt erzeugen
+    // 3) Falls kein Projekt existiert → neues Default-Projekt
     // ------------------------------------------------------------
     if (!loaded) {
 
-        // Neues Projekt erzeugen
-        const defaultName = "Neues Projekt";
-        localStorage.setItem("last_project", defaultName);
+        const newId = "proj_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
 
-        // Projekt-Grundstruktur erzeugen
-        project.meta.name = defaultName;
-        project.floors = {};
-        project.rooms = {};
+        Object.keys(project).forEach(k => delete project[k]);
+        Object.assign(project, {
+            meta: {
+                id: newId,
+                name: "Neues Projekt",
+                version: 1,
+                created: Date.now(),
+                modified: Date.now()
+            },
+            floors: {},
+            rooms: {}
+        });
 
         // Etage erzeugen
         const floorId = "floor_1";
@@ -964,12 +1159,13 @@ init() {
         // Raum erzeugen
         activeRoomId = "room_1";
         project.rooms[activeRoomId] = createRoomModel(activeRoomId, "Neuer Raum", floorId);
-
-        // Raum in Etage eintragen
         project.floors[floorId].rooms = [activeRoomId];
 
-        // Projekt speichern
-        saveProject(defaultName);
+        // Speichern
+        saveProject();
+
+        // last_project setzen
+        localStorage.setItem("last_project", newId);
 
         loaded = true;
     }
@@ -978,12 +1174,8 @@ init() {
     // 4) Editor laden
     // ------------------------------------------------------------
     importToEditor();
-
-    // Editor-Daten zurück ins Projekt schreiben
     this.exportFromEditor();
-
-    // SmartHomeData generieren
-    generateSmartHomeDataFromProject();
+    SmartHomeData = generateSmartHomeDataFromProject();
 
     // ------------------------------------------------------------
     // 5) Canvas & Events
@@ -1007,9 +1199,6 @@ init() {
     this.setupGridSlider();
     this.setupResetButton();
 
-    // ------------------------------------------------------------
-    // Projekt-Menü-Button (⋮) in der linken Sidebar
-    // ------------------------------------------------------------
     const projMenuBtn = document.getElementById("editor-project-menu-btn-sidebar");
     if (projMenuBtn) {
         projMenuBtn.addEventListener("click", (ev) => {
@@ -1021,7 +1210,8 @@ init() {
 
     this.resize();
     this.render();
-},
+}
+,
 
 
     resize() {
@@ -5312,27 +5502,26 @@ window.addEventListener("DOMContentLoaded", () => {
         const sidebar = document.getElementById("editor-sidebar");
         if (sidebar) sidebar.style.display = "flex";
 
-        // Editor initialisieren
+        // ⭐ Editor initialisieren (lädt NICHT das Projekt!)
         RoomDesigner.init();
 
-        // Projekt laden + aktiven Raum übernehmen
-        if (loadProject()) {
-            importToEditor();   // lädt den richtigen Raum
-        }
+        // ⭐ Projekt-Daten in den Editor importieren
+        importToEditor();
 
-        // Titel aktualisieren
+        // ⭐ Titel aktualisieren
         updateEditorTitle();
 
-        // Sidebar aufbauen
+        // ⭐ Sidebar aufbauen
         renderEditorProjectSidebar();
 
-        // Editor-Funktionen aktivieren
+        // ⭐ Editor-Funktionen aktivieren
         enableRoomNameEditing();
         enableFloorNameEditing();
         enableProjectNameEditing();
         attachFloorCrumbMenu();
     });
 });
+
 
 
 
