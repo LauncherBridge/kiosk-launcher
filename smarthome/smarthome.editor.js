@@ -5042,23 +5042,32 @@ function setActiveRoom(roomId) {
 // Ganz oben in der Datei oder zumindest außerhalb des Click-Handlers:
 function updateEditorTitle() {
     const proj = document.getElementById("editor-project-name");
+    const floor = document.getElementById("editor-floor-name");
     const room = document.getElementById("editor-room-name");
 
+    // Projektname
     if (proj) {
         proj.textContent = project.meta.name || "Projekt";
     }
 
-    // ⭐ Sidebar-Projektname aktualisieren
+    // Sidebar-Projektname
     const projSidebar = document.getElementById("editor-project-name-sidebar");
     if (projSidebar) {
         projSidebar.textContent = project.meta.name || "Projekt";
     }
 
+    // Etagenname (FEHLTE BISHER!)
+    if (floor && activeFloorId && project.floors[activeFloorId]) {
+        floor.textContent = project.floors[activeFloorId].name || "Etage";
+    }
+
+    // Raumname
     const roomObj = getActiveRoom();
     if (room && roomObj) {
         room.textContent = roomObj.name || "Raum";
     }
 }
+
 
 
 // ---------------------------------------------------------
