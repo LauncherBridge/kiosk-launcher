@@ -564,8 +564,13 @@ function createNewProject() {
     updateEditorTitle();
     renderEditorProjectSidebar();
 
+    // ⭐ Sidebar-Projektnamen aktualisieren (WICHTIG!)
+    const nameEl = document.getElementById("editor-project-name");
+    if (nameEl) nameEl.textContent = project.meta.name;
+
     alert("Neues Projekt wurde erstellt.");
 }
+
 
 
 
