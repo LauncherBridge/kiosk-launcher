@@ -509,10 +509,10 @@ function createNewProject() {
     const name = prompt("Name des neuen Projekts:");
     if (!name) return;
 
-    // ⭐ Neue IDs erzeugen
+    // ⭐ IDs erzeugen
     const projectId = "proj_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
-    const floorId = "floor_main";
-    const roomId = "room_main";
+    const floorId   = "floor_" + Date.now();
+    const roomId    = "room_" + Date.now() + "_main";
 
     // ⭐ Vollständig initialisiertes Grundprojekt
     const newProject = {
@@ -543,29 +543,35 @@ function createNewProject() {
         }
     };
 
-    // ⭐ Projekt ersetzen
+    // ⭐ Aktuelles Projekt ersetzen (Referenz beibehalten)
     Object.keys(project).forEach(k => delete project[k]);
     Object.assign(project, newProject);
 
     // ⭐ Aktive IDs setzen
     activeFloorId = floorId;
-    activeRoomId = roomId;
+    activeRoomId  = roomId;
 
-    // ⭐ Projekt speichern
+    // ⭐ Speichern + last_project aktualisieren
     saveProject();
     localStorage.setItem("last_project", projectId);
 
+    // ⭐ SmartHomeData neu aus dem Projekt erzeugen
+    SmartHomeData = generateSmartHomeDataFromProject();
+
     // ⭐ Editor aktualisieren
-    importToEditor();
-    RoomDesigner.clear();
+    importToEditor();        // Editor mit neuem Projekt initialisieren
+    RoomDesigner.clear();    // Canvas leeren (neuer Raum, aber noch ohne Zeichnung)
     updateEditorTitle();
     renderEditorProjectSidebar();
 
-    // ⭐ SmartHomeData aktualisieren
-    SmartHomeData = generateSmartHomeDataFromProject();
+    // ⭐ Smarthome-Sidebar (Navigation) aktualisieren
+    if (typeof renderSidebar === "function") {
+        renderSidebar();
+    }
 
     alert("Neues Projekt wurde erstellt.");
 }
+
 
 
 
