@@ -582,7 +582,7 @@ function createNewFloor() {
     };
 
     // Neue Etage aktivieren
-    activeFloorId = floorId;
+ //   activeFloorId = floorId;
 
     // Raum bleibt wie er ist (activeRoomId NICHT ändern)
 
