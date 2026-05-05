@@ -1,7 +1,7 @@
 migrateProjectsToID(); 
 // ------------------------------------------------------------
 //  ECHTE Fallback-Variante - JSON sind migriert
-//  Noch klappen nicht alle Projektkontextmenü-items
+//  Create New Project klappt hier endlich.
 // ------------------------------------------------------------
 
 
