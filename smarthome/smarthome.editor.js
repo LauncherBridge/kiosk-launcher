@@ -509,36 +509,64 @@ function createNewProject() {
     const name = prompt("Name des neuen Projekts:");
     if (!name) return;
 
+    // ⭐ Neue IDs erzeugen
+    const projectId = "proj_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
+    const floorId = "floor_main";
+    const roomId = "room_main";
+
+    // ⭐ Vollständig initialisiertes Grundprojekt
     const newProject = {
         meta: {
-            id: "proj_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8),
+            id: projectId,
             name: name,
             version: 1,
             created: Date.now(),
             modified: Date.now()
         },
-        floors: {},
-        rooms: {}
+        floors: {
+            [floorId]: {
+                id: floorId,
+                name: "Erdgeschoss",
+                rooms: [roomId]
+            }
+        },
+        rooms: {
+            [roomId]: {
+                id: roomId,
+                name: "Raum",
+                floorId: floorId,
+                points: [],
+                isClosed: false,
+                doors: [],
+                windows: []
+            }
+        }
     };
 
-    // Projekt ersetzen
+    // ⭐ Projekt ersetzen
     Object.keys(project).forEach(k => delete project[k]);
     Object.assign(project, newProject);
 
-    // ⭐ Editor-State zurücksetzen
-    activeRoomId = null;
-    activeFloorId = null;
+    // ⭐ Aktive IDs setzen
+    activeFloorId = floorId;
+    activeRoomId = roomId;
 
-    importToEditor();        // Editor leeren
-    RoomDesigner.clear();    // Canvas leeren
-
+    // ⭐ Projekt speichern
     saveProject();
+    localStorage.setItem("last_project", projectId);
 
-    // ⭐ FIX: SmartHomeData + Sidebar + Titelzeile sofort aktualisieren
-    SmartHomeData = generateSmartHomeDataFromProject();
-    renderEditorProjectSidebar();
+    // ⭐ Editor aktualisieren
+    importToEditor();
+    RoomDesigner.clear();
     updateEditorTitle();
+    renderEditorProjectSidebar();
+
+    // ⭐ SmartHomeData aktualisieren
+    SmartHomeData = generateSmartHomeDataFromProject();
+
+    alert("Neues Projekt wurde erstellt.");
 }
+
 
 
 
