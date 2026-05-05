@@ -555,7 +555,7 @@ function createNewProject() {
     RoomDesigner.clear();
     updateEditorTitle();
     renderEditorProjectSidebar();
-
+    renderSidebar();
     alert("Neues Projekt wurde erstellt.");
 }
 
