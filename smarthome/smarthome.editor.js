@@ -553,9 +553,16 @@ function createNewProject() {
     SmartHomeData = generateSmartHomeDataFromProject();
 
     RoomDesigner.clear();
+    saveProjectAs(project);   // ⭐ wichtig!
     updateEditorTitle();
     renderEditorProjectSidebar();
     renderSidebar();
+
+    
+ 
+   //  generateSmartHomeDataFromProject();
+
+    
     alert("Neues Projekt wurde erstellt.");
 }
 
