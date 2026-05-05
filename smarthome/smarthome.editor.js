@@ -758,6 +758,29 @@ function switchProject() {
 }
 
 
+function switchFloor(floorId) {
+    // Sicherheitscheck
+    if (!project.floors[floorId]) return;
+
+    // Neue Etage aktivieren
+    activeFloorId = floorId;
+
+    const rooms = project.floors[floorId].rooms;
+
+    if (rooms.length > 0) {
+        // Ersten Raum der Etage aktivieren
+        activeRoomId = rooms[0];
+        RoomDesigner.loadRoom(activeRoomId);
+    } else {
+        // Etage ohne Räume → Canvas leeren
+        activeRoomId = null;
+        RoomDesigner.loadRoom(null);
+    }
+
+    // UI aktualisieren
+    updateEditorTitle();
+    renderEditorProjectSidebar();
+}
 
 
 
