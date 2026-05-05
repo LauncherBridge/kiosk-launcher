@@ -509,12 +509,10 @@ function createNewProject() {
     const name = prompt("Name des neuen Projekts:");
     if (!name) return;
 
-    // ⭐ IDs erzeugen
     const projectId = "proj_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
     const floorId   = "floor_" + Date.now();
     const roomId    = "room_" + Date.now() + "_main";
 
-    // ⭐ Vollständig initialisiertes Grundprojekt
     const newProject = {
         meta: {
             id: projectId,
@@ -543,33 +541,24 @@ function createNewProject() {
         }
     };
 
-    // ⭐ Projekt ersetzen (Referenz beibehalten)
     Object.keys(project).forEach(k => delete project[k]);
     Object.assign(project, newProject);
 
-    // ⭐ Aktive IDs setzen
     activeFloorId = floorId;
     activeRoomId  = roomId;
 
-    // ⭐ Speichern + last_project aktualisieren
     saveProject();
     localStorage.setItem("last_project", projectId);
 
-    // ⭐ SmartHomeData neu erzeugen
     SmartHomeData = generateSmartHomeDataFromProject();
 
-    // ⭐ Editor aktualisieren
-    importToEditor();
     RoomDesigner.clear();
     updateEditorTitle();
     renderEditorProjectSidebar();
 
-    // ⭐ Sidebar-Projektnamen aktualisieren (WICHTIG!)
-    const nameEl = document.getElementById("editor-project-name");
-    if (nameEl) nameEl.textContent = project.meta.name;
-
     alert("Neues Projekt wurde erstellt.");
 }
+
 
 
 
