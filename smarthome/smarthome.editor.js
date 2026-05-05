@@ -556,7 +556,6 @@ function createNewProject() {
     // ⭐ last_project aktualisieren
     localStorage.setItem("last_project", newProject.meta.id);
 
-    RoomDesigner.clear();
     
     // ⭐ UI aktualisieren
     updateEditorTitle();
@@ -565,7 +564,7 @@ function createNewProject() {
     // ⭐ SmartHomeData neu generieren
     SmartHomeData = generateSmartHomeDataFromProject();
 
-    alert("Neues Projekt wurde erstellt.");
+   // alert("Neues Projekt wurde erstellt.");
 }
 
 
