@@ -545,7 +545,7 @@ function createNewProject() {
     const key = "project_" + newProject.meta.id;
     localStorage.setItem(key, JSON.stringify(newProject));
 
-    // ⭐ Projekt aktiv machen (globales Objekt ersetzen)
+    // ⭐ Projekt aktiv machen
     Object.keys(project).forEach(k => delete project[k]);
     Object.assign(project, newProject);
 
@@ -556,16 +556,14 @@ function createNewProject() {
     // ⭐ last_project aktualisieren
     localStorage.setItem("last_project", newProject.meta.id);
 
-    // ⭐ Canvas leeren (SAFE!)
-    activeRoomId = null;
-    RoomDesigner.loadRoom(null);
+    // ⭐ NEUEN Raum laden (Canvas wird automatisch geleert)
+    RoomDesigner.loadRoom(roomId);
 
     // ⭐ Sidebar + Titel aktualisieren
     updateEditorTitle();
     renderEditorProjectSidebar();
-
-    // Fertig
 }
+
 
 
 
