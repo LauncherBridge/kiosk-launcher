@@ -1000,6 +1000,11 @@ function importToEditor() {
             return;
         }
 
+
+        // ⭐ WICHTIG: Floor setzen
+        activeFloorId = room.floorId;
+
+        
         // ---------------------------------------------------------
         // 4) Titelzeile setzen
         // ---------------------------------------------------------
