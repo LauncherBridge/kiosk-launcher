@@ -545,7 +545,7 @@ function createNewProject() {
     const key = "project_" + newProject.meta.id;
     localStorage.setItem(key, JSON.stringify(newProject));
 
-    // ⭐ Projekt aktiv machen
+    // ⭐ Projekt aktiv machen (globales Objekt ersetzen)
     Object.keys(project).forEach(k => delete project[k]);
     Object.assign(project, newProject);
 
@@ -556,16 +556,17 @@ function createNewProject() {
     // ⭐ last_project aktualisieren
     localStorage.setItem("last_project", newProject.meta.id);
 
-    
-    // ⭐ UI aktualisieren
+    // ⭐ Canvas leeren (SAFE!)
+    activeRoomId = null;
+    RoomDesigner.loadRoom(null);
+
+    // ⭐ Sidebar + Titel aktualisieren
     updateEditorTitle();
     renderEditorProjectSidebar();
 
-    // ⭐ SmartHomeData neu generieren
-    SmartHomeData = generateSmartHomeDataFromProject();
-
-   // alert("Neues Projekt wurde erstellt.");
+    // Fertig
 }
+
 
 
 
