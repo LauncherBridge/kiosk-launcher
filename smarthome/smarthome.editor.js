@@ -579,6 +579,7 @@ function createNewProject() {
 
 
 
+
 function createNewFloor() {
     const name = prompt("Name der neuen Etage:");
     if (!name) return;
