@@ -541,30 +541,31 @@ function createNewProject() {
         }
     };
 
+    // ⭐ Speichern unter ID-Key
+    const key = "project_" + newProject.meta.id;
+    localStorage.setItem(key, JSON.stringify(newProject));
+
+    // ⭐ Projekt aktiv machen
     Object.keys(project).forEach(k => delete project[k]);
     Object.assign(project, newProject);
 
+    // ⭐ Aktive IDs setzen
     activeFloorId = floorId;
     activeRoomId  = roomId;
 
-    saveProject();
-    localStorage.setItem("last_project", projectId);
+    // ⭐ last_project aktualisieren
+    localStorage.setItem("last_project", newProject.meta.id);
 
-    SmartHomeData = generateSmartHomeDataFromProject();
-
-    RoomDesigner.clear();
-    saveProjectAs(project);   // ⭐ wichtig!
+    // ⭐ UI aktualisieren
     updateEditorTitle();
     renderEditorProjectSidebar();
-    renderSidebar();
 
-    
- 
-   //  generateSmartHomeDataFromProject();
+    // ⭐ SmartHomeData neu generieren
+    SmartHomeData = generateSmartHomeDataFromProject();
 
-    
     alert("Neues Projekt wurde erstellt.");
 }
+
 
 
 
