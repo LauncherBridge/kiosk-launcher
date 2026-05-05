@@ -541,28 +541,31 @@ function createNewProject() {
         }
     };
 
-    // ⭐ Speichern unter ID-Key
+    // Projekt speichern
     const key = "project_" + newProject.meta.id;
     localStorage.setItem(key, JSON.stringify(newProject));
 
-    // ⭐ Projekt aktiv machen
+    // Globales Projekt ersetzen
     Object.keys(project).forEach(k => delete project[k]);
     Object.assign(project, newProject);
 
-    // ⭐ Aktive IDs setzen
+    // Aktive IDs setzen
     activeFloorId = floorId;
     activeRoomId  = roomId;
 
-    // ⭐ last_project aktualisieren
+    // last_project aktualisieren
     localStorage.setItem("last_project", newProject.meta.id);
 
-    // ⭐ NEUEN Raum laden (Canvas wird automatisch geleert)
-    RoomDesigner.loadRoom(roomId);
+    // NEUEN Raum laden (Canvas wird dabei geleert)
+    if (RoomDesigner && typeof RoomDesigner.loadRoom === "function") {
+        RoomDesigner.loadRoom(activeRoomId);
+    }
 
-    // ⭐ Sidebar + Titel aktualisieren
+    // Titelzeile & Sidebar aktualisieren
     updateEditorTitle();
     renderEditorProjectSidebar();
 }
+
 
 
 
