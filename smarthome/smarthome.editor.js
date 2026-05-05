@@ -543,7 +543,7 @@ function createNewProject() {
         }
     };
 
-    // ⭐ Aktuelles Projekt ersetzen (Referenz beibehalten)
+    // ⭐ Projekt ersetzen (Referenz beibehalten)
     Object.keys(project).forEach(k => delete project[k]);
     Object.assign(project, newProject);
 
@@ -555,22 +555,18 @@ function createNewProject() {
     saveProject();
     localStorage.setItem("last_project", projectId);
 
-    // ⭐ SmartHomeData neu aus dem Projekt erzeugen
+    // ⭐ SmartHomeData neu erzeugen
     SmartHomeData = generateSmartHomeDataFromProject();
 
     // ⭐ Editor aktualisieren
-    importToEditor();        // Editor mit neuem Projekt initialisieren
-    RoomDesigner.clear();    // Canvas leeren (neuer Raum, aber noch ohne Zeichnung)
+    importToEditor();
+    RoomDesigner.clear();
     updateEditorTitle();
     renderEditorProjectSidebar();
 
-    // ⭐ Smarthome-Sidebar (Navigation) aktualisieren
-    if (typeof renderSidebar === "function") {
-        renderSidebar();
-    }
-
     alert("Neues Projekt wurde erstellt.");
 }
+
 
 
 
