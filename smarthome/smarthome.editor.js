@@ -568,30 +568,30 @@ function createNewProject() {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 function createNewFloor() {
     const name = prompt("Name der neuen Etage:");
     if (!name) return;
 
     const floorId = "floor_" + Date.now();
 
-    project.floors[floorId] = createFloorModel(floorId, name);
+    // Neue Etage erzeugen (ohne Räume)
+    project.floors[floorId] = {
+        id: floorId,
+        name: name,
+        rooms: []   // Etage startet leer
+    };
 
+    // Neue Etage aktivieren
+    activeFloorId = floorId;
+
+    // Raum bleibt wie er ist (activeRoomId NICHT ändern)
+
+    // Speichern
     saveProject();
-    renderSidebar();
+
+    // UI aktualisieren
+    renderEditorProjectSidebar();
     updateEditorTitle();
-    generateSmartHomeDataFromProject();
 }
 
 
