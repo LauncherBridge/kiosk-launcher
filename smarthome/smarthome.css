@@ -513,13 +513,34 @@ html, body {
     margin-top: 12px;
    gap: 6px;
     display: flex;
-    justify-content: space-between;
+      gap: 8px;
+
+justify-content: space-between;
     align-items: center;
 
     /* >>> FIX: prevents header overlapping rooms <<< */
     position: relative;
     z-index: 4;
 }
+
+.floor-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.floor-menu {
+    cursor: pointer;
+    color: #ccc;
+    font-size: 18px;
+    padding: 4px 6px;
+    border-radius: 4px;
+}
+
+.floor-menu:hover {
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+}
+
 
 .floor-arrow {
     width: 10px;
