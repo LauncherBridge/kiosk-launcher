@@ -5437,56 +5437,76 @@ function renderEditorProjectSidebar() {
             group.classList.add("open");
         }
 
+        // ---------------------------------------------------------
+        // HEADER (Pfeil + Name links, Menü rechts)
+        // ---------------------------------------------------------
         const floorHeader = document.createElement("div");
         floorHeader.className = "floor-header";
-floorHeader.innerHTML = `
-    <span class="floor-arrow"></span>
-    <span class="floor-name">${floor.name}</span>
-`;
 
+        // Linke Seite: Pfeil + Name
+        const leftWrap = document.createElement("div");
+        leftWrap.className = "floor-left";
+
+        const arrowEl = document.createElement("span");
+        arrowEl.className = "floor-arrow";
+
+        const nameEl = document.createElement("span");
+        nameEl.className = "floor-name";
+        nameEl.textContent = floor.name;
+
+        leftWrap.appendChild(arrowEl);
+        leftWrap.appendChild(nameEl);
+
+        // Rechte Seite: Drei-Punkte-Menü
+        const menuEl = document.createElement("span");
+        menuEl.className = "floor-menu";
+        menuEl.textContent = "⋮";
+        // später: menuEl.onclick = () => openFloorMenu(floor.id);
+
+        // Header zusammenbauen
+        floorHeader.appendChild(leftWrap);
+        floorHeader.appendChild(menuEl);
+
+        // Aktive Etage markieren
         if (floor.id === activeFloor) {
             floorHeader.classList.add("active-floor");
         }
 
-        // ⭐ EIN Klick: Etage wählen + auf/zu klappen
-floorHeader.addEventListener("click", (ev) => {
-    ev.stopPropagation();
+        // ---------------------------------------------------------
+        // KLICK-LOGIK (3-Regeln)
+        // ---------------------------------------------------------
+        floorHeader.addEventListener("click", (ev) => {
+            ev.stopPropagation();
 
-    const isActive = (floor.id === activeFloorId);
-    const isOpen = !!project.ui.floorOpen[floor.id];
+            const isActive = (floor.id === activeFloorId);
+            const isOpen = !!project.ui.floorOpen[floor.id];
 
-    // -----------------------------------------
-    // 1) Etage ist aktiv → nur toggeln
-    // -----------------------------------------
-    if (isActive) {
-        project.ui.floorOpen[floor.id] = !isOpen;
-        renderEditorProjectSidebar();
-        return;
-    }
+            // 1) Etage ist aktiv → toggeln
+            if (isActive) {
+                project.ui.floorOpen[floor.id] = !isOpen;
+                renderEditorProjectSidebar();
+                return;
+            }
 
-    // -----------------------------------------
-    // 3) Etage ist NICHT aktiv, aber OFFEN → nur schließen
-    // -----------------------------------------
-    if (!isActive && isOpen) {
-        project.ui.floorOpen[floor.id] = false;
-        renderEditorProjectSidebar();
-        return;
-    }
+            // 3) Etage NICHT aktiv, aber offen → nur schließen
+            if (!isActive && isOpen) {
+                project.ui.floorOpen[floor.id] = false;
+                renderEditorProjectSidebar();
+                return;
+            }
 
-    // -----------------------------------------
-    // 2) Etage ist NICHT aktiv und ZU → aktivieren + öffnen
-    // -----------------------------------------
-    project.ui.floorOpen[floor.id] = true;
+            // 2) Etage NICHT aktiv und zu → aktivieren + öffnen
+            project.ui.floorOpen[floor.id] = true;
 
-    switchFloor(floor.id);   // setzt activeFloorId + ggf. activeRoomId=null
-    importToEditor();        // aktualisiert Titel + Canvas
+            switchFloor(floor.id);
+            importToEditor();
 
-    renderEditorProjectSidebar();
-});
+            renderEditorProjectSidebar();
+        });
 
-
-
-
+        // ---------------------------------------------------------
+        // ROOM LIST
+        // ---------------------------------------------------------
         const roomList = document.createElement("div");
         roomList.className = "room-list";
 
@@ -5512,11 +5532,15 @@ floorHeader.addEventListener("click", (ev) => {
             roomList.appendChild(roomDiv);
         });
 
+        // ---------------------------------------------------------
+        // Zusammenbauen
+        // ---------------------------------------------------------
         group.appendChild(floorHeader);
         group.appendChild(roomList);
         container.appendChild(group);
     });
 }
+
 
 
 
