@@ -511,6 +511,7 @@ html, body {
     font-weight: bold;
     color: #fff;
     margin-top: 12px;
+   gap: 6px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -518,6 +519,24 @@ html, body {
     /* >>> FIX: prevents header overlapping rooms <<< */
     position: relative;
     z-index: 4;
+}
+
+.floor-arrow {
+    width: 10px;
+    display: inline-block;
+    font-size: 12px;
+    transition: transform 0.15s ease;
+    opacity: 0.7;
+}
+
+/* Zu (geschlossen) → Pfeil nach rechts */
+.floor-group:not(.open) .floor-arrow::before {
+    content: "►";
+}
+
+/* Offen → Pfeil nach unten */
+.floor-group.open .floor-arrow::before {
+    content: "▼";
 }
 
 /* Räume = item */
