@@ -5446,22 +5446,27 @@ function renderEditorProjectSidebar() {
         }
 
         // ⭐ EIN Klick: Etage wählen + auf/zu klappen
-        floorHeader.addEventListener("click", (ev) => {
-            ev.stopPropagation();
+floorHeader.addEventListener("click", (ev) => {
+    ev.stopPropagation();
 
-            const wasActive = (floor.id === activeFloor);
+    const isActive = (floor.id === activeFloorId);
 
-            // Toggle immer
-            project.ui.floorOpen[floor.id] = !project.ui.floorOpen[floor.id];
+    if (isActive) {
+        // ⭐ Etage ist bereits aktiv → nur toggeln
+        project.ui.floorOpen[floor.id] = !project.ui.floorOpen[floor.id];
+        renderEditorProjectSidebar();
+        return;
+    }
 
-            // Etage wechseln nur, wenn sie noch nicht aktiv war
-            if (!wasActive) {
-                switchFloor(floor.id);
-            } else {
-                // Nur neu rendern, wenn wir nur toggeln
-                renderEditorProjectSidebar();
-            }
-        });
+    // ⭐ Etage war NICHT aktiv → Etage wechseln
+    project.ui.floorOpen[floor.id] = true; // beim Wechsel immer aufklappen
+
+    switchFloor(floor.id);   // setzt activeFloorId + ggf. activeRoomId=null
+    importToEditor();        // aktualisiert Titel + Canvas
+
+    renderEditorProjectSidebar();
+});
+
 
         const roomList = document.createElement("div");
         roomList.className = "room-list";
