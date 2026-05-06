@@ -5495,15 +5495,14 @@ function renderEditorProjectSidebar() {
         floorHeader.textContent = floor.name;
 
         // Aktive Etage markieren
-        if (floor.id === activeFloor) {
+        const isActive = (floor.id === activeFloor);
+        if (isActive) {
             floorHeader.classList.add("active-floor");
         }
 
         // ⭐ EIN Klick = toggeln + (nur wenn nötig) Etage wechseln
         floorHeader.addEventListener("click", (ev) => {
             ev.stopPropagation();
-
-            const isActive = (floor.id === activeFloor);
 
             // Toggle immer
             project.ui.floorOpen[floor.id] = !project.ui.floorOpen[floor.id];
@@ -5547,6 +5546,7 @@ function renderEditorProjectSidebar() {
         container.appendChild(group);
     });
 }
+
 
 
 
