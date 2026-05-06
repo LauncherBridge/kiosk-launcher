@@ -466,7 +466,6 @@ function renameProject() {
     saveProject();
 
     updateEditorTitle();
-    renderSidebar();
 }
 
 function copyProject() {
