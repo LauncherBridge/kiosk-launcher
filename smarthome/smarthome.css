@@ -443,6 +443,15 @@ html, body {
     margin-bottom: 12px;
 }
 
+.floor-toggle {
+    display: inline-block;
+    transition: transform 0.2s ease;
+}
+
+.floor-group.open .floor-toggle {
+    transform: rotate(90deg);
+}
+
 /* Projektname */
 .editor-projectbox-name {
     flex: 1;
