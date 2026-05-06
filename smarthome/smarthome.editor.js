@@ -5486,14 +5486,16 @@ function renderEditorProjectSidebar() {
         floorHeader.className = "floor-header";
         floorHeader.textContent = floor.name;
 
+        // ⭐ Markierung der aktiven Etage
         if (floor.id === activeFloor) {
             floorHeader.classList.add("active-floor");
             group.classList.add("open");
         }
 
+        // ⭐ WICHTIG: Etage wechseln
         floorHeader.addEventListener("click", (ev) => {
             ev.stopPropagation();
-            group.classList.toggle("open");
+            switchFloor(floor.id);
         });
 
         const roomList = document.createElement("div");
@@ -5528,6 +5530,7 @@ function renderEditorProjectSidebar() {
         container.appendChild(group);
     });
 }
+
 
 
 
