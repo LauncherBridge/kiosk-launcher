@@ -759,25 +759,23 @@ function switchProject() {
 
 
 function switchFloor(floorId) {
-    // Sicherheitscheck
     if (!project.floors[floorId]) return;
 
-    // Neue Etage aktivieren
+    // Etage aktiv setzen
     activeFloorId = floorId;
 
-    const rooms = project.floors[floorId].rooms;
+    const floor = project.floors[floorId];
+    const rooms = floor.rooms || [];
 
-    if (rooms.length > 0) {
-        // Ersten Raum der Etage aktivieren
-        activeRoomId = rooms[0];
-        RoomDesigner.loadRoom(activeRoomId);
-    } else {
-        // Etage ohne Räume → Canvas leeren
+    // Wenn der aktuell aktive Raum NICHT zu dieser Etage gehört → Raum auf null
+    if (!activeRoomId || !rooms.includes(activeRoomId)) {
         activeRoomId = null;
+
+        // Canvas leeren
         RoomDesigner.loadRoom(null);
     }
 
-    // UI aktualisieren
+    // Titel + Sidebar aktualisieren
     updateEditorTitle();
     renderEditorProjectSidebar();
 }
@@ -936,48 +934,31 @@ function migrateProjectsToID() {
 // Projekt → Editor
 function importToEditor() {
     try {
-        // ---------------------------------------------------------
         // 1) Projekt absichern
-        // ---------------------------------------------------------
         if (!project || typeof project !== "object") {
-            console.warn("⚠️ Projekt ungültig – neues leeres Projekt erzeugt.");
             project = { meta: {}, floors: {}, rooms: {} };
         }
+        if (!project.rooms) project.rooms = {};
+        if (!project.floors) project.floors = {};
 
-        if (!project.rooms || typeof project.rooms !== "object") {
-            console.warn("⚠️ Rooms ungültig – neu initialisiert.");
-            project.rooms = {};
-        }
+        // ❌ WICHTIG:
+        // KEIN automatisches "ersten Raum wählen" mehr!
+        // activeRoomId wird von switchFloor / Sidebar gesetzt.
 
-        if (!project.floors || typeof project.floors !== "object") {
-            console.warn("⚠️ Floors ungültig – neu initialisiert.");
-            project.floors = {};
-        }
-
-        // ---------------------------------------------------------
-        // 2) Aktiven Raum bestimmen
-        // ---------------------------------------------------------
-        const roomIds = Object.keys(project.rooms);
-
-        // Falls activeRoomId fehlt oder ungültig ist → ersten Raum nehmen
-        if (activeRoomId == null || !project.rooms[activeRoomId]) {
-            activeRoomId = roomIds.length > 0 ? roomIds[0] : null;
-        }
-
-
-        // Wenn es GAR KEINEN Raum gibt → Editor in leeren Zustand
+        // 2) Kein aktiver Raum → Etage anzeigen, Raum leer, Canvas leer
         if (!activeRoomId) {
-            console.warn("⚠️ Kein aktiver Raum vorhanden – Editor wird geleert.");
 
-            // Titelzeile leeren
             const projectEl = document.getElementById("editor-project-name");
             if (projectEl) projectEl.textContent = project.meta?.name || "Projekt";
 
             const floorEl = document.getElementById("editor-floor-name");
-            if (floorEl) floorEl.textContent = "Etage";
+            if (floorEl) {
+                const floor = activeFloorId ? project.floors[activeFloorId] : null;
+                floorEl.textContent = floor?.name || "Etage";
+            }
 
             const roomEl = document.getElementById("editor-room-name");
-            if (roomEl) roomEl.textContent = "Raum";
+            if (roomEl) roomEl.textContent = "";
 
             // Canvas leeren
             RoomDesigner.points = [];
@@ -991,42 +972,27 @@ function importToEditor() {
             return;
         }
 
-        // ---------------------------------------------------------
         // 3) Raum laden
-        // ---------------------------------------------------------
         const room = project.rooms[activeRoomId];
-        if (!room) {
-            console.warn("⚠️ Raum existiert nicht:", activeRoomId);
-            return;
-        }
+        if (!room) return;
 
-
-        // ⭐ WICHTIG: Floor setzen
+        // Floor synchronisieren
         activeFloorId = room.floorId;
 
-        
-        // ---------------------------------------------------------
-        // 4) Titelzeile setzen
-        // ---------------------------------------------------------
+        // 4) Titel setzen
         const projectEl = document.getElementById("editor-project-name");
-        if (projectEl) {
-            projectEl.textContent = project.meta?.name || "Projekt";
-        }
+        if (projectEl) projectEl.textContent = project.meta?.name || "Projekt";
 
         const floorEl = document.getElementById("editor-floor-name");
         if (floorEl) {
-            const floor = project.floors?.[room.floorId];
+            const floor = project.floors[room.floorId];
             floorEl.textContent = floor?.name || "Etage";
         }
 
         const roomEl = document.getElementById("editor-room-name");
-        if (roomEl) {
-            roomEl.textContent = room.name || room.id;
-        }
+        if (roomEl) roomEl.textContent = room.name || room.id;
 
-        // ---------------------------------------------------------
-        // 5) Raumdaten in RoomDesigner übertragen
-        // ---------------------------------------------------------
+        // 5) Raumdaten übertragen
         RoomDesigner.points = (room.points || []).map(p => ({ x: p.x, y: p.y }));
         RoomDesigner.isClosed = room.isClosed || false;
 
@@ -1043,27 +1009,11 @@ function importToEditor() {
         RoomDesigner.updateWalls();
         RoomDesigner.render();
 
-        // ---------------------------------------------------------
         // 6) Sidebar aktualisieren
-        // ---------------------------------------------------------
         renderEditorProjectSidebar();
-
-        console.log("✔ importToEditor erfolgreich ausgeführt.");
     }
     catch (err) {
-        console.error("❌ importToEditor() Fehler:", err);
-
-        // Fallback: Editor in sicheren Zustand bringen
-        activeRoomId = null;
-
-        RoomDesigner.points = [];
-        RoomDesigner.doors = [];
-        RoomDesigner.windows = [];
-        RoomDesigner.isClosed = false;
-        RoomDesigner.updateWalls();
-        RoomDesigner.render();
-
-        renderEditorProjectSidebar();
+        console.error("❌ importToEditor Fehler:", err);
     }
 }
 
@@ -5073,28 +5023,27 @@ function updateEditorTitle() {
     const floor = document.getElementById("editor-floor-name");
     const room = document.getElementById("editor-room-name");
 
-    // Projektname
-    if (proj) {
-        proj.textContent = project.meta.name || "Projekt";
-    }
+    if (proj) proj.textContent = project.meta.name || "Projekt";
 
-    // Sidebar-Projektname
     const projSidebar = document.getElementById("editor-project-name-sidebar");
-    if (projSidebar) {
-        projSidebar.textContent = project.meta.name || "Projekt";
+    if (projSidebar) projSidebar.textContent = project.meta.name || "Projekt";
+
+    // Etage
+    if (floor) {
+        if (activeFloorId && project.floors[activeFloorId]) {
+            floor.textContent = project.floors[activeFloorId].name;
+        } else {
+            floor.textContent = "Etage";
+        }
     }
 
-    // Etagenname (FEHLTE BISHER!)
-    if (floor && activeFloorId && project.floors[activeFloorId]) {
-        floor.textContent = project.floors[activeFloorId].name || "Etage";
-    }
-
-    // Raumname
-    const roomObj = getActiveRoom();
-    if (room && roomObj) {
-        room.textContent = roomObj.name || "Raum";
+    // Raum
+    const roomObj = activeRoomId ? project.rooms[activeRoomId] : null;
+    if (room) {
+        room.textContent = roomObj ? (roomObj.name || "Raum") : "";
     }
 }
+
 
 
 
@@ -5473,7 +5422,6 @@ function renderEditorProjectSidebar() {
 
     container.innerHTML = "";
 
-    // UI-State für offene Etagen
     if (!project.ui) project.ui = {};
     if (!project.ui.floorOpen) project.ui.floorOpen = {};
 
@@ -5485,7 +5433,6 @@ function renderEditorProjectSidebar() {
         const group = document.createElement("div");
         group.className = "floor-group";
 
-        // Toggle-Status anwenden
         if (project.ui.floorOpen[floor.id]) {
             group.classList.add("open");
         }
@@ -5494,26 +5441,26 @@ function renderEditorProjectSidebar() {
         floorHeader.className = "floor-header";
         floorHeader.textContent = floor.name;
 
-        // Aktive Etage markieren
-        const isActive = (floor.id === activeFloor);
-        if (isActive) {
+        if (floor.id === activeFloor) {
             floorHeader.classList.add("active-floor");
         }
 
-        // ⭐ EIN Klick = toggeln + (nur wenn nötig) Etage wechseln
+        // ⭐ EIN Klick: Etage wählen + auf/zu klappen
         floorHeader.addEventListener("click", (ev) => {
             ev.stopPropagation();
+
+            const wasActive = (floor.id === activeFloor);
 
             // Toggle immer
             project.ui.floorOpen[floor.id] = !project.ui.floorOpen[floor.id];
 
-            // Etage wechseln NUR wenn sie noch nicht aktiv ist
-            if (!isActive) {
+            // Etage wechseln nur, wenn sie noch nicht aktiv war
+            if (!wasActive) {
                 switchFloor(floor.id);
-                importToEditor();
+            } else {
+                // Nur neu rendern, wenn wir nur toggeln
+                renderEditorProjectSidebar();
             }
-
-            renderEditorProjectSidebar();
         });
 
         const roomList = document.createElement("div");
