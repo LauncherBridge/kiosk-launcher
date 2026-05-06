@@ -5467,12 +5467,15 @@ function finishRoomNameEdit(el) {
 }
 
 
-
 function renderEditorProjectSidebar() {
     const container = document.getElementById("editor-location-list");
     if (!container) return;
 
     container.innerHTML = "";
+
+    // UI-State für offene Etagen
+    if (!project.ui) project.ui = {};
+    if (!project.ui.floorOpen) project.ui.floorOpen = {};
 
     const activeFloor = activeFloorId;
     const activeRoom = activeRoomId;
@@ -5482,39 +5485,34 @@ function renderEditorProjectSidebar() {
         const group = document.createElement("div");
         group.className = "floor-group";
 
-        // Wenn diese Etage aktiv ist → offen lassen
-        if (floor.id === activeFloor) {
+        // Toggle-Status anwenden
+        if (project.ui.floorOpen[floor.id]) {
             group.classList.add("open");
         }
 
-        // Header (komplett klickbar)
         const floorHeader = document.createElement("div");
         floorHeader.className = "floor-header";
         floorHeader.textContent = floor.name;
 
-        // Markierung der aktiven Etage
+        // Aktive Etage markieren
         if (floor.id === activeFloor) {
             floorHeader.classList.add("active-floor");
         }
 
-        // ⭐ Etage wechseln + auf/zu klappen
+        // Klick auf Etage = Etage wechseln + toggeln
         floorHeader.addEventListener("click", (ev) => {
             ev.stopPropagation();
 
-            // Etage wechseln
+            // Etage aktivieren
             switchFloor(floor.id);
 
-            // Titel + Canvas aktualisieren
-            importToEditor();
-
-            // Etage auf/zu klappen
-            group.classList.toggle("open");
+            // Toggle speichern
+            project.ui.floorOpen[floor.id] = !project.ui.floorOpen[floor.id];
 
             // Sidebar neu rendern
             renderEditorProjectSidebar();
         });
 
-        // Räume rendern
         const roomList = document.createElement("div");
         roomList.className = "room-list";
 
