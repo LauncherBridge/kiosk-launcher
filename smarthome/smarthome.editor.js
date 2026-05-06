@@ -5499,17 +5499,21 @@ function renderEditorProjectSidebar() {
             floorHeader.classList.add("active-floor");
         }
 
-        // Klick auf Etage = Etage wechseln + toggeln
+        // ⭐ EIN Klick = toggeln + (nur wenn nötig) Etage wechseln
         floorHeader.addEventListener("click", (ev) => {
             ev.stopPropagation();
 
-            // Etage aktivieren
-            switchFloor(floor.id);
+            const isActive = (floor.id === activeFloor);
 
-            // Toggle speichern
+            // Toggle immer
             project.ui.floorOpen[floor.id] = !project.ui.floorOpen[floor.id];
 
-            // Sidebar neu rendern
+            // Etage wechseln NUR wenn sie noch nicht aktiv ist
+            if (!isActive) {
+                switchFloor(floor.id);
+                importToEditor();
+            }
+
             renderEditorProjectSidebar();
         });
 
