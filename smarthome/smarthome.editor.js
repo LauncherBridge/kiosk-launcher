@@ -5452,26 +5452,35 @@ floorHeader.addEventListener("click", (ev) => {
     const isActive = (floor.id === activeFloorId);
     const isOpen = !!project.ui.floorOpen[floor.id];
 
+    // -----------------------------------------
+    // 1) Etage ist aktiv → nur toggeln
+    // -----------------------------------------
     if (isActive) {
-        // 1) Aktive Etage: nur toggeln, Fokus bleibt
         project.ui.floorOpen[floor.id] = !isOpen;
         renderEditorProjectSidebar();
         return;
     }
 
+    // -----------------------------------------
+    // 3) Etage ist NICHT aktiv, aber OFFEN → nur schließen
+    // -----------------------------------------
     if (!isActive && isOpen) {
-        // 3) Nicht aktive, aber offene Etage: nur zuklappen, kein Fokuswechsel
         project.ui.floorOpen[floor.id] = false;
         renderEditorProjectSidebar();
         return;
     }
 
-    // 2) Nicht aktive, geschlossene Etage: öffnen + Fokus auf diese Etage
+    // -----------------------------------------
+    // 2) Etage ist NICHT aktiv und ZU → aktivieren + öffnen
+    // -----------------------------------------
     project.ui.floorOpen[floor.id] = true;
-    switchFloor(floor.id);   // setzt activeFloorId / activeRoomId (ggf. null + Canvas leer)
-    importToEditor();        // Titel + Canvas aktualisieren
+
+    switchFloor(floor.id);   // setzt activeFloorId + ggf. activeRoomId=null
+    importToEditor();        // aktualisiert Titel + Canvas
+
     renderEditorProjectSidebar();
 });
+
 
 
 
