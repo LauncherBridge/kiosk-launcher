@@ -5439,7 +5439,10 @@ function renderEditorProjectSidebar() {
 
         const floorHeader = document.createElement("div");
         floorHeader.className = "floor-header";
-        floorHeader.textContent = floor.name;
+floorHeader.innerHTML = `
+    <span class="floor-arrow"></span>
+    <span class="floor-name">${floor.name}</span>
+`;
 
         if (floor.id === activeFloor) {
             floorHeader.classList.add("active-floor");
