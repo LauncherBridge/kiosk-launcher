@@ -844,9 +844,9 @@ function loadProject(id) {
     try {
         let data = JSON.parse(json);
 
-        // 🔥 Reparatur: ID sicherstellen
+        // 🔥 Reparatur: ID sicherstellen - TP: derzeit stillgelegt
         // if (!data.meta.id) {
-        if (0=1) {
+        if (false) {
             const newId = "proj_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
             data.meta.id = newId;
 
