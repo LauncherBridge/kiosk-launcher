@@ -5487,34 +5487,31 @@ function renderEditorProjectSidebar() {
             group.classList.add("open");
         }
 
-        // Header mit Name + Toggle-Pfeil
+        // Header (komplett klickbar)
         const floorHeader = document.createElement("div");
         floorHeader.className = "floor-header";
-        floorHeader.innerHTML = `
-            <span class="floor-name">${floor.name}</span>
-            <span class="floor-toggle">▸</span>
-        `;
+        floorHeader.textContent = floor.name;
 
         // Markierung der aktiven Etage
         if (floor.id === activeFloor) {
             floorHeader.classList.add("active-floor");
         }
 
-        const nameEl = floorHeader.querySelector(".floor-name");
-        const toggleEl = floorHeader.querySelector(".floor-toggle");
-
-        // ⭐ Etage wechseln
-        nameEl.addEventListener("click", (ev) => {
+        // ⭐ Etage wechseln + auf/zu klappen
+        floorHeader.addEventListener("click", (ev) => {
             ev.stopPropagation();
+
+            // Etage wechseln
             switchFloor(floor.id);
-            importToEditor();
-            renderEditorProjectSidebar();
-        });
 
-        // ⭐ Etage auf/zu klappen (unabhängig von anderen)
-        toggleEl.addEventListener("click", (ev) => {
-            ev.stopPropagation();
+            // Titel + Canvas aktualisieren
+            importToEditor();
+
+            // Etage auf/zu klappen
             group.classList.toggle("open");
+
+            // Sidebar neu rendern
+            renderEditorProjectSidebar();
         });
 
         // Räume rendern
@@ -5548,6 +5545,7 @@ function renderEditorProjectSidebar() {
         container.appendChild(group);
     });
 }
+
 
 
 
