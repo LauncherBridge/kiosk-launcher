@@ -5474,30 +5474,50 @@ function renderEditorProjectSidebar() {
 
     container.innerHTML = "";
 
+    const activeFloor = activeFloorId;
     const activeRoom = activeRoomId;
-    const activeFloor = project.rooms[activeRoom]?.floorId;
 
     Object.values(project.floors).forEach(floor => {
 
         const group = document.createElement("div");
         group.className = "floor-group";
 
-        const floorHeader = document.createElement("div");
-        floorHeader.className = "floor-header";
-        floorHeader.textContent = floor.name;
-
-        // ⭐ Markierung der aktiven Etage
+        // Wenn diese Etage aktiv ist → offen lassen
         if (floor.id === activeFloor) {
-            floorHeader.classList.add("active-floor");
             group.classList.add("open");
         }
 
-        // ⭐ WICHTIG: Etage wechseln
-        floorHeader.addEventListener("click", (ev) => {
+        // Header mit Name + Toggle-Pfeil
+        const floorHeader = document.createElement("div");
+        floorHeader.className = "floor-header";
+        floorHeader.innerHTML = `
+            <span class="floor-name">${floor.name}</span>
+            <span class="floor-toggle">▸</span>
+        `;
+
+        // Markierung der aktiven Etage
+        if (floor.id === activeFloor) {
+            floorHeader.classList.add("active-floor");
+        }
+
+        const nameEl = floorHeader.querySelector(".floor-name");
+        const toggleEl = floorHeader.querySelector(".floor-toggle");
+
+        // ⭐ Etage wechseln
+        nameEl.addEventListener("click", (ev) => {
             ev.stopPropagation();
             switchFloor(floor.id);
+            importToEditor();
+            renderEditorProjectSidebar();
         });
 
+        // ⭐ Etage auf/zu klappen (unabhängig von anderen)
+        toggleEl.addEventListener("click", (ev) => {
+            ev.stopPropagation();
+            group.classList.toggle("open");
+        });
+
+        // Räume rendern
         const roomList = document.createElement("div");
         roomList.className = "room-list";
 
@@ -5515,9 +5535,7 @@ function renderEditorProjectSidebar() {
 
             roomDiv.addEventListener("click", (ev) => {
                 ev.stopPropagation();
-
                 activeRoomId = roomId;
-
                 importToEditor();
                 renderEditorProjectSidebar();
             });
@@ -5530,6 +5548,7 @@ function renderEditorProjectSidebar() {
         container.appendChild(group);
     });
 }
+
 
 
 
