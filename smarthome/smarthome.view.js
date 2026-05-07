@@ -844,78 +844,86 @@ _drawMainView() {
 
     this.rooms.forEach(room => {
 
-        // 🛡️ Räume ohne gültige Geometrie überspringen
-        if (!room || !room.polygon || room.polygon.length < 3) {
-            // Optional: Debug
-            // console.warn("SmartHomeView: Raum übersprungen (ungültige Geometrie):", room?.id);
-            return;
-        }
+        // 🛡️ Raum-Objekt prüfen
+        if (!room || !room.polygon) return;
 
         const type = SmartHomeData.roomTypes[room.type];
         const fillColor = type?.color || "#444";
 
         const isInGroup = activeGroup && activeGroup.includes(room.id);
 
-        if (this.activeRoom === room.id) {
-            ctx.fillStyle = `rgba(255, 184, 108, ${0.3 + this.highlightAlpha * 0.4})`;
-        } else {
-            ctx.fillStyle = fillColor;
-        }
+        // 🛡️ Polygon muss mindestens 1 Punkt haben
+        if (room.polygon.length >= 1) {
 
-        ctx.beginPath();
-        ctx.moveTo(room.polygon[0].x, room.polygon[0].y);
+            const p0 = room.polygon[0];
+            if (!p0) return;
 
-        for (let i = 1; i < room.polygon.length; i++) {
-            ctx.lineTo(room.polygon[i].x, room.polygon[i].y);
-        }
+            ctx.beginPath();
+            ctx.moveTo(p0.x, p0.y);
 
-        ctx.closePath();
-        ctx.fill();
+            for (let i = 1; i < room.polygon.length; i++) {
+                const p = room.polygon[i];
+                if (!p) continue;
+                ctx.lineTo(p.x, p.y);
+            }
 
-        if (isInGroup) {
-            ctx.save();
-            ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
+            ctx.closePath();
+
+            if (this.activeRoom === room.id) {
+                ctx.fillStyle = `rgba(255, 184, 108, ${0.3 + this.highlightAlpha * 0.4})`;
+            } else {
+                ctx.fillStyle = fillColor;
+            }
+
             ctx.fill();
-            ctx.restore();
 
-            ctx.save();
-            ctx.lineWidth = 3;
-            ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
-            ctx.stroke();
-            ctx.restore();
+            if (isInGroup) {
+                ctx.save();
+                ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
+                ctx.fill();
+                ctx.restore();
+
+                ctx.save();
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // 🛡️ Raumname sicher zeichnen
+            ctx.fillStyle = "var(--sh-text)";
+            ctx.font = "20px sans-serif";
+            ctx.textBaseline = "top";
+            ctx.fillText(room.name, p0.x + 12, p0.y + 12);
         }
 
-        ctx.fillStyle = "var(--sh-text)";
-        ctx.font = "20px sans-serif";
-        ctx.textBaseline = "top";
-        ctx.fillText(room.name, room.polygon[0].x + 12, room.polygon[0].y + 12);
+        // 🛡️ Icon sicher zeichnen (egal wie viele Punkte)
+        if (type?.icon && room.polygon.length >= 1) {
+            ctx.fillStyle = "var(--sh-text)";
+            ctx.font = "28px MaterialIcons";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
 
-if (type?.icon && room.polygon && room.polygon.length >= 1) {
-    ctx.fillStyle = "var(--sh-text)";
-    ctx.font = "28px MaterialIcons";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
+            let cx = 0, cy = 0, count = 0;
 
-    let cx = 0, cy = 0, count = 0;
+            room.polygon.forEach(p => {
+                if (!p) return;
+                cx += p.x;
+                cy += p.y;
+                count++;
+            });
 
-    room.polygon.forEach(p => {
-        if (!p) return;
-        cx += p.x;
-        cy += p.y;
-        count++;
-    });
+            if (count > 0) {
+                cx /= count;
+                cy /= count;
+                ctx.fillText(type.icon, cx, cy);
+            }
+        }
 
-    if (count > 0) {
-        cx /= count;
-        cy /= count;
-        ctx.fillText(type.icon, cx, cy);
-    }
-}
-
-
-        // Container rendern
+        // 🛡️ Container sicher rendern
         SmartHomeData.containers.forEach(container => {
             if (container.room !== room.id) return;
+            if (!container.position) return;
 
             const ctype = SmartHomeData.deviceTypes[container.type];
             const icon = ctype?.icon || "device_unknown";
@@ -923,6 +931,8 @@ if (type?.icon && room.polygon && room.polygon.length >= 1) {
 
             const dx = container.position.x;
             const dy = container.position.y;
+
+            if (dx == null || dy == null) return;
 
             ctx.fillStyle = color;
             ctx.font = "26px MaterialIcons";
@@ -937,10 +947,12 @@ if (type?.icon && room.polygon && room.polygon.length >= 1) {
         });
     });
 
-    // 3.2c – gemergte Türen im Main‑View rendern (Rechteck‑Steg entlang der Wand)
+    // 🛡️ Türen sicher rendern
     const mergedDoors = SmartHomeData.getMergedDoorsForFloor(this.activeFloor);
     if (mergedDoors && mergedDoors.length) {
         mergedDoors.forEach(d => {
+            if (!d || !d.posA || !d.posB || !d.mergedPos) return;
+
             const { posA, posB, mergedPos } = d;
             const dx = posB.x - posA.x;
             const dy = posB.y - posA.y;
@@ -951,7 +963,7 @@ if (type?.icon && room.polygon && room.polygon.length >= 1) {
             ctx.rotate(angle);
 
             ctx.fillStyle = "#FFD28A";
-            ctx.fillRect(-10, -3, 20, 6); // 20×6 px Steg
+            ctx.fillRect(-10, -3, 20, 6);
 
             ctx.restore();
         });
