@@ -890,17 +890,28 @@ _drawMainView() {
         ctx.textBaseline = "top";
         ctx.fillText(room.name, room.polygon[0].x + 12, room.polygon[0].y + 12);
 
-        if (type?.icon) {
-            ctx.fillStyle = "var(--sh-text)";
-            ctx.font = "28px MaterialIcons";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
+if (type?.icon && room.polygon && room.polygon.length >= 1) {
+    ctx.fillStyle = "var(--sh-text)";
+    ctx.font = "28px MaterialIcons";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
 
-            const cx = (room.polygon[0].x + room.polygon[2].x) / 2;
-            const cy = (room.polygon[0].y + room.polygon[2].y) / 2;
+    let cx = 0, cy = 0, count = 0;
 
-            ctx.fillText(type.icon, cx, cy);
-        }
+    room.polygon.forEach(p => {
+        if (!p) return;
+        cx += p.x;
+        cy += p.y;
+        count++;
+    });
+
+    if (count > 0) {
+        cx /= count;
+        cy /= count;
+        ctx.fillText(type.icon, cx, cy);
+    }
+}
+
 
         // Container rendern
         SmartHomeData.containers.forEach(container => {
