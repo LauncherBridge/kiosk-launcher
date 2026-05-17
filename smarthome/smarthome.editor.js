@@ -459,14 +459,59 @@ function openProjectMenu(x, y) {
 }
 
 function renameProject() {
-    const newName = prompt("Neuer Projektname:", project.meta.name);
-    if (!newName || newName === project.meta.name) return;
+    startProjectRename();
+}
+function startProjectRename() {
+    const nameEl = document.getElementById("editor-project-name-sidebar");
+    if (!nameEl) return;
+
+    const oldName = project.meta?.name || "Projekt";
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = oldName;
+    input.className = "project-rename-input";
+
+    nameEl.replaceWith(input);
+    input.focus();
+    input.select();
+
+    input.addEventListener("keydown", (ev) => {
+        if (ev.key === "Enter") {
+            ev.preventDefault();
+            finishProjectRename(input.value.trim());
+        }
+        if (ev.key === "Escape") {
+            ev.preventDefault();
+            finishProjectRename(oldName);
+        }
+    });
+
+    input.addEventListener("blur", () => {
+        finishProjectRename(input.value.trim());
+    });
+}
+function finishProjectRename(newName) {
+    if (!newName) {
+        renderEditorProjectSidebar();
+        updateEditorTitle();
+        return;
+    }
 
     project.meta.name = newName;
-    saveProject();
 
+    // Sidebar neu rendern
+    renderEditorProjectSidebar();
+
+    // Titelbar aktualisieren
     updateEditorTitle();
+
+    // Projekt speichern
+    if (typeof saveProject === "function") {
+        saveProject();
+    }
 }
+
 
 function copyProject() {
     // ⭐ Tiefenkopie des aktuellen Projekts
