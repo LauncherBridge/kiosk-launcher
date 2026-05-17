@@ -125,6 +125,12 @@ function openContextMenu(x, y, items) {
 
         const el = document.createElement("div");
         el.className = "context-menu-item";
+
+        // ⭐ HIER: Zusatzklasse wie "delete" übernehmen
+        if (item.class) {
+            el.classList.add(item.class);
+        }
+
         el.textContent = item.label;
 
         el.addEventListener("click", () => {
@@ -150,6 +156,7 @@ function openContextMenu(x, y, items) {
     };
     document.addEventListener("mousedown", contextMenuOutsideHandler);
 }
+
 
 /**
  * Schließt das Kontextmenü
