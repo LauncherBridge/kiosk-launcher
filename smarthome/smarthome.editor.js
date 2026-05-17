@@ -500,17 +500,16 @@ function finishProjectRename(newName) {
 
     project.meta.name = newName;
 
-    // Sidebar neu rendern
+    // Sidebar neu rendern (entfernt das Input-Feld)
     renderEditorProjectSidebar();
 
-    // Titelbar aktualisieren
+    // Titelzeile aktualisieren
     updateEditorTitle();
 
     // Projekt speichern
-    if (typeof saveProject === "function") {
-        saveProject();
-    }
+    saveProject();
 }
+
 
 
 function copyProject() {
@@ -5461,6 +5460,11 @@ function finishRoomNameEdit(el) {
 
 
 function renderEditorProjectSidebar() {
+    const projectNameEl = document.getElementById("editor-project-name-sidebar");
+    if (projectNameEl) {
+        projectNameEl.textContent = project.meta.name || "Projekt";
+    }
+
     const container = document.getElementById("editor-location-list");
     if (!container) return;
 
