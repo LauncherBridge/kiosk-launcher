@@ -5460,44 +5460,24 @@ function finishRoomNameEdit(el) {
 function renderEditorProjectSidebar() {
     const container = document.getElementById("editor-location-list");
     if (!container) return;
+
+    // ⭐ Projektname aktualisieren
+    const projectNameEl = document.getElementById("editor-project-name-sidebar");
+    if (projectNameEl) {
+        projectNameEl.textContent = project.meta.name || "Projekt";
+    }
+
+    // ⭐ Drei-Punkte-Menü aktivieren
     const projectMenuBtn = document.getElementById("editor-project-menu-btn-sidebar");
-if (projectMenuBtn) {
-    projectMenuBtn.onclick = (ev) => {
-        ev.stopPropagation();
-        openProjectMenu(ev.pageX, ev.pageY);
-    };
-}
+    if (projectMenuBtn) {
+        projectMenuBtn.onclick = (ev) => {
+            ev.stopPropagation();
+            openProjectMenu(ev.pageX, ev.pageY);
+        };
+    }
 
-
+    // ⭐ Floors / Rooms rendern
     container.innerHTML = "";
-
-    // ---------------------------------------------------------
-    // ⭐ Projektname + Menü oben IMMER neu erzeugen
-    // ---------------------------------------------------------
-    const projectHeader = document.createElement("div");
-    projectHeader.className = "project-header";
-
-    const projectNameEl = document.createElement("span");
-    projectNameEl.id = "editor-project-name-sidebar";
-    projectNameEl.className = "project-name";
-    projectNameEl.textContent = project.meta?.name || "Projekt";
-
-    const projectMenuBtn = document.createElement("span");
-    projectMenuBtn.className = "project-menu-btn";
-    projectMenuBtn.textContent = "⋮";
-
-    projectMenuBtn.addEventListener("click", (ev) => {
-        ev.stopPropagation();
-        openProjectMenu(ev.pageX, ev.pageY);
-    });
-
-    projectHeader.appendChild(projectNameEl);
-    projectHeader.appendChild(projectMenuBtn);
-    container.appendChild(projectHeader);
-
-    // ---------------------------------------------------------
-    // Floors / Rooms
-    // ---------------------------------------------------------
 
     if (!project.ui) project.ui = {};
     if (!project.ui.floorOpen) project.ui.floorOpen = {};
@@ -5514,7 +5494,6 @@ if (projectMenuBtn) {
             group.classList.add("open");
         }
 
-        // HEADER (Pfeil + Name links, Menü rechts)
         const floorHeader = document.createElement("div");
         floorHeader.className = "floor-header";
 
@@ -5547,7 +5526,6 @@ if (projectMenuBtn) {
             floorHeader.classList.add("active-floor");
         }
 
-        // Klick-Logik
         leftWrap.addEventListener("click", (ev) => {
             ev.stopPropagation();
 
@@ -5574,7 +5552,6 @@ if (projectMenuBtn) {
             renderEditorProjectSidebar();
         });
 
-        // ROOM LIST
         const roomList = document.createElement("div");
         roomList.className = "room-list";
 
@@ -5605,6 +5582,7 @@ if (projectMenuBtn) {
         container.appendChild(group);
     });
 }
+
 
 
 function openFloorMenu(floorId, clickEvent) {
