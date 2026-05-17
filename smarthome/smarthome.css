@@ -617,8 +617,10 @@ justify-content: space-between;
 }
 
 .context-menu-item.delete:hover {
-    background: rgba(255, 0, 0, 0.15);
+    background: rgba(255, 0, 0, 0.15) !important;
+    color: #ff4d4d !important;
 }
+
 
 /* Eingabefeld beim Umbenennen */
 .project-rename-input {
