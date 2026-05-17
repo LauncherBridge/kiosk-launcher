@@ -611,6 +611,14 @@ justify-content: space-between;
 .editor-projectbox-menu:hover {
     background: rgba(255, 255, 255, 0.1);
 }
+.context-menu-item.delete {
+    color: #ff4d4d;
+    font-weight: 500;
+}
+
+.context-menu-item.delete:hover {
+    background: rgba(255, 0, 0, 0.15);
+}
 
 /* Eingabefeld beim Umbenennen */
 .project-rename-input {
