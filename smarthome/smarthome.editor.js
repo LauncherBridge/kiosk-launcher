@@ -5462,6 +5462,10 @@ function renderEditorProjectSidebar() {
         menuEl.textContent = "⋮";
         
         menuEl.addEventListener("click", (ev) => {
+    ev.stopPropagation(); // verhindert Toggle
+    openFloorMenu(floor.id, ev); // ⭐ Klickposition übergeben!
+});
+
             ev.stopPropagation(); // verhindert Toggle
             openFloorMenu(floor.id); 
         });
