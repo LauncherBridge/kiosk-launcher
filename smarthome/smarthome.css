@@ -598,7 +598,18 @@ justify-content: space-between;
     display: block;
 }
 
-
+css
+.floor-rename-input {
+    width: 120px;              /* ⭐ schmaler, verhindert Scrollbalken */
+    max-width: 90%;            /* ⭐ passt sich an, ohne zu überlaufen */
+    padding: 3px 6px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 4px;
+    color: #fff;
+    font-size: 14px;
+    box-sizing: border-box;    /* ⭐ verhindert Layout-Verschiebungen */
+}
 
 
 /* Highlighting */
