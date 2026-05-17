@@ -5460,6 +5460,14 @@ function finishRoomNameEdit(el) {
 function renderEditorProjectSidebar() {
     const container = document.getElementById("editor-location-list");
     if (!container) return;
+    const projectMenuBtn = document.getElementById("editor-project-menu-btn-sidebar");
+if (projectMenuBtn) {
+    projectMenuBtn.onclick = (ev) => {
+        ev.stopPropagation();
+        openProjectMenu(ev.pageX, ev.pageY);
+    };
+}
+
 
     container.innerHTML = "";
 
