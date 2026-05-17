@@ -493,19 +493,35 @@ function startProjectRename() {
     });
 }
 
+
 function finishProjectRename(newName) {
-    if (!newName) newName = project.meta.name;
+    const input = document.querySelector(".project-rename-input");
+    if (!input) return; // Falls kein Input existiert
 
-    project.meta.name = newName;
+    const finalName = newName || project.meta.name || "Projekt";
 
-    // Sidebar neu setzen
+    // 1) Projektnamen speichern
+    project.meta.name = finalName;
+
+    // 2) Neues <span> erzeugen
+    const span = document.createElement("span");
+    span.id = "editor-project-name-sidebar";
+    span.className = "floor-name";
+    span.textContent = finalName;
+
+    // 3) Input durch Span ersetzen
+    input.replaceWith(span);
+
+    // 4) Sidebar aktualisieren
     renderEditorProjectSidebar();
 
-    // Titel aktualisieren
+    // 5) Titelbar aktualisieren
     updateEditorTitle();
 
+    // 6) Speichern
     saveProject();
 }
+
 
 
 
