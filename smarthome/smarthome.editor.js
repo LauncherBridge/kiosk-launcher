@@ -5460,7 +5460,12 @@ function renderEditorProjectSidebar() {
         const menuEl = document.createElement("span");
         menuEl.className = "floor-menu";
         menuEl.textContent = "⋮";
-        // später: menuEl.onclick = () => openFloorMenu(floor.id);
+        
+        menuEl.addEventListener("click", (ev) => {
+            ev.stopPropagation(); // verhindert Toggle
+            openFloorMenu(floor.id); // kommt in Schritt 2
+        });
+
 
         // Header zusammenbauen
         floorHeader.appendChild(leftWrap);
@@ -5474,34 +5479,32 @@ function renderEditorProjectSidebar() {
         // ---------------------------------------------------------
         // KLICK-LOGIK (3-Regeln)
         // ---------------------------------------------------------
-        floorHeader.addEventListener("click", (ev) => {
+        leftWrap.addEventListener("click", (ev) => {
             ev.stopPropagation();
-
+        
             const isActive = (floor.id === activeFloorId);
             const isOpen = !!project.ui.floorOpen[floor.id];
-
-            // 1) Etage ist aktiv → toggeln
+        
             if (isActive) {
                 project.ui.floorOpen[floor.id] = !isOpen;
                 renderEditorProjectSidebar();
                 return;
             }
-
-            // 3) Etage NICHT aktiv, aber offen → nur schließen
+        
             if (!isActive && isOpen) {
                 project.ui.floorOpen[floor.id] = false;
                 renderEditorProjectSidebar();
                 return;
             }
-
-            // 2) Etage NICHT aktiv und zu → aktivieren + öffnen
+        
             project.ui.floorOpen[floor.id] = true;
-
+        
             switchFloor(floor.id);
             importToEditor();
-
+        
             renderEditorProjectSidebar();
         });
+
 
         // ---------------------------------------------------------
         // ROOM LIST
