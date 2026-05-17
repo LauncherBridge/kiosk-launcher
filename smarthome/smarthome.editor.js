@@ -461,6 +461,7 @@ function openProjectMenu(x, y) {
 function renameProject() {
     startProjectRename();
 }
+
 function startProjectRename() {
     const nameEl = document.getElementById("editor-project-name-sidebar");
     if (!nameEl) return;
@@ -491,24 +492,21 @@ function startProjectRename() {
         finishProjectRename(input.value.trim());
     });
 }
+
 function finishProjectRename(newName) {
-    if (!newName) {
-        renderEditorProjectSidebar();
-        updateEditorTitle();
-        return;
-    }
+    if (!newName) newName = project.meta.name;
 
     project.meta.name = newName;
 
-    // Sidebar neu rendern (entfernt das Input-Feld)
+    // Sidebar neu setzen
     renderEditorProjectSidebar();
 
-    // Titelzeile aktualisieren
+    // Titel aktualisieren
     updateEditorTitle();
 
-    // Projekt speichern
     saveProject();
 }
+
 
 
 
