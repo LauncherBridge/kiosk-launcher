@@ -448,7 +448,7 @@ function openProjectMenu(x, y) {
         items.push({ label: "Projekt kopieren", action: copyProject });
         items.push({ label: "Neue Etage", action: createNewFloor });
         items.push({ label: "Neues Projekt", action: createNewProject });
-        items.push({ label: "Projekt löschen", action: deleteProject });
+        items.push({ label: "Projekt löschen", action: deleteProject, class: "delete" });
         items.push({ separator: true });
     }
 
