@@ -5597,7 +5597,7 @@ document.addEventListener("click", (ev) => {
 function handleFloorMenuAction(floorId, action) {
     switch (action) {
         case "rename":
-            console.log("Etage umbenennen:", floorId);
+            startFloorRename(floorId);
             break;
 
         case "add-room":
@@ -5614,7 +5614,64 @@ function handleFloorMenuAction(floorId, action) {
     }
 }
 
+function startFloorRename(floorId) {
+    const container = document.getElementById("editor-location-list");
+    if (!container) return;
 
+    const group = [...container.querySelectorAll(".floor-group")]
+        .find(g => g.querySelector(".floor-name")?.textContent === project.floors[floorId].name);
+
+    if (!group) return;
+
+    const nameEl = group.querySelector(".floor-name");
+    if (!nameEl) return;
+
+    const oldName = project.floors[floorId].name;
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = oldName;
+    input.className = "floor-rename-input";
+
+    nameEl.replaceWith(input);
+    input.focus();
+    input.select();
+
+    input.addEventListener("keydown", (ev) => {
+        if (ev.key === "Enter") {
+            ev.preventDefault();
+            finishFloorRename(floorId, input.value.trim());
+        }
+        if (ev.key === "Escape") {
+            ev.preventDefault();
+            finishFloorRename(floorId, oldName);
+        }
+    });
+
+    input.addEventListener("blur", () => {
+        finishFloorRename(floorId, input.value.trim());
+    });
+}
+
+function finishFloorRename(floorId, newName) {
+    if (!newName) {
+        renderEditorProjectSidebar();
+        return;
+    }
+
+    project.floors[floorId].name = newName;
+
+    // Titelbar aktualisieren
+    updateEditorTitle();
+
+    // Sidebar neu rendern
+    renderEditorProjectSidebar();
+
+    // Projekt speichern
+    if (typeof saveProject === "function") {
+        saveProject();
+    }
+}
 
 
 function renderLeftSidebar() {
