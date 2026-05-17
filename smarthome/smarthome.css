@@ -623,6 +623,57 @@ justify-content: space-between;
     box-sizing: border-box;
 }
 
+/* Projektbox oben */
+.editor-projectbox {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 10px;
+    margin-bottom: 6px;
+
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+
+    font-size: 14px;
+    color: #fff;
+}
+
+/* Projektname */
+.editor-projectbox-name {
+    flex: 1 1 auto;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+}
+
+/* Drei-Punkte-Menü */
+.editor-projectbox-menu {
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    user-select: none;
+}
+
+.editor-projectbox-menu:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Eingabefeld beim Umbenennen */
+.project-rename-input {
+    flex: 0 1 auto;
+    width: 140px;
+    max-width: 90%;
+    padding: 3px 6px;
+
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 4px;
+    color: #fff;
+    font-size: 14px;
+    box-sizing: border-box;
+}
 
 
 /* Highlighting */
