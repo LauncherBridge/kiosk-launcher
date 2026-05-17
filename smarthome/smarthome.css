@@ -430,18 +430,7 @@ html, body {
    EDITOR – LINKE SIDEBAR
 --------------------------------------------------------- */
 /* ⭐ Projekt-Header (linke Sidebar, eindeutig) */
-.editor-projectbox {
-    padding: 10px;
-    background: rgba(255,255,255,0.08); /* wie Etagen */
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 6px;
-    font-weight: bold;
-    color: #fff;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-}
+
 
 .floor-toggle {
     display: inline-block;
@@ -451,32 +440,6 @@ html, body {
 .floor-group.open .floor-toggle {
     transform: rotate(90deg);
 }
-
-/* Projektname */
-.editor-projectbox-name {
-    flex: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* Drei-Punkte-Menü */
-.editor-projectbox-menu {
-    cursor: pointer;
-    color: #ccc;
-    font-size: 20px;
-    padding: 4px;
-    border-radius: 4px;
-}
-
-.editor-projectbox-menu:hover {
-    background: rgba(255,255,255,0.12);
-    color: #fff;
-}
-
-
-
-
 
 
 #editor-sidebar-left {
@@ -610,18 +573,7 @@ justify-content: space-between;
     font-size: 14px;
     box-sizing: border-box;
 }
-.project-rename-input {
-    flex: 0 1 auto;
-    width: 140px;
-    max-width: 90%;
-    padding: 3px 6px;
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 4px;
-    color: #fff;
-    font-size: 14px;
-    box-sizing: border-box;
-}
+
 
 /* Projektbox oben */
 .editor-projectbox {
