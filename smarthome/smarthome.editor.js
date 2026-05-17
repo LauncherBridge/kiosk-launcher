@@ -5460,15 +5460,38 @@ function finishRoomNameEdit(el) {
 
 
 function renderEditorProjectSidebar() {
-    const projectNameEl = document.getElementById("editor-project-name-sidebar");
-    if (projectNameEl) {
-        projectNameEl.textContent = project.meta.name || "Projekt";
-    }
-
     const container = document.getElementById("editor-location-list");
     if (!container) return;
 
     container.innerHTML = "";
+
+    // ---------------------------------------------------------
+    // ⭐ Projektname + Menü oben IMMER neu erzeugen
+    // ---------------------------------------------------------
+    const projectHeader = document.createElement("div");
+    projectHeader.className = "project-header";
+
+    const projectNameEl = document.createElement("span");
+    projectNameEl.id = "editor-project-name-sidebar";
+    projectNameEl.className = "project-name";
+    projectNameEl.textContent = project.meta?.name || "Projekt";
+
+    const projectMenuBtn = document.createElement("span");
+    projectMenuBtn.className = "project-menu-btn";
+    projectMenuBtn.textContent = "⋮";
+
+    projectMenuBtn.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        openProjectMenu(ev.pageX, ev.pageY);
+    });
+
+    projectHeader.appendChild(projectNameEl);
+    projectHeader.appendChild(projectMenuBtn);
+    container.appendChild(projectHeader);
+
+    // ---------------------------------------------------------
+    // Floors / Rooms
+    // ---------------------------------------------------------
 
     if (!project.ui) project.ui = {};
     if (!project.ui.floorOpen) project.ui.floorOpen = {};
@@ -5485,13 +5508,10 @@ function renderEditorProjectSidebar() {
             group.classList.add("open");
         }
 
-        // ---------------------------------------------------------
         // HEADER (Pfeil + Name links, Menü rechts)
-        // ---------------------------------------------------------
         const floorHeader = document.createElement("div");
         floorHeader.className = "floor-header";
 
-        // Linke Seite: Pfeil + Name
         const leftWrap = document.createElement("div");
         leftWrap.className = "floor-left";
 
@@ -5505,60 +5525,50 @@ function renderEditorProjectSidebar() {
         leftWrap.appendChild(arrowEl);
         leftWrap.appendChild(nameEl);
 
-        // Rechte Seite: Drei-Punkte-Menü
         const menuEl = document.createElement("span");
         menuEl.className = "floor-menu";
         menuEl.textContent = "⋮";
-        
+
         menuEl.addEventListener("click", (ev) => {
-            ev.stopPropagation(); // verhindert Toggle
-            openFloorMenu(floor.id, ev); // ⭐ Klickposition übergeben!
+            ev.stopPropagation();
+            openFloorMenu(floor.id, ev);
         });
 
-
-
-        // Header zusammenbauen
         floorHeader.appendChild(leftWrap);
         floorHeader.appendChild(menuEl);
 
-        // Aktive Etage markieren
         if (floor.id === activeFloor) {
             floorHeader.classList.add("active-floor");
         }
 
-        // ---------------------------------------------------------
-        // KLICK-LOGIK (3-Regeln)
-        // ---------------------------------------------------------
+        // Klick-Logik
         leftWrap.addEventListener("click", (ev) => {
             ev.stopPropagation();
-        
+
             const isActive = (floor.id === activeFloorId);
             const isOpen = !!project.ui.floorOpen[floor.id];
-        
+
             if (isActive) {
                 project.ui.floorOpen[floor.id] = !isOpen;
                 renderEditorProjectSidebar();
                 return;
             }
-        
+
             if (!isActive && isOpen) {
                 project.ui.floorOpen[floor.id] = false;
                 renderEditorProjectSidebar();
                 return;
             }
-        
+
             project.ui.floorOpen[floor.id] = true;
-        
+
             switchFloor(floor.id);
             importToEditor();
-        
+
             renderEditorProjectSidebar();
         });
 
-
-        // ---------------------------------------------------------
         // ROOM LIST
-        // ---------------------------------------------------------
         const roomList = document.createElement("div");
         roomList.className = "room-list";
 
@@ -5584,14 +5594,12 @@ function renderEditorProjectSidebar() {
             roomList.appendChild(roomDiv);
         });
 
-        // ---------------------------------------------------------
-        // Zusammenbauen
-        // ---------------------------------------------------------
         group.appendChild(floorHeader);
         group.appendChild(roomList);
         container.appendChild(group);
     });
 }
+
 
 function openFloorMenu(floorId, clickEvent) {
     const menu = document.getElementById("context-menu");
