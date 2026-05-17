@@ -5463,7 +5463,7 @@ function renderEditorProjectSidebar() {
         
         menuEl.addEventListener("click", (ev) => {
             ev.stopPropagation(); // verhindert Toggle
-            openFloorMenu(floor.id); // kommt in Schritt 2
+            openFloorMenu(floor.id); 
         });
 
 
@@ -5543,10 +5543,11 @@ function renderEditorProjectSidebar() {
     });
 }
 
-function openFloorMenu(floorId) {
+function openFloorMenu(floorId, clickEvent) {
     const menu = document.getElementById("context-menu");
     if (!menu) return;
 
+    // Menüinhalt erzeugen
     menu.innerHTML = `
         <div class="context-menu-item" data-action="rename">Etage umbenennen</div>
         <div class="context-menu-item" data-action="add-room">Raum hinzufügen</div>
@@ -5555,17 +5556,15 @@ function openFloorMenu(floorId) {
         <div class="context-menu-item" data-action="delete" style="color:#ff6666;">Etage löschen</div>
     `;
 
-    // Position an Maus
-    document.addEventListener("mousemove", function pos(ev) {
-        menu.style.left = ev.pageX + "px";
-        menu.style.top = ev.pageY + "px";
-        document.removeEventListener("mousemove", pos);
-    });
+    // ⭐ Position SOFORT beim Klick setzen (kein Hüpfen mehr)
+    menu.style.left = (clickEvent.pageX + 4) + "px";
+    menu.style.top = (clickEvent.pageY + 4) + "px";
 
+    // Menü anzeigen
     menu.classList.remove("hidden");
     menu.classList.add("visible");
 
-    // Klicks auf Menüeinträge
+    // Klick-Handler für Menüeinträge
     menu.querySelectorAll(".context-menu-item").forEach(item => {
         item.addEventListener("click", () => {
             const action = item.dataset.action;
@@ -5574,6 +5573,7 @@ function openFloorMenu(floorId) {
         });
     });
 }
+
 
 function closeContextMenu() {
     const menu = document.getElementById("context-menu");
