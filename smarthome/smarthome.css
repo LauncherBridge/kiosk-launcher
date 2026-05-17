@@ -626,7 +626,14 @@ justify-content: space-between;
     font-size: 14px;
     box-sizing: border-box;
 }
+.menu-item.delete {
+    color: #ff4d4d;
+    font-weight: 500;
+}
 
+.menu-item.delete:hover {
+    background: rgba(255, 0, 0, 0.15);
+}
 
 /* Highlighting */
 
