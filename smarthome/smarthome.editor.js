@@ -5547,27 +5547,26 @@ function openFloorMenu(floorId) {
     const menu = document.getElementById("context-menu");
     if (!menu) return;
 
-    // Menüinhalt erzeugen
     menu.innerHTML = `
-        <div class="ctx-item" data-action="rename">Etage umbenennen</div>
-        <div class="ctx-item" data-action="add-room">Raum hinzufügen</div>
-        <div class="ctx-item" data-action="duplicate">Etage duplizieren</div>
-        <div class="ctx-item danger" data-action="delete">Etage löschen</div>
+        <div class="context-menu-item" data-action="rename">Etage umbenennen</div>
+        <div class="context-menu-item" data-action="add-room">Raum hinzufügen</div>
+        <div class="context-menu-item" data-action="duplicate">Etage duplizieren</div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" data-action="delete" style="color:#ff6666;">Etage löschen</div>
     `;
 
-    // Position bestimmen (Mausposition)
-    document.addEventListener("mousemove", trackMouseOnce, { once: true });
-
-    function trackMouseOnce(ev) {
+    // Position an Maus
+    document.addEventListener("mousemove", function pos(ev) {
         menu.style.left = ev.pageX + "px";
         menu.style.top = ev.pageY + "px";
-    }
+        document.removeEventListener("mousemove", pos);
+    });
 
-    // Menü anzeigen
     menu.classList.remove("hidden");
+    menu.classList.add("visible");
 
-    // Klick-Handler für Menüeinträge
-    menu.querySelectorAll(".ctx-item").forEach(item => {
+    // Klicks auf Menüeinträge
+    menu.querySelectorAll(".context-menu-item").forEach(item => {
         item.addEventListener("click", () => {
             const action = item.dataset.action;
             handleFloorMenuAction(floorId, action);
@@ -5578,7 +5577,10 @@ function openFloorMenu(floorId) {
 
 function closeContextMenu() {
     const menu = document.getElementById("context-menu");
-    if (menu) menu.classList.add("hidden");
+    if (!menu) return;
+
+    menu.classList.add("hidden");
+    menu.classList.remove("visible");
 }
 
 document.addEventListener("click", (ev) => {
@@ -5595,25 +5597,22 @@ function handleFloorMenuAction(floorId, action) {
     switch (action) {
         case "rename":
             console.log("Etage umbenennen:", floorId);
-            // TODO: renameFloor(floorId)
             break;
 
         case "add-room":
-            console.log("Raum hinzufügen zu:", floorId);
-            // TODO: addRoomToFloor(floorId)
+            console.log("Raum hinzufügen:", floorId);
             break;
 
         case "duplicate":
             console.log("Etage duplizieren:", floorId);
-            // TODO: duplicateFloor(floorId)
             break;
 
         case "delete":
             console.log("Etage löschen:", floorId);
-            // TODO: deleteFloor(floorId)
             break;
     }
 }
+
 
 
 
