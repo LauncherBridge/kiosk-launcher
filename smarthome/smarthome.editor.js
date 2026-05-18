@@ -5986,14 +5986,21 @@ function renderLeftSidebar() {
 
 function normalizeProjectIds() {
 
+    // ❗ Sicherheitscheck: Projekt muss vollständig sein
+    if (!project || typeof project !== "object") return;
+    if (!project.floors || !project.rooms) return;
+    if (typeof project.floors !== "object" || typeof project.rooms !== "object") return;
+
     // Floors normalisieren
     const newFloors = {};
     Object.values(project.floors).forEach(floor => {
+        if (!floor) return;
+
         const newId = String(floor.id);
         floor.id = newId;
         newFloors[newId] = floor;
 
-        // Rooms-Array normalisieren
+        if (!Array.isArray(floor.rooms)) floor.rooms = [];
         floor.rooms = floor.rooms.map(rid => String(rid));
     });
     project.floors = newFloors;
@@ -6001,41 +6008,52 @@ function normalizeProjectIds() {
     // Rooms normalisieren
     const newRooms = {};
     Object.values(project.rooms).forEach(room => {
+        if (!room) return;
+
         const newId = String(room.id);
         room.id = newId;
         room.floorId = String(room.floorId);
         newRooms[newId] = room;
 
-        // Türen/Fenster normalisieren
+        if (!Array.isArray(room.doors)) room.doors = [];
+        if (!Array.isArray(room.windows)) room.windows = [];
+
         room.doors = room.doors.map(did => String(did));
         room.windows = room.windows.map(wid => String(wid));
     });
     project.rooms = newRooms;
 
     // Doors normalisieren
-    const newDoors = {};
-    Object.values(project.doors).forEach(door => {
-        const newId = String(door.id);
-        door.id = newId;
-        newDoors[newId] = door;
-    });
-    project.doors = newDoors;
+    if (project.doors) {
+        const newDoors = {};
+        Object.values(project.doors).forEach(door => {
+            if (!door) return;
+            const newId = String(door.id);
+            door.id = newId;
+            newDoors[newId] = door;
+        });
+        project.doors = newDoors;
+    }
 
     // Windows normalisieren
-    const newWindows = {};
-    Object.values(project.windows).forEach(win => {
-        const newId = String(win.id);
-        win.id = newId;
-        newWindows[newId] = win;
-    });
-    project.windows = newWindows;
+    if (project.windows) {
+        const newWindows = {};
+        Object.values(project.windows).forEach(win => {
+            if (!win) return;
+            const newId = String(win.id);
+            win.id = newId;
+            newWindows[newId] = win;
+        });
+        project.windows = newWindows;
+    }
 
     // activeFloorId / activeRoomId normalisieren
-    if (activeFloorId !== null) activeFloorId = String(activeFloorId);
-    if (activeRoomId !== null) activeRoomId = String(activeRoomId);
+    if (activeFloorId != null) activeFloorId = String(activeFloorId);
+    if (activeRoomId != null) activeRoomId = String(activeRoomId);
 
     console.warn("Projekt-IDs wurden normalisiert.");
 }
+
 
 
 
