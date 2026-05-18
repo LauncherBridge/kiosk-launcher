@@ -5676,15 +5676,15 @@ function handleFloorMenuAction(floorId, action) {
             break;
 
         case "add-room":
-            console.log("Raum hinzufügen:", floorId);
+            addRoomToFloor(floorId);
             break;
 
         case "duplicate":
-            console.log("Etage duplizieren:", floorId);
+            duplicateFloor(floorId);
             break;
 
         case "delete":
-            console.log("Etage löschen:", floorId);
+            deleteFloor(floorId);
             break;
     }
 }
@@ -5747,6 +5747,185 @@ function finishFloorRename(floorId, newName) {
         saveProject();
     }
 }
+
+function addRoomToFloor(floorId) {
+    floorId = Number(floorId);
+
+    const floor = project.floors[floorId];
+    if (!floor) return;
+
+    // Neue Room-ID
+    const newRoomId = createId("room");
+
+    // Standard-Raum erzeugen
+    project.rooms[newRoomId] = {
+        id: newRoomId,
+        name: "Neuer Raum",
+        floorId: floorId,
+        points: [
+            { x: 100, y: 100 },
+            { x: 300, y: 100 },
+            { x: 300, y: 300 },
+            { x: 100, y: 300 }
+        ],
+        doors: [],
+        windows: [],
+        isClosed: false
+    };
+
+    // Raum der Etage hinzufügen
+    floor.rooms.push(newRoomId);
+
+    // Aktiven Raum setzen
+    activeFloorId = floorId;
+    activeRoomId = newRoomId;
+
+    // Editor laden
+    importToEditor();
+
+    // UI aktualisieren
+    renderEditorProjectSidebar();
+    updateEditorTitle();
+    saveProject();
+}
+
+
+function duplicateFloor(floorId) {
+    const oldFloor = project.floors[floorId];
+    if (!oldFloor) return;
+
+    // Neue Floor-ID
+    const newFloorId = Math.max(...Object.keys(project.floors).map(Number)) + 1;
+
+    // Floor kopieren
+    project.floors[newFloorId] = {
+        id: newFloorId,
+        name: oldFloor.name + " (Kopie)",
+        rooms: []
+    };
+
+    // Räume kopieren
+    oldFloor.rooms.forEach(oldRoomId => {
+        const oldRoom = project.rooms[oldRoomId];
+        if (!oldRoom) return;
+
+        const newRoomId = createId("room");
+
+        // Raum kopieren
+        project.rooms[newRoomId] = {
+            id: newRoomId,
+            name: oldRoom.name + " (Kopie)",
+            floorId: newFloorId,
+            points: oldRoom.points.map(p => ({ x: p.x, y: p.y })),
+            isClosed: oldRoom.isClosed,
+            doors: [],
+            windows: []
+        };
+
+        // Türen kopieren
+        oldRoom.doors.forEach(doorId => {
+            const oldDoor = project.doors[doorId];
+            if (!oldDoor) return;
+
+            const newDoorId = createId("door");
+            project.doors[newDoorId] = { ...oldDoor, id: newDoorId };
+            project.rooms[newRoomId].doors.push(newDoorId);
+        });
+
+        // Fenster kopieren
+        oldRoom.windows.forEach(winId => {
+            const oldWin = project.windows[winId];
+            if (!oldWin) return;
+
+            const newWinId = createId("window");
+            project.windows[newWinId] = { ...oldWin, id: newWinId };
+            project.rooms[newRoomId].windows.push(newWinId);
+        });
+
+        project.floors[newFloorId].rooms.push(newRoomId);
+    });
+
+    // Neue Etage aktivieren
+    activeFloorId = newFloorId;
+
+    // Ersten Raum aktivieren
+    const firstRoomId = project.floors[newFloorId].rooms[0];
+    activeRoomId = firstRoomId;
+
+    // Editor laden
+    importToEditor();
+
+    // UI aktualisieren
+    renderEditorProjectSidebar();
+    updateEditorTitle();
+    saveProject();
+}
+
+function deleteFloor(floorId) {
+    floorId = Number(floorId);
+
+    const floor = project.floors[floorId];
+    if (!floor) return;
+
+    if (!confirm("Diese Etage und alle Räume darauf löschen?")) return;
+
+    // 1) Alle Räume dieser Etage löschen
+    floor.rooms.forEach(roomId => {
+        const room = project.rooms[roomId];
+        if (!room) return;
+
+        // Türen löschen
+        room.doors.forEach(doorId => {
+            delete project.doors[doorId];
+        });
+
+        // Fenster löschen
+        room.windows.forEach(winId => {
+            delete project.windows[winId];
+        });
+
+        // Raum löschen
+        delete project.rooms[roomId];
+    });
+
+    // 2) Etage löschen
+    delete project.floors[floorId];
+
+    // 3) Neue aktive Etage bestimmen
+    const remainingFloors = Object.values(project.floors);
+
+    if (remainingFloors.length === 0) {
+        // Keine Etagen mehr → Editor leeren
+        activeFloorId = null;
+        activeRoomId = null;
+
+        RoomDesigner.clearCanvas();
+        updateEditorTitle();
+        renderEditorProjectSidebar();
+        saveProject();
+        return;
+    }
+
+    // 4) Erste verbleibende Etage aktivieren
+    const newFloor = remainingFloors[0];
+    activeFloorId = newFloor.id;
+
+    // 5) Ersten Raum der neuen Etage aktivieren
+    if (newFloor.rooms.length > 0) {
+        activeRoomId = newFloor.rooms[0];
+        importToEditor();
+    } else {
+        // Etage ohne Räume → Canvas leeren
+        activeRoomId = null;
+        RoomDesigner.clearCanvas();
+    }
+
+    // 6) UI aktualisieren
+    renderEditorProjectSidebar();
+    updateEditorTitle();
+    saveProject();
+}
+
 
 
 function renderLeftSidebar() {
