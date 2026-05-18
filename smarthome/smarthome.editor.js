@@ -6069,10 +6069,34 @@ window.addEventListener("DOMContentLoaded", () => {
         const sidebar = document.getElementById("editor-sidebar");
         if (sidebar) sidebar.style.display = "flex";
 
-        // ⭐ Editor initialisieren (lädt NICHT das Projekt!)
+        // ⭐ Editor initialisieren
         RoomDesigner.init();
 
-        // ⭐ Projekt-Daten in den Editor importieren
+        // ⭐ Sicherstellen, dass mindestens EIN Projekt existiert
+        let projects = getAllProjects();
+        let loaded = false;
+
+        if (projects.length > 0) {
+            // Versuche last_project zu laden
+            const last = localStorage.getItem("last_project");
+            if (last && loadProject(last)) {
+                loaded = true;
+            } else {
+                // Fallback: erstes Projekt laden
+                if (loadProject(projects[0])) {
+                    loaded = true;
+                }
+            }
+        }
+
+        // ⭐ Wenn KEIN Projekt geladen werden konnte → neues Projekt erzeugen
+        if (!loaded) {
+            console.warn("⚠️ Kein Projekt gefunden – erstelle neues Projekt.");
+            createNewProject();
+            loadProject(project.meta.id);
+        }
+
+        // ⭐ Jetzt erst importieren (vorher wäre project leer!)
         importToEditor();
 
         // ⭐ Titel aktualisieren
