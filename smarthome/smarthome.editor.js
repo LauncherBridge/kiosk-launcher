@@ -5557,106 +5557,104 @@ function renderEditorProjectSidebar() {
     const activeFloor = activeFloorId;
     const activeRoom = activeRoomId;
 
-    Object.values(project.floors).forEach(floor => {
-console.log("FLOOR OBJECT:", floor);
+Object.entries(project.floors).forEach(([floorKey, floor]) => {
+    console.log("FLOOR KEY:", floorKey, "FLOOR OBJECT:", floor);
 
-        const group = document.createElement("div");
-        group.className = "floor-group";
+    const group = document.createElement("div");
+    group.className = "floor-group";
 
-        if (project.ui.floorOpen[floor.id]) {
-            group.classList.add("open");
+    if (project.ui.floorOpen[floorKey]) {
+        group.classList.add("open");
+    }
+
+    const floorHeader = document.createElement("div");
+    floorHeader.className = "floor-header";
+
+    const leftWrap = document.createElement("div");
+    leftWrap.className = "floor-left";
+
+    const arrowEl = document.createElement("span");
+    arrowEl.className = "floor-arrow";
+
+    const nameEl = document.createElement("span");
+    nameEl.className = "floor-name";
+    nameEl.textContent = floor.name;
+
+    leftWrap.appendChild(arrowEl);
+    leftWrap.appendChild(nameEl);
+
+    const menuEl = document.createElement("span");
+    menuEl.className = "floor-menu";
+    menuEl.textContent = "⋮";
+
+    menuEl.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        openFloorMenu(floorKey, ev);   // ⭐ WICHTIG
+    });
+
+    floorHeader.appendChild(leftWrap);
+    floorHeader.appendChild(menuEl);
+
+    if (floorKey === activeFloorId) {
+        floorHeader.classList.add("active-floor");
+    }
+
+    leftWrap.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+
+        const isActive = (floorKey === activeFloorId);
+        const isOpen = !!project.ui.floorOpen[floorKey];
+
+        if (isActive) {
+            project.ui.floorOpen[floorKey] = !isOpen;
+            renderEditorProjectSidebar();
+            return;
         }
 
-        const floorHeader = document.createElement("div");
-        floorHeader.className = "floor-header";
-
-        const leftWrap = document.createElement("div");
-        leftWrap.className = "floor-left";
-
-        const arrowEl = document.createElement("span");
-        arrowEl.className = "floor-arrow";
-
-        const nameEl = document.createElement("span");
-        nameEl.className = "floor-name";
-        nameEl.textContent = floor.name;
-
-        leftWrap.appendChild(arrowEl);
-        leftWrap.appendChild(nameEl);
-
-        const menuEl = document.createElement("span");
-        menuEl.className = "floor-menu";
-        menuEl.textContent = "⋮";
-
-        menuEl.addEventListener("click", (ev) => {
-            ev.stopPropagation();
-            openFloorMenu(floor.id, ev);
-        });
-
-        floorHeader.appendChild(leftWrap);
-        floorHeader.appendChild(menuEl);
-
-        if (floor.id === activeFloor) {
-            floorHeader.classList.add("active-floor");
+        if (!isActive && isOpen) {
+            project.ui.floorOpen[floorKey] = false;
+            renderEditorProjectSidebar();
+            return;
         }
 
-        leftWrap.addEventListener("click", (ev) => {
+        project.ui.floorOpen[floorKey] = true;
+
+        switchFloor(floorKey);
+        importToEditor();
+
+        renderEditorProjectSidebar();
+    });
+
+    const roomList = document.createElement("div");
+    roomList.className = "room-list";
+
+    (floor.rooms || []).forEach(roomId => {
+        const room = project.rooms[roomId];
+        if (!room) return;
+
+        const roomDiv = document.createElement("div");
+        roomDiv.className = "room-entry";
+        roomDiv.textContent = room.name;
+
+        if (roomId === activeRoomId) {
+            roomDiv.classList.add("active-room");
+        }
+
+        roomDiv.addEventListener("click", (ev) => {
             ev.stopPropagation();
-
-            const isActive = (floor.id === activeFloorId);
-            const isOpen = !!project.ui.floorOpen[floor.id];
-
-            if (isActive) {
-                project.ui.floorOpen[floor.id] = !isOpen;
-                renderEditorProjectSidebar();
-                return;
-            }
-
-            if (!isActive && isOpen) {
-                project.ui.floorOpen[floor.id] = false;
-                renderEditorProjectSidebar();
-                return;
-            }
-
-            project.ui.floorOpen[floor.id] = true;
-
-            switchFloor(floor.id);
+            activeRoomId = roomId;
             importToEditor();
-
             renderEditorProjectSidebar();
         });
 
-        const roomList = document.createElement("div");
-        roomList.className = "room-list";
-
-        floor.rooms.forEach(roomId => {
-            const room = project.rooms[roomId];
-            if (!room) return;
-
-            const roomDiv = document.createElement("div");
-            roomDiv.className = "room-entry";
-            roomDiv.textContent = room.name;
-
-            if (roomId === activeRoom) {
-                roomDiv.classList.add("active-room");
-            }
-
-            roomDiv.addEventListener("click", (ev) => {
-                ev.stopPropagation();
-                activeRoomId = roomId;
-                importToEditor();
-                renderEditorProjectSidebar();
-            });
-
-            roomList.appendChild(roomDiv);
-        });
-
-        group.appendChild(floorHeader);
-        group.appendChild(roomList);
-        container.appendChild(group);
+        roomList.appendChild(roomDiv);
     });
+
+    group.appendChild(floorHeader);
+    group.appendChild(roomList);
+    container.appendChild(group);
+});
 }
-
-
 
 function openFloorMenu(floorId, clickEvent) {
     const menu = document.getElementById("context-menu");
