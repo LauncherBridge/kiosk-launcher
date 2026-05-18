@@ -1002,6 +1002,8 @@ function importToEditor() {
         if (!project || typeof project !== "object") {
             project = { meta: {}, floors: {}, rooms: {} };
         }
+        window.project = project;
+
         if (!project.rooms) project.rooms = {};
         if (!project.floors) project.floors = {};
 
@@ -5166,9 +5168,6 @@ function editorCreateFloor() {
 // ---------------------------------------------------------
 function editorDeleteFloor(floorId) {
     if (!confirm("Diese Etage und alle Räume darauf löschen?")) return;
-
-    // ❌ floorId = Number(floorId);
-    // ✔ floorId bleibt ein String
 
     const floor = project.floors[floorId];
     if (!floor) {
