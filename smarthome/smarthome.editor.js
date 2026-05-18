@@ -5169,9 +5169,13 @@ function editorDeleteFloor(floorId) {
     if (!confirm("Diese Etage und alle Räume darauf löschen?")) return;
 
     floorId = Number(floorId);
+console.log("editorDeleteFloor floorId:", floorId, "keys:", Object.keys(project.floors));
 
     const floor = project.floors[floorId];
-    if (!floor) return;
+    if (!floor) {
+        console.warn("Kein Floor gefunden für", floorId);
+        return;
+    }
 
     // 1) Alle Räume dieser Etage löschen
     (floor.rooms || []).forEach(roomId => {
