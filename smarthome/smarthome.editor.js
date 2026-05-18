@@ -5795,7 +5795,8 @@ function duplicateFloor(floorId) {
     if (!oldFloor) return;
 
     // Neue Floor-ID
-    const newFloorId = Math.max(...Object.keys(project.floors).map(Number)) + 1;
+    const newFloorId = createId("floor");
+
 
     // Floor kopieren
     project.floors[newFloorId] = {
