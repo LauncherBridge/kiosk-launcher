@@ -5484,13 +5484,15 @@ function renderEditorProjectSidebar() {
     const container = document.getElementById("editor-location-list");
     if (!container) return;
 
-    // ⭐ Projektname aktualisieren
+    container.innerHTML = "";
+
+    // Projektname aktualisieren
     const projectNameEl = document.getElementById("editor-project-name-sidebar");
     if (projectNameEl) {
-        projectNameEl.textContent = project.meta.name || "Projekt";
+        projectNameEl.textContent = project.meta?.name || "Projekt";
     }
 
-    // ⭐ Drei-Punkte-Menü aktivieren
+    // Drei-Punkte-Menü
     const projectMenuBtn = document.getElementById("editor-project-menu-btn-sidebar");
     if (projectMenuBtn) {
         projectMenuBtn.onclick = (ev) => {
@@ -5499,26 +5501,32 @@ function renderEditorProjectSidebar() {
         };
     }
 
-    // ⭐ Floors / Rooms rendern
-    container.innerHTML = "";
-
+    // Falls UI-Objekt fehlt
     if (!project.ui) project.ui = {};
     if (!project.ui.floorOpen) project.ui.floorOpen = {};
 
     const activeFloor = activeFloorId;
     const activeRoom = activeRoomId;
 
+    // Floors sortiert rendern
     Object.values(project.floors).forEach(floor => {
 
         const group = document.createElement("div");
         group.className = "floor-group";
+        group.dataset.floorId = floor.id;
 
         if (project.ui.floorOpen[floor.id]) {
             group.classList.add("open");
         }
 
+        // Header
         const floorHeader = document.createElement("div");
         floorHeader.className = "floor-header";
+        floorHeader.dataset.floorId = floor.id;
+
+        if (floor.id === activeFloor) {
+            floorHeader.classList.add("active-floor");
+        }
 
         const leftWrap = document.createElement("div");
         leftWrap.className = "floor-left";
@@ -5529,6 +5537,7 @@ function renderEditorProjectSidebar() {
         const nameEl = document.createElement("span");
         nameEl.className = "floor-name";
         nameEl.textContent = floor.name;
+        nameEl.dataset.floorId = floor.id;
 
         leftWrap.appendChild(arrowEl);
         leftWrap.appendChild(nameEl);
@@ -5536,6 +5545,7 @@ function renderEditorProjectSidebar() {
         const menuEl = document.createElement("span");
         menuEl.className = "floor-menu";
         menuEl.textContent = "⋮";
+        menuEl.dataset.floorId = floor.id;
 
         menuEl.addEventListener("click", (ev) => {
             ev.stopPropagation();
@@ -5545,10 +5555,7 @@ function renderEditorProjectSidebar() {
         floorHeader.appendChild(leftWrap);
         floorHeader.appendChild(menuEl);
 
-        if (floor.id === activeFloor) {
-            floorHeader.classList.add("active-floor");
-        }
-
+        // Klick auf Floor-Header
         leftWrap.addEventListener("click", (ev) => {
             ev.stopPropagation();
 
@@ -5561,20 +5568,21 @@ function renderEditorProjectSidebar() {
                 return;
             }
 
-            if (!isActive && isOpen) {
-                project.ui.floorOpen[floor.id] = false;
-                renderEditorProjectSidebar();
-                return;
+            // Floor wechseln
+            activeFloorId = floor.id;
+
+            // Falls Floor Räume hat → ersten Raum aktivieren
+            if (floor.rooms.length > 0) {
+                activeRoomId = floor.rooms[0];
+                importToEditor();
             }
 
             project.ui.floorOpen[floor.id] = true;
-
-            switchFloor(floor.id);
-            importToEditor();
-
             renderEditorProjectSidebar();
+            updateEditorTitle();
         });
 
+        // Room-Liste
         const roomList = document.createElement("div");
         roomList.className = "room-list";
 
@@ -5585,6 +5593,7 @@ function renderEditorProjectSidebar() {
             const roomDiv = document.createElement("div");
             roomDiv.className = "room-entry";
             roomDiv.textContent = room.name;
+            roomDiv.dataset.roomId = roomId;
 
             if (roomId === activeRoom) {
                 roomDiv.classList.add("active-room");
@@ -5595,6 +5604,7 @@ function renderEditorProjectSidebar() {
                 activeRoomId = roomId;
                 importToEditor();
                 renderEditorProjectSidebar();
+                updateEditorTitle();
             });
 
             roomList.appendChild(roomDiv);
@@ -5605,6 +5615,7 @@ function renderEditorProjectSidebar() {
         container.appendChild(group);
     });
 }
+
 
 
 
