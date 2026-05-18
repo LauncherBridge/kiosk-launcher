@@ -534,34 +534,58 @@ function finishProjectRename(newName) {
 
 
 function copyProject() {
-    // ⭐ Tiefenkopie des aktuellen Projekts
-    const clone = JSON.parse(JSON.stringify(project));
+    const original = JSON.parse(JSON.stringify(project));
 
-    // ⭐ Neuer Name
-    clone.meta.name = project.meta.name + " (Kopie)";
+    const newId = "proj_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
 
-    // ⭐ Neue ID erzeugen
-    clone.meta.id = "proj_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
-    clone.meta.created = Date.now();
-    clone.meta.modified = Date.now();
+    const copy = JSON.parse(JSON.stringify(original));
 
-    // ⭐ Speichern unter neuer ID
-    const key = "project_" + clone.meta.id;
-    localStorage.setItem(key, JSON.stringify(clone));
+    copy.meta.id = newId;
+    copy.meta.name = original.meta.name + " (Kopie)";
+    copy.meta.created = Date.now();
+    copy.meta.modified = Date.now();
 
-    // ⭐ Kopie zum aktiven Projekt machen
+    const floorMap = {};
+    const roomMap = {};
+
+    for (const oldFloorId of Object.keys(copy.floors)) {
+        const newFloorId = "floor_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6);
+        floorMap[oldFloorId] = newFloorId;
+
+        copy.floors[newFloorId] = copy.floors[oldFloorId];
+        copy.floors[newFloorId].id = newFloorId;
+
+        delete copy.floors[oldFloorId];
+    }
+
+    for (const oldRoomId of Object.keys(copy.rooms)) {
+        const newRoomId = "room_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6);
+        roomMap[oldRoomId] = newRoomId;
+
+        copy.rooms[newRoomId] = copy.rooms[oldRoomId];
+        copy.rooms[newRoomId].id = newRoomId;
+
+        delete copy.rooms[oldRoomId];
+    }
+
+    for (const floorId of Object.keys(copy.floors)) {
+        copy.floors[floorId].rooms = copy.floors[floorId].rooms.map(r => roomMap[r]);
+    }
+
+    for (const roomId of Object.keys(copy.rooms)) {
+        const room = copy.rooms[roomId];
+        room.floorId = floorMap[room.floorId];
+    }
+
+    localStorage.setItem("project_" + newId, JSON.stringify(copy));
+
     Object.keys(project).forEach(k => delete project[k]);
-    Object.assign(project, clone);
+    Object.assign(project, copy);
 
-    // ⭐ last_project aktualisieren
-    localStorage.setItem("last_project", clone.meta.id);
+    localStorage.setItem("last_project", newId);
 
-    // ⭐ UI aktualisieren
     updateEditorTitle();
     renderEditorProjectSidebar();
-
-    // ⭐ SmartHomeData neu generieren
-    SmartHomeData = generateSmartHomeDataFromProject();
 
     alert("Projekt wurde kopiert.");
 }
