@@ -820,6 +820,35 @@ function switchProject() {
         }
     };
 }
+clear: function() {
+    // Canvas löschen
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+    // Interne Daten zurücksetzen
+    this.points = [];
+    this.walls = [];
+    this.doors = [];
+    this.windows = [];
+    this.isClosed = false;
+
+    // Auswahl & Modus zurücksetzen
+    this.selectedPoint = null;
+    this.selectedWall = null;
+    this.selectedDoor = null;
+    this.selectedWindow = null;
+    this.currentTool = null;
+
+    // Pan & Zoom zurücksetzen
+    this.panX = 0;
+    this.panY = 0;
+    this.zoom = 1;
+
+    // Kontextmenü schließen
+    this.clearContextMenu?.();
+
+    // Neu zeichnen
+    this.render();
+}
 
 
 function switchFloor(floorId) {
@@ -5192,7 +5221,8 @@ function editorDeleteFloor(floorId) {
     if (activeRoomId) {
         importToEditor();
     } else {
-        RoomDesigner.clearCanvas();
+        RoomDesigner.clear();
+
     }
 
     renderEditorProjectSidebar();
