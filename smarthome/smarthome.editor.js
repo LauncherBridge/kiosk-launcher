@@ -5165,11 +5165,10 @@ function editorCreateFloor() {
 // Etage löschen
 // ---------------------------------------------------------
 function editorDeleteFloor(floorId) {
-    // Sicherheitsabfrage
     if (!confirm("Diese Etage und alle Räume darauf löschen?")) return;
 
-    floorId = Number(floorId);
-console.log("editorDeleteFloor floorId:", floorId, "keys:", Object.keys(project.floors));
+    // ❌ floorId = Number(floorId);
+    // ✔ floorId bleibt ein String
 
     const floor = project.floors[floorId];
     if (!floor) {
@@ -5177,39 +5176,30 @@ console.log("editorDeleteFloor floorId:", floorId, "keys:", Object.keys(project.
         return;
     }
 
-    // 1) Alle Räume dieser Etage löschen
+    // Räume löschen
     (floor.rooms || []).forEach(roomId => {
         delete project.rooms[roomId];
     });
 
-    // 2) Floor aus dem Projekt löschen
+    // Floor löschen
     delete project.floors[floorId];
 
-    // 3) Editor-State korrigieren
+    // Editor-State korrigieren
     if (project.rooms[activeRoomId]?.floorId === floorId) {
         const remainingRooms = Object.values(project.rooms);
         activeRoomId = remainingRooms.length > 0 ? remainingRooms[0].id : null;
     }
 
-    // 4) Editor-Daten + UI aktualisieren
     if (activeRoomId) {
-        importToEditor();            // lädt neuen aktiven Raum
+        importToEditor();
     } else {
-        // Kein Raum mehr vorhanden
-        const projectEl = document.getElementById("editor-project-name");
-        const floorEl = document.getElementById("editor-floor-name");
-        const roomEl = document.getElementById("editor-room-name");
-
-        if (projectEl) projectEl.textContent = project.meta?.name || "Projekt";
-        if (floorEl) floorEl.textContent = "Etage";
-        if (roomEl) roomEl.textContent = "Raum";
-
         RoomDesigner.clearCanvas();
     }
 
     renderEditorProjectSidebar();
     saveProject();
 }
+
 
 // ---------------------------------------------------------
 // Raum hinzufügen
