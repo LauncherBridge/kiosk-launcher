@@ -820,35 +820,6 @@ function switchProject() {
         }
     };
 }
-clear: function() {
-    // Canvas löschen
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-    // Interne Daten zurücksetzen
-    this.points = [];
-    this.walls = [];
-    this.doors = [];
-    this.windows = [];
-    this.isClosed = false;
-
-    // Auswahl & Modus zurücksetzen
-    this.selectedPoint = null;
-    this.selectedWall = null;
-    this.selectedDoor = null;
-    this.selectedWindow = null;
-    this.currentTool = null;
-
-    // Pan & Zoom zurücksetzen
-    this.panX = 0;
-    this.panY = 0;
-    this.zoom = 1;
-
-    // Kontextmenü schließen
-    this.clearContextMenu?.();
-
-    // Neu zeichnen
-    this.render();
-}
 
 
 function switchFloor(floorId) {
@@ -1031,8 +1002,6 @@ function importToEditor() {
         if (!project || typeof project !== "object") {
             project = { meta: {}, floors: {}, rooms: {} };
         }
-        window.project = project;
-
         if (!project.rooms) project.rooms = {};
         if (!project.floors) project.floors = {};
 
@@ -5196,33 +5165,42 @@ function editorCreateFloor() {
 // Etage löschen
 // ---------------------------------------------------------
 function editorDeleteFloor(floorId) {
+    // Sicherheitsabfrage
     if (!confirm("Diese Etage und alle Räume darauf löschen?")) return;
 
-    const floor = project.floors[floorId];
-    if (!floor) {
-        console.warn("Kein Floor gefunden für", floorId);
-        return;
-    }
+    floorId = Number(floorId);
 
-    // Räume löschen
+    const floor = project.floors[floorId];
+    if (!floor) return;
+
+    // 1) Alle Räume dieser Etage löschen
     (floor.rooms || []).forEach(roomId => {
         delete project.rooms[roomId];
     });
 
-    // Floor löschen
+    // 2) Floor aus dem Projekt löschen
     delete project.floors[floorId];
 
-    // Editor-State korrigieren
+    // 3) Editor-State korrigieren
     if (project.rooms[activeRoomId]?.floorId === floorId) {
         const remainingRooms = Object.values(project.rooms);
         activeRoomId = remainingRooms.length > 0 ? remainingRooms[0].id : null;
     }
 
+    // 4) Editor-Daten + UI aktualisieren
     if (activeRoomId) {
-        importToEditor();
+        importToEditor();            // lädt neuen aktiven Raum
     } else {
-        RoomDesigner.clear();
+        // Kein Raum mehr vorhanden
+        const projectEl = document.getElementById("editor-project-name");
+        const floorEl = document.getElementById("editor-floor-name");
+        const roomEl = document.getElementById("editor-room-name");
 
+        if (projectEl) projectEl.textContent = project.meta?.name || "Projekt";
+        if (floorEl) floorEl.textContent = "Etage";
+        if (roomEl) roomEl.textContent = "Raum";
+
+        RoomDesigner.clearCanvas();
     }
 
     renderEditorProjectSidebar();
@@ -5230,62 +5208,6 @@ function editorDeleteFloor(floorId) {
 }
 
 
-// ---------------------------------------------------------
-// Raum hinzufügen
-// ---------------------------------------------------------
-function addRoom(floorId) {
-    const name = prompt("Name des neuen Raums:");
-    if (!name) return;
-
-    const roomId = "room_" + Date.now();
-
-    project.rooms[roomId] = {
-        id: roomId,
-        name: name,
-        floor: floorId,
-        objects: []
-    };
-
-    project.floors[floorId].rooms.push(roomId);
-
-    saveProject();
-    renderEditorProjectSidebar();
-}
-
-// ---------------------------------------------------------
-// Etage duplizieren
-// ---------------------------------------------------------
-function duplicateFloor(floorId) {
-    const oldFloor = project.floors[floorId];
-    if (!oldFloor) return;
-
-    const newFloorId = "floor_" + Date.now();
-    const newFloorName = oldFloor.name + " (Kopie)";
-
-    project.floors[newFloorId] = {
-        id: newFloorId,
-        name: newFloorName,
-        rooms: []
-    };
-
-    // Räume kopieren
-    oldFloor.rooms.forEach(roomId => {
-        const oldRoom = project.rooms[roomId];
-        const newRoomId = "room_" + Date.now() + "_" + Math.random();
-
-        project.rooms[newRoomId] = {
-            id: newRoomId,
-            name: oldRoom.name + " (Kopie)",
-            floor: newFloorId,
-            objects: JSON.parse(JSON.stringify(oldRoom.objects))
-        };
-
-        project.floors[newFloorId].rooms.push(newRoomId);
-    });
-
-    saveProject();
-    renderEditorProjectSidebar();
-}
 
 
 
@@ -5586,123 +5508,128 @@ function renderEditorProjectSidebar() {
     const activeFloor = activeFloorId;
     const activeRoom = activeRoomId;
 
-Object.entries(project.floors).forEach(([floorKey, floor]) => {
-    console.log("FLOOR KEY:", floorKey, "FLOOR OBJECT:", floor);
+    Object.values(project.floors).forEach(floor => {
 
-    const group = document.createElement("div");
-    group.className = "floor-group";
+        const group = document.createElement("div");
+        group.className = "floor-group";
 
-    if (project.ui.floorOpen[floorKey]) {
-        group.classList.add("open");
-    }
-
-    const floorHeader = document.createElement("div");
-    floorHeader.className = "floor-header";
-
-    const leftWrap = document.createElement("div");
-    leftWrap.className = "floor-left";
-
-    const arrowEl = document.createElement("span");
-    arrowEl.className = "floor-arrow";
-
-    const nameEl = document.createElement("span");
-    nameEl.className = "floor-name";
-    nameEl.textContent = floor.name;
-
-    leftWrap.appendChild(arrowEl);
-    leftWrap.appendChild(nameEl);
-
-    const menuEl = document.createElement("span");
-    menuEl.className = "floor-menu";
-    menuEl.textContent = "⋮";
-
-    menuEl.addEventListener("click", (ev) => {
-        ev.stopPropagation();
-        openFloorMenu(floorKey, ev);   // ⭐ WICHTIG
-    });
-
-    floorHeader.appendChild(leftWrap);
-    floorHeader.appendChild(menuEl);
-
-    if (floorKey === activeFloorId) {
-        floorHeader.classList.add("active-floor");
-    }
-
-    leftWrap.addEventListener("click", (ev) => {
-        ev.stopPropagation();
-
-        const isActive = (floorKey === activeFloorId);
-        const isOpen = !!project.ui.floorOpen[floorKey];
-
-        if (isActive) {
-            project.ui.floorOpen[floorKey] = !isOpen;
-            renderEditorProjectSidebar();
-            return;
+        if (project.ui.floorOpen[floor.id]) {
+            group.classList.add("open");
         }
 
-        if (!isActive && isOpen) {
-            project.ui.floorOpen[floorKey] = false;
-            renderEditorProjectSidebar();
-            return;
-        }
+        const floorHeader = document.createElement("div");
+        floorHeader.className = "floor-header";
 
-        project.ui.floorOpen[floorKey] = true;
+        const leftWrap = document.createElement("div");
+        leftWrap.className = "floor-left";
 
-        switchFloor(floorKey);
-        importToEditor();
+        const arrowEl = document.createElement("span");
+        arrowEl.className = "floor-arrow";
 
-        renderEditorProjectSidebar();
-    });
+        const nameEl = document.createElement("span");
+        nameEl.className = "floor-name";
+        nameEl.textContent = floor.name;
 
-    const roomList = document.createElement("div");
-    roomList.className = "room-list";
+        leftWrap.appendChild(arrowEl);
+        leftWrap.appendChild(nameEl);
 
-    (floor.rooms || []).forEach(roomId => {
-        const room = project.rooms[roomId];
-        if (!room) return;
+        const menuEl = document.createElement("span");
+        menuEl.className = "floor-menu";
+        menuEl.textContent = "⋮";
 
-        const roomDiv = document.createElement("div");
-        roomDiv.className = "room-entry";
-        roomDiv.textContent = room.name;
-
-        if (roomId === activeRoomId) {
-            roomDiv.classList.add("active-room");
-        }
-
-        roomDiv.addEventListener("click", (ev) => {
+        menuEl.addEventListener("click", (ev) => {
             ev.stopPropagation();
-            activeRoomId = roomId;
+            openFloorMenu(floor.id, ev);
+        });
+
+        floorHeader.appendChild(leftWrap);
+        floorHeader.appendChild(menuEl);
+
+        if (floor.id === activeFloor) {
+            floorHeader.classList.add("active-floor");
+        }
+
+        leftWrap.addEventListener("click", (ev) => {
+            ev.stopPropagation();
+
+            const isActive = (floor.id === activeFloorId);
+            const isOpen = !!project.ui.floorOpen[floor.id];
+
+            if (isActive) {
+                project.ui.floorOpen[floor.id] = !isOpen;
+                renderEditorProjectSidebar();
+                return;
+            }
+
+            if (!isActive && isOpen) {
+                project.ui.floorOpen[floor.id] = false;
+                renderEditorProjectSidebar();
+                return;
+            }
+
+            project.ui.floorOpen[floor.id] = true;
+
+            switchFloor(floor.id);
             importToEditor();
+
             renderEditorProjectSidebar();
         });
 
-        roomList.appendChild(roomDiv);
-    });
+        const roomList = document.createElement("div");
+        roomList.className = "room-list";
 
-    group.appendChild(floorHeader);
-    group.appendChild(roomList);
-    container.appendChild(group);
-});
+        floor.rooms.forEach(roomId => {
+            const room = project.rooms[roomId];
+            if (!room) return;
+
+            const roomDiv = document.createElement("div");
+            roomDiv.className = "room-entry";
+            roomDiv.textContent = room.name;
+
+            if (roomId === activeRoom) {
+                roomDiv.classList.add("active-room");
+            }
+
+            roomDiv.addEventListener("click", (ev) => {
+                ev.stopPropagation();
+                activeRoomId = roomId;
+                importToEditor();
+                renderEditorProjectSidebar();
+            });
+
+            roomList.appendChild(roomDiv);
+        });
+
+        group.appendChild(floorHeader);
+        group.appendChild(roomList);
+        container.appendChild(group);
+    });
 }
+
+
 
 function openFloorMenu(floorId, clickEvent) {
     const menu = document.getElementById("context-menu");
     if (!menu) return;
 
+    // Menüinhalt erzeugen
     menu.innerHTML = `
         <div class="context-menu-item" data-action="rename">Etage umbenennen</div>
         <div class="context-menu-item" data-action="add-room">Raum hinzufügen</div>
         <div class="context-menu-item" data-action="duplicate">Etage duplizieren</div>
         <div class="context-menu-separator"></div>
-        <div class="context-menu-item delete" data-action="delete">Etage löschen</div>
+        <div class="context-menu-item" data-action="delete" style="color:#ff6666;">Etage löschen</div>
     `;
 
+    // ⭐ Position SOFORT beim Klick setzen (kein Hüpfen mehr)
     menu.style.left = (clickEvent.pageX + 4) + "px";
     menu.style.top = (clickEvent.pageY + 4) + "px";
 
+    // Menü anzeigen
     menu.classList.remove("hidden");
     menu.classList.add("visible");
 
+    // Klick-Handler für Menüeinträge
     menu.querySelectorAll(".context-menu-item").forEach(item => {
         item.addEventListener("click", () => {
             const action = item.dataset.action;
@@ -5711,7 +5638,6 @@ function openFloorMenu(floorId, clickEvent) {
         });
     });
 }
-
 
 
 function closeContextMenu() {
@@ -5739,19 +5665,18 @@ function handleFloorMenuAction(floorId, action) {
             break;
 
         case "add-room":
-            editorAddRoom(floorId);
+            console.log("Raum hinzufügen:", floorId);
             break;
 
         case "duplicate":
-            editorDuplicateFloor(floorId);
+            console.log("Etage duplizieren:", floorId);
             break;
 
         case "delete":
-            editorDeleteFloor(floorId);
+            console.log("Etage löschen:", floorId);
             break;
     }
 }
-
 
 function startFloorRename(floorId) {
     const container = document.getElementById("editor-location-list");
