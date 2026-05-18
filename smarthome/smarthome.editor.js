@@ -5207,7 +5207,62 @@ function editorDeleteFloor(floorId) {
     saveProject();
 }
 
+// ---------------------------------------------------------
+// Raum hinzufügen
+// ---------------------------------------------------------
+function addRoom(floorId) {
+    const name = prompt("Name des neuen Raums:");
+    if (!name) return;
 
+    const roomId = "room_" + Date.now();
+
+    project.rooms[roomId] = {
+        id: roomId,
+        name: name,
+        floor: floorId,
+        objects: []
+    };
+
+    project.floors[floorId].rooms.push(roomId);
+
+    saveProject();
+    renderEditorProjectSidebar();
+}
+
+// ---------------------------------------------------------
+// Etage duplizieren
+// ---------------------------------------------------------
+function duplicateFloor(floorId) {
+    const oldFloor = project.floors[floorId];
+    if (!oldFloor) return;
+
+    const newFloorId = "floor_" + Date.now();
+    const newFloorName = oldFloor.name + " (Kopie)";
+
+    project.floors[newFloorId] = {
+        id: newFloorId,
+        name: newFloorName,
+        rooms: []
+    };
+
+    // Räume kopieren
+    oldFloor.rooms.forEach(roomId => {
+        const oldRoom = project.rooms[roomId];
+        const newRoomId = "room_" + Date.now() + "_" + Math.random();
+
+        project.rooms[newRoomId] = {
+            id: newRoomId,
+            name: oldRoom.name + " (Kopie)",
+            floor: newFloorId,
+            objects: JSON.parse(JSON.stringify(oldRoom.objects))
+        };
+
+        project.floors[newFloorId].rooms.push(newRoomId);
+    });
+
+    saveProject();
+    renderEditorProjectSidebar();
+}
 
 
 
@@ -5612,24 +5667,20 @@ function openFloorMenu(floorId, clickEvent) {
     const menu = document.getElementById("context-menu");
     if (!menu) return;
 
-    // Menüinhalt erzeugen
     menu.innerHTML = `
         <div class="context-menu-item" data-action="rename">Etage umbenennen</div>
         <div class="context-menu-item" data-action="add-room">Raum hinzufügen</div>
         <div class="context-menu-item" data-action="duplicate">Etage duplizieren</div>
         <div class="context-menu-separator"></div>
-        <div class="context-menu-item" data-action="delete" style="color:#ff6666;">Etage löschen</div>
+        <div class="context-menu-item delete" data-action="delete">Etage löschen</div>
     `;
 
-    // ⭐ Position SOFORT beim Klick setzen (kein Hüpfen mehr)
     menu.style.left = (clickEvent.pageX + 4) + "px";
     menu.style.top = (clickEvent.pageY + 4) + "px";
 
-    // Menü anzeigen
     menu.classList.remove("hidden");
     menu.classList.add("visible");
 
-    // Klick-Handler für Menüeinträge
     menu.querySelectorAll(".context-menu-item").forEach(item => {
         item.addEventListener("click", () => {
             const action = item.dataset.action;
@@ -5638,6 +5689,7 @@ function openFloorMenu(floorId, clickEvent) {
         });
     });
 }
+
 
 
 function closeContextMenu() {
@@ -5665,18 +5717,19 @@ function handleFloorMenuAction(floorId, action) {
             break;
 
         case "add-room":
-            console.log("Raum hinzufügen:", floorId);
+            editorAddRoom(floorId);
             break;
 
         case "duplicate":
-            console.log("Etage duplizieren:", floorId);
+            editorDuplicateFloor(floorId);
             break;
 
         case "delete":
-            console.log("Etage löschen:", floorId);
+            editorDeleteFloor(floorId);
             break;
     }
 }
+
 
 function startFloorRename(floorId) {
     const container = document.getElementById("editor-location-list");
