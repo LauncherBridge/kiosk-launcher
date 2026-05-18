@@ -5568,6 +5568,7 @@ function renderEditorProjectSidebar() {
     const activeRoom = activeRoomId;
 
     Object.values(project.floors).forEach(floor => {
+console.log("FLOOR OBJECT:", floor);
 
         const group = document.createElement("div");
         group.className = "floor-group";
