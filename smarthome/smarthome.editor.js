@@ -898,6 +898,9 @@ function saveProjectAs(proj) {
 
 
 function loadProject(id) {
+    normalizeProjectIds();
+saveProject();
+//Tano
     const key = "project_" + id;
     const json = localStorage.getItem(key);
 
@@ -5961,6 +5964,58 @@ function renderLeftSidebar() {
     });
 }
 
+function normalizeProjectIds() {
+
+    // Floors normalisieren
+    const newFloors = {};
+    Object.values(project.floors).forEach(floor => {
+        const newId = String(floor.id);
+        floor.id = newId;
+        newFloors[newId] = floor;
+
+        // Rooms-Array normalisieren
+        floor.rooms = floor.rooms.map(rid => String(rid));
+    });
+    project.floors = newFloors;
+
+    // Rooms normalisieren
+    const newRooms = {};
+    Object.values(project.rooms).forEach(room => {
+        const newId = String(room.id);
+        room.id = newId;
+        room.floorId = String(room.floorId);
+        newRooms[newId] = room;
+
+        // Türen/Fenster normalisieren
+        room.doors = room.doors.map(did => String(did));
+        room.windows = room.windows.map(wid => String(wid));
+    });
+    project.rooms = newRooms;
+
+    // Doors normalisieren
+    const newDoors = {};
+    Object.values(project.doors).forEach(door => {
+        const newId = String(door.id);
+        door.id = newId;
+        newDoors[newId] = door;
+    });
+    project.doors = newDoors;
+
+    // Windows normalisieren
+    const newWindows = {};
+    Object.values(project.windows).forEach(win => {
+        const newId = String(win.id);
+        win.id = newId;
+        newWindows[newId] = win;
+    });
+    project.windows = newWindows;
+
+    // activeFloorId / activeRoomId normalisieren
+    if (activeFloorId !== null) activeFloorId = String(activeFloorId);
+    if (activeRoomId !== null) activeRoomId = String(activeRoomId);
+
+    console.warn("Projekt-IDs wurden normalisiert.");
+}
 
 
 
