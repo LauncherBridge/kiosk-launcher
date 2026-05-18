@@ -852,20 +852,14 @@ function switchFloor(floorId) {
 // Projekt speichern & laden
 // ------------------------------------------------------------
 function saveProject() {
+    if (!project?.meta?.id) return;
+
     project.meta.modified = Date.now();
 
-    // ID sicherstellen
-    if (!project.meta.id) {
-        project.meta.id = "proj_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
-        console.warn("⚠️ Projekt hatte keine ID – neue ID vergeben:", project.meta.id);
-    }
-
-    // Neuer ID-basierter Key
     const key = "project_" + project.meta.id;
-
-    // Speichern
     localStorage.setItem(key, JSON.stringify(project));
 }
+
 
 
 
@@ -898,9 +892,6 @@ function saveProjectAs(proj) {
 
 
 function loadProject(id) {
-    normalizeProjectIds();
-saveProject();
-//Tano
     const key = "project_" + id;
     const json = localStorage.getItem(key);
 
@@ -912,21 +903,24 @@ saveProject();
     try {
         let data = JSON.parse(json);
 
-        // 🔥 Reparatur: ID sicherstellen 
-        if (!data.meta.id) {
-            const newId = "proj_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
-            data.meta.id = newId;
-
-            // alten Key löschen, neuen Key speichern
-            localStorage.removeItem(key);
-            localStorage.setItem("project_" + newId, JSON.stringify(data));
-
-            console.warn("⚠️ Projekt hatte keine ID – neue ID vergeben:", newId);
-        }
-
-        // Projekt-Objekt sauber ersetzen
+        // Projekt ersetzen
         Object.keys(project).forEach(k => delete project[k]);
         Object.assign(project, data);
+
+        // IDs normalisieren (aber NICHT speichern!)
+        normalizeProjectIds();
+
+        // Aktive Etage setzen
+        const floorIds = Object.keys(project.floors);
+        activeFloorId = floorIds.length > 0 ? floorIds[0] : null;
+
+        // Aktiven Raum setzen
+        if (activeFloorId) {
+            const roomIds = project.floors[activeFloorId].rooms;
+            activeRoomId = roomIds.length > 0 ? roomIds[0] : null;
+        } else {
+            activeRoomId = null;
+        }
 
         // last_project aktualisieren
         localStorage.setItem("last_project", project.meta.id);
@@ -939,6 +933,8 @@ saveProject();
         return false;
     }
 }
+
+
 
 
 function migrateProjectsToID() {
