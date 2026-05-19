@@ -1082,18 +1082,28 @@ if (floor.id === project.rooms[roomId].floorId) {
 }
 
 #move-room-floor-list button.disabled-floor {
-    opacity: 0.35;
+    background: rgba(255,255,255,0.08);   /* etwas dunkler, aber nicht tot */
+    border-color: rgba(255,255,255,0.15);
+    color: #bbb;                          /* gut lesbar, aber leicht entsättigt */
     cursor: default;
-    background: rgba(255,255,255,0.03);
-    border-color: rgba(255,255,255,0.08);
-    color: #888;
     pointer-events: none;
+    opacity: 0.75;                        /* nur leicht abgeschwächt */
 }
+
+#move-room-floor-list button.disabled-floor:hover {
+    background: rgba(255,255,255,0.08);   /* kein Hover-Effekt */
+    border-color: rgba(255,255,255,0.15);
+    color: #bbb;
+}
+
+/* dezenter Hinweis statt "(aktuell)" */
 #move-room-floor-list button.disabled-floor::after {
-    content: " (aktuell)";
-    font-size: 13px;
-    color: #aaa;
+    content: " •";
+    color: rgba(255,255,255,0.25);
+    font-size: 14px;
+    margin-left: 4px;
 }
+
 
 /* ---------------------------------------------------------
    MOVE ROOM POPUP – Sidebar-Style Override
