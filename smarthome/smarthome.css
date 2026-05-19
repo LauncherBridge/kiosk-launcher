@@ -579,9 +579,12 @@ justify-content: space-between;
 .room-entry + .room-entry {
     margin-top: 4px;
 }
+
 .room-entry {
-    margin-left: 18px;
-    width: calc(100% - 18px);
+    padding-left: 18px;       /* optische Einrückung */
+    margin-left: 0;           /* kein echtes Verschieben */
+    width: 100%;              /* kein Überlaufen */
+    box-sizing: border-box;   /* verhindert horizontales Scrollen */
 }
 
 
@@ -1065,6 +1068,19 @@ if (floor.id === project.rooms[roomId].floorId) {
     overflow-y: auto;
 }
 
+#move-room-floor-list button.disabled-floor {
+    opacity: 0.35;
+    cursor: default;
+    background: rgba(255,255,255,0.03);
+    border-color: rgba(255,255,255,0.08);
+    color: #888;
+    pointer-events: none;
+}
+#move-room-floor-list button.disabled-floor::after {
+    content: " (aktuell)";
+    font-size: 13px;
+    color: #aaa;
+}
 
 /* ---------------------------------------------------------
    MOVE ROOM POPUP – Sidebar-Style Override
