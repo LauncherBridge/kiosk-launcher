@@ -579,6 +579,10 @@ justify-content: space-between;
 .room-entry + .room-entry {
     margin-top: 4px;
 }
+.room-entry {
+    margin-left: 18px;
+    width: calc(100% - 18px);
+}
 
 
 /* Einklappbare Etagen */
@@ -1031,4 +1035,18 @@ function closeMoveRoomPopup() {
     font-size: 18px;
     font-weight: 600;
     color: #fff;
+}
+/* ---------------------------------------------------------
+   MOVE ROOM POPUP – Sidebar-Style Override
+--------------------------------------------------------- */
+
+#move-room-popup .modal-content {
+    background: rgba(0,0,0,0.82) !important;
+    border: 1px solid rgba(255,255,255,0.12) !important;
+    border-radius: 8px !important;
+    padding: 20px !important;
+    width: 300px !important;
+    color: white !important;
+    backdrop-filter: blur(6px) !important;
+    box-shadow: 0 0 20px rgba(0,0,0,0.4) !important;
 }
