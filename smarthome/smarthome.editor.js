@@ -6311,6 +6311,13 @@ window.addEventListener("DOMContentLoaded", () => {
         enableFloorNameEditing();
         enableProjectNameEditing();
         attachFloorCrumbMenu();
+        
+        // ⭐ Move-Room Cancel Button aktivieren
+        const cancelBtn = document.getElementById("move-room-cancel-btn");
+        if (cancelBtn) {
+            cancelBtn.onclick = closeMoveRoomPopup;
+        }
+
     });
 });
 
