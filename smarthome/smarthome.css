@@ -1029,6 +1029,22 @@ function closeMoveRoomPopup() {
     border-color: rgba(255,255,255,0.25);
     color: #fff;
 }
+
+const btn = document.createElement("button");
+btn.textContent = floor.name;
+
+// Aktuelle Etage → deaktivieren
+if (floor.id === project.rooms[roomId].floorId) {
+    btn.classList.add("disabled-floor");
+    btn.disabled = true;
+} else {
+    btn.onclick = () => {
+        applyRoomMove(roomId, floor.id);
+        closeMoveRoomPopup();
+    };
+}
+
+
 #move-room-popup h2 {
     margin-top: 0;
     margin-bottom: 14px;
