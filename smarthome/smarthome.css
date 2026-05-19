@@ -1036,6 +1036,20 @@ function closeMoveRoomPopup() {
     font-weight: 600;
     color: #fff;
 }
+
+#move-room-popup .modal-content {
+    max-height: 80vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+#move-room-floor-list {
+    flex: 1;
+    overflow-y: auto;
+}
+
+
 /* ---------------------------------------------------------
    MOVE ROOM POPUP – Sidebar-Style Override
 --------------------------------------------------------- */
