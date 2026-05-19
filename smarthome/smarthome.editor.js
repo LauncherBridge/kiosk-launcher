@@ -6129,6 +6129,7 @@ function duplicateRoom(roomId) {
     updateEditorTitle();
     saveProject();
 }
+
 function moveRoom(roomId) {
     const room = project.rooms[roomId];
     if (!room) return;
@@ -6136,29 +6137,37 @@ function moveRoom(roomId) {
     const popup = document.getElementById("move-room-popup");
     const list = document.getElementById("move-room-floor-list");
 
+    // Titel aktualisieren → Raumname anzeigen
+    const title = popup.querySelector("h2");
+    if (title) {
+        title.textContent = `${room.name} verschieben: `;
+    }
+
     list.innerHTML = "";
 
     Object.values(project.floors).forEach(floor => {
-    const btn = document.createElement("button");
-    btn.textContent = floor.name;
-    
-    // Aktuelle Etage → deaktivieren
-    if (floor.id === project.rooms[roomId].floorId) {
-        btn.classList.add("disabled-floor");
-        btn.disabled = true;
-    } else {
-        btn.onclick = () => {
-            applyRoomMove(roomId, floor.id);
-            closeMoveRoomPopup();
-        };
-    }
+        const btn = document.createElement("button");
+        btn.textContent = floor.name;
 
+        // Aktuelle Etage → deaktivieren
+        if (floor.id === room.floorId) {
+            btn.classList.add("disabled-floor");
+            btn.disabled = true;
+        } else {
+            btn.onclick = () => {
+                applyRoomMove(roomId, floor.id);
+                closeMoveRoomPopup();
+            };
+        }
 
         list.appendChild(btn);
     });
 
     popup.classList.remove("hidden");
 }
+
+
+
 function applyRoomMove(roomId, newFloorId) {
     const room = project.rooms[roomId];
     if (!room) return;
