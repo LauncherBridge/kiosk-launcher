@@ -528,21 +528,56 @@ justify-content: space-between;
 .room-entry {
     padding: 8px;
     margin-top: 6px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
     border-radius: 4px;
     cursor: pointer;
     color: #ccc;
     transition: background 0.15s ease, color 0.15s ease;
 
-    /* >>> FIX: ensures room receives click, not header <<< */
+    /* Klick-Fix */
     position: relative;
     z-index: 5;
+
+    /* NEU: wie floor-header → 3-Punkt rechts */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.room-name {
+    flex: 1 1 auto;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.room-entry:hover {
-    background: rgba(255,255,255,0.15);
+.room-menu {
+    cursor: pointer;
+    color: #ccc;
+    font-size: 18px;
+    padding: 4px 6px;
+    border-radius: 4px;
+       opacity: 0.8;
+    transition: opacity 0.15s ease, background 0.15s ease;
+}
+
+.room-menu:hover {
+    background: rgba(255,255,255,0.12);
     color: #fff;
+}
+
+
+.room-entry:hover {
+    background: rgba(255,255,255,0.14);
+   opacity: 1;
+    color: #fff;
+}
+.room-entry {
+    padding: 8px 10px; /* etwas breiter, wirkt hochwertiger */
+    margin-top: 6px;
+}
+.room-entry + .room-entry {
+    margin-top: 4px;
 }
 
 
@@ -653,10 +688,13 @@ justify-content: space-between;
     text-shadow: 0 0 6px rgba(255, 80, 80, 0.8);
 }
 
-.active-room {
-    color: #66aaff !important;
-    text-shadow: 0 0 6px rgba(80, 140, 255, 0.8);
+.room-entry.active-room {
+    background: rgba(80,140,255,0.25) !important;
+    border-color: rgba(80,140,255,0.45) !important;
+    color: #cfe4ff !important;
+    text-shadow: 0 0 6px rgba(80,140,255,0.8);
 }
+
 
 /* ---------------------------------------------------------
    EDITOR – RECHTE SIDEBAR
