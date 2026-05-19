@@ -950,3 +950,42 @@ body.editor-mode .editor-btn {
     justify-content: flex-end;
     gap: 10px;
 }
+
+function closeMoveRoomPopup() {
+    const popup = document.getElementById("move-room-popup");
+    if (popup) {
+        popup.classList.add("hidden");
+    }
+}
+
+#move-room-popup .modal-content {
+    background: rgba(0,0,0,0.82);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px;
+    padding: 20px;
+    width: 300px;
+    color: white;
+    backdrop-filter: blur(6px);
+}
+
+#move-room-cancel-btn {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 6px;
+
+    color: #ddd;
+    font-size: 15px;
+    cursor: pointer;
+
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+#move-room-cancel-btn:hover {
+    background: rgba(255,255,255,0.18);
+    border-color: rgba(255,255,255,0.25);
+    color: #fff;
+}
