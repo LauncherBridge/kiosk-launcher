@@ -5535,7 +5535,7 @@ function renderEditorProjectSidebar() {
         projectNameEl.textContent = project.meta?.name || "Projekt";
     }
 
-    // Drei-Punkte-Menü
+    // Drei-Punkte-Menü für Projekt
     const projectMenuBtn = document.getElementById("editor-project-menu-btn-sidebar");
     if (projectMenuBtn) {
         projectMenuBtn.onclick = (ev) => {
@@ -5635,20 +5635,39 @@ function renderEditorProjectSidebar() {
 
             const roomDiv = document.createElement("div");
             roomDiv.className = "room-entry";
-            roomDiv.textContent = room.name;
             roomDiv.dataset.roomId = roomId;
 
             if (roomId === activeRoom) {
                 roomDiv.classList.add("active-room");
             }
 
-            roomDiv.addEventListener("click", (ev) => {
+            // Linker Bereich: Raumname
+            const nameEl = document.createElement("span");
+            nameEl.className = "room-name";
+            nameEl.textContent = room.name;
+            nameEl.dataset.roomId = roomId;
+
+            nameEl.addEventListener("click", (ev) => {
                 ev.stopPropagation();
                 activeRoomId = roomId;
                 importToEditor();
                 renderEditorProjectSidebar();
                 updateEditorTitle();
             });
+
+            // Rechter Bereich: Drei-Punkte-Menü (EXAKT wie bei Etagen)
+            const menuEl = document.createElement("span");
+            menuEl.className = "room-menu";
+            menuEl.textContent = "⋮";
+            menuEl.dataset.roomId = roomId;
+
+            menuEl.addEventListener("click", (ev) => {
+                ev.stopPropagation();
+                openRoomMenu(roomId, ev);
+            });
+
+            roomDiv.appendChild(nameEl);
+            roomDiv.appendChild(menuEl);
 
             roomList.appendChild(roomDiv);
         });
@@ -5968,6 +5987,164 @@ function deleteFloor(floorId) {
     updateEditorTitle();
     saveProject();
 }
+
+function openRoomMenu(roomId, clickEvent) {
+    const menu = document.getElementById("context-menu");
+    if (!menu) return;
+
+    menu.innerHTML = `
+        <div class="context-menu-item" data-action="rename">Raum umbenennen</div>
+        <div class="context-menu-item" data-action="duplicate">Raum duplizieren</div>
+        <div class="context-menu-item" data-action="move">Raum verschieben</div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" data-action="delete" style="color:#ff6666;">Raum löschen</div>
+    `;
+
+    menu.style.left = (clickEvent.pageX + 4) + "px";
+    menu.style.top = (clickEvent.pageY + 4) + "px";
+
+    menu.classList.remove("hidden");
+    menu.classList.add("visible");
+
+    menu.querySelectorAll(".context-menu-item").forEach(item => {
+        item.addEventListener("click", () => {
+            const action = item.dataset.action;
+            handleRoomMenuAction(roomId, action);
+            closeContextMenu();
+        });
+    });
+}
+
+function handleRoomMenuAction(roomId, action) {
+    switch (action) {
+        case "rename":
+            renameRoom(roomId);
+            break;
+
+        case "duplicate":
+            duplicateRoom(roomId);
+            break;
+
+        case "move":
+            moveRoom(roomId);
+            break;
+
+        case "delete":
+            deleteRoom(roomId);
+            break;
+    }
+}
+
+function renameRoom(roomId) {
+    const room = project.rooms[roomId];
+    if (!room) return;
+
+    const newName = prompt("Neuer Raumname:", room.name);
+    if (!newName) return;
+
+    room.name = newName;
+    renderEditorProjectSidebar();
+    updateEditorTitle();
+    saveProject();
+}
+function deleteRoom(roomId) {
+    const room = project.rooms[roomId];
+    if (!room) return;
+
+    if (!confirm("Diesen Raum und alle Objekte darin löschen?")) return;
+
+    // Türen löschen
+    room.doors.forEach(did => delete project.doors[did]);
+
+    // Fenster löschen
+    room.windows.forEach(wid => delete project.windows[wid]);
+
+    // Raum aus Etage entfernen
+    const floor = project.floors[room.floorId];
+    if (floor) {
+        floor.rooms = floor.rooms.filter(id => id !== roomId);
+    }
+
+    // Raum löschen
+    delete project.rooms[roomId];
+
+    // Aktiven Raum korrigieren
+    if (activeRoomId === roomId) {
+        if (floor && floor.rooms.length > 0) {
+            activeRoomId = floor.rooms[0];
+            importToEditor();
+        } else {
+            activeRoomId = null;
+            RoomDesigner.clearCanvas();
+        }
+    }
+
+    renderEditorProjectSidebar();
+    updateEditorTitle();
+    saveProject();
+}
+function duplicateRoom(roomId) {
+    const room = project.rooms[roomId];
+    if (!room) return;
+
+    const newId = createId("room");
+
+    const newRoom = {
+        id: newId,
+        name: room.name + " (Kopie)",
+        floorId: room.floorId,
+        points: room.points.map(p => ({ x: p.x, y: p.y })),
+        doors: [],
+        windows: [],
+        isClosed: room.isClosed
+    };
+
+    project.rooms[newId] = newRoom;
+
+    project.floors[room.floorId].rooms.push(newId);
+
+    activeRoomId = newId;
+    importToEditor();
+
+    renderEditorProjectSidebar();
+    updateEditorTitle();
+    saveProject();
+}
+function moveRoom(roomId) {
+    const room = project.rooms[roomId];
+    if (!room) return;
+
+    const floorIds = Object.keys(project.floors);
+    const names = floorIds.map(id => project.floors[id].name);
+
+    const choice = prompt(
+        "Raum verschieben nach:\n" +
+        names.map((n, i) => `${i+1}) ${n}`).join("\n")
+    );
+
+    const index = Number(choice) - 1;
+    if (index < 0 || index >= floorIds.length) return;
+
+    const newFloorId = floorIds[index];
+
+    // aus alter Etage entfernen
+    const oldFloor = project.floors[room.floorId];
+    oldFloor.rooms = oldFloor.rooms.filter(id => id !== roomId);
+
+    // in neue Etage einfügen
+    project.floors[newFloorId].rooms.push(roomId);
+
+    room.floorId = newFloorId;
+
+    activeFloorId = newFloorId;
+    activeRoomId = roomId;
+
+    importToEditor();
+    renderEditorProjectSidebar();
+    updateEditorTitle();
+    saveProject();
+}
+
 
 
 
