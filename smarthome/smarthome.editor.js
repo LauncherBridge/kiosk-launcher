@@ -5907,7 +5907,7 @@ function duplicateFloor(floorId) {
 }
 
 function deleteFloor(floorId) {
-    floorId = Number(floorId);
+    floorId = String(floorId);
 
     const floor = project.floors[floorId];
     if (!floor) return;
@@ -5940,7 +5940,6 @@ function deleteFloor(floorId) {
     const remainingFloors = Object.values(project.floors);
 
     if (remainingFloors.length === 0) {
-        // Keine Etagen mehr → Editor leeren
         activeFloorId = null;
         activeRoomId = null;
 
@@ -5960,7 +5959,6 @@ function deleteFloor(floorId) {
         activeRoomId = newFloor.rooms[0];
         importToEditor();
     } else {
-        // Etage ohne Räume → Canvas leeren
         activeRoomId = null;
         RoomDesigner.clearCanvas();
     }
@@ -5970,6 +5968,7 @@ function deleteFloor(floorId) {
     updateEditorTitle();
     saveProject();
 }
+
 
 
 
