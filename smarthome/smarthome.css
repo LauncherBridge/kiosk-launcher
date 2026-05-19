@@ -616,6 +616,19 @@ justify-content: space-between;
     box-sizing: border-box;
 }
 
+.room-rename-input {
+    flex: 0 1 auto;      /* ⭐ gleiche Flex-Logik wie Etage */
+    width: 120px;        /* ⭐ gleiche Breite */
+    max-width: 90%;
+    padding: 3px 6px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 4px;
+    color: #fff;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
 
 /* Projektbox oben */
 .editor-projectbox {
