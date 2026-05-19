@@ -6133,6 +6133,31 @@ function moveRoom(roomId) {
 
     popup.classList.remove("hidden");
 }
+function applyRoomMove(roomId, newFloorId) {
+    const room = project.rooms[roomId];
+    if (!room) return;
+
+    const oldFloor = project.floors[room.floorId];
+
+    // aus alter Etage entfernen
+    oldFloor.rooms = oldFloor.rooms.filter(id => id !== roomId);
+
+    // in neue Etage einfügen
+    project.floors[newFloorId].rooms.push(roomId);
+
+    // Raum aktualisieren
+    room.floorId = newFloorId;
+
+    // aktive IDs setzen
+    activeFloorId = newFloorId;
+    activeRoomId = roomId;
+
+    // Editor aktualisieren
+    importToEditor();
+    renderEditorProjectSidebar();
+    updateEditorTitle();
+    saveProject();
+}
 
 
 function renderLeftSidebar() {
