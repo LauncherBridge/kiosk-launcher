@@ -6037,7 +6037,7 @@ function openRoomMenu(roomId, clickEvent) {
 function handleRoomMenuAction(roomId, action) {
     switch (action) {
         case "rename":
-            renameRoom(roomId);
+            startRoomRename(roomId);
             break;
 
         case "duplicate":
@@ -6054,18 +6054,66 @@ function handleRoomMenuAction(roomId, action) {
     }
 }
 
-function renameRoom(roomId) {
+function startRoomRename(roomId) {
+    const container = document.getElementById("editor-location-list");
+    if (!container) return;
+
     const room = project.rooms[roomId];
     if (!room) return;
 
-    const newName = prompt("Neuer Raumname:", room.name);
-    if (!newName) return;
+    // Raum-Element in der Sidebar finden
+    const entry = [...container.querySelectorAll(".room-entry")]
+        .find(e => e.querySelector(".room-name")?.textContent === room.name);
 
-    room.name = newName;
-    renderEditorProjectSidebar();
-    updateEditorTitle();
-    saveProject();
+    if (!entry) return;
+
+    const nameEl = entry.querySelector(".room-name");
+    if (!nameEl) return;
+
+    const oldName = room.name;
+
+    // Input erzeugen
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = oldName;
+    input.className = "room-rename-input";
+
+    nameEl.replaceWith(input);
+    input.focus();
+    input.select();
+
+    input.addEventListener("keydown", (ev) => {
+        if (ev.key === "Enter") {
+            ev.preventDefault();
+            finishRoomRename(roomId, input.value.trim());
+        }
+        if (ev.key === "Escape") {
+            ev.preventDefault();
+            finishRoomRename(roomId, oldName);
+        }
+    });
+
+    input.addEventListener("blur", () => {
+        finishRoomRename(roomId, input.value.trim());
+    });
 }
+function finishRoomRename(roomId, newName) {
+    if (!newName) {
+        renderEditorProjectSidebar();
+        return;
+    }
+
+    project.rooms[roomId].name = newName;
+
+    updateEditorTitle();
+    renderEditorProjectSidebar();
+
+    if (typeof saveProject === "function") {
+        saveProject();
+    }
+}
+
+
 function deleteRoom(roomId) {
     const room = project.rooms[roomId];
     if (!room) return;
