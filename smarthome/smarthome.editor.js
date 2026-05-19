@@ -126,7 +126,7 @@ function openContextMenu(x, y, items) {
         const el = document.createElement("div");
         el.className = "context-menu-item";
 
-        // ⭐ HIER: Zusatzklasse wie "delete" übernehmen
+        // Zusatzklasse wie "delete" übernehmen
         if (item.class) {
             el.classList.add(item.class);
         }
@@ -141,12 +141,29 @@ function openContextMenu(x, y, items) {
         contextMenuEl.appendChild(el);
     }
 
-    // Position setzen
-    contextMenuEl.style.left = x + "px";
-    contextMenuEl.style.top = y + "px";
+    // ⭐ 1) Menü leicht versetzt öffnen (nicht direkt unter der Maus)
+    const offsetX = 8;
+    const offsetY = 8;
+
+    contextMenuEl.style.left = (x + offsetX) + "px";
+    contextMenuEl.style.top = (y + offsetY) + "px";
 
     // Sichtbar machen
     contextMenuEl.classList.add("visible");
+
+    // ⭐ 2) Bildschirmgrenzen prüfen und korrigieren
+    const rect = contextMenuEl.getBoundingClientRect();
+    const padding = 10;
+
+    // Rechts über den Rand?
+    if (rect.right > window.innerWidth) {
+        contextMenuEl.style.left = (window.innerWidth - rect.width - padding) + "px";
+    }
+
+    // Unten über den Rand?
+    if (rect.bottom > window.innerHeight) {
+        contextMenuEl.style.top = (window.innerHeight - rect.height - padding) + "px";
+    }
 
     // Klick außerhalb → Menü schließen
     contextMenuOutsideHandler = (ev) => {
@@ -156,6 +173,7 @@ function openContextMenu(x, y, items) {
     };
     document.addEventListener("mousedown", contextMenuOutsideHandler);
 }
+
 
 
 /**
@@ -1605,6 +1623,7 @@ showContextMenu(x, y, type, index) {
 
     menu.style.left = left + "px";
     menu.style.top = top + "px";
+
 }
 ,
     
@@ -6157,6 +6176,12 @@ function applyRoomMove(roomId, newFloorId) {
     renderEditorProjectSidebar();
     updateEditorTitle();
     saveProject();
+}
+function closeMoveRoomPopup() {
+    const popup = document.getElementById("move-room-popup");
+    if (popup) {
+        popup.classList.add("hidden");
+    }
 }
 
 
