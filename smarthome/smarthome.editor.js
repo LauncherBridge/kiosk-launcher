@@ -6139,13 +6139,20 @@ function moveRoom(roomId) {
     list.innerHTML = "";
 
     Object.values(project.floors).forEach(floor => {
-        const btn = document.createElement("button");
-        btn.textContent = floor.name;
-
+    const btn = document.createElement("button");
+    btn.textContent = floor.name;
+    
+    // Aktuelle Etage → deaktivieren
+    if (floor.id === project.rooms[roomId].floorId) {
+        btn.classList.add("disabled-floor");
+        btn.disabled = true;
+    } else {
         btn.onclick = () => {
             applyRoomMove(roomId, floor.id);
             closeMoveRoomPopup();
         };
+    }
+
 
         list.appendChild(btn);
     });
