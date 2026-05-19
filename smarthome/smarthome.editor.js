@@ -6114,39 +6114,25 @@ function moveRoom(roomId) {
     const room = project.rooms[roomId];
     if (!room) return;
 
-    const floorIds = Object.keys(project.floors);
-    const names = floorIds.map(id => project.floors[id].name);
+    const popup = document.getElementById("move-room-popup");
+    const list = document.getElementById("move-room-floor-list");
 
-    const choice = prompt(
-        "Raum verschieben nach:\n" +
-        names.map((n, i) => `${i+1}) ${n}`).join("\n")
-    );
+    list.innerHTML = "";
 
-    const index = Number(choice) - 1;
-    if (index < 0 || index >= floorIds.length) return;
+    Object.values(project.floors).forEach(floor => {
+        const btn = document.createElement("button");
+        btn.textContent = floor.name;
 
-    const newFloorId = floorIds[index];
+        btn.onclick = () => {
+            applyRoomMove(roomId, floor.id);
+            closeMoveRoomPopup();
+        };
 
-    // aus alter Etage entfernen
-    const oldFloor = project.floors[room.floorId];
-    oldFloor.rooms = oldFloor.rooms.filter(id => id !== roomId);
+        list.appendChild(btn);
+    });
 
-    // in neue Etage einfügen
-    project.floors[newFloorId].rooms.push(roomId);
-
-    room.floorId = newFloorId;
-
-    activeFloorId = newFloorId;
-    activeRoomId = roomId;
-
-    importToEditor();
-    renderEditorProjectSidebar();
-    updateEditorTitle();
-    saveProject();
+    popup.classList.remove("hidden");
 }
-
-
-
 
 
 function renderLeftSidebar() {
