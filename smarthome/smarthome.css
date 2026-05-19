@@ -524,9 +524,9 @@ justify-content: space-between;
 }
 
 /* Räume = item */
-
 .room-entry {
-    padding: 8px;
+    /* Grundstil wie Sidebar-Item */
+    padding: 8px 10px;
     margin-top: 6px;
     background: rgba(255,255,255,0.06);
     border: 1px solid rgba(255,255,255,0.12);
@@ -539,11 +539,24 @@ justify-content: space-between;
     position: relative;
     z-index: 5;
 
-    /* NEU: wie floor-header → 3-Punkt rechts */
+    /* Layout wie floor-header → 3-Punkt rechts */
     display: flex;
     justify-content: space-between;
     align-items: center;
+
+    /* Einrückung ohne Überbreite */
+    padding-left: 18px;       /* optische Einrückung */
+    margin-left: 0;           /* kein echtes Verschieben */
+    width: 100%;              /* verhindert horizontales Scrollen */
+    box-sizing: border-box;   /* verhindert Überlaufen */
 }
+
+/* Abstand zwischen Räumen */
+.room-entry + .room-entry {
+    margin-top: 4px;
+}
+
+
 .room-name {
     flex: 1 1 auto;
     white-space: nowrap;
@@ -572,20 +585,7 @@ justify-content: space-between;
    opacity: 1;
     color: #fff;
 }
-.room-entry {
-    padding: 8px 10px; /* etwas breiter, wirkt hochwertiger */
-    margin-top: 6px;
-}
-.room-entry + .room-entry {
-    margin-top: 4px;
-}
 
-.room-entry {
-    padding-left: 18px;       /* optische Einrückung */
-    margin-left: 0;           /* kein echtes Verschieben */
-    width: 100%;              /* kein Überlaufen */
-    box-sizing: border-box;   /* verhindert horizontales Scrollen */
-}
 
 
 /* Einklappbare Etagen */
