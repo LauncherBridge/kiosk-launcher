@@ -1684,6 +1684,7 @@ addContextButton(label, fn, closeMenu = false) {
             const dy = mouseY - this.panStartY;
 
             if (Math.hypot(dx, dy) > 6) {
+                        console.log("[onMove] PAN START, dx/dy =", dx, dy);
                 this.isPanning = true;
                 this.lastPanX = mouseX;
                 this.lastPanY = mouseY;
@@ -2298,6 +2299,7 @@ onDown(e) {
     // ⭐ PAN-Kandidat
     // ------------------------------------------------------------
     if (hit.type === "empty" || hit.type === "wall") {
+            console.log("[onDown] PAN-Kandidat, hit.type =", hit.type);
         this.isPanCandidate = true;
         this.panStartX = mouseX;
         this.panStartY = mouseY;
