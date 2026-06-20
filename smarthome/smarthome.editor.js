@@ -4865,21 +4865,12 @@ room.doors = RoomDesigner.doors.map(d => {
 
 
 
-    // Fenster
-    // 1. Alte Fenster dieses Raums aus project.windows entfernen
-    for (const id of room.windows) {
-        delete project.windows[id];
-    }
-    
-    // 2. Neue Fenster eintragen
-    room.windows = [];
-    
-    for (const w of RoomDesigner.windows) {
-        if (!w.id) w.id = createId("window");
-    
-        project.windows[w.id] = { ...w };
-        room.windows.push(w.id);
-    }
+// Fenster speichern (korrekt)
+room.windows = RoomDesigner.windows.map(w => {
+    if (!w.id) w.id = createId("window");
+    return { ...w };
+});
+
 
 
     project.meta.modified = Date.now();
