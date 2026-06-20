@@ -1959,6 +1959,10 @@ onDown(e) {
     const worldX = (mouseX / this.zoom) - this.offsetX;
     const worldY = (mouseY / this.zoom) - this.offsetY;
 
+    // ⭐ WICHTIGER FIX: Pan-Zustände immer zu Beginn zurücksetzen
+    this.isPanCandidate = false;
+    this.isPanning = false;
+
     // Rechtsklick → Menü schließen
     if (e.button === 2) {
         this.hideContextMenu();
@@ -2294,8 +2298,7 @@ onDown(e) {
         this.panStartX = mouseX;
         this.panStartY = mouseY;
     }
-}
-,
+},
 
 
 onUp(e) {
