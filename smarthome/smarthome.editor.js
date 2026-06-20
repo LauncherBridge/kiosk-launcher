@@ -950,7 +950,7 @@ function loadProject(id) {
         Object.assign(project, data);
 
         // IDs normalisieren (aber NICHT speichern!)
-        normalizeProjectIds();
+  //      normalizeProjectIds();
 
         // Aktive Etage setzen
         const floorIds = Object.keys(project.floors);
