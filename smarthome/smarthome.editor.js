@@ -2253,6 +2253,10 @@ onDown(e) {
     // ⭐ Kontextmenü für Punkte
     // ------------------------------------------------------------
     if (hit.type === "point") {
+        // ⭐ Objekt getroffen → Pan abbrechen
+        this.isPanCandidate = false;
+        this.isPanning = false;
+        
         this._pendingContext = { x: worldX, y: worldY, type: "point", index: hit.index };
         return;
     }
