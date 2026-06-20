@@ -4857,21 +4857,12 @@ exportFromEditor() {
     room.points = RoomDesigner.points.map(p => ({ x: p.x, y: p.y }));
     room.isClosed = RoomDesigner.isClosed;
 
-    // Türen
-    // 1. Alle Türen des aktuellen Raums aus project.doors entfernen
-    for (const id of room.doors) {
-        delete project.doors[id];
-    }
-    
-    // 2. Neue Türen des aktuellen Raums eintragen
-    room.doors = [];
-    
-    for (const d of this.doors) {
-        if (!d.id) d.id = createId("door");
-    
-        project.doors[d.id] = { ...d };
-        room.doors.push(d.id);
-    }
+ // Türen speichern (korrekt)
+room.doors = RoomDesigner.doors.map(d => {
+    if (!d.id) d.id = createId("door");
+    return { ...d };
+});
+
 
 
     // Fenster
