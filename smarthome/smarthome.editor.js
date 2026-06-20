@@ -3101,86 +3101,83 @@ this._roomCenterBeforeMove = this._computeRoomCenter();
     // --------------------------------------------------
     // Wandlängen
     // --------------------------------------------------
-    drawWallLengths() {
-        if (!this.isDragging || !this.selectedPoint) return;
+drawWallLengths() {
+    if (!this.isDragging || !this.selectedPoint) return;
 
-        const ctx = this.ctx;
-        ctx.font = "14px sans-serif";
-        ctx.fillStyle = "white";
-        ctx.strokeStyle = "rgba(0,0,0,0.7)";
-        ctx.lineWidth = 3;
+    const ctx = this.ctx;
+    ctx.font = "14px sans-serif";
+    ctx.fillStyle = "white";
+    ctx.strokeStyle = "rgba(0,0,0,0.7)";
+    ctx.lineWidth = 3;
 
-        for (const w of this.walls) {
-            const isEnd =
-                (w.x1 === this.selectedPoint.x && w.y1 === this.selectedPoint.y) ||
-                (w.x2 === this.selectedPoint.x && w.y2 === this.selectedPoint.y);
+    for (const w of this.walls) {
+        const isEnd =
+            (w.x1 === this.selectedPoint.x && w.y1 === this.selectedPoint.y) ||
+            (w.x2 === this.selectedPoint.x && w.y2 === this.selectedPoint.y);
 
-            if (!isEnd) continue;
+        if (!isEnd) continue;
 
-            const dx = w.x2 - w.x1;
-            const dy = w.y2 - w.y1;
-            const len = Math.sqrt(dx * dx + dy * dy);
-            if (len === 0) continue;
+        const dx = w.x2 - w.x1;
+        const dy = w.y2 - w.y1;
+        const len = Math.sqrt(dx * dx + dy * dy);
+        if (len === 0) continue;
 
-            const meters = len / this.PIXELS_PER_METER;
-            const text = meters.toFixed(2) + " m";
+        const meters = len / this.PIXELS_PER_METER;
+        const text = meters.toFixed(2) + " m";
 
-            const mx = (w.x1 + w.x2) / 2;
-            const my = (w.y1 + w.y2) / 2;
+        const mx = (w.x1 + w.x2) / 2;
+        const my = (w.y1 + w.y2) / 2;
 
-             // Text messen
-            const metrics = ctx.measureText(text);
-            const w = metrics.width;
-            const h = 14;
-            
-            // Kollisionsfreie Position finden
-            let box = this.findFreeLabelPosition(mx, my - 10, w, h);
-            
-            // Text zeichnen
-            ctx.strokeText(text, box.x, box.y);
-            ctx.fillText(text, box.x, box.y);
+        // Text messen
+        const metrics = ctx.measureText(text);
+        const tw = metrics.width;   // ⭐ FIX: nicht "w"
+        const h = 14;
 
-        }
-    },
+        // Kollisionsfreie Position finden
+        let box = this.findFreeLabelPosition(mx, my - 10, tw, h);
+
+        // Text zeichnen
+        ctx.strokeText(text, box.x, box.y);
+        ctx.fillText(text, box.x, box.y);
+    }
+},
+
 
     // --------------------------------------------------
     // Winkelanzeige
     // --------------------------------------------------
-    drawAngleAtPoint(P, A, B) {
-        const ctx = this.ctx;
+drawAngleAtPoint(P, A, B) {
+    const ctx = this.ctx;
 
-        const v1x = A.x - P.x;
-        const v1y = A.y - P.y;
-        const v2x = B.x - P.x;
-        const v2y = B.y - P.y;
+    const v1x = A.x - P.x;
+    const v1y = A.y - P.y;
+    const v2x = B.x - P.x;
+    const v2y = B.y - P.y;
 
-        const dot = v1x * v2x + v1y * v2y;
-        const len1 = Math.sqrt(v1x*v1x + v1y*v1y);
-        const len2 = Math.sqrt(v2x*v2x + v2y*v2y);
+    const dot = v1x * v2x + v1y * v2y;
+    const len1 = Math.sqrt(v1x*v1x + v1y*v1y);
+    const len2 = Math.sqrt(v2x*v2x + v2y*v2y);
 
-        if (len1 === 0 || len2 === 0) return;
+    if (len1 === 0 || len2 === 0) return;
 
-        const angle = Math.acos(dot / (len1 * len2));
-        const deg = (angle * 180 / Math.PI).toFixed(1);
+    const angle = Math.acos(dot / (len1 * len2));
+    const deg = (angle * 180 / Math.PI).toFixed(1);
 
-        ctx.font = "14px sans-serif";
-        ctx.fillStyle = "white";
-        ctx.strokeStyle = "rgba(0,0,0,0.7)";
-        ctx.lineWidth = 3;
+    ctx.font = "14px sans-serif";
+    ctx.fillStyle = "white";
+    ctx.strokeStyle = "rgba(0,0,0,0.7)";
+    ctx.lineWidth = 3;
 
-        const text = deg + "°";
-        const metrics = ctx.measureText(text);
-        const w = metrics.width;
-        const h = 14;
-        
-        // Kollisionsfreie Position finden
-        let box = this.findFreeLabelPosition(P.x + 12, P.y - 12, w, h);
-        
-        // Text zeichnen
-        ctx.strokeText(text, box.x, box.y);
-        ctx.fillText(text, box.x, box.y);
+    const text = deg + "°";
+    const metrics = ctx.measureText(text);
+    const tw = metrics.width;   // ⭐ konsistent
+    const h = 14;
 
-    },
+    let box = this.findFreeLabelPosition(P.x + 12, P.y - 12, tw, h);
+
+    ctx.strokeText(text, box.x, box.y);
+    ctx.fillText(text, box.x, box.y);
+},
 
     // --------------------------------------------------
     // Türen zeichnen (alte Darstellung)
