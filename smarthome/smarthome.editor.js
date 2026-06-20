@@ -1867,7 +1867,7 @@ if (d.type === "dachluke") {
             this.hoverTarget = hit;
 
             if (hit.type === "point") {
-                this.canvas.style.cursor = "pointer";   // Punkt anklickbar
+                this.canvas.style.cursor = "grab";   // Punkt anklickbar
             } 
             else if (hit.type === "door" || hit.type === "window") {
                 this.canvas.style.cursor = "grab";      // Tür/Fenster greifbar
