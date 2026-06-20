@@ -2902,7 +2902,8 @@ this._roomCenterBeforeMove = this._computeRoomCenter();
     render() {
         const ctx = this.ctx;
         if (!ctx || !this.canvas) return;
-
+        
+        this.drawnLabels = [];
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         ctx.save();
@@ -2948,6 +2949,31 @@ this._roomCenterBeforeMove = this._computeRoomCenter();
 
         // Hover-Kreuz im Screen-Space
         this.drawHoverCross();
+    },
+
+    checkCollision(a, b) {
+        return !(
+            a.x + a.w < b.x ||
+            a.x > b.x + b.w ||
+            a.y + a.h < b.y ||
+            a.y > b.y + b.h
+        );
+    },
+    findFreeLabelPosition(x, y, w, h) {
+        let box = { x, y, w, h };
+    
+        // Prüfe gegen alle bereits gezeichneten Labels
+        for (const other of this.drawnLabels) {
+            if (this.checkCollision(box, other)) {
+                // Wenn Kollision → Label leicht nach unten verschieben
+                box.y += h + 4;
+            }
+        }
+    
+        // Box registrieren, damit spätere Labels sie berücksichtigen
+        this.drawnLabels.push(box);
+    
+        return box;
     },
 
     drawGrid() {
@@ -3093,13 +3119,18 @@ this._roomCenterBeforeMove = this._computeRoomCenter();
             const mx = (w.x1 + w.x2) / 2;
             const my = (w.y1 + w.y2) / 2;
 
-            ctx.save();
-            ctx.translate(mx, my - 10);
+             // Text messen
+            const metrics = ctx.measureText(text);
+            const w = metrics.width;
+            const h = 14;
+            
+            // Kollisionsfreie Position finden
+            let box = this.findFreeLabelPosition(mx, my - 10, w, h);
+            
+            // Text zeichnen
+            ctx.strokeText(text, box.x, box.y);
+            ctx.fillText(text, box.x, box.y);
 
-            ctx.strokeText(text, 0, 0);
-            ctx.fillText(text, 0, 0);
-
-            ctx.restore();
         }
     },
 
@@ -3128,8 +3159,18 @@ this._roomCenterBeforeMove = this._computeRoomCenter();
         ctx.strokeStyle = "rgba(0,0,0,0.7)";
         ctx.lineWidth = 3;
 
-        ctx.strokeText(deg + "°", P.x + 12, P.y - 12);
-        ctx.fillText(deg + "°", P.x + 12, P.y - 12);
+        const text = deg + "°";
+        const metrics = ctx.measureText(text);
+        const w = metrics.width;
+        const h = 14;
+        
+        // Kollisionsfreie Position finden
+        let box = this.findFreeLabelPosition(P.x + 12, P.y - 12, w, h);
+        
+        // Text zeichnen
+        ctx.strokeText(text, box.x, box.y);
+        ctx.fillText(text, box.x, box.y);
+
     },
 
     // --------------------------------------------------
