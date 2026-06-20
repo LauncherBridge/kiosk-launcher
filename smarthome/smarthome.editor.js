@@ -1101,10 +1101,12 @@ function importToEditor() {
         RoomDesigner.points = (room.points || []).map(p => ({ x: p.x, y: p.y }));
         RoomDesigner.isClosed = room.isClosed || false;
 
-        RoomDesigner.doors = (room.doors || [])
-            .map(id => project.doors?.[id])
-            .filter(Boolean)
-            .map(d => ({ ...d }));
+        // RoomDesigner.doors = (room.doors || [])
+        //    .map(id => project.doors?.[id])
+        //    .filter(Boolean)
+        //    .map(d => ({ ...d }));
+        RoomDesigner.doors = (room.doors || []).map(d => ({ ...d }));
+
 
         RoomDesigner.windows = (room.windows || [])
             .map(id => project.windows?.[id])
