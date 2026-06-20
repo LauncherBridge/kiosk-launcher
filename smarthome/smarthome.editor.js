@@ -6104,11 +6104,9 @@ function deleteRoom(roomId) {
 
     if (!confirm("Diesen Raum und alle Objekte darin löschen?")) return;
 
-    // Türen löschen
-    room.doors.forEach(did => delete project.doors[did]);
-
-    // Fenster löschen
-    room.windows.forEach(wid => delete project.windows[wid]);
+    // Türen und Fenster einfach verwerfen (sie liegen im Raum selbst)
+    room.doors = [];
+    room.windows = [];
 
     // Raum aus Etage entfernen
     const floor = project.floors[room.floorId];
@@ -6134,6 +6132,7 @@ function deleteRoom(roomId) {
     updateEditorTitle();
     saveProject();
 }
+
 function duplicateRoom(roomId) {
     const room = project.rooms[roomId];
     if (!room) return;
@@ -6145,15 +6144,27 @@ function duplicateRoom(roomId) {
         name: room.name + " (Kopie)",
         floorId: room.floorId,
         points: room.points.map(p => ({ x: p.x, y: p.y })),
-        doors: [],
-        windows: [],
-        isClosed: room.isClosed
+        isClosed: room.isClosed,
+
+        // ⭐ Fenster kopieren
+        windows: room.windows.map(w => ({
+            ...structuredClone(w),
+            id: createId("window")
+        })),
+
+        // ⭐ Türen kopieren
+        doors: room.doors.map(d => ({
+            ...structuredClone(d),
+            id: createId("door")
+        }))
     };
 
     project.rooms[newId] = newRoom;
 
+    // In Etage eintragen
     project.floors[room.floorId].rooms.push(newId);
 
+    // Aktivieren
     activeRoomId = newId;
     importToEditor();
 
@@ -6161,6 +6172,7 @@ function duplicateRoom(roomId) {
     updateEditorTitle();
     saveProject();
 }
+
 
 function moveRoom(roomId) {
     const room = project.rooms[roomId];
