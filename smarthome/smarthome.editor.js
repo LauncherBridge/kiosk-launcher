@@ -775,7 +775,9 @@ function switchProject() {
     const list = document.getElementById("project-list");
     const loadBtn = document.getElementById("project-load-btn");
     const cancelBtn = document.getElementById("project-cancel-btn");
-const canvasWrapper = document.getElementById("roomdesigner");
+
+    // Canvas für Fade-Effekt
+    const canvasWrapper = document.getElementById("roomdesigner");
 
     // Liste füllen
     list.innerHTML = "";
@@ -798,15 +800,19 @@ const canvasWrapper = document.getElementById("roomdesigner");
             return;
         }
 
-        // ⭐ WICHTIG: globales Projekt aktualisieren
-        Object.assign(project, loaded);
+        // ⭐ NICHT modal.classList.add("hidden") — sonst flackert es!
 
-        modal.classList.add("hidden");
-
-        // Fade-Out
+        // ⭐ Fade-Out starten (Canvas abdunkeln)
         canvasWrapper.style.opacity = "0";
 
+        // ⭐ Warten bis Fade-Out fertig ist
         setTimeout(() => {
+
+            // Jetzt erst Modal schließen
+            modal.classList.add("hidden");
+
+            // ⭐ Projektinhalt überschreiben (const!)
+            Object.assign(project, loaded);
 
             // 1) Aktive IDs setzen
             const floorIds = Object.keys(project.floors || {});
@@ -839,10 +845,10 @@ const canvasWrapper = document.getElementById("roomdesigner");
             // 6) Rendern
             RoomDesigner.render();
 
-            // Fade-In
+            // ⭐ Fade-In (Canvas wieder hell)
             canvasWrapper.style.opacity = "1";
 
-        }, 150);
+        }, 150); // Dauer des Fade-Out
     };
 
     cancelBtn.onclick = () => {
@@ -856,7 +862,6 @@ const canvasWrapper = document.getElementById("roomdesigner");
         }
     };
 }
-
 
 
 
