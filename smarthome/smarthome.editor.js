@@ -775,17 +775,17 @@ function switchProject() {
     const list = document.getElementById("project-list");
     const loadBtn = document.getElementById("project-load-btn");
     const cancelBtn = document.getElementById("project-cancel-btn");
+    const canvasWrapper = document.getElementById("canvas-wrapper"); // ⭐ Für Animation
 
-    // Liste füllen (ID als value, Name als Anzeige)
+    // Liste füllen
     list.innerHTML = "";
     projects.forEach(p => {
         const opt = document.createElement("option");
-        opt.value = p.id;        // ID
-        opt.textContent = p.name; // Name
+        opt.value = p.id;
+        opt.textContent = p.name;
         list.appendChild(opt);
     });
 
-    // Modal anzeigen
     modal.classList.remove("hidden");
 
     // Laden
@@ -799,56 +799,51 @@ function switchProject() {
             return;
         }
 
-        // Modal schließen
         modal.classList.add("hidden");
 
-        // ---------------------------------------------------------
-        // ⭐ Bulletproof Reset nach Projektwechsel
-        // ---------------------------------------------------------
+        // ⭐ Fade-Out Animation
+        canvasWrapper.style.opacity = "0";
+        setTimeout(() => {
 
-        // 1) Aktive IDs zurücksetzen
-        activeFloorId = null;
-        activeRoomId = null;
+            // ---------------------------------------------------------
+            // ⭐ Saubere, stabile Projektwechsel-Logik
+            // ---------------------------------------------------------
 
-        // 2) Falls Etagen existieren → erste Etage aktivieren
-        const floorIds = Object.keys(project.floors || {});
-        if (floorIds.length > 0) {
-            activeFloorId = floorIds[0];
-        }
+            // 1) Aktive IDs setzen
+            const floorIds = Object.keys(project.floors || {});
+            activeFloorId = floorIds[0] || null;
 
-        // 3) Falls Räume existieren → ersten Raum aktivieren
-        const roomIds = Object.keys(project.rooms || {});
-        if (roomIds.length > 0) {
-            activeRoomId = roomIds[0];
-        }
+            const roomIds = Object.keys(project.rooms || {});
+            activeRoomId = roomIds[0] || null;
 
-        // 4) SmartHome-Daten NUR aus dem Projekt generieren
-        SmartHomeData = generateSmartHomeDataFromProject();
+            // 2) SmartHome-Daten neu generieren
+            SmartHomeData = generateSmartHomeDataFromProject();
+            SmartHomeData.structure = {
+                activeFloor: activeFloorId,
+                activeRoom: activeRoomId
+            };
 
-        // 5) SmartHomeData.structure zurücksetzen
-        SmartHomeData.structure = {
-            activeFloor: activeFloorId,
-            activeRoom: activeRoomId
-        };
-
-        // 6) Editor-Raum laden (WICHTIG: vor importToEditor!)
-        if (activeRoomId && project.rooms?.[activeRoomId]) {
-            RoomDesigner.loadRoom(activeRoomId);
-        } else {
-            if (RoomDesigner && typeof RoomDesigner.clear === "function") {
+            // 3) Raum laden (WICHTIG: vor importToEditor)
+            if (activeRoomId && project.rooms?.[activeRoomId]) {
+                RoomDesigner.loadRoom(activeRoomId);
+            } else {
                 RoomDesigner.clear();
             }
-        }
 
-        // 7) Editor neu initialisieren (JETZT korrekt!)
-        importToEditor();
+            // 4) Editor-Daten übernehmen
+            importToEditor();
 
-        // 8) Sidebar aktualisieren
-        renderEditorProjectSidebar();
-        updateEditorTitle();
+            // 5) Sidebar + Titel aktualisieren
+            renderEditorProjectSidebar();
+            updateEditorTitle();
 
-        // 9) Rendern
-        RoomDesigner.render();
+            // 6) Rendern
+            RoomDesigner.render();
+
+            // ⭐ Fade-In Animation
+            canvasWrapper.style.opacity = "1";
+
+        }, 150); // Dauer des Fade-Out
     };
 
     // Abbrechen
@@ -864,6 +859,7 @@ function switchProject() {
         }
     };
 }
+
 
 
 function switchFloor(floorId) {
