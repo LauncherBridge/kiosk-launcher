@@ -799,7 +799,7 @@ function switchProject() {
         }
 
         // ⭐ WICHTIG: globales Projekt aktualisieren
-        project = loaded;
+        Object.assign(project, loaded);
 
         modal.classList.add("hidden");
 
