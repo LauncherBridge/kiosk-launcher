@@ -775,7 +775,7 @@ function switchProject() {
     const list = document.getElementById("project-list");
     const loadBtn = document.getElementById("project-load-btn");
     const cancelBtn = document.getElementById("project-cancel-btn");
-    const canvasWrapper = document.getElementById("canvas-wrapper"); // ⭐ Für Animation
+    const canvasWrapper = document.getElementById("canvas-wrapper");
 
     // Liste füllen
     list.innerHTML = "";
@@ -788,7 +788,6 @@ function switchProject() {
 
     modal.classList.remove("hidden");
 
-    // Laden
     loadBtn.onclick = () => {
         const id = list.value;
         if (!id) return;
@@ -799,15 +798,15 @@ function switchProject() {
             return;
         }
 
+        // ⭐ WICHTIG: globales Projekt aktualisieren
+        project = loaded;
+
         modal.classList.add("hidden");
 
-        // ⭐ Fade-Out Animation
+        // Fade-Out
         canvasWrapper.style.opacity = "0";
-        setTimeout(() => {
 
-            // ---------------------------------------------------------
-            // ⭐ Saubere, stabile Projektwechsel-Logik
-            // ---------------------------------------------------------
+        setTimeout(() => {
 
             // 1) Aktive IDs setzen
             const floorIds = Object.keys(project.floors || {});
@@ -823,7 +822,7 @@ function switchProject() {
                 activeRoom: activeRoomId
             };
 
-            // 3) Raum laden (WICHTIG: vor importToEditor)
+            // 3) Raum laden
             if (activeRoomId && project.rooms?.[activeRoomId]) {
                 RoomDesigner.loadRoom(activeRoomId);
             } else {
@@ -840,18 +839,16 @@ function switchProject() {
             // 6) Rendern
             RoomDesigner.render();
 
-            // ⭐ Fade-In Animation
+            // Fade-In
             canvasWrapper.style.opacity = "1";
 
-        }, 150); // Dauer des Fade-Out
+        }, 150);
     };
 
-    // Abbrechen
     cancelBtn.onclick = () => {
         modal.classList.add("hidden");
     };
 
-    // ESC schließt
     document.onkeydown = (ev) => {
         if (ev.key === "Escape") {
             modal.classList.add("hidden");
@@ -859,6 +856,7 @@ function switchProject() {
         }
     };
 }
+
 
 
 
