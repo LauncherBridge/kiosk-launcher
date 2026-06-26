@@ -775,7 +775,7 @@ function switchProject() {
     const list = document.getElementById("project-list");
     const loadBtn = document.getElementById("project-load-btn");
     const cancelBtn = document.getElementById("project-cancel-btn");
-    const canvasWrapper = document.getElementById("canvas-wrapper");
+const canvasWrapper = document.getElementById("roomdesigner");
 
     // Liste füllen
     list.innerHTML = "";
