@@ -1119,3 +1119,8 @@ if (floor.id === project.rooms[roomId].floorId) {
     backdrop-filter: blur(6px) !important;
     box-shadow: 0 0 20px rgba(0,0,0,0.4) !important;
 }
+
+#roomdesigner {
+    transition: opacity 0.25s ease;
+}
+
