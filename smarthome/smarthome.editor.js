@@ -5090,45 +5090,66 @@ room.windows = RoomDesigner.windows.map(w => {
 }; // Ende RoomDesigner
 
 RoomDesigner.loadRoom = function(roomId) {
-    const room = project.rooms?.[roomId];
+    const canvas = document.getElementById("roomdesigner");
 
-    if (!room) {
-        console.warn("[RoomDesigner.loadRoom] Raum nicht gefunden:", roomId);
+    // ⭐ Fade-Out starten
+    canvas.style.opacity = "0";
 
-        activeRoomId = null;
+    // ⭐ Warten bis Fade-Out fertig ist
+    setTimeout(() => {
 
-        RoomDesigner.points = [];
-        RoomDesigner.doors = [];
-        RoomDesigner.windows = [];
-        RoomDesigner.isClosed = false;
+        // ⭐ Crossfade: kurz schwarz bleiben
+        setTimeout(() => {
 
-        RoomDesigner.updateWalls();
-        RoomDesigner.render();
-        return;
-    }
+            const room = project.rooms?.[roomId];
 
-    RoomDesigner.points = Array.isArray(room.points)
-        ? room.points.map(p => ({ x: p.x, y: p.y }))
-        : [];
+            if (!room) {
+                console.warn("[RoomDesigner.loadRoom] Raum nicht gefunden:", roomId);
 
-    RoomDesigner.doors = Array.isArray(room.doors)
-        ? room.doors
-            .map(id => project.doors?.[id])
-            .filter(Boolean)
-            .map(d => ({ ...d }))
-        : [];
+                activeRoomId = null;
 
-    RoomDesigner.windows = Array.isArray(room.windows)
-        ? room.windows
-            .map(id => project.windows?.[id])
-            .filter(Boolean)
-            .map(w => ({ ...w }))
-        : [];
+                RoomDesigner.points = [];
+                RoomDesigner.doors = [];
+                RoomDesigner.windows = [];
+                RoomDesigner.isClosed = false;
 
-    RoomDesigner.isClosed = !!room.isClosed;
+                RoomDesigner.updateWalls();
+                RoomDesigner.render();
 
-    RoomDesigner.updateWalls();
-    RoomDesigner.render();
+                // ⭐ Fade-In
+                canvas.style.opacity = "1";
+                return;
+            }
+
+            RoomDesigner.points = Array.isArray(room.points)
+                ? room.points.map(p => ({ x: p.x, y: p.y }))
+                : [];
+
+            RoomDesigner.doors = Array.isArray(room.doors)
+                ? room.doors
+                    .map(id => project.doors?.[id])
+                    .filter(Boolean)
+                    .map(d => ({ ...d }))
+                : [];
+
+            RoomDesigner.windows = Array.isArray(room.windows)
+                ? room.windows
+                    .map(id => project.windows?.[id])
+                    .filter(Boolean)
+                    .map(w => ({ ...w }))
+                : [];
+
+            RoomDesigner.isClosed = !!room.isClosed;
+
+            RoomDesigner.updateWalls();
+            RoomDesigner.render();
+
+            // ⭐ Fade-In
+            canvas.style.opacity = "1";
+
+        }, 80); // Crossfade-Delay
+
+    }, 150); // Fade-Out Dauer
 };
 
 // --------------------------------------------------
