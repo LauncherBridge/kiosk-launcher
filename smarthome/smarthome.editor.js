@@ -800,55 +800,61 @@ function switchProject() {
             return;
         }
 
-        // ⭐ NICHT modal.classList.add("hidden") — sonst flackert es!
+        // ⭐ NICHT sofort schließen – sonst flackert es
+        // modal.classList.add("hidden");
 
-        // ⭐ Fade-Out starten (Canvas abdunkeln)
+        // ⭐ Fade-Out starten
         canvasWrapper.style.opacity = "0";
 
-        // ⭐ Warten bis Fade-Out fertig ist
+        // ⭐ Warten bis Fade-Out fertig ist (Canvas ist jetzt dunkel)
         setTimeout(() => {
 
-            // Jetzt erst Modal schließen
-            modal.classList.add("hidden");
+            // ⭐ Crossfade: Canvas bleibt kurz schwarz
+            setTimeout(() => {
 
-            // ⭐ Projektinhalt überschreiben (const!)
-            Object.assign(project, loaded);
+                // Jetzt erst Modal schließen
+                modal.classList.add("hidden");
 
-            // 1) Aktive IDs setzen
-            const floorIds = Object.keys(project.floors || {});
-            activeFloorId = floorIds[0] || null;
+                // ⭐ Projektinhalt überschreiben (const!)
+                Object.assign(project, loaded);
 
-            const roomIds = Object.keys(project.rooms || {});
-            activeRoomId = roomIds[0] || null;
+                // 1) Aktive IDs setzen
+                const floorIds = Object.keys(project.floors || {});
+                activeFloorId = floorIds[0] || null;
 
-            // 2) SmartHome-Daten neu generieren
-            SmartHomeData = generateSmartHomeDataFromProject();
-            SmartHomeData.structure = {
-                activeFloor: activeFloorId,
-                activeRoom: activeRoomId
-            };
+                const roomIds = Object.keys(project.rooms || {});
+                activeRoomId = roomIds[0] || null;
 
-            // 3) Raum laden
-            if (activeRoomId && project.rooms?.[activeRoomId]) {
-                RoomDesigner.loadRoom(activeRoomId);
-            } else {
-                RoomDesigner.clear();
-            }
+                // 2) SmartHome-Daten neu generieren
+                SmartHomeData = generateSmartHomeDataFromProject();
+                SmartHomeData.structure = {
+                    activeFloor: activeFloorId,
+                    activeRoom: activeRoomId
+                };
 
-            // 4) Editor-Daten übernehmen
-            importToEditor();
+                // 3) Raum laden
+                if (activeRoomId && project.rooms?.[activeRoomId]) {
+                    RoomDesigner.loadRoom(activeRoomId);
+                } else {
+                    RoomDesigner.clear();
+                }
 
-            // 5) Sidebar + Titel aktualisieren
-            renderEditorProjectSidebar();
-            updateEditorTitle();
+                // 4) Editor-Daten übernehmen
+                importToEditor();
 
-            // 6) Rendern
-            RoomDesigner.render();
+                // 5) Sidebar + Titel aktualisieren
+                renderEditorProjectSidebar();
+                updateEditorTitle();
 
-            // ⭐ Fade-In (Canvas wieder hell)
-            canvasWrapper.style.opacity = "1";
+                // 6) Rendern
+                RoomDesigner.render();
 
-        }, 150); // Dauer des Fade-Out
+                // ⭐ Fade-In
+                canvasWrapper.style.opacity = "1";
+
+            }, 80); // ⭐ Crossfade-Delay
+
+        }, 150); // Fade-Out Dauer
     };
 
     cancelBtn.onclick = () => {
@@ -862,6 +868,7 @@ function switchProject() {
         }
     };
 }
+
 
 
 
