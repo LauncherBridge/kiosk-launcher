@@ -1121,6 +1121,6 @@ if (floor.id === project.rooms[roomId].floorId) {
 }
 
 #roomdesigner {
-    transition: opacity 0.25s ease;
+    transition: opacity 0.55s ease;
 }
 
