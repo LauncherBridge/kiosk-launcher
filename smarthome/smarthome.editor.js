@@ -2982,34 +2982,34 @@ applyTransform() {
     },
 
 
-    centerView() {
-        const canvas = document.getElementById("roomdesigner");
-        if (!canvas) return;
+centerView() {
+    const canvas = this.canvas;
+    if (!canvas || !this.points?.length) return;
 
-        if (!this.points || this.points.length === 0) {
-            return;
-        }
+    const xs = this.points.map(p => p.x);
+    const ys = this.points.map(p => p.y);
 
-        const xs = this.points.map(p => p.x);
-        const ys = this.points.map(p => p.y);
+    const minX = Math.min(...xs);
+    const maxX = Math.max(...xs);
+    const minY = Math.min(...ys);
+    const maxY = Math.max(...ys);
 
-        const minX = Math.min(...xs);
-        const maxX = Math.max(...xs);
-        const minY = Math.min(...ys);
-        const maxY = Math.max(...ys);
+    const roomWidth = maxX - minX;
+    const roomHeight = maxY - minY;
 
-        const roomWidth = maxX - minX;
-        const roomHeight = maxY - minY;
+    const roomCenterX = minX + roomWidth / 2;
+    const roomCenterY = minY + roomHeight / 2;
 
-        const roomCenterX = minX + roomWidth / 2;
-        const roomCenterY = minY + roomHeight / 2;
+    const canvasCenterX = canvas.width / 2;
+    const canvasCenterY = canvas.height / 2;
 
-        const canvasCenterX = canvas.width / 2;
-        const canvasCenterY = canvas.height / 2;
-
-        this.offsetX = canvasCenterX - roomCenterX;
-        this.offsetY = canvasCenterY - roomCenterY;
-    },
+    // ✅ screen = world * zoom + offset
+    // wir wollen: roomCenterScreen == canvasCenter
+    // → offset = canvasCenter - roomCenter * zoom
+    this.offsetX = canvasCenterX - roomCenterX * this.zoom;
+    this.offsetY = canvasCenterY - roomCenterY * this.zoom;
+}
+,
 
 
 
