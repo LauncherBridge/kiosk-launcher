@@ -781,12 +781,20 @@ function switchProject() {
 
     // Liste füllen
     list.innerHTML = "";
-    projects.forEach(p => {
-        const opt = document.createElement("option");
-        opt.value = p.id;
-        opt.textContent = p.name;
-        list.appendChild(opt);
-    });
+projects.forEach(p => {
+    const opt = document.createElement("option");
+    opt.value = p.id;
+    opt.textContent = p.name;
+
+    // ⭐ Aktuelles Projekt markieren
+    if (p.id === project.id) {
+        opt.classList.add("current-project");
+        opt.disabled = true; // optional: nicht auswählbar
+    }
+
+    list.appendChild(opt);
+});
+
 
     modal.classList.remove("hidden");
 
