@@ -2976,6 +2976,44 @@ this._roomCenterBeforeMove = this._computeRoomCenter();
         this.drawHoverCross();
     },
 
+
+RoomDesigner.centerView = function() {
+    const canvas = document.getElementById("roomdesigner");
+    if (!canvas) return;
+
+    // Falls der Raum leer ist → nichts zentrieren
+    if (!RoomDesigner.points || RoomDesigner.points.length === 0) {
+        return;
+    }
+
+    // Bounding Box berechnen
+    const xs = RoomDesigner.points.map(p => p.x);
+    const ys = RoomDesigner.points.map(p => p.y);
+
+    const minX = Math.min(...xs);
+    const maxX = Math.max(...xs);
+    const minY = Math.min(...ys);
+    const maxY = Math.max(...ys);
+
+    const roomWidth = maxX - minX;
+    const roomHeight = maxY - minY;
+
+    // Mittelpunkt des Raums
+    const roomCenterX = minX + roomWidth / 2;
+    const roomCenterY = minY + roomHeight / 2;
+
+    // Canvas-Mitte
+    const canvasCenterX = canvas.width / 2;
+    const canvasCenterY = canvas.height / 2;
+
+    // Offset setzen (verschiebt nur die Ansicht, nicht die Daten)
+    RoomDesigner.offsetX = canvasCenterX - roomCenterX;
+    RoomDesigner.offsetY = canvasCenterY - roomCenterY;
+};
+
+
+
+    
     checkCollision(a, b) {
         return !(
             a.x + a.w < b.x ||
@@ -5136,6 +5174,7 @@ RoomDesigner.loadRoom = function(roomId) {
     RoomDesigner.isClosed = !!room.isClosed;
 
     RoomDesigner.updateWalls();
+    RoomDesigner.centerView();
     RoomDesigner.render();
 };
 
