@@ -960,7 +960,6 @@ body.editor-mode .editor-btn {
 #project-list option.current-project {
     color: #999;
     font-style: italic;
-    background: #f0f0f0;
 }
 
 
