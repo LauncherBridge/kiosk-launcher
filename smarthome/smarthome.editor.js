@@ -2462,30 +2462,34 @@ onUp(e) {
     // --------------------------------------------------
     // Zoom per Mausrad
     // --------------------------------------------------
-    onWheelZoom(e) {
-        e.preventDefault();
+onWheelZoom(e) {
+    e.preventDefault();
 
-        const rect = this.canvas.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
+    const rect = this.canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
 
-        const worldX = (mouseX / this.zoom) - this.offsetX;
-        const worldY = (mouseY / this.zoom) - this.offsetY;
+    // Weltkoordinaten VOR dem Zoom (korrekte Formel!)
+    const worldX = (mouseX - this.offsetX) / this.zoom;
+    const worldY = (mouseY - this.offsetY) / this.zoom;
 
-        const zoomFactor = 1.1;
-        if (e.deltaY < 0) {
-            this.zoom *= zoomFactor;
-        } else {
-            this.zoom /= zoomFactor;
-        }
+    // Zoom-Faktor bestimmen
+    const zoomFactor = 1.1;
+    if (e.deltaY < 0) {
+        this.zoom *= zoomFactor;
+    } else {
+        this.zoom /= zoomFactor;
+    }
 
-        this.zoom = Math.max(0.2, Math.min(4.0, this.zoom));
+    // Zoom begrenzen
+    this.zoom = Math.max(0.2, Math.min(4.0, this.zoom));
 
-        this.offsetX = (mouseX / this.zoom) - worldX;
-        this.offsetY = (mouseY / this.zoom) - worldY;
+    // Offset so anpassen, dass der Mauspunkt stabil bleibt
+    this.offsetX = mouseX - worldX * this.zoom;
+    this.offsetY = mouseY - worldY * this.zoom;
 
-        this.render();
-    },
+    this.render();
+},
 
     // --------------------------------------------------
     // Doppelklick-Zoom (Toggle)
