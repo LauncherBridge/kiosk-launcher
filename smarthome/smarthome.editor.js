@@ -1693,8 +1693,9 @@ addContextButton(label, fn, closeMenu = false) {
         const mouseX = e.clientX - rect.left;
         const mouseY = e.clientY - rect.top;
 
-        const worldX = (mouseX / this.zoom) - this.offsetX;
-        const worldY = (mouseY / this.zoom) - this.offsetY;
+const worldX = (mouseX - this.offsetX) / this.zoom;
+const worldY = (mouseY - this.offsetY) / this.zoom;
+
 
         // Pan starten
         if (this.isPanCandidate && !this.isPanning) {
@@ -1713,20 +1714,19 @@ addContextButton(label, fn, closeMenu = false) {
         }
 
         // Pan bewegen
-        if (this.isPanning) {
-            const dx = mouseX - this.lastPanX;
-            const dy = mouseY - this.lastPanY;
+if (this.isPanning) {
+    const dx = mouseX - this.lastPanX;
+    const dy = mouseY - this.lastPanY;
 
-            this.offsetX += dx / this.zoom;
-            this.offsetY += dy / this.zoom;
+    this.offsetX += dx;
+    this.offsetY += dy;
 
-            this.lastPanX = mouseX;
-            this.lastPanY = mouseY;
+    this.lastPanX = mouseX;
+    this.lastPanY = mouseY;
 
-            this.render();
-            return;
-        }
-
+    this.render();
+    return;
+}
         // Drag starten?
         if (this._pendingContext) {
             const dx = worldX - this._pendingContext.x;
