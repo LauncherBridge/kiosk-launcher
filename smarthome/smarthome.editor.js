@@ -1087,7 +1087,6 @@ function importToEditor() {
             RoomDesigner.windows = [];
             RoomDesigner.isClosed = false;
             RoomDesigner.updateWalls();
-            RoomDesigner.centerView();
             RoomDesigner.render();
 
             renderEditorProjectSidebar();
@@ -1131,7 +1130,6 @@ function importToEditor() {
             .map(w => ({ ...w }));
 
         RoomDesigner.updateWalls();
-        RoomDesigner.centerView();
         RoomDesigner.render();
 
         // 6) Sidebar aktualisieren
@@ -1693,9 +1691,8 @@ addContextButton(label, fn, closeMenu = false) {
         const mouseX = e.clientX - rect.left;
         const mouseY = e.clientY - rect.top;
 
-const worldX = (mouseX - this.offsetX) / this.zoom;
-const worldY = (mouseY - this.offsetY) / this.zoom;
-
+        const worldX = (mouseX / this.zoom) - this.offsetX;
+        const worldY = (mouseY / this.zoom) - this.offsetY;
 
         // Pan starten
         if (this.isPanCandidate && !this.isPanning) {
@@ -1714,19 +1711,20 @@ const worldY = (mouseY - this.offsetY) / this.zoom;
         }
 
         // Pan bewegen
-if (this.isPanning) {
-    const dx = mouseX - this.lastPanX;
-    const dy = mouseY - this.lastPanY;
+        if (this.isPanning) {
+            const dx = mouseX - this.lastPanX;
+            const dy = mouseY - this.lastPanY;
 
-    this.offsetX += dx;
-    this.offsetY += dy;
+            this.offsetX += dx / this.zoom;
+            this.offsetY += dy / this.zoom;
 
-    this.lastPanX = mouseX;
-    this.lastPanY = mouseY;
+            this.lastPanX = mouseX;
+            this.lastPanY = mouseY;
 
-    this.render();
-    return;
-}
+            this.render();
+            return;
+        }
+
         // Drag starten?
         if (this._pendingContext) {
             const dx = worldX - this._pendingContext.x;
@@ -1879,9 +1877,7 @@ if (d.type === "dachluke") {
         // ------------------------------------------------------------
         // ⭐ HOVER-ERKENNUNG + CURSOR-WECHSEL (ohne Leuchten)
         // ------------------------------------------------------------
-
-
-const hit = this.hitTest(worldX, worldY);
+        const hit = this.hitTest(mouseX, mouseY);
 
         if (hit.type !== "empty") {
             this.hoverTarget = hit;
@@ -2092,10 +2088,7 @@ onDown(e) {
     // ------------------------------------------------------------
     // ⭐ HIT-TEST
     // ------------------------------------------------------------
-const worldX = (mouseX - this.offsetX) / this.zoom;
-const worldY = (mouseY - this.offsetY) / this.zoom;
-
-const hit = this.hitTest(worldX, worldY);
+    const hit = this.hitTest(mouseX, mouseY);
     const clickingObject =
         hit.type === "point" ||
         hit.type === "door" ||
@@ -2467,34 +2460,30 @@ onUp(e) {
     // --------------------------------------------------
     // Zoom per Mausrad
     // --------------------------------------------------
-onWheelZoom(e) {
-    e.preventDefault();
+    onWheelZoom(e) {
+        e.preventDefault();
 
-    const rect = this.canvas.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
+        const rect = this.canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
 
-    // Weltkoordinaten VOR dem Zoom (korrekte Formel!)
-    const worldX = (mouseX - this.offsetX) / this.zoom;
-    const worldY = (mouseY - this.offsetY) / this.zoom;
+        const worldX = (mouseX / this.zoom) - this.offsetX;
+        const worldY = (mouseY / this.zoom) - this.offsetY;
 
-    // Zoom-Faktor bestimmen
-    const zoomFactor = 1.1;
-    if (e.deltaY < 0) {
-        this.zoom *= zoomFactor;
-    } else {
-        this.zoom /= zoomFactor;
-    }
+        const zoomFactor = 1.1;
+        if (e.deltaY < 0) {
+            this.zoom *= zoomFactor;
+        } else {
+            this.zoom /= zoomFactor;
+        }
 
-    // Zoom begrenzen
-    this.zoom = Math.max(0.2, Math.min(4.0, this.zoom));
+        this.zoom = Math.max(0.2, Math.min(4.0, this.zoom));
 
-    // Offset so anpassen, dass der Mauspunkt stabil bleibt
-    this.offsetX = mouseX - worldX * this.zoom;
-    this.offsetY = mouseY - worldY * this.zoom;
+        this.offsetX = (mouseX / this.zoom) - worldX;
+        this.offsetY = (mouseY / this.zoom) - worldY;
 
-    this.render();
-},
+        this.render();
+    },
 
     // --------------------------------------------------
     // Doppelklick-Zoom (Toggle)
@@ -2922,14 +2911,15 @@ this._roomCenterBeforeMove = this._computeRoomCenter();
     // --------------------------------------------------
     // Canvas-Transform (für zukünftigen Zoom/Pan vorbereitet)
     // --------------------------------------------------
-applyTransform() {
-    const ctx = this.ctx;
-    if (!ctx) return;
+    applyTransform() {
+        const ctx = this.ctx;
+        if (!ctx) return;
 
-    ctx.translate(this.offsetX, this.offsetY);
-    ctx.scale(this.zoom, this.zoom);
-}
-,
+        // Welt → Screen:
+        // screen = (world + offset) * zoom
+        ctx.translate(this.offsetX * this.zoom, this.offsetY * this.zoom);
+        ctx.scale(this.zoom, this.zoom);
+    },
    
     // --------------------------------------------------
     // Rendering
@@ -2986,39 +2976,6 @@ applyTransform() {
         this.drawHoverCross();
     },
 
-
-centerView() {
-    const canvas = this.canvas;
-    if (!canvas || !this.points?.length) return;
-
-    const xs = this.points.map(p => p.x);
-    const ys = this.points.map(p => p.y);
-
-    const minX = Math.min(...xs);
-    const maxX = Math.max(...xs);
-    const minY = Math.min(...ys);
-    const maxY = Math.max(...ys);
-
-    const roomWidth = maxX - minX;
-    const roomHeight = maxY - minY;
-
-    const roomCenterX = minX + roomWidth / 2;
-    const roomCenterY = minY + roomHeight / 2;
-
-    const canvasCenterX = canvas.width / 2;
-    const canvasCenterY = canvas.height / 2;
-
-    // ✅ screen = world * zoom + offset
-    // wir wollen: roomCenterScreen == canvasCenter
-    // → offset = canvasCenter - roomCenter * zoom
-    this.offsetX = canvasCenterX - roomCenterX * this.zoom;
-    this.offsetY = canvasCenterY - roomCenterY * this.zoom;
-}
-,
-
-
-
-    
     checkCollision(a, b) {
         return !(
             a.x + a.w < b.x ||
@@ -5179,7 +5136,6 @@ RoomDesigner.loadRoom = function(roomId) {
     RoomDesigner.isClosed = !!room.isClosed;
 
     RoomDesigner.updateWalls();
-    RoomDesigner.centerView();
     RoomDesigner.render();
 };
 
@@ -5210,7 +5166,6 @@ function setActiveRoom(roomId) {
     RoomDesigner.isClosed = project.rooms[roomId].isClosed || false;
 
     RoomDesigner.updateWalls();
-    RoomDesigner.centerView();
     RoomDesigner.render();
 }
 
