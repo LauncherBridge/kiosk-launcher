@@ -1879,8 +1879,7 @@ if (d.type === "dachluke") {
         // ------------------------------------------------------------
         // ⭐ HOVER-ERKENNUNG + CURSOR-WECHSEL (ohne Leuchten)
         // ------------------------------------------------------------
-const worldX = (mouseX - this.offsetX) / this.zoom;
-const worldY = (mouseY - this.offsetY) / this.zoom;
+
 
 const hit = this.hitTest(worldX, worldY);
 
