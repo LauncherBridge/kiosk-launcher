@@ -1087,6 +1087,7 @@ function importToEditor() {
             RoomDesigner.windows = [];
             RoomDesigner.isClosed = false;
             RoomDesigner.updateWalls();
+            RoomDesigner.centerView();
             RoomDesigner.render();
 
             renderEditorProjectSidebar();
@@ -1130,6 +1131,7 @@ function importToEditor() {
             .map(w => ({ ...w }));
 
         RoomDesigner.updateWalls();
+        RoomDesigner.centerView();
         RoomDesigner.render();
 
         // 6) Sidebar aktualisieren
@@ -5199,6 +5201,7 @@ function setActiveRoom(roomId) {
     RoomDesigner.isClosed = project.rooms[roomId].isClosed || false;
 
     RoomDesigner.updateWalls();
+    RoomDesigner.centerView();
     RoomDesigner.render();
 }
 
