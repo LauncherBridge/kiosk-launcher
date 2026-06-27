@@ -957,6 +957,13 @@ body.editor-mode .editor-btn {
     box-shadow: 0 0 20px rgba(0,0,0,0.5);
 }
 
+#project-list option.current-project {
+    color: #999;
+    font-style: italic;
+    background: #f0f0f0;
+}
+
+
 #project-list {
     width: 100%;
     margin: 10px 0;
