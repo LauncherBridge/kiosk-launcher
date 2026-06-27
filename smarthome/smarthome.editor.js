@@ -787,9 +787,9 @@ projects.forEach(p => {
     opt.textContent = p.name;
 
     // ⭐ Aktuelles Projekt markieren
-    if (p.id === project.id) {
+    if (p.id === project.meta.id) {
         opt.classList.add("current-project");
-        opt.disabled = true; // optional: nicht auswählbar
+       //  opt.disabled = true; 
     }
 
     list.appendChild(opt);
