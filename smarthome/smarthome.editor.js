@@ -2911,15 +2911,14 @@ this._roomCenterBeforeMove = this._computeRoomCenter();
     // --------------------------------------------------
     // Canvas-Transform (für zukünftigen Zoom/Pan vorbereitet)
     // --------------------------------------------------
-    applyTransform() {
-        const ctx = this.ctx;
-        if (!ctx) return;
+applyTransform() {
+    const ctx = this.ctx;
+    if (!ctx) return;
 
-        // Welt → Screen:
-        // screen = (world + offset) * zoom
-        ctx.translate(this.offsetX * this.zoom, this.offsetY * this.zoom);
-        ctx.scale(this.zoom, this.zoom);
-    },
+    ctx.translate(this.offsetX, this.offsetY);
+    ctx.scale(this.zoom, this.zoom);
+}
+,
    
     // --------------------------------------------------
     // Rendering
