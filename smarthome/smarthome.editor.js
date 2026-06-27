@@ -1879,7 +1879,10 @@ if (d.type === "dachluke") {
         // ------------------------------------------------------------
         // ⭐ HOVER-ERKENNUNG + CURSOR-WECHSEL (ohne Leuchten)
         // ------------------------------------------------------------
-        const hit = this.hitTest(mouseX, mouseY);
+const worldX = (mouseX - this.offsetX) / this.zoom;
+const worldY = (mouseY - this.offsetY) / this.zoom;
+
+const hit = this.hitTest(worldX, worldY);
 
         if (hit.type !== "empty") {
             this.hoverTarget = hit;
@@ -2090,7 +2093,10 @@ onDown(e) {
     // ------------------------------------------------------------
     // ⭐ HIT-TEST
     // ------------------------------------------------------------
-    const hit = this.hitTest(mouseX, mouseY);
+const worldX = (mouseX - this.offsetX) / this.zoom;
+const worldY = (mouseY - this.offsetY) / this.zoom;
+
+const hit = this.hitTest(worldX, worldY);
     const clickingObject =
         hit.type === "point" ||
         hit.type === "door" ||
