@@ -1130,6 +1130,7 @@ function importToEditor() {
             .map(w => ({ ...w }));
 
         RoomDesigner.updateWalls();
+        RoomDesigner.centerView();
         RoomDesigner.render();
 
         // 6) Sidebar aktualisieren
@@ -5147,6 +5148,7 @@ RoomDesigner.loadRoom = function(roomId) {
         RoomDesigner.isClosed = false;
 
         RoomDesigner.updateWalls();
+        RoomDesigner.centerView();
         RoomDesigner.render();
         return;
     }
@@ -5202,6 +5204,7 @@ function setActiveRoom(roomId) {
     RoomDesigner.isClosed = project.rooms[roomId].isClosed || false;
 
     RoomDesigner.updateWalls();
+    RoomDesigner.centerView();
     RoomDesigner.render();
 }
 
