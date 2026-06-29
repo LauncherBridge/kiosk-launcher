@@ -1382,7 +1382,7 @@ init() {
      //   this.render();
     },
 
-    centerView() {
+   centerView() {
     if (!this.points || this.points.length === 0) return;
 
     const canvas = this.canvas;
@@ -1400,20 +1400,21 @@ init() {
     const roomCenterX = (minX + maxX) / 2;
     const roomCenterY = (minY + maxY) / 2;
 
-    // Canvas-Mitte in Screen-Koordinaten
-    const canvasCenterX = canvas.width / 2;
+    // Sidebar-Breite dynamisch messen
+    const sidebar = document.getElementById("editor-sidebar");
+    const sidebarWidth = sidebar ? sidebar.offsetWidth : 0;
+
+    // Visuelle Mitte des sichtbaren Bereichs
+    const canvasCenterX = sidebarWidth + (canvas.width - sidebarWidth) / 2;
     const canvasCenterY = canvas.height / 2;
 
-    // Screen = (World + Offset) * Zoom
-    // Wir wollen: roomCenterScreen == canvasCenter
-    // → canvasCenter = (roomCenter + offset) * zoom
-    // → offset = canvasCenter/zoom - roomCenter
-
+    // Offset berechnen (Transformationsmodell: screen = (world + offset) * zoom)
     this.offsetX = (canvasCenterX / this.zoom) - roomCenterX;
     this.offsetY = (canvasCenterY / this.zoom) - roomCenterY;
 
     this.render();
 },
+
 
 
     // --------------------------------------------------
