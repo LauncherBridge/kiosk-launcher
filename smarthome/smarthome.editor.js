@@ -1370,6 +1370,7 @@ init() {
     }
 
     this.resize();
+    this.centerView();   
     this.render();
 }
 ,
@@ -1380,6 +1381,40 @@ init() {
         this.canvas.height = window.innerHeight;
         this.render();
     },
+
+    centerView() {
+    if (!this.points || this.points.length === 0) return;
+
+    const canvas = this.canvas;
+    if (!canvas) return;
+
+    // Raum-Bounding-Box bestimmen
+    const xs = this.points.map(p => p.x);
+    const ys = this.points.map(p => p.y);
+
+    const minX = Math.min(...xs);
+    const maxX = Math.max(...xs);
+    const minY = Math.min(...ys);
+    const maxY = Math.max(...ys);
+
+    const roomCenterX = (minX + maxX) / 2;
+    const roomCenterY = (minY + maxY) / 2;
+
+    // Canvas-Mitte in Screen-Koordinaten
+    const canvasCenterX = canvas.width / 2;
+    const canvasCenterY = canvas.height / 2;
+
+    // Screen = (World + Offset) * Zoom
+    // Wir wollen: roomCenterScreen == canvasCenter
+    // → canvasCenter = (roomCenter + offset) * zoom
+    // → offset = canvasCenter/zoom - roomCenter
+
+    this.offsetX = (canvasCenterX / this.zoom) - roomCenterX;
+    this.offsetY = (canvasCenterY / this.zoom) - roomCenterY;
+
+    this.render();
+}
+
 
     // --------------------------------------------------
     // Rechtsklick verhindern
