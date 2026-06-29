@@ -1383,6 +1383,8 @@ init() {
     },
 
  centerView() {
+     console.log("centerView() wurde ausgeführt für Raum:", this.currentRoomId);
+
     if (!this.points || this.points.length === 0) return;
 
     const canvas = this.canvas;
