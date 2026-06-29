@@ -1401,15 +1401,13 @@ centerView() {
     const roomCenterX = (minX + maxX) / 2;
     const roomCenterY = (minY + maxY) / 2;
 
-    // Nur linke Sidebar berücksichtigen
-    const leftSidebar = document.getElementById("editor-sidebar-left");
-    const leftWidth = leftSidebar ? leftSidebar.offsetWidth : 0;
+    // ECHTE sichtbare Canvas-Position im Fenster
+    const rect = canvas.getBoundingClientRect();
 
-    // Sichtbare Mitte des Canvas
-    const canvasCenterX = leftWidth + (canvas.width - leftWidth) / 2;
-    const canvasCenterY = canvas.height / 2;
+    const canvasCenterX = (rect.left + rect.right) / 2;
+    const canvasCenterY = (rect.top + rect.bottom) / 2;
 
-    // Offset berechnen
+    // Offset berechnen (Transformationsmodell: screen = (world + offset) * zoom)
     this.offsetX = (canvasCenterX / this.zoom) - roomCenterX;
     this.offsetY = (canvasCenterY / this.zoom) - roomCenterY;
 
