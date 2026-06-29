@@ -1383,9 +1383,7 @@ init() {
      //   this.render();
     },
 
- centerView() {
-     console.log("centerView() wurde ausgeführt für Raum:", this.currentRoomId);
-
+centerView() {
     if (!this.points || this.points.length === 0) return;
 
     const canvas = this.canvas;
@@ -1403,11 +1401,20 @@ init() {
     const roomCenterX = (minX + maxX) / 2;
     const roomCenterY = (minY + maxY) / 2;
 
-    // Bildschirmmitte (ohne Sidebar)
-    const canvasCenterX = canvas.width / 2;
+    // Linke Sidebar
+    const leftSidebar = document.getElementById("editor-sidebar-left");
+    const leftWidth = leftSidebar ? leftSidebar.offsetWidth : 0;
+
+    // Rechte Sidebar
+    const rightSidebar = document.getElementById("editor-sidebar-right");
+    const rightWidth = rightSidebar ? rightSidebar.offsetWidth : 0;
+
+    // Sichtbare Mitte des Canvas
+    const visibleWidth = canvas.width - leftWidth - rightWidth;
+    const canvasCenterX = leftWidth + visibleWidth / 2;
     const canvasCenterY = canvas.height / 2;
 
-    // Offset so setzen, dass der Raum absolut zentriert erscheint
+    // Offset berechnen
     this.offsetX = (canvasCenterX / this.zoom) - roomCenterX;
     this.offsetY = (canvasCenterY / this.zoom) - roomCenterY;
 
