@@ -1413,7 +1413,7 @@ init() {
     this.offsetY = (canvasCenterY / this.zoom) - roomCenterY;
 
     this.render();
-}
+},
 
 
     // --------------------------------------------------
