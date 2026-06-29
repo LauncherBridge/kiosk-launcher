@@ -2522,34 +2522,35 @@ onUp(e) {
 
     // --------------------------------------------------
     // Doppelklick-Zoom (Toggle)
-    // --------------------------------------------------
-    onDoubleClickZoom(e) {
-        e.preventDefault();
-        e.stopPropagation(); // verhindert Kontext-Kollision
+onDoubleClickZoom(e) {
+    e.preventDefault();
+    e.stopPropagation();
 
-        // Signal an onUp: diesen Klick NICHT als Punkt interpretieren
-        this._suppressNextClick = true;
+    // verhindert Punkt-Setzen
+    this._suppressNextClick = true;
 
-        const rect = this.canvas.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
+    const rect = this.canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
 
-        const worldX = (mouseX / this.zoom) - this.offsetX;
-        const worldY = (mouseY / this.zoom) - this.offsetY;
+    // Weltkoordinaten VOR dem Zoom
+    const worldX = (mouseX / this.zoom) - this.offsetX;
+    const worldY = (mouseY / this.zoom) - this.offsetY;
 
-        if (this.zoom < 1.5) {
-            this.zoom *= 1.5;
-        } else {
-            this.zoom /= 1.5;
-        }
+    // Zoom-Faktor (Toggle)
+    const factor = (this.zoom < 1.5) ? 1.5 : (1 / 1.5);
+    this.zoom *= factor;
 
-        this.zoom = Math.max(0.2, Math.min(4.0, this.zoom));
+    // Grenzen
+    this.zoom = Math.max(0.2, Math.min(4.0, this.zoom));
 
-        this.offsetX = (mouseX / this.zoom) - worldX;
-        this.offsetY = (mouseY / this.zoom) - worldY;
+    // Offset so anpassen, dass der Mauspunkt stabil bleibt
+    this.offsetX = (mouseX / this.zoom) - worldX;
+    this.offsetY = (mouseY / this.zoom) - worldY;
 
-        this.render();
-    },
+    this.render();
+}
+,
 
     // --------------------------------------------------
     // TOUCH START
