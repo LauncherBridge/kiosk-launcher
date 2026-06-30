@@ -1401,29 +1401,32 @@ centerView() {
     const roomCenterX = (minX + maxX) / 2;
     const roomCenterY = (minY + maxY) / 2;
 
-    // Basis: Mitte des Canvas im Welt-Raum
-    const canvasCenterX = canvas.width / 2;
-    const canvasCenterY = canvas.height / 2;
+    // ECHTE sichtbare Canvas-Position
+    const rect = canvas.getBoundingClientRect();
 
-    // Sidebar-Breiten
-    const leftSidebar  = document.getElementById("editor-sidebar-left");
-    const rightSidebar = document.getElementById("editor-sidebar");
+    // Sichtbare Mitte des Canvas (Screen-Space)
+    const screenCanvasCenterX = rect.left + rect.width / 2;
+    const screenCanvasCenterY = rect.top + rect.height / 2;
 
-    const leftWidth  = leftSidebar  ? leftSidebar.offsetWidth  : 0;
-    const rightWidth = rightSidebar ? rightSidebar.offsetWidth : 0;
+    // Sichtbare Mitte des gesamten Editorbereichs
+    const editor = document.getElementById("editor-main-area");
+    const editorRect = editor.getBoundingClientRect();
+    const screenEditorCenterX = editorRect.left + editorRect.width / 2;
 
-    // Korrektur: Differenz der Sidebars
-    const sidebarDiff = rightWidth - leftWidth;
+    // Dynamische Verschiebung (Bias)
+    const biasX = screenCanvasCenterX - screenEditorCenterX;
 
-    // Manuelle Justierung (falls nötig, z.B. +10 oder -10)
-    const tweak = 28; // hier kannst du später noch feintunen
+    // SCREEN → WORLD transformieren
+    const worldCanvasCenterX = screenCanvasCenterX / this.zoom;
+    const worldCanvasCenterY = screenCanvasCenterY / this.zoom;
 
-    // Offset setzen
-    this.offsetX = (canvasCenterX - sidebarDiff / this.zoom + tweak) - roomCenterX;
-    this.offsetY = canvasCenterY / this.zoom - roomCenterY;
+    // Offset setzen (Bias wird automatisch korrigiert)
+    this.offsetX = worldCanvasCenterX - roomCenterX - (biasX / this.zoom);
+    this.offsetY = worldCanvasCenterY - roomCenterY;
 
     this.render();
 }
+
 ,
 
 
