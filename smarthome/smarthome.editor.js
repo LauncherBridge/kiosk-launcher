@@ -1401,25 +1401,24 @@ centerView() {
     const roomCenterX = (minX + maxX) / 2;
     const roomCenterY = (minY + maxY) / 2;
 
-    // Linke Sidebar-Breite
-    const leftSidebar = document.getElementById("editor-sidebar-left");
-    const leftWidth = leftSidebar ? leftSidebar.offsetWidth : 0;
-
-    // ECHTE sichtbare Canvas-Breite
+    // ECHTE sichtbare Canvas-Position
     const rect = canvas.getBoundingClientRect();
-    const visibleCanvasWidth = rect.width;
-    const visibleCanvasHeight = rect.height;
 
-    // Sichtbare Mitte des Canvas
-    const canvasCenterX = leftWidth + visibleCanvasWidth / 2;
-    const canvasCenterY = visibleCanvasHeight / 2;
+    // Sichtbare Mitte im SCREEN-SPACE
+    const screenCenterX = rect.left + rect.width / 2;
+    const screenCenterY = rect.top + rect.height / 2;
 
-    // Offset berechnen
-    this.offsetX = (canvasCenterX / this.zoom) - roomCenterX;
-    this.offsetY = (canvasCenterY / this.zoom) - roomCenterY;
+    // SCREEN → WORLD transformieren
+    const worldCenterX = screenCenterX / this.zoom;
+    const worldCenterY = screenCenterY / this.zoom;
+
+    // Offset so setzen, dass Raum-Mitte = Canvas-Mitte
+    this.offsetX = worldCenterX - roomCenterX;
+    this.offsetY = worldCenterY - roomCenterY;
 
     this.render();
-},
+}
+,
 
 
 
