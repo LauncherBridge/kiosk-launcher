@@ -1389,7 +1389,7 @@ centerView() {
     const canvas = this.canvas;
     if (!canvas) return;
 
-    // Raum-Bounding-Box bestimmen
+    // Raum-Mitte
     const xs = this.points.map(p => p.x);
     const ys = this.points.map(p => p.y);
 
@@ -1401,26 +1401,26 @@ centerView() {
     const roomCenterX = (minX + maxX) / 2;
     const roomCenterY = (minY + maxY) / 2;
 
-    // Linke Sidebar-Breite
-    const leftSidebar = document.getElementById("editor-sidebar-left");
-    const leftWidth = leftSidebar ? leftSidebar.offsetWidth : 0;
-
-    // Rechte Sidebar-Breite
-    const rightSidebar = document.getElementById("editor-sidebar");
-    const rightWidth = rightSidebar ? rightSidebar.offsetWidth : 0;
-
-    // ECHTE sichtbare Canvas-Breite
-    const mainArea = document.getElementById("editor-main-area");
-    const mainRect = mainArea.getBoundingClientRect();
-    const visibleCanvasWidth = mainRect.width - rightWidth;
-
-    // Sichtbare Mitte des Canvas
-    const canvasCenterX = leftWidth + visibleCanvasWidth / 2;
+    // Basis: Mitte des Canvas im Welt-Raum
+    const canvasCenterX = canvas.width / 2;
     const canvasCenterY = canvas.height / 2;
 
-    // Offset berechnen
-    this.offsetX = (canvasCenterX / this.zoom) - roomCenterX;
-    this.offsetY = (canvasCenterY / this.zoom) - roomCenterY;
+    // Sidebar-Breiten
+    const leftSidebar  = document.getElementById("editor-sidebar-left");
+    const rightSidebar = document.getElementById("editor-sidebar");
+
+    const leftWidth  = leftSidebar  ? leftSidebar.offsetWidth  : 0;
+    const rightWidth = rightSidebar ? rightSidebar.offsetWidth : 0;
+
+    // Korrektur: Differenz der Sidebars
+    const sidebarDiff = rightWidth - leftWidth;
+
+    // Manuelle Justierung (falls nötig, z.B. +10 oder -10)
+    const tweak = 0; // hier kannst du später noch feintunen
+
+    // Offset setzen
+    this.offsetX = (canvasCenterX - sidebarDiff / this.zoom + tweak) - roomCenterX;
+    this.offsetY = canvasCenterY / this.zoom - roomCenterY;
 
     this.render();
 }
