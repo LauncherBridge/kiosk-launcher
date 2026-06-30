@@ -1384,7 +1384,6 @@ init() {
     },
 
 centerView() {
-
     if (!this.points || this.points.length === 0) return;
 
     const canvas = this.canvas;
@@ -1402,14 +1401,15 @@ centerView() {
     const roomCenterX = (minX + maxX) / 2;
     const roomCenterY = (minY + maxY) / 2;
 
-    // ECHTE sichtbare Canvas-Position im Fenster
-    const rect = canvas.getBoundingClientRect();
+    // Linke Sidebar-Breite
+    const leftSidebar = document.getElementById("editor-sidebar-left");
+    const leftWidth = leftSidebar ? leftSidebar.offsetWidth : 0;
 
     // Sichtbare Mitte des Canvas
-    const canvasCenterX = rect.left + rect.width / 2;
-    const canvasCenterY = rect.top + rect.height / 2;
+    const canvasCenterX = leftWidth + canvas.width / 2;
+    const canvasCenterY = canvas.height / 2;
 
-    // Offset berechnen (Transformationsmodell: screen = (world + offset) * zoom)
+    // Offset berechnen
     this.offsetX = (canvasCenterX / this.zoom) - roomCenterX;
     this.offsetY = (canvasCenterY / this.zoom) - roomCenterY;
 
