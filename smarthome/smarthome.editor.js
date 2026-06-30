@@ -1405,17 +1405,22 @@ centerView() {
     const leftSidebar = document.getElementById("editor-sidebar-left");
     const leftWidth = leftSidebar ? leftSidebar.offsetWidth : 0;
 
+    // ECHTE sichtbare Canvas-Breite
+    const rect = canvas.getBoundingClientRect();
+    const visibleCanvasWidth = rect.width;
+    const visibleCanvasHeight = rect.height;
+
     // Sichtbare Mitte des Canvas
-    const canvasCenterX = leftWidth + canvas.width / 2;
-    const canvasCenterY = canvas.height / 2;
+    const canvasCenterX = leftWidth + visibleCanvasWidth / 2;
+    const canvasCenterY = visibleCanvasHeight / 2;
 
     // Offset berechnen
     this.offsetX = (canvasCenterX / this.zoom) - roomCenterX;
     this.offsetY = (canvasCenterY / this.zoom) - roomCenterY;
 
     this.render();
-}
-,
+},
+
 
 
 
