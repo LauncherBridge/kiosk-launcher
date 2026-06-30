@@ -1404,8 +1404,9 @@ centerView() {
     // ECHTE sichtbare Canvas-Position im Fenster
     const rect = canvas.getBoundingClientRect();
 
-    const canvasCenterX = (rect.left + rect.right) / 2;
-    const canvasCenterY = (rect.top + rect.bottom) / 2;
+    // Sichtbare Mitte des Canvas
+    const canvasCenterX = rect.left + rect.width / 2;
+    const canvasCenterY = rect.top + rect.height / 2;
 
     // Offset berechnen (Transformationsmodell: screen = (world + offset) * zoom)
     this.offsetX = (canvasCenterX / this.zoom) - roomCenterX;
