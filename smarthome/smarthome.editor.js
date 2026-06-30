@@ -1385,6 +1385,8 @@ init() {
 
 centerView() {
 
+        const canvas = this.canvas;
+
     console.log("Canvas rect:", canvas.getBoundingClientRect());
 console.log("Canvas center X:", canvasCenterX);
 console.log("Room center X:", roomCenterX);
