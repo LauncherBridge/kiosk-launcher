@@ -2974,7 +2974,7 @@ this._roomCenterBeforeMove = this._computeRoomCenter();
 
 // DEBUG: Canvas-Mitte anzeigen
 const rect = this.canvas.getBoundingClientRect();
-const ctx = this.canvas.getContext("2d");
+const ctx = this.ctx;
 
 ctx.save();
 ctx.fillStyle = "red";
@@ -2985,7 +2985,7 @@ ctx.restore();
 
 
         
-        const ctx = this.ctx;
+     //   const ctx = this.ctx;
         if (!ctx || !this.canvas) return;
         
         this.drawnLabels = [];
