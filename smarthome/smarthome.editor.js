@@ -1416,7 +1416,7 @@ centerView() {
     const sidebarDiff = rightWidth - leftWidth;
 
     // Manuelle Justierung (falls nötig, z.B. +10 oder -10)
-    const tweak = 0; // hier kannst du später noch feintunen
+    const tweak = 10; // hier kannst du später noch feintunen
 
     // Offset setzen
     this.offsetX = (canvasCenterX - sidebarDiff / this.zoom + tweak) - roomCenterX;
