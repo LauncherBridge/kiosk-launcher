@@ -1384,6 +1384,14 @@ init() {
     },
 
 centerView() {
+
+    console.log("Canvas rect:", canvas.getBoundingClientRect());
+console.log("Canvas center X:", canvasCenterX);
+console.log("Room center X:", roomCenterX);
+console.log("Offset X:", this.offsetX);
+
+
+    
     if (!this.points || this.points.length === 0) return;
 
     const canvas = this.canvas;
@@ -2963,6 +2971,20 @@ this._roomCenterBeforeMove = this._computeRoomCenter();
     // Rendering
     // --------------------------------------------------
     render() {
+
+// DEBUG: Canvas-Mitte anzeigen
+const rect = this.canvas.getBoundingClientRect();
+const ctx = this.canvas.getContext("2d");
+
+ctx.save();
+ctx.fillStyle = "red";
+ctx.beginPath();
+ctx.arc(rect.width / 2, rect.height / 2, 5, 0, Math.PI * 2);
+ctx.fill();
+ctx.restore();
+
+
+        
         const ctx = this.ctx;
         if (!ctx || !this.canvas) return;
         
