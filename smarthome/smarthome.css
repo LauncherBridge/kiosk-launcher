@@ -1130,3 +1130,146 @@ if (floor.id === project.rooms[roomId].floorId) {
     transition: opacity 0.55s ease;
 }
 
+/* ========================================================= */
+/* RESIDENT EVIL UI STYLE – ADDON                          */
+/* ========================================================= */
+
+/* --------------------------------------------------------- */
+/* CANVAS TOOLS (Grid, Slider, Canvas) – RE Style           */
+/* --------------------------------------------------------- */
+
+.canvas-tool {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    margin-left: 10px;
+
+    background: rgba(10, 10, 10, 0.75);
+    color: #e0e0e0;
+    border: 1px solid rgba(255, 0, 0, 0.35);
+    padding: 8px 14px;
+    border-radius: 6px;
+
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+
+    box-shadow: 0 0 6px rgba(255, 0, 0, 0.25);
+    transition: all 0.15s ease-out;
+
+    z-index: 999;
+}
+
+.canvas-tool:hover {
+    background: rgba(40, 0, 0, 0.85);
+    border-color: rgba(255, 60, 60, 0.6);
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.45);
+    color: #fff;
+}
+
+/* Slider */
+#gridSizeSlider.canvas-tool {
+    width: 140px;
+    padding: 0;
+    height: 32px;
+    cursor: pointer;
+}
+
+#gridSizeSlider::-webkit-slider-runnable-track {
+    height: 6px;
+    background: rgba(255, 0, 0, 0.35);
+    border-radius: 3px;
+}
+
+#gridSizeSlider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    background: #ff0000;
+    box-shadow: 0 0 6px rgba(255, 0, 0, 0.6);
+    margin-top: -5px;
+    cursor: pointer;
+    transition: all 0.15s ease-out;
+}
+
+#gridSizeSlider::-webkit-slider-thumb:hover {
+    background: #ff4d4d;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+}
+
+/* --------------------------------------------------------- */
+/* TITLEBAR – Undo/Redo RE Style                            */
+/* --------------------------------------------------------- */
+
+#editor-titlebar-right button {
+    background: rgba(40, 0, 0, 0.75) !important;
+    border: 1px solid rgba(255, 0, 0, 0.35) !important;
+    color: #e0e0e0 !important;
+    font-family: "Consolas", "Courier New", monospace !important;
+    letter-spacing: 0.5px;
+    box-shadow: 0 0 6px rgba(255, 0, 0, 0.25);
+    transition: all 0.15s ease-out;
+}
+
+#editor-titlebar-right button:hover {
+    background: rgba(80, 0, 0, 0.85) !important;
+    border-color: rgba(255, 60, 60, 0.6) !important;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.45);
+    color: #fff !important;
+}
+
+/* --------------------------------------------------------- */
+/* SIDEBAR – RE Style                                        */
+/* --------------------------------------------------------- */
+
+#editor-sidebar {
+    background: rgba(0, 0, 0, 0.88) !important;
+    border-left: 1px solid rgba(255, 0, 0, 0.25) !important;
+    box-shadow: -4px 0 14px rgba(255, 0, 0, 0.15) !important;
+}
+
+.category-header {
+    background: rgba(40, 0, 0, 0.45) !important;
+    border: 1px solid rgba(255, 0, 0, 0.25) !important;
+    color: #ffdddd !important;
+    text-shadow: 0 0 6px rgba(255, 0, 0, 0.4);
+}
+
+.category .item {
+    background: rgba(20, 0, 0, 0.35) !important;
+    border: 1px solid rgba(255, 0, 0, 0.15) !important;
+    color: #ddd !important;
+}
+
+.category .item:hover {
+    background: rgba(60, 0, 0, 0.45) !important;
+    border-color: rgba(255, 0, 0, 0.35) !important;
+    color: #fff !important;
+}
+
+/* --------------------------------------------------------- */
+/* CANVAS – RE Background                                    */
+/* --------------------------------------------------------- */
+
+#roomdesigner {
+    background: radial-gradient(circle at center,
+        rgba(40, 0, 0, 0.35),
+        rgba(0, 0, 0, 0.9)
+    ) !important;
+}
+
+/* Optional: leichte Scanlines */
+#roomdesigner::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+        to bottom,
+        rgba(255, 0, 0, 0.05),
+        rgba(255, 0, 0, 0.05) 2px,
+        transparent 4px
+    );
+    pointer-events: none;
+    opacity: 0.25;
+}
