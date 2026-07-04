@@ -56,12 +56,12 @@
     <!-- Canvas -->
     <canvas id="roomdesigner" style="display:none;"></canvas>
 
-    <!-- Grid-Tools direkt auf dem Canvas -->
+    <!-- Canvas Tools (nur im Editor sichtbar) -->
     <button id="btnSnapToggle" class="canvas-tool">Grid</button>
     <input type="range" id="gridSizeSlider" class="canvas-tool" min="10" max="120" step="10" value="40">
-    <button id="btnCanvasToggle" class="canvas-tool">Canvas</button>
+    <button id="btnCanvasToggle" class="canvas-tool">Snap</button>
 
-    <!-- Bottom-Bar (korrekt zwischen beiden Sidebars) -->
+    <!-- Bottom-Bar -->
     <div id="editor-bottombar">
         <div class="bottombar-item">Zoom</div>
         <div class="bottombar-item">Raster</div>
@@ -229,23 +229,6 @@
     </div>
 </div>
 
-<div id="smarthome-minimap">
-    <canvas id="smarthome-minimap-canvas"></canvas>
-</div>
-
-<script src="smarthome.data.js"></script>
-<script src="smarthome.view.js"></script>
-<script src="smarthome.groups.js"></script>
-<script src="smarthome.theme.js"></script>
-<script src="smarthome.module.js"></script>
-
-<script src="smarthome.editor.js?v=1"></script>
-<script src="smarthome.ui.js"></script>
-
-<script>
-    SmartHomeModule.init();
-</script>
-
 <div id="context-menu" class="hidden"></div>
 
 <div id="project-switcher" class="modal hidden">
@@ -270,6 +253,19 @@
         </div>
     </div>
 </div>
+
+<script src="smarthome.data.js"></script>
+<script src="smarthome.view.js"></script>
+<script src="smarthome.groups.js"></script>
+<script src="smarthome.theme.js"></script>
+<script src="smarthome.module.js"></script>
+
+<script src="smarthome.editor.js?v=1"></script>
+<script src="smarthome.ui.js"></script>
+
+<script>
+    SmartHomeModule.init();
+</script>
 
 </body>
 </html>
