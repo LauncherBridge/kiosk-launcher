@@ -4511,7 +4511,8 @@ setupGridButton() {
     btn.addEventListener("click", () => {
         this.snapEnabled = !this.snapEnabled;
 
-        btn.style.background = this.snapEnabled ? "#66bb6a" : "#444";
+        btn.classList.toggle("active", this.snapEnabled);
+       // btn.style.background = this.snapEnabled ? "#66bb6a" : "#444";
 
         this.render();
     });
