@@ -6,21 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SmartHome</title>
 
-    <!-- Styles -->
     <link rel="stylesheet" href="./smarthome.css">
-
-    <!-- Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 
 <body>
 
-<!-- ========================================================= -->
-<!-- ⭐ EDITOR LAYOUT WRAPPER (unsichtbar bis Editor geöffnet) -->
-<!-- ========================================================= -->
 <div id="editor-sidebar-left">
-
-    <!-- ⭐ Projekt-Header (optisch identisch zu Etagen) -->
     <div class="floor-header project-header">
         <div class="floor-left">
             <span class="floor-name" id="editor-project-name-sidebar"></span>
@@ -31,193 +23,160 @@
     <div id="editor-location-list"></div>
 </div>
 
+<div id="editor-main-area">
 
+    <div id="editor-titlebar" style="display:none;">
+        <div id="editor-titlebar-left">
+            <span id="editor-title">
+                <span id="editor-breadcrumb">
+                    <span id="editor-project-name" class="clickable">Projekt</span>
+                    <span class="breadcrumb-sep">›</span>
 
-    <!-- ⭐ Hauptbereich: Titelbar + Canvas + rechte Sidebar -->
-    <div id="editor-main-area">
-
-        <!-- Editor Titelbar -->
-        <div id="editor-titlebar" style="display:none;">
-            <div id="editor-titlebar-left">
-                <span id="editor-title">
-                    <span id="editor-breadcrumb">
-                        <span id="editor-project-name" class="clickable">Projekt</span>
-                        <span class="breadcrumb-sep">›</span>
-        
-                        <span class="crumb-floor">
-                       <!--     <span class="crumb-floor-icon">▾</span> -->
-                            <span id="editor-floor-name" class="clickable">Etage</span>
-                        </span>
-                        <span class="breadcrumb-sep">›</span>
-        
-                        <span id="editor-room-name" class="clickable">Raum</span>
-                        <span class="breadcrumb-sep">›</span>
+                    <span class="crumb-floor">
+                        <span id="editor-floor-name" class="clickable">Etage</span>
                     </span>
+                    <span class="breadcrumb-sep">›</span>
+
+                    <span id="editor-room-name" class="clickable">Raum</span>
+                    <span class="breadcrumb-sep">›</span>
                 </span>
-            </div>
-        
-            <div id="editor-titlebar-right">
-                <button id="editor-close-btn">Schließen</button>
-            </div>
+            </span>
         </div>
 
-
-        <!-- Editor Canvas -->
-        <canvas id="roomdesigner" style="display:none;"></canvas>
-
-        <!-- Rechte Editor Sidebar -->
-        <div id="editor-sidebar" style="display:none;">
-            <div id="editor-sidebar-tabs">
-                <button data-tab="tab1" class="active">Elemente & Werkzeuge</button>
-                <button data-tab="tab2">Smart‑Devices & Szenen</button>
-                <button data-tab="tab3">Allgemeine Optionen</button>
-            </div>
-
-            <div id="editor-sidebar-content">
-                <!-- Inhalt wird später dynamisch gefüllt -->
-                <div class="sidebar-panel" data-panel="tab1">
-                    <!-- Kategorien (unverändert) -->
-                    <div class="category" data-cat="doors">
-                        <div class="category-header">🚪 Türen</div>
-                        <div class="category-content">
-                            <div class="item" data-type="door_haustuer">Haustür</div>
-                            <div class="item" data-type="door_zimmertuer">Zimmertür</div>
-                            <div class="item" data-type="door_falttuer">Falttür</div>
-                            <div class="item" data-type="door_schiebetuer">Schiebetür</div>
-                            <div class="item" data-type="door_terrassentuer">Terrassentür</div>
-                            <div class="item" data-type="door_garagentor">Garagentor</div>
-                            <div class="item" data-type="door_gartentor">Gartentor</div>
-                            <div class="item" data-type="dachluke">Dachluke</div>
-                            <div class="item" data-type="door_durchgang">Offener Durchgang</div>
-                        </div>
-                    </div>
-
-                    <div class="category" data-cat="windows">
-                        <div class="category-header">🪟 Fenster</div>
-                        <div class="category-content">
-                            <div class="item">Einfach</div>
-                            <div class="item">Doppelt</div>
-                            <div class="item">Kipp</div>
-                            <div class="item">Schiebe</div>
-                            <div class="item">Rund</div>
-                            <div class="item">Dachfenster</div>
-                            <div class="item">Rolladen (optional)</div>
-                        </div>
-                    </div>
-
-                    <div class="category" data-cat="furniture">
-                        <div class="category-header">🛋️ Möbel</div>
-                        <div class="category-content">
-                            <div class="item">Sofa</div>
-                            <div class="item">Tisch</div>
-                            <div class="item">Bett</div>
-                            <div class="item">Schrank</div>
-                            <div class="item">Küchenmodul</div>
-                        </div>
-                    </div>
-
-                    <div class="category" data-cat="appliances">
-                        <div class="category-header">🔌 Elektrogeräte</div>
-                        <div class="category-content">
-                            <div class="item">Kühlschrank</div>
-                            <div class="item">Herd</div>
-                            <div class="item">Waschmaschine</div>
-                            <div class="item">Fernseher</div>
-                        </div>
-                    </div>
-
-                    <div class="category" data-cat="smartcontainers">
-                        <div class="category-header">📦 Smart‑Device‑Container</div>
-                        <div class="category-content">
-                            <div class="item">SmartDevice‑Container</div>
-                            <div class="item">SmartDevice‑Box</div>
-                            <div class="item">Virtueller Platzhalter</div>
-                        </div>
-                    </div>
-
-                    <div class="category" data-cat="garden">
-                        <div class="category-header">🌿 Gartenelemente</div>
-                        <div class="category-content">
-                            <div class="item">Pflanze</div>
-                            <div class="item">Markise</div>
-                            <div class="item">Gartenmöbel</div>
-                            <div class="item">Zaun</div>
-                        </div>
-                    </div>
-
-                    <div class="category" data-cat="visual">
-                        <div class="category-header">🎨 Darstellung</div>
-                        <div class="category-content">
-                            <div class="item">Farbe</div>
-                            <div class="item">Kontrast</div>
-                            <div class="item">Transparenz</div>
-                            <div class="item">Wandstärke</div>
-                            <div class="item">Sichtbarkeit (Editor)</div>
-                            <div class="item">Sichtbarkeit (View)</div>
-                            <div class="item">Layer</div>
-                        </div>
-                    </div>
-
-                    <div class="category" data-cat="snapgrid">
-                        <div class="category-header">📐 Snap & Grid</div>
-                        <div class="category-content">
-                            <div class="item">Snap to Grid</div>
-                            <div class="item">Snap to Angle</div>
-                            <div class="item">Grid‑Größe</div>
-                            <div class="item">Grid‑Sichtbarkeit</div>
-                            <div class="item">Magnetismus</div>
-                            <div class="item">Punkt‑Snap</div>
-                            <div class="item">Wand‑Snap</div>
-                        </div>
-                    </div>
-
-                    <div class="category" data-cat="tools">
-                        <div class="category-header">🛠️ Werkzeuge</div>
-                        <div class="category-content">
-                            <div class="item">Auswahl</div>
-                            <div class="item">Löschen</div>
-                            <div class="item">Verschieben</div>
-                            <div class="item">Rotieren</div>
-                            <div class="item">Duplizieren</div>
-                            <div class="item">Gruppieren</div>
-                            <div class="item">Undo</div>
-                            <div class="item">Redo</div>
-                            <div class="item">Layer ein/aus</div>
-                            <div class="item">Zoom‑Reset</div>
-                        </div>
-                    </div>
-
-                </div>
-
-                <div class="sidebar-panel" data-panel="tab2" style="display:none;">
-                    <div class="element-item">Lampe</div>
-                    <div class="element-item">Steckdose</div>
-                    <div class="element-item">Heizung</div>
-                    <div class="element-item">Sensor</div>
-                </div>
-
-                <div class="sidebar-panel" data-panel="tab3" style="display:none;">
-                    <div class="settings-item">Raster anzeigen</div>
-                    <div class="settings-item">Snap aktivieren</div>
-                    <div class="settings-item">Maßeinheit: Meter</div>
-                </div>
-
-            </div>
+        <div id="editor-titlebar-right">
+            <button id="editor-undo-btn">Undo</button>
+            <button id="editor-redo-btn">Redo</button>
+            <button id="editor-close-btn">Schließen</button>
         </div>
-
     </div>
+
+    <canvas id="roomdesigner" style="display:none;"></canvas>
+
+    <!-- Grid-Panel unten rechts -->
+    <div id="canvas-grid-panel" style="display:none;">
+        <button id="btnSnapToggle">Grid</button>
+        <input type="range" id="gridSizeSlider" min="10" max="120" step="10" value="40">
+        <button id="btnCanvasToggle">Canvas</button>
+    </div>
+
+    <div id="editor-sidebar" style="display:none;">
+        <div id="editor-sidebar-tabs">
+            <button data-tab="tab1" class="active">Elemente & Werkzeuge</button>
+            <button data-tab="tab2">Smart‑Devices & Szenen</button>
+            <button data-tab="tab3">Allgemeine Optionen</button>
+        </div>
+
+        <div id="editor-sidebar-content">
+
+            <div class="sidebar-panel" data-panel="tab1">
+
+                <div class="category" data-cat="doors">
+                    <div class="category-header">🚪 Türen</div>
+                    <div class="category-content">
+                        <div class="item" data-type="door_haustuer">Haustür</div>
+                        <div class="item" data-type="door_zimmertuer">Zimmertür</div>
+                        <div class="item" data-type="door_falttuer">Falttür</div>
+                        <div class="item" data-type="door_schiebetuer">Schiebetür</div>
+                        <div class="item" data-type="door_terrassentuer">Terrassentür</div>
+                        <div class="item" data-type="door_garagentor">Garagentor</div>
+                        <div class="item" data-type="door_gartentor">Gartentor</div>
+                        <div class="item" data-type="dachluke">Dachluke</div>
+                        <div class="item" data-type="door_durchgang">Offener Durchgang</div>
+                    </div>
+                </div>
+
+                <div class="category" data-cat="windows">
+                    <div class="category-header">🪟 Fenster</div>
+                    <div class="category-content">
+                        <div class="item">Einfach</div>
+                        <div class="item">Doppelt</div>
+                        <div class="item">Kipp</div>
+                        <div class="item">Schiebe</div>
+                        <div class="item">Rund</div>
+                        <div class="item">Dachfenster</div>
+                        <div class="item">Rolladen (optional)</div>
+                    </div>
+                </div>
+
+                <div class="category" data-cat="furniture">
+                    <div class="category-header">🛋️ Möbel</div>
+                    <div class="category-content">
+                        <div class="item">Sofa</div>
+                        <div class="item">Tisch</div>
+                        <div class="item">Bett</div>
+                        <div class="item">Schrank</div>
+                        <div class="item">Küchenmodul</div>
+                    </div>
+                </div>
+
+                <div class="category" data-cat="appliances">
+                    <div class="category-header">🔌 Elektrogeräte</div>
+                    <div class="category-content">
+                        <div class="item">Kühlschrank</div>
+                        <div class="item">Herd</div>
+                        <div class="item">Waschmaschine</div>
+                        <div class="item">Fernseher</div>
+                    </div>
+                </div>
+
+                <div class="category" data-cat="smartcontainers">
+                    <div class="category-header">📦 Smart‑Device‑Container</div>
+                    <div class="category-content">
+                        <div class="item">SmartDevice‑Container</div>
+                        <div class="item">SmartDevice‑Box</div>
+                        <div class="item">Virtueller Platzhalter</div>
+                    </div>
+                </div>
+
+                <div class="category" data-cat="garden">
+                    <div class="category-header">🌿 Gartenelemente</div>
+                    <div class="category-content">
+                        <div class="item">Pflanze</div>
+                        <div class="item">Markise</div>
+                        <div class="item">Gartenmöbel</div>
+                        <div class="item">Zaun</div>
+                    </div>
+                </div>
+
+                <div class="category" data-cat="visual">
+                    <div class="category-header">🎨 Darstellung</div>
+                    <div class="category-content">
+                        <div class="item">Farbe</div>
+                        <div class="item">Kontrast</div>
+                        <div class="item">Transparenz</div>
+                        <div class="item">Wandstärke</div>
+                        <div class="item">Sichtbarkeit (Editor)</div>
+                        <div class="item">Sichtbarkeit (View)</div>
+                        <div class="item">Layer</div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="sidebar-panel" data-panel="tab2" style="display:none;">
+                <div class="element-item">Lampe</div>
+                <div class="element-item">Steckdose</div>
+                <div class="element-item">Heizung</div>
+                <div class="element-item">Sensor</div>
+            </div>
+
+            <div class="sidebar-panel" data-panel="tab3" style="display:none;">
+                <div class="settings-item">Raster anzeigen</div>
+                <div class="settings-item">Snap aktivieren</div>
+                <div class="settings-item">Maßeinheit: Meter</div>
+            </div>
+
+        </div>
+    </div>
+
 </div>
 
-<!-- ========================================================= -->
-<!-- ⭐ SMART HOME VIEW (unverändert) -->
-<!-- ========================================================= -->
 <div id="smarthome-root">
     <div id="sh-floor-list"></div>
     <canvas id="smarthome-canvas"></canvas>
     <div id="smarthome-overlay"></div>
 </div>
 
-<!-- Debug: Editor öffnen -->
 <button id="btnOpenEditor" style="
     position: absolute;
     top: 70px;
@@ -231,18 +190,12 @@
     z-index: 9999;
 ">Editor öffnen</button>
 
-<button id="btnResetView">Reset</button>
-<button id="btnSnapToggle">Snap</button>
-<input type="range" id="gridSizeSlider" min="10" max="120" step="10" value="40">
-
-<!-- Group Header -->
 <div id="sh-group-header" class="hidden">
     <div id="sh-group-back" class="material-icons">arrow_back</div>
     <div id="sh-group-title"></div>
     <div id="sh-group-rooms"></div>
 </div>
 
-<!-- Popup -->
 <div id="smarthome-popup" class="sh-popup hidden">
     <div class="sh-popup-content">
         <div class="sh-popup-header">
@@ -262,19 +215,16 @@
     </div>
 </div>
 
-<!-- Minimap -->
 <div id="smarthome-minimap">
     <canvas id="smarthome-minimap-canvas"></canvas>
 </div>
 
-<!-- Scripts -->
 <script src="smarthome.data.js"></script>
 <script src="smarthome.view.js"></script>
 <script src="smarthome.groups.js"></script>
 <script src="smarthome.theme.js"></script>
 <script src="smarthome.module.js"></script>
 
-<!-- Editor Script -->
 <script src="smarthome.editor.js?v=1"></script>
 <script src="smarthome.ui.js"></script>
 
@@ -282,13 +232,8 @@
     SmartHomeModule.init();
 </script>
 
-
-<!-- Globales Kontextmenü -->
 <div id="context-menu" class="hidden"></div>
 
-
-    
-    
 <div id="project-switcher" class="modal hidden">
     <div class="modal-content">
         <h2>Projekt wechseln</h2>
@@ -301,7 +246,6 @@
     </div>
 </div>
 
-<!-- Move Room Popup -->
 <div id="move-room-popup" class="modal hidden">
     <div class="modal-content">
         <h2>Raum verschieben</h2>
@@ -313,7 +257,5 @@
     </div>
 </div>
 
-    
-    
 </body>
 </html>
