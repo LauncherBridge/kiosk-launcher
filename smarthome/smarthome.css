@@ -1,9 +1,3 @@
-/* DEBUG: Canvas-Tools immer sichtbar */
-.canvas-tool {
-    display: block !important;
-}
-
-
 /* ---------------------------------------------------------
    GLOBAL FIX – VOLLE HÖHE FÜR DAS PANEL
 --------------------------------------------------------- */
@@ -1229,28 +1223,35 @@ body:not(.editor-mode) #editor-bottombar {
 }
 
 /* ---------------------------------------------------------
-   Canvas Tools automatisch nach oben verschieben
+   CANVAS TOOLS – POSITION IM CANVAS, DYNAMISCH ZUR BOTTOMBAR & SIDEBAR
 --------------------------------------------------------- */
 
+/* Canvas-Tools nur im Editor sichtbar (Logik bleibt) */
+body:not(.editor-mode) .canvas-tool {
+    display: none !important;
+}
+
+/* Basis-Position: innerhalb des Canvas, oberhalb der Bottom-Bar,
+   links von der rechten Sidebar, dynamisch über CSS-Variablen */
 .canvas-tool {
     position: absolute;
-    bottom: 80px; /* über der Bottom-Bar */
-    left: 20px;   /* links, sicher sichtbar */
     z-index: 999999;
+    /* vertikal: direkt über der Bottom-Bar */
+    bottom: calc(var(--bottombar-height) + 12px);
+    /* horizontal: rechtsbündig, aber vor der rechten Sidebar */
+    right: calc(var(--sidebar-width) + 20px);
+    font-family: "Consolas", "Courier New", monospace;
 }
 
-#btnSnapToggle.canvas-tool {
-    left: 20px;
-}
-
-#gridSizeSlider.canvas-tool {
-    left: 120px;
-}
-
+/* Grid-Button (im Canvas, links vom Slider) */
 #btnCanvasToggle.canvas-tool {
-    left: 260px;
+    margin-right: 12px;
 }
 
+/* Grid-Size-Slider (direkt rechts neben dem Grid-Button) */
+#gridSizeSlider.canvas-tool {
+    margin-right: 0;
+}
 
 /* ---------------------------------------------------------
    REMOVE OLD SMART HOME BUTTONS
