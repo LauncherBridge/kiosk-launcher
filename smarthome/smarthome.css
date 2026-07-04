@@ -16,34 +16,10 @@ html, body {
 --------------------------------------------------------- */
 
 :root {
-    /* Theme variables werden dynamisch gesetzt */
-
-    /* UI-Layout-Variablen */
-    --sidebar-left-width: 220px;   /* linke Sidebar */
-    --sidebar-width: 300px;        /* rechte Sidebar */
-    --sidebar-right-width: 300px;  /* Alias für rechte Sidebar */
-    --bottombar-height: 60px;      /* Höhe der Bottom-Bar */
-}
-
-.sh-card {
-    background: var(--sh-surface-light);
-    padding: var(--sh-space-md);
-    border-radius: var(--sh-radius-md);
-    box-shadow: var(--sh-shadow-soft);
-    font-family: "Consolas", "Courier New", monospace;
-}
-
-.sh-title {
-    font-size: 22px;
-    font-weight: 600;
-    margin-bottom: var(--sh-space-md);
-    color: var(--sh-text);
-    font-family: "Consolas", "Courier New", monospace;
-}
-
-.sh-text-dim {
-    color: var(--sh-text-dim);
-    font-family: "Consolas", "Courier New", monospace;
+    --sidebar-left-width: 220px;
+    --sidebar-width: 300px;
+    --sidebar-right-width: 300px;
+    --bottombar-height: 60px;
 }
 
 /* ---------------------------------------------------------
@@ -725,15 +701,15 @@ html, body {
     right: 0;
     width: var(--sidebar-width);
     height: calc(100vh - 48px);
-    background: rgba(0,0,0,0.82);
+    background: rgba(0,0,0,0.88);
     backdrop-filter: blur(8px);
-    border-left: 1px solid rgba(255,255,255,0.12);
+    border-left: 1px solid rgba(255,0,0,0.25);
     display: flex;
     flex-direction: column;
     z-index: 99998;
     color: white;
     padding-top: 0;
-    box-shadow: -4px 0 12px rgba(0,0,0,0.4);
+    box-shadow: -4px 0 14px rgba(255,0,0,0.15);
     font-family: "Consolas", "Courier New", monospace;
 }
 
@@ -788,8 +764,8 @@ html, body {
 .tool-button {
     padding: 12px;
     margin-bottom: 10px;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(40,0,0,0.45);
+    border: 1px solid rgba(255,0,0,0.25);
     border-radius: 6px;
     cursor: pointer;
     color: #ddd;
@@ -799,7 +775,9 @@ html, body {
 }
 
 .tool-button:hover {
-    background: rgba(255,255,255,0.18);
+    background: rgba(80,0,0,0.65);
+    border-color: rgba(255,60,60,0.45);
+    color: #fff;
 }
 
 .tool-button.active {
@@ -816,12 +794,13 @@ html, body {
 
 .category-header {
     padding: 10px;
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(40,0,0,0.45);
+    border: 1px solid rgba(255,0,0,0.25);
     border-radius: 6px;
     cursor: pointer;
     font-weight: bold;
-    color: #fff;
+    color: #ffdddd;
+    text-shadow: 0 0 6px rgba(255,0,0,0.4);
     font-family: "Consolas", "Courier New", monospace;
 }
 
@@ -837,15 +816,18 @@ html, body {
 .category .item {
     padding: 8px;
     margin-bottom: 6px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(20,0,0,0.35);
+    border: 1px solid rgba(255,0,0,0.15);
     border-radius: 4px;
     cursor: pointer;
+    color: #ddd;
     font-family: "Consolas", "Courier New", monospace;
 }
 
 .category .item:hover {
-    background: rgba(255,255,255,0.15);
+    background: rgba(60,0,0,0.45);
+    border-color: rgba(255,0,0,0.35);
+    color: #fff;
 }
 
 /* Elemente & Einstellungen */
@@ -854,8 +836,8 @@ html, body {
 .settings-item {
     padding: 12px;
     margin-bottom: 10px;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(40,0,0,0.45);
+    border: 1px solid rgba(255,0,0,0.25);
     border-radius: 6px;
     color: #ddd;
     font-size: 15px;
@@ -866,7 +848,9 @@ html, body {
 
 .element-item:hover,
 .settings-item:hover {
-    background: rgba(255,255,255,0.18);
+    background: rgba(80,0,0,0.65);
+    border-color: rgba(255,60,60,0.45);
+    color: #fff;
 }
 
 .element-item.active,
@@ -884,7 +868,6 @@ body.editor-mode #sh-floor-list {
     display: none !important;
 }
 
-/* Drei-Punkte-Menü nur im Editor anzeigen */
 body:not(.editor-mode) #editor-project-menu-btn-sidebar {
     display: none !important;
 }
@@ -894,12 +877,10 @@ body.editor-mode .editor-btn {
     display: none !important;
 }
 
-/* Canvas-Tools nur im Editor */
 body:not(.editor-mode) .canvas-tool {
     display: none !important;
 }
 
-/* Bottom-Bar nur im Editor */
 body:not(.editor-mode) #editor-bottombar {
     display: none !important;
 }
@@ -1059,7 +1040,6 @@ body:not(.editor-mode) #editor-bottombar {
     color: #bbb;
 }
 
-/* dezenter Hinweis statt "(aktuell)" */
 #move-room-floor-list button.disabled-floor::after {
     content: " •";
     color: rgba(255,255,255,0.25);
@@ -1087,19 +1067,6 @@ body:not(.editor-mode) #editor-bottombar {
     color: #fff;
 }
 
-/* MOVE ROOM POPUP – Sidebar-Style Override */
-
-#move-room-popup .modal-content {
-    background: rgba(0,0,0,0.82) !important;
-    border: 1px solid rgba(255,255,255,0.12) !important;
-    border-radius: 8px !important;
-    padding: 20px !important;
-    width: 300px !important;
-    color: white !important;
-    backdrop-filter: blur(6px) !important;
-    box-shadow: 0 0 20px rgba(0,0,0,0.4) !important;
-}
-
 /* ---------------------------------------------------------
    ROOM DESIGNER TRANSITION & RE BACKGROUND
 --------------------------------------------------------- */
@@ -1112,7 +1079,6 @@ body:not(.editor-mode) #editor-bottombar {
     ) !important;
 }
 
-/* Optional: leichte Scanlines */
 #roomdesigner::after {
     content: "";
     position: absolute;
@@ -1199,8 +1165,6 @@ body:not(.editor-mode) #editor-bottombar {
     color: #e0e0e0;
 }
 
-/* Bottom-Bar Buttons / Items */
-
 .bottombar-item {
     padding: 8px 14px;
     background: rgba(40, 0, 0, 0.55);
@@ -1223,35 +1187,66 @@ body:not(.editor-mode) #editor-bottombar {
 }
 
 /* ---------------------------------------------------------
-   CANVAS TOOLS – POSITION IM CANVAS, DYNAMISCH ZUR BOTTOMBAR & SIDEBAR
+   CANVAS TOOLS – RESIDENT EVIL STYLE
 --------------------------------------------------------- */
 
-/* Canvas-Tools nur im Editor sichtbar (Logik bleibt) */
-body:not(.editor-mode) .canvas-tool {
-    display: none !important;
-}
-
-/* Basis-Position: innerhalb des Canvas, oberhalb der Bottom-Bar,
-   links von der rechten Sidebar, dynamisch über CSS-Variablen */
 .canvas-tool {
     position: absolute;
-    z-index: 999999;
-    /* vertikal: direkt über der Bottom-Bar */
-    bottom: calc(var(--bottombar-height) + 12px);
-    /* horizontal: rechtsbündig, aber vor der rechten Sidebar */
+    bottom: calc(var(--bottombar-height) + 14px);
     right: calc(var(--sidebar-width) + 20px);
+    z-index: 999999;
     font-family: "Consolas", "Courier New", monospace;
+
+    /* Resident Evil Style */
+    background: rgba(40, 0, 0, 0.55);
+    border: 1px solid rgba(255, 0, 0, 0.35);
+    color: #e0e0e0;
+    padding: 8px 12px;
+    border-radius: 6px;
+    box-shadow: 0 0 6px rgba(255, 0, 0, 0.25);
+    letter-spacing: 0.5px;
+    transition: all 0.15s ease-out;
 }
 
-/* Grid-Button (im Canvas, links vom Slider) */
+.canvas-tool:hover {
+    background: rgba(80, 0, 0, 0.85);
+    border-color: rgba(255, 60, 60, 0.6);
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.45);
+    color: #fff;
+}
+
+/* Grid-Button links */
 #btnCanvasToggle.canvas-tool {
-    margin-right: 12px;
+    transform: translateX(-140px);
 }
 
-/* Grid-Size-Slider (direkt rechts neben dem Grid-Button) */
+/* Grid-Size-Slider rechts */
 #gridSizeSlider.canvas-tool {
-    margin-right: 0;
+    transform: translateX(0);
+    width: 140px;
+    height: 10px;
+
+    background: rgba(20, 0, 0, 0.45);
+    border: 1px solid rgba(255, 0, 0, 0.25);
+    box-shadow: inset 0 0 6px rgba(255, 0, 0, 0.25);
 }
+
+#gridSizeSlider.canvas-tool::-webkit-slider-thumb {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: rgba(255, 60, 60, 0.9);
+    border-radius: 50%;
+    border: 1px solid rgba(255, 0, 0, 0.45);
+    box-shadow: 0 0 6px rgba(255, 0, 0, 0.45);
+    cursor: pointer;
+}
+
+#gridSizeSlider.canvas-tool::-webkit-slider-thumb:hover {
+    background: rgba(255, 100, 100, 1);
+}
+
+/* Snap-Button vollständig entfernt */
 
 /* ---------------------------------------------------------
    REMOVE OLD SMART HOME BUTTONS
