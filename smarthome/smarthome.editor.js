@@ -1357,7 +1357,7 @@ init() {
     this.canvas.addEventListener("touchend", (e) => this.onTouchEnd(e));
 
     this.createContextMenu();
-    this.setupSnapButton();
+    this.setupGridButton();
     this.setupGridSlider();
     this.setupResetButton();
 
@@ -4504,19 +4504,19 @@ drawDoorArc(ctx, d, hx, hy, px, py, elen, side) {
     // --------------------------------------------------
     // Snap-Toggle
     // --------------------------------------------------
-    setupSnapButton() {
-        const btn = document.getElementById("btnSnapToggle");
-        if (!btn) return;
-    
-        btn.addEventListener("click", () => {
-            this.snapEnabled = !this.snapEnabled;
-    
-            // Optional: Button visuell hervorheben
-            btn.style.background = this.snapEnabled ? "#66bb6a" : "#444";
-    
-            this.render();
-        });
-    },
+setupGridButton() {
+    const btn = document.getElementById("btnCanvasToggle");
+    if (!btn) return;
+
+    btn.addEventListener("click", () => {
+        this.snapEnabled = !this.snapEnabled;
+
+        btn.style.background = this.snapEnabled ? "#66bb6a" : "#444";
+
+        this.render();
+    });
+},
+
 
     setupResetButton() {
         const btn = document.getElementById("btnResetView");
