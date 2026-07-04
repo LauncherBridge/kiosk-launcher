@@ -1192,18 +1192,20 @@ body:not(.editor-mode) #editor-bottombar {
 }
 
 /* ---------------------------------------------------------
-   CANVAS TOOLS – RESIDENT EVIL STYLE
+   CANVAS TOOLS – Resident Evil Style, sauber nebeneinander
 --------------------------------------------------------- */
 
-
-.canvas-tool {
+#canvasToolsContainer {
     position: absolute;
     bottom: calc(var(--bottombar-height) + 14px);
     right: calc(var(--sidebar-width) + 20px);
+    display: flex;
+    gap: 12px; /* Abstand zwischen Button und Slider */
     z-index: 999999;
-    font-family: "Consolas", "Courier New", monospace;
+}
 
-    /* Resident Evil Style */
+/* Grid-Button */
+#btnCanvasToggle.canvas-tool {
     background: rgba(40, 0, 0, 0.55);
     border: 1px solid rgba(255, 0, 0, 0.35);
     color: #e0e0e0;
@@ -1214,27 +1216,21 @@ body:not(.editor-mode) #editor-bottombar {
     transition: all 0.15s ease-out;
 }
 
-.canvas-tool:hover {
+#btnCanvasToggle.canvas-tool:hover {
     background: rgba(80, 0, 0, 0.85);
     border-color: rgba(255, 60, 60, 0.6);
     box-shadow: 0 0 10px rgba(255, 0, 0, 0.45);
     color: #fff;
 }
 
-/* Grid-Button links */
-#btnCanvasToggle.canvas-tool {
-    transform: translateX(-140px);
-}
-
-/* Grid-Size-Slider rechts */
+/* Slider */
 #gridSizeSlider.canvas-tool {
-    transform: translateX(0);
     width: 140px;
     height: 10px;
-
     background: rgba(20, 0, 0, 0.45);
     border: 1px solid rgba(255, 0, 0, 0.25);
     box-shadow: inset 0 0 6px rgba(255, 0, 0, 0.25);
+    border-radius: 6px;
 }
 
 #gridSizeSlider.canvas-tool::-webkit-slider-thumb {
@@ -1252,7 +1248,6 @@ body:not(.editor-mode) #editor-bottombar {
     background: rgba(255, 100, 100, 1);
 }
 
-/* Snap-Button vollständig entfernt */
 
 /* ---------------------------------------------------------
    REMOVE OLD SMART HOME BUTTONS
