@@ -8,6 +8,7 @@ html, body {
     margin: 0;
     padding: 0;
     background: black;
+    font-family: "Consolas", "Courier New", monospace;
 }
 
 /* ---------------------------------------------------------
@@ -16,6 +17,8 @@ html, body {
 
 :root {
     /* Theme variables werden dynamisch gesetzt */
+    --sidebar-width: 300px;     /* rechte Sidebar */
+    --bottombar-height: 60px;   /* Höhe der neuen Bottom-Bar */
 }
 
 .sh-card {
@@ -23,6 +26,7 @@ html, body {
     padding: var(--sh-space-md);
     border-radius: var(--sh-radius-md);
     box-shadow: var(--sh-shadow-soft);
+    font-family: "Consolas", "Courier New", monospace;
 }
 
 .sh-title {
@@ -30,10 +34,12 @@ html, body {
     font-weight: 600;
     margin-bottom: var(--sh-space-md);
     color: var(--sh-text);
+    font-family: "Consolas", "Courier New", monospace;
 }
 
 .sh-text-dim {
     color: var(--sh-text-dim);
+    font-family: "Consolas", "Courier New", monospace;
 }
 
 /* ---------------------------------------------------------
@@ -48,7 +54,7 @@ html, body {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    font-family: sans-serif;
+    font-family: "Consolas", "Courier New", monospace;
 }
 
 #smarthome-root {
@@ -57,6 +63,7 @@ html, body {
     height: 100%;
     overflow: hidden;
     background: var(--sh-surface);
+    font-family: "Consolas", "Courier New", monospace;
 }
 
 /* ---------------------------------------------------------
@@ -97,6 +104,7 @@ html, body {
     box-shadow: var(--sh-shadow-soft);
     overflow: hidden;
     z-index: 30;
+    font-family: "Consolas", "Courier New", monospace;
 }
 
 #smarthome-minimap-canvas {
@@ -116,6 +124,7 @@ html, body {
     justify-content: center;
     align-items: center;
     z-index: 5000;
+    font-family: "Consolas", "Courier New", monospace;
 }
 
 .sh-popup.hidden {
@@ -130,6 +139,7 @@ html, body {
     padding: 20px;
     color: white;
     box-shadow: 0 0 30px rgba(0,0,0,0.4);
+    font-family: "Consolas", "Courier New", monospace;
 }
 
 .sh-popup-header {
@@ -150,6 +160,7 @@ html, body {
     color: white;
     font-size: 32px;
     padding: 10px;
+    cursor: pointer;
 }
 
 .sh-popup-tabs {
@@ -166,6 +177,8 @@ html, body {
     border-radius: 10px;
     color: white;
     font-size: 16px;
+    cursor: pointer;
+    font-family: "Consolas", "Courier New", monospace;
 }
 
 .sh-popup-body {
@@ -193,6 +206,7 @@ html, body {
     color: #fff;
     font-size: 16px;
     transition: opacity 0.25s ease;
+    font-family: "Consolas", "Courier New", monospace;
 }
 
 #sh-group-header.hidden {
@@ -276,6 +290,7 @@ html, body {
     padding: 10px 0;
     overflow-y: auto;
     z-index: 20;
+    font-family: "Consolas", "Courier New", monospace;
 }
 
 .sh-floor-item {
@@ -290,6 +305,7 @@ html, body {
     font-weight: 500;
     border-radius: 6px;
     transition: background 0.15s ease;
+    font-family: "Consolas", "Courier New", monospace;
 }
 
 .sh-floor-item:hover {
@@ -328,6 +344,7 @@ html, body {
     font-size: 16px;
     z-index: 9999;
     display: none;
+    font-family: "Consolas", "Courier New", monospace;
 }
 
 /* ---------------------------------------------------------
@@ -350,6 +367,7 @@ html, body {
     font-size: 18px;
     border-bottom: 1px solid rgba(255,255,255,0.15);
     z-index: 99999;
+    font-family: "Consolas", "Courier New", monospace;
 }
 
 #editor-titlebar button {
@@ -361,6 +379,7 @@ html, body {
     font-size: 14px;
     cursor: pointer;
     margin-right: 4px;
+    font-family: "Consolas", "Courier New", monospace;
 }
 
 #editor-titlebar button:hover {
@@ -377,6 +396,7 @@ html, body {
     cursor: pointer;
     margin-right: 6px;
     transition: background 0.15s ease;
+    font-family: "Consolas", "Courier New", monospace;
 }
 
 #editor-titlebar-right .titlebar-btn:hover {
@@ -421,16 +441,12 @@ html, body {
     inset: 0;
     display: flex;
     z-index: 9000;
+    font-family: "Consolas", "Courier New", monospace;
 }
-
-
-
 
 /* ---------------------------------------------------------
    EDITOR – LINKE SIDEBAR
 --------------------------------------------------------- */
-/* ⭐ Projekt-Header (linke Sidebar, eindeutig) */
-
 
 .floor-toggle {
     display: inline-block;
@@ -440,7 +456,6 @@ html, body {
 .floor-group.open .floor-toggle {
     transform: rotate(90deg);
 }
-
 
 #editor-sidebar-left {
     position: relative;
@@ -454,6 +469,7 @@ html, body {
     overflow-y: auto;
     backdrop-filter: blur(4px);
     z-index: 99990;
+    font-family: "Consolas", "Courier New", monospace;
 }
 
 #editor-location-list {
@@ -461,6 +477,7 @@ html, body {
     padding: 10px;
     font-size: 15px;
     overflow-y: auto;
+    font-family: "Consolas", "Courier New", monospace;
 }
 
 /* Etagen = category-header */
@@ -474,16 +491,13 @@ html, body {
     font-weight: bold;
     color: #fff;
     margin-top: 12px;
-   gap: 6px;
     display: flex;
-      gap: 8px;
-
-justify-content: space-between;
+    gap: 8px;
+    justify-content: space-between;
     align-items: center;
-
-    /* >>> FIX: prevents header overlapping rooms <<< */
     position: relative;
     z-index: 4;
+    font-family: "Consolas", "Courier New", monospace;
 }
 
 .floor-left {
@@ -491,6 +505,7 @@ justify-content: space-between;
     align-items: center;
     gap: 6px;
 }
+
 .floor-menu {
     cursor: pointer;
     color: #ccc;
@@ -503,7 +518,6 @@ justify-content: space-between;
     background: rgba(255,255,255,0.12);
     color: #fff;
 }
-
 
 .floor-arrow {
     width: 10px;
@@ -525,7 +539,6 @@ justify-content: space-between;
 
 /* Räume = item */
 .room-entry {
-    /* Grundstil wie Sidebar-Item */
     padding: 8px 10px;
     margin-top: 6px;
     background: rgba(255,255,255,0.06);
@@ -534,28 +547,22 @@ justify-content: space-between;
     cursor: pointer;
     color: #ccc;
     transition: background 0.15s ease, color 0.15s ease;
-
-    /* Klick-Fix */
     position: relative;
     z-index: 5;
-
-    /* Layout wie floor-header → 3-Punkt rechts */
     display: flex;
     justify-content: space-between;
     align-items: center;
-
-    /* Einrückung ohne Überbreite */
-    padding-left: 18px;       /* optische Einrückung */
-    margin-left: 0;           /* kein echtes Verschieben */
-    width: 100%;              /* verhindert horizontales Scrollen */
-    box-sizing: border-box;   /* verhindert Überlaufen */
+    padding-left: 18px;
+    margin-left: 0;
+    width: 100%;
+    box-sizing: border-box;
+    font-family: "Consolas", "Courier New", monospace;
 }
 
 /* Abstand zwischen Räumen */
 .room-entry + .room-entry {
     margin-top: 4px;
 }
-
 
 .room-name {
     flex: 1 1 auto;
@@ -570,7 +577,7 @@ justify-content: space-between;
     font-size: 18px;
     padding: 4px 6px;
     border-radius: 4px;
-       opacity: 0.8;
+    opacity: 0.8;
     transition: opacity 0.15s ease, background 0.15s ease;
 }
 
@@ -579,22 +586,17 @@ justify-content: space-between;
     color: #fff;
 }
 
-
 .room-entry:hover {
     background: rgba(255,255,255,0.14);
-   opacity: 1;
+    opacity: 1;
     color: #fff;
 }
-
-
 
 /* Einklappbare Etagen */
 
 .floor-group .room-list {
     display: none;
     padding-left: 4px;
-
-    /* >>> FIX: ensures room-list is below header <<< */
     position: relative;
     z-index: 1;
 }
@@ -603,22 +605,10 @@ justify-content: space-between;
     display: block;
 }
 
-.floor-rename-input {
-    flex: 0 1 auto;      /* ⭐ erlaubt Schrumpfen, verhindert Vollbreite */
-    width: 120px;        /* ⭐ gewünschte Breite */
-    max-width: 90%;
-    padding: 3px 6px;
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 4px;
-    color: #fff;
-    font-size: 14px;
-    box-sizing: border-box;
-}
-
+.floor-rename-input,
 .room-rename-input {
-    flex: 0 1 auto;      /* ⭐ gleiche Flex-Logik wie Etage */
-    width: 120px;        /* ⭐ gleiche Breite */
+    flex: 0 1 auto;
+    width: 120px;
     max-width: 90%;
     padding: 3px 6px;
     background: rgba(255,255,255,0.1);
@@ -627,8 +617,8 @@ justify-content: space-between;
     color: #fff;
     font-size: 14px;
     box-sizing: border-box;
+    font-family: "Consolas", "Courier New", monospace;
 }
-
 
 /* Projektbox oben */
 .editor-projectbox {
@@ -637,13 +627,12 @@ justify-content: space-between;
     justify-content: space-between;
     padding: 6px 10px;
     margin-bottom: 6px;
-
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 6px;
-
     font-size: 14px;
     color: #fff;
+    font-family: "Consolas", "Courier New", monospace;
 }
 
 /* Projektname */
@@ -666,6 +655,7 @@ justify-content: space-between;
 .editor-projectbox-menu:hover {
     background: rgba(255, 255, 255, 0.1);
 }
+
 .context-menu-item.delete {
     color: #ff4d4d;
     font-weight: 500;
@@ -676,22 +666,21 @@ justify-content: space-between;
     color: #ff4d4d !important;
 }
 
-
-
 /* Eingabefeld beim Umbenennen */
 .project-rename-input {
     flex: 0 1 auto;
     width: 140px;
     max-width: 90%;
     padding: 3px 6px;
-
     background: rgba(255,255,255,0.1);
     border: 1px solid rgba(255,255,255,0.2);
     border-radius: 4px;
     color: #fff;
     font-size: 14px;
     box-sizing: border-box;
+    font-family: "Consolas", "Courier New", monospace;
 }
+
 .menu-item.delete {
     color: #ff4d4d;
     font-weight: 500;
@@ -715,7 +704,6 @@ justify-content: space-between;
     text-shadow: 0 0 6px rgba(80,140,255,0.8);
 }
 
-
 /* ---------------------------------------------------------
    EDITOR – RECHTE SIDEBAR
 --------------------------------------------------------- */
@@ -735,6 +723,7 @@ justify-content: space-between;
     color: white;
     padding-top: 0;
     box-shadow: -4px 0 12px rgba(0,0,0,0.4);
+    font-family: "Consolas", "Courier New", monospace;
 }
 
 /* Tabs */
@@ -755,6 +744,7 @@ justify-content: space-between;
     font-size: 14px;
     letter-spacing: 0.5px;
     transition: color 0.2s ease;
+    font-family: "Consolas", "Courier New", monospace;
 }
 
 #editor-sidebar-tabs button.active {
@@ -780,6 +770,7 @@ justify-content: space-between;
     color: #eee;
     font-size: 14px;
     line-height: 1.4;
+    font-family: "Consolas", "Courier New", monospace;
 }
 
 /* Tool-Buttons */
@@ -794,6 +785,7 @@ justify-content: space-between;
     color: #ddd;
     font-size: 15px;
     transition: background 0.2s ease, border-color 0.2s ease;
+    font-family: "Consolas", "Courier New", monospace;
 }
 
 .tool-button:hover {
@@ -820,6 +812,7 @@ justify-content: space-between;
     cursor: pointer;
     font-weight: bold;
     color: #fff;
+    font-family: "Consolas", "Courier New", monospace;
 }
 
 .category-content {
@@ -838,6 +831,7 @@ justify-content: space-between;
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: 4px;
     cursor: pointer;
+    font-family: "Consolas", "Courier New", monospace;
 }
 
 .category .item:hover {
@@ -857,6 +851,7 @@ justify-content: space-between;
     font-size: 15px;
     cursor: pointer;
     transition: background 0.2s ease, border-color 0.2s ease;
+    font-family: "Consolas", "Courier New", monospace;
 }
 
 .element-item:hover,
@@ -878,12 +873,11 @@ justify-content: space-between;
 body.editor-mode #sh-floor-list {
     display: none !important;
 }
+
 /* Drei-Punkte-Menü nur im Editor anzeigen */
 body:not(.editor-mode) #editor-project-menu-btn-sidebar {
     display: none !important;
 }
-
-
 
 body.editor-mode #btnOpenEditor,
 body.editor-mode .editor-btn {
@@ -907,6 +901,7 @@ body.editor-mode .editor-btn {
     z-index: 999999;
     display: none;
     backdrop-filter: blur(4px);
+    font-family: "Consolas", "Courier New", monospace;
 }
 
 #context-menu.visible {
@@ -921,6 +916,7 @@ body.editor-mode .editor-btn {
     white-space: nowrap;
     background: rgba(255,255,255,0.03);
     transition: background 0.15s ease, color 0.15s ease;
+    font-family: "Consolas", "Courier New", monospace;
 }
 
 .context-menu-item:hover {
@@ -942,6 +938,7 @@ body.editor-mode .editor-btn {
     align-items: center;
     justify-content: center;
     z-index: 999999;
+    font-family: "Consolas", "Courier New", monospace;
 }
 
 .modal.hidden {
@@ -955,13 +952,13 @@ body.editor-mode .editor-btn {
     width: 300px;
     color: white;
     box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    font-family: "Consolas", "Courier New", monospace;
 }
 
 #project-list option.current-project {
     color: #999;
     font-style: italic;
 }
-
 
 #project-list {
     width: 100%;
@@ -977,45 +974,6 @@ body.editor-mode .editor-btn {
     gap: 10px;
 }
 
-function closeMoveRoomPopup() {
-    const popup = document.getElementById("move-room-popup");
-    if (popup) {
-        popup.classList.add("hidden");
-    }
-}
-
-#move-room-popup .modal-content {
-    background: rgba(0,0,0,0.82);
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 8px;
-    padding: 20px;
-    width: 300px;
-    color: white;
-    backdrop-filter: blur(6px);
-}
-
-#move-room-cancel-btn {
-    width: 100%;
-    padding: 10px;
-    margin-top: 10px;
-
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 6px;
-
-    color: #ddd;
-    font-size: 15px;
-    cursor: pointer;
-
-    transition: background 0.2s ease, border-color 0.2s ease;
-}
-
-#move-room-cancel-btn:hover {
-    background: rgba(255,255,255,0.18);
-    border-color: rgba(255,255,255,0.25);
-    color: #fff;
-}
-
 /* ---------------------------------------------------------
    MOVE ROOM POPUP – Stil wie Sidebar
 --------------------------------------------------------- */
@@ -1028,22 +986,41 @@ function closeMoveRoomPopup() {
     width: 300px;
     color: white;
     backdrop-filter: blur(6px);
+    box-shadow: 0 0 20px rgba(0,0,0,0.4);
+    max-height: 80vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    font-family: "Consolas", "Courier New", monospace;
 }
+
+#move-room-popup h2 {
+    margin-top: 0;
+    margin-bottom: 14px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    font-family: "Consolas", "Courier New", monospace;
+}
+
+#move-room-floor-list {
+    flex: 1;
+    overflow-y: auto;
+}
+
 #move-room-floor-list button {
     width: 100%;
     padding: 10px;
     margin-bottom: 8px;
-
     background: rgba(255,255,255,0.06);
     border: 1px solid rgba(255,255,255,0.12);
     border-radius: 6px;
-
     color: #ddd;
     font-size: 15px;
     text-align: left;
     cursor: pointer;
-
     transition: background 0.2s ease, border-color 0.2s ease;
+    font-family: "Consolas", "Courier New", monospace;
 }
 
 #move-room-floor-list button:hover {
@@ -1052,52 +1029,17 @@ function closeMoveRoomPopup() {
     color: #fff;
 }
 
-const btn = document.createElement("button");
-btn.textContent = floor.name;
-
-// Aktuelle Etage → deaktivieren
-if (floor.id === project.rooms[roomId].floorId) {
-    btn.classList.add("disabled-floor");
-    btn.disabled = true;
-} else {
-    btn.onclick = () => {
-        applyRoomMove(roomId, floor.id);
-        closeMoveRoomPopup();
-    };
-}
-
-
-#move-room-popup h2 {
-    margin-top: 0;
-    margin-bottom: 14px;
-    font-size: 18px;
-    font-weight: 600;
-    color: #fff;
-}
-
-#move-room-popup .modal-content {
-    max-height: 80vh;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-}
-
-#move-room-floor-list {
-    flex: 1;
-    overflow-y: auto;
-}
-
 #move-room-floor-list button.disabled-floor {
-    background: rgba(255,255,255,0.08);   /* etwas dunkler, aber nicht tot */
+    background: rgba(255,255,255,0.08);
     border-color: rgba(255,255,255,0.15);
-    color: #bbb;                          /* gut lesbar, aber leicht entsättigt */
+    color: #bbb;
     cursor: default;
     pointer-events: none;
-    opacity: 0.75;                        /* nur leicht abgeschwächt */
+    opacity: 0.75;
 }
 
 #move-room-floor-list button.disabled-floor:hover {
-    background: rgba(255,255,255,0.08);   /* kein Hover-Effekt */
+    background: rgba(255,255,255,0.08);
     border-color: rgba(255,255,255,0.15);
     color: #bbb;
 }
@@ -1110,21 +1052,29 @@ if (floor.id === project.rooms[roomId].floorId) {
     margin-left: 4px;
 }
 
+#move-room-cancel-btn {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 6px;
+    color: #ddd;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+    font-family: "Consolas", "Courier New", monospace;
+}
+
+#move-room-cancel-btn:hover {
+    background: rgba(255,255,255,0.18);
+    border-color: rgba(255,255,255,0.25);
+    color: #fff;
+}
 
 /* ---------------------------------------------------------
-   MOVE ROOM POPUP – Sidebar-Style Override
+   ROOMDESIGNER TRANSITION
 --------------------------------------------------------- */
-
-#move-room-popup .modal-content {
-    background: rgba(0,0,0,0.82) !important;
-    border: 1px solid rgba(255,255,255,0.12) !important;
-    border-radius: 8px !important;
-    padding: 20px !important;
-    width: 300px !important;
-    color: white !important;
-    backdrop-filter: blur(6px) !important;
-    box-shadow: 0 0 20px rgba(0,0,0,0.4) !important;
-}
 
 #roomdesigner {
     transition: opacity 0.55s ease;
@@ -1134,39 +1084,26 @@ if (floor.id === project.rooms[roomId].floorId) {
 /* RESIDENT EVIL UI STYLE – ADDON                          */
 /* ========================================================= */
 
-/* Dynamische UI-Variablen */
-:root {
-    --sidebar-width: 300px;     /* rechte Sidebar */
-    --bottombar-height: 0px;    /* später einstellbar */
-}
-
 /* --------------------------------------------------------- */
 /* CANVAS TOOLS (Grid, Slider, Canvas) – RE Style           */
 /* --------------------------------------------------------- */
 
 .canvas-tool {
     position: absolute;
-
-    /* Dynamische Positionierung */
     bottom: calc(var(--bottombar-height) + 20px);
     right: calc(var(--sidebar-width) + 20px);
-
     margin-left: 10px;
-
     background: rgba(10, 10, 10, 0.75);
     color: #e0e0e0;
     border: 1px solid rgba(255, 0, 0, 0.35);
     padding: 8px 14px;
     border-radius: 6px;
-
     font-family: "Consolas", "Courier New", monospace;
     font-size: 14px;
     letter-spacing: 0.5px;
-
     box-shadow: 0 0 6px rgba(255, 0, 0, 0.25);
     transition: all 0.15s ease-out;
-
-    z-index: 999999; /* Sidebar kann sie nicht überdecken */
+    z-index: 999999;
 }
 
 .canvas-tool:hover {
@@ -1283,20 +1220,11 @@ if (floor.id === project.rooms[roomId].floorId) {
     opacity: 0.25;
 }
 
-
 /* ========================================================= */
-/* RESIDENT EVIL UI – Bottom Bar (prepared)                  */
+/* RESIDENT EVIL UI – Bottom Bar                             */
 /* ========================================================= */
 
-/* Dynamische UI-Variablen erweitern */
-:root {
-    --sidebar-width: 300px;     /* rechte Sidebar */
-    --bottombar-height: 60px;   /* Höhe der neuen Bottom-Bar */
-}
-
-/* --------------------------------------------------------- */
-/* Bottom-Bar Container                                      */
-/* --------------------------------------------------------- */
+/* Bottom-Bar Container */
 
 #editor-bottombar {
     position: fixed;
@@ -1304,25 +1232,19 @@ if (floor.id === project.rooms[roomId].floorId) {
     left: 0;
     width: calc(100vw - var(--sidebar-width));
     height: var(--bottombar-height);
-
     background: rgba(0, 0, 0, 0.85);
     border-top: 1px solid rgba(255, 0, 0, 0.25);
     box-shadow: 0 -4px 14px rgba(255, 0, 0, 0.15);
-
     display: flex;
     align-items: center;
     justify-content: space-between;
-
     padding: 0 20px;
     z-index: 99998;
-
     font-family: "Consolas", "Courier New", monospace;
     color: #e0e0e0;
 }
 
-/* --------------------------------------------------------- */
-/* Bottom-Bar Buttons / Items                                */
-/* --------------------------------------------------------- */
+/* Bottom-Bar Buttons / Items */
 
 .bottombar-item {
     padding: 8px 14px;
@@ -1330,10 +1252,8 @@ if (floor.id === project.rooms[roomId].floorId) {
     border: 1px solid rgba(255, 0, 0, 0.35);
     border-radius: 6px;
     color: #e0e0e0;
-
     font-size: 14px;
     letter-spacing: 0.5px;
-
     box-shadow: 0 0 6px rgba(255, 0, 0, 0.25);
     transition: all 0.15s ease-out;
     cursor: pointer;
@@ -1346,9 +1266,7 @@ if (floor.id === project.rooms[roomId].floorId) {
     color: #fff;
 }
 
-/* --------------------------------------------------------- */
-/* Canvas Tools automatisch nach oben verschieben             */
-/* --------------------------------------------------------- */
+/* Canvas Tools automatisch nach oben verschieben */
 
 .canvas-tool {
     bottom: calc(var(--bottombar-height) + 20px) !important;
