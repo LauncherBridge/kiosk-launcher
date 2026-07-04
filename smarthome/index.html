@@ -12,6 +12,7 @@
 
 <body>
 
+<!-- Linke Sidebar -->
 <div id="editor-sidebar-left">
     <div class="floor-header project-header">
         <div class="floor-left">
@@ -23,8 +24,10 @@
     <div id="editor-location-list"></div>
 </div>
 
+<!-- Hauptbereich -->
 <div id="editor-main-area">
 
+    <!-- Titelbar -->
     <div id="editor-titlebar" style="display:none;">
         <div id="editor-titlebar-left">
             <span id="editor-title">
@@ -50,15 +53,15 @@
         </div>
     </div>
 
+    <!-- Canvas -->
     <canvas id="roomdesigner" style="display:none;"></canvas>
 
-    <!-- Grid-Panel unten rechts -->
-    <div id="canvas-grid-panel" style="display:none;">
-        <button id="btnSnapToggle">Grid</button>
-        <input type="range" id="gridSizeSlider" min="10" max="120" step="10" value="40">
-        <button id="btnCanvasToggle">Canvas</button>
-    </div>
+    <!-- Grid-Tools direkt auf dem Canvas -->
+    <button id="btnSnapToggle" class="canvas-tool">Grid</button>
+    <input type="range" id="gridSizeSlider" class="canvas-tool" min="10" max="120" step="10" value="40">
+    <button id="btnCanvasToggle" class="canvas-tool">Canvas</button>
 
+    <!-- Rechte Sidebar -->
     <div id="editor-sidebar" style="display:none;">
         <div id="editor-sidebar-tabs">
             <button data-tab="tab1" class="active">Elemente & Werkzeuge</button>
@@ -68,6 +71,7 @@
 
         <div id="editor-sidebar-content">
 
+            <!-- TAB 1: Elemente -->
             <div class="sidebar-panel" data-panel="tab1">
 
                 <div class="category" data-cat="doors">
@@ -153,6 +157,7 @@
 
             </div>
 
+            <!-- TAB 2 -->
             <div class="sidebar-panel" data-panel="tab2" style="display:none;">
                 <div class="element-item">Lampe</div>
                 <div class="element-item">Steckdose</div>
@@ -160,6 +165,7 @@
                 <div class="element-item">Sensor</div>
             </div>
 
+            <!-- TAB 3 -->
             <div class="sidebar-panel" data-panel="tab3" style="display:none;">
                 <div class="settings-item">Raster anzeigen</div>
                 <div class="settings-item">Snap aktivieren</div>
@@ -171,6 +177,7 @@
 
 </div>
 
+<!-- SmartHome View -->
 <div id="smarthome-root">
     <div id="sh-floor-list"></div>
     <canvas id="smarthome-canvas"></canvas>
