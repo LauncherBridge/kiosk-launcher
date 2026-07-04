@@ -1233,9 +1233,12 @@ body:not(.editor-mode) #editor-bottombar {
 --------------------------------------------------------- */
 
 .canvas-tool {
-    bottom: calc(var(--bottombar-height) + 20px) !important;
-    right: calc(var(--sidebar-width) + 20px) !important;
+    position: absolute;
+    bottom: 80px; /* über der Bottom-Bar */
+    left: 20px;   /* links, sicher sichtbar */
+    z-index: 999999;
 }
+
 
 /* ---------------------------------------------------------
    REMOVE OLD SMART HOME BUTTONS
