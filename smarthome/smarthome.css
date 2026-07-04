@@ -1190,6 +1190,7 @@ body:not(.editor-mode) #editor-bottombar {
    CANVAS TOOLS – RESIDENT EVIL STYLE
 --------------------------------------------------------- */
 
+
 .canvas-tool {
     position: absolute;
     bottom: calc(var(--bottombar-height) + 14px);
