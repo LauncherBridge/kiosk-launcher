@@ -1239,6 +1239,18 @@ body:not(.editor-mode) #editor-bottombar {
     z-index: 999999;
 }
 
+#btnSnapToggle.canvas-tool {
+    left: 20px;
+}
+
+#gridSizeSlider.canvas-tool {
+    left: 120px;
+}
+
+#btnCanvasToggle.canvas-tool {
+    left: 260px;
+}
+
 
 /* ---------------------------------------------------------
    REMOVE OLD SMART HOME BUTTONS
