@@ -57,9 +57,11 @@
     <canvas id="roomdesigner" style="display:none;"></canvas>
 
     <!-- Canvas Tools (nur im Editor sichtbar) -->
-    <button id="btnSnapToggle" class="canvas-tool">Grid</button>
-    <input type="range" id="gridSizeSlider" class="canvas-tool" min="10" max="120" step="10" value="40">
-    <button id="btnCanvasToggle" class="canvas-tool">Snap</button>
+    <div id="canvasToolsContainer">
+        <button id="btnCanvasToggle" class="canvas-tool">Grid</button>
+        <input type="range" id="gridSizeSlider" class="canvas-tool" min="10" max="120" step="10" value="40">
+    </div>
+
 
     <!-- Bottom-Bar -->
     <div id="editor-bottombar">
