@@ -12,13 +12,17 @@ html, body {
 }
 
 /* ---------------------------------------------------------
-   BASE THEME
+   BASE THEME & GLOBAL UI VARS
 --------------------------------------------------------- */
 
 :root {
     /* Theme variables werden dynamisch gesetzt */
-    --sidebar-width: 300px;     /* rechte Sidebar */
-    --bottombar-height: 60px;   /* Höhe der neuen Bottom-Bar */
+
+    /* UI-Layout-Variablen */
+    --sidebar-left-width: 220px;   /* linke Sidebar */
+    --sidebar-width: 300px;        /* rechte Sidebar */
+    --sidebar-right-width: 300px;  /* Alias für rechte Sidebar */
+    --bottombar-height: 60px;      /* Höhe der Bottom-Bar */
 }
 
 .sh-card {
@@ -63,7 +67,6 @@ html, body {
     height: 100%;
     overflow: hidden;
     background: var(--sh-surface);
-    font-family: "Consolas", "Courier New", monospace;
 }
 
 /* ---------------------------------------------------------
@@ -104,7 +107,6 @@ html, body {
     box-shadow: var(--sh-shadow-soft);
     overflow: hidden;
     z-index: 30;
-    font-family: "Consolas", "Courier New", monospace;
 }
 
 #smarthome-minimap-canvas {
@@ -139,7 +141,6 @@ html, body {
     padding: 20px;
     color: white;
     box-shadow: 0 0 30px rgba(0,0,0,0.4);
-    font-family: "Consolas", "Courier New", monospace;
 }
 
 .sh-popup-header {
@@ -305,7 +306,6 @@ html, body {
     font-weight: 500;
     border-radius: 6px;
     transition: background 0.15s ease;
-    font-family: "Consolas", "Courier New", monospace;
 }
 
 .sh-floor-item:hover {
@@ -441,7 +441,6 @@ html, body {
     inset: 0;
     display: flex;
     z-index: 9000;
-    font-family: "Consolas", "Courier New", monospace;
 }
 
 /* ---------------------------------------------------------
@@ -458,10 +457,10 @@ html, body {
 }
 
 #editor-sidebar-left {
-    position: relative;
+    position: fixed;
     top: 48px;
     left: 0;
-    width: 220px;
+    width: var(--sidebar-left-width);
     height: calc(100vh - 48px);
     background: rgba(0,0,0,0.35);
     border-right: 1px solid rgba(255,255,255,0.08);
@@ -477,7 +476,6 @@ html, body {
     padding: 10px;
     font-size: 15px;
     overflow-y: auto;
-    font-family: "Consolas", "Courier New", monospace;
 }
 
 /* Etagen = category-header */
@@ -605,7 +603,20 @@ html, body {
     display: block;
 }
 
-.floor-rename-input,
+.floor-rename-input {
+    flex: 0 1 auto;
+    width: 120px;
+    max-width: 90%;
+    padding: 3px 6px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 4px;
+    color: #fff;
+    font-size: 14px;
+    box-sizing: border-box;
+    font-family: "Consolas", "Courier New", monospace;
+}
+
 .room-rename-input {
     flex: 0 1 auto;
     width: 120px;
@@ -712,7 +723,7 @@ html, body {
     position: fixed;
     top: 48px;
     right: 0;
-    width: 300px;
+    width: var(--sidebar-width);
     height: calc(100vh - 48px);
     background: rgba(0,0,0,0.82);
     backdrop-filter: blur(8px);
@@ -770,7 +781,6 @@ html, body {
     color: #eee;
     font-size: 14px;
     line-height: 1.4;
-    font-family: "Consolas", "Courier New", monospace;
 }
 
 /* Tool-Buttons */
@@ -884,6 +894,16 @@ body.editor-mode .editor-btn {
     display: none !important;
 }
 
+/* Canvas-Tools nur im Editor */
+body:not(.editor-mode) .canvas-tool {
+    display: none !important;
+}
+
+/* Bottom-Bar nur im Editor */
+body:not(.editor-mode) #editor-bottombar {
+    display: none !important;
+}
+
 /* ---------------------------------------------------------
    GLOBAL CONTEXT MENU
 --------------------------------------------------------- */
@@ -916,7 +936,6 @@ body.editor-mode .editor-btn {
     white-space: nowrap;
     background: rgba(255,255,255,0.03);
     transition: background 0.15s ease, color 0.15s ease;
-    font-family: "Consolas", "Courier New", monospace;
 }
 
 .context-menu-item:hover {
@@ -929,6 +948,10 @@ body.editor-mode .editor-btn {
     background: rgba(255,255,255,0.12);
     margin: 4px 0;
 }
+
+/* ---------------------------------------------------------
+   MODAL / MOVE ROOM POPUP
+--------------------------------------------------------- */
 
 .modal {
     position: fixed;
@@ -952,7 +975,6 @@ body.editor-mode .editor-btn {
     width: 300px;
     color: white;
     box-shadow: 0 0 20px rgba(0,0,0,0.5);
-    font-family: "Consolas", "Courier New", monospace;
 }
 
 #project-list option.current-project {
@@ -974,10 +996,6 @@ body.editor-mode .editor-btn {
     gap: 10px;
 }
 
-/* ---------------------------------------------------------
-   MOVE ROOM POPUP – Stil wie Sidebar
---------------------------------------------------------- */
-
 #move-room-popup .modal-content {
     background: rgba(0,0,0,0.82);
     border: 1px solid rgba(255,255,255,0.12);
@@ -986,12 +1004,10 @@ body.editor-mode .editor-btn {
     width: 300px;
     color: white;
     backdrop-filter: blur(6px);
-    box-shadow: 0 0 20px rgba(0,0,0,0.4);
     max-height: 80vh;
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    font-family: "Consolas", "Courier New", monospace;
 }
 
 #move-room-popup h2 {
@@ -1000,7 +1016,6 @@ body.editor-mode .editor-btn {
     font-size: 18px;
     font-weight: 600;
     color: #fff;
-    font-family: "Consolas", "Courier New", monospace;
 }
 
 #move-room-floor-list {
@@ -1072,81 +1087,49 @@ body.editor-mode .editor-btn {
     color: #fff;
 }
 
+/* MOVE ROOM POPUP – Sidebar-Style Override */
+
+#move-room-popup .modal-content {
+    background: rgba(0,0,0,0.82) !important;
+    border: 1px solid rgba(255,255,255,0.12) !important;
+    border-radius: 8px !important;
+    padding: 20px !important;
+    width: 300px !important;
+    color: white !important;
+    backdrop-filter: blur(6px) !important;
+    box-shadow: 0 0 20px rgba(0,0,0,0.4) !important;
+}
+
 /* ---------------------------------------------------------
-   ROOMDESIGNER TRANSITION
+   ROOM DESIGNER TRANSITION & RE BACKGROUND
 --------------------------------------------------------- */
 
 #roomdesigner {
     transition: opacity 0.55s ease;
+    background: radial-gradient(circle at center,
+        rgba(40, 0, 0, 0.35),
+        rgba(0, 0, 0, 0.9)
+    ) !important;
 }
 
-/* ========================================================= */
-/* RESIDENT EVIL UI STYLE – ADDON                          */
-/* ========================================================= */
-
-/* --------------------------------------------------------- */
-/* CANVAS TOOLS (Grid, Slider, Canvas) – RE Style           */
-/* --------------------------------------------------------- */
-
-.canvas-tool {
+/* Optional: leichte Scanlines */
+#roomdesigner::after {
+    content: "";
     position: absolute;
-    bottom: calc(var(--bottombar-height) + 20px);
-    right: calc(var(--sidebar-width) + 20px);
-    margin-left: 10px;
-    background: rgba(10, 10, 10, 0.75);
-    color: #e0e0e0;
-    border: 1px solid rgba(255, 0, 0, 0.35);
-    padding: 8px 14px;
-    border-radius: 6px;
-    font-family: "Consolas", "Courier New", monospace;
-    font-size: 14px;
-    letter-spacing: 0.5px;
-    box-shadow: 0 0 6px rgba(255, 0, 0, 0.25);
-    transition: all 0.15s ease-out;
-    z-index: 999999;
+    inset: 0;
+    background: repeating-linear-gradient(
+        to bottom,
+        rgba(255, 0, 0, 0.05),
+        rgba(255, 0, 0, 0.05) 2px,
+        transparent 4px
+    );
+    pointer-events: none;
+    opacity: 0.25;
 }
 
-.canvas-tool:hover {
-    background: rgba(40, 0, 0, 0.85);
-    border-color: rgba(255, 60, 60, 0.6);
-    box-shadow: 0 0 10px rgba(255, 0, 0, 0.45);
-    color: #fff;
-}
-
-/* Slider */
-#gridSizeSlider.canvas-tool {
-    width: 140px;
-    padding: 0;
-    height: 32px;
-    cursor: pointer;
-}
-
-#gridSizeSlider::-webkit-slider-runnable-track {
-    height: 6px;
-    background: rgba(255, 0, 0, 0.35);
-    border-radius: 3px;
-}
-
-#gridSizeSlider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    height: 16px;
-    width: 16px;
-    border-radius: 50%;
-    background: #ff0000;
-    box-shadow: 0 0 6px rgba(255, 0, 0, 0.6);
-    margin-top: -5px;
-    cursor: pointer;
-    transition: all 0.15s ease-out;
-}
-
-#gridSizeSlider::-webkit-slider-thumb:hover {
-    background: #ff4d4d;
-    box-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
-}
-
-/* --------------------------------------------------------- */
-/* TITLEBAR – Undo/Redo RE Style                            */
-/* --------------------------------------------------------- */
+/* ---------------------------------------------------------
+   RESIDENT EVIL UI STYLE – TITLEBAR BUTTONS
+--------------------------------------------------------- */
 
 #editor-titlebar-right button {
     background: rgba(40, 0, 0, 0.75) !important;
@@ -1165,9 +1148,9 @@ body.editor-mode .editor-btn {
     color: #fff !important;
 }
 
-/* --------------------------------------------------------- */
-/* SIDEBAR – RE Style                                        */
-/* --------------------------------------------------------- */
+/* ---------------------------------------------------------
+   RESIDENT EVIL UI – SIDEBAR STYLE
+--------------------------------------------------------- */
 
 #editor-sidebar {
     background: rgba(0, 0, 0, 0.88) !important;
@@ -1194,43 +1177,15 @@ body.editor-mode .editor-btn {
     color: #fff !important;
 }
 
-/* --------------------------------------------------------- */
-/* CANVAS – RE Background                                    */
-/* --------------------------------------------------------- */
-
-#roomdesigner {
-    background: radial-gradient(circle at center,
-        rgba(40, 0, 0, 0.35),
-        rgba(0, 0, 0, 0.9)
-    ) !important;
-}
-
-/* Optional: leichte Scanlines */
-#roomdesigner::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: repeating-linear-gradient(
-        to bottom,
-        rgba(255, 0, 0, 0.05),
-        rgba(255, 0, 0, 0.05) 2px,
-        transparent 4px
-    );
-    pointer-events: none;
-    opacity: 0.25;
-}
-
-/* ========================================================= */
-/* RESIDENT EVIL UI – Bottom Bar                             */
-/* ========================================================= */
-
-/* Bottom-Bar Container */
+/* ---------------------------------------------------------
+   RESIDENT EVIL UI – BOTTOM BAR
+--------------------------------------------------------- */
 
 #editor-bottombar {
     position: fixed;
     bottom: 0;
-    left: 0;
-    width: calc(100vw - var(--sidebar-width));
+    left: var(--sidebar-left-width);
+    width: calc(100vw - var(--sidebar-left-width) - var(--sidebar-width));
     height: var(--bottombar-height);
     background: rgba(0, 0, 0, 0.85);
     border-top: 1px solid rgba(255, 0, 0, 0.25);
@@ -1257,6 +1212,7 @@ body.editor-mode .editor-btn {
     box-shadow: 0 0 6px rgba(255, 0, 0, 0.25);
     transition: all 0.15s ease-out;
     cursor: pointer;
+    font-family: "Consolas", "Courier New", monospace;
 }
 
 .bottombar-item:hover {
@@ -1266,9 +1222,21 @@ body.editor-mode .editor-btn {
     color: #fff;
 }
 
-/* Canvas Tools automatisch nach oben verschieben */
+/* ---------------------------------------------------------
+   Canvas Tools automatisch nach oben verschieben
+--------------------------------------------------------- */
 
 .canvas-tool {
     bottom: calc(var(--bottombar-height) + 20px) !important;
     right: calc(var(--sidebar-width) + 20px) !important;
+}
+
+/* ---------------------------------------------------------
+   REMOVE OLD SMART HOME BUTTONS
+--------------------------------------------------------- */
+
+#btnFloorEG,
+.editor-btn-floor,
+.sh-floor-item[data-floor="EG"] {
+    display: none !important;
 }
