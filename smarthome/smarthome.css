@@ -1282,3 +1282,75 @@ if (floor.id === project.rooms[roomId].floorId) {
     pointer-events: none;
     opacity: 0.25;
 }
+
+
+/* ========================================================= */
+/* RESIDENT EVIL UI – Bottom Bar (prepared)                  */
+/* ========================================================= */
+
+/* Dynamische UI-Variablen erweitern */
+:root {
+    --sidebar-width: 300px;     /* rechte Sidebar */
+    --bottombar-height: 60px;   /* Höhe der neuen Bottom-Bar */
+}
+
+/* --------------------------------------------------------- */
+/* Bottom-Bar Container                                      */
+/* --------------------------------------------------------- */
+
+#editor-bottombar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: calc(100vw - var(--sidebar-width));
+    height: var(--bottombar-height);
+
+    background: rgba(0, 0, 0, 0.85);
+    border-top: 1px solid rgba(255, 0, 0, 0.25);
+    box-shadow: 0 -4px 14px rgba(255, 0, 0, 0.15);
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 20px;
+    z-index: 99998;
+
+    font-family: "Consolas", "Courier New", monospace;
+    color: #e0e0e0;
+}
+
+/* --------------------------------------------------------- */
+/* Bottom-Bar Buttons / Items                                */
+/* --------------------------------------------------------- */
+
+.bottombar-item {
+    padding: 8px 14px;
+    background: rgba(40, 0, 0, 0.55);
+    border: 1px solid rgba(255, 0, 0, 0.35);
+    border-radius: 6px;
+    color: #e0e0e0;
+
+    font-size: 14px;
+    letter-spacing: 0.5px;
+
+    box-shadow: 0 0 6px rgba(255, 0, 0, 0.25);
+    transition: all 0.15s ease-out;
+    cursor: pointer;
+}
+
+.bottombar-item:hover {
+    background: rgba(80, 0, 0, 0.85);
+    border-color: rgba(255, 60, 60, 0.6);
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.45);
+    color: #fff;
+}
+
+/* --------------------------------------------------------- */
+/* Canvas Tools automatisch nach oben verschieben             */
+/* --------------------------------------------------------- */
+
+.canvas-tool {
+    bottom: calc(var(--bottombar-height) + 20px) !important;
+    right: calc(var(--sidebar-width) + 20px) !important;
+}
