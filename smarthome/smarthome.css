@@ -1349,12 +1349,11 @@ body:not(.editor-mode) #editor-bottombar {
     position: relative;
 }
 
-/* Scanlines */
 .room-floor {
     position: absolute;
     inset: 0;
     pointer-events: none;
-    z-index: 0; /* WICHTIG: Unter dem Canvas */
+    z-index: 0;
     background: repeating-linear-gradient(
         to bottom,
         rgba(255, 255, 255, 0.02) 0px,
@@ -1364,14 +1363,7 @@ body:not(.editor-mode) #editor-bottombar {
     );
 }
 
-/* Noise */
-.room-floor::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0; /* Unter dem Canvas */
-    background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIW2NkYGD4DwABBAEAH3F7WQAAAABJRU5ErkJggg==");
-    opacity: 0.08; /* Subtiler, sicherer Wert */
+#roomdesigner {
+    position: relative;
+    z-index: 1;
 }
-
