@@ -63,11 +63,6 @@ html, body {
     height: 100%;
 }
 
-#roomdesigner-wrapper {
-    position: relative;
-}
-
-
 #smarthome-overlay {
     position: absolute;
     top: 0;
@@ -1346,19 +1341,38 @@ body:not(.editor-mode) #editor-bottombar {
 }
 
 /* ---------------------------------------------------------
-   RESIDENT EVIL REQUIEM – FLOOR SCANLINES (Medium)
+   RESIDENT EVIL REQUIEM – FLOOR SCANLINES + NOISE (Medium)
 --------------------------------------------------------- */
+
+#roomdesigner-wrapper {
+    position: relative;
+}
 
 .room-floor {
     position: absolute;
     inset: 0;
     pointer-events: none;
+    z-index: 1;
 
-    background: repeating-linear-gradient(
-        to bottom,
-        rgba(255, 255, 255, 0.02) 0px,
-        rgba(255, 255, 255, 0.02) 2px,
-        rgba(0, 0, 0, 0.12) 3px,
-        rgba(0, 0, 0, 0.12) 4px
-    );
+    /* Scanlines */
+    background:
+        repeating-linear-gradient(
+            to bottom,
+            rgba(255, 255, 255, 0.02) 0px,
+            rgba(255, 255, 255, 0.02) 2px,
+            rgba(0, 0, 0, 0.12) 3px,
+            rgba(0, 0, 0, 0.12) 4px
+        );
+}
+
+/* Noise Overlay */
+.room-floor::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+
+    background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIW2NkYGD4DwABBAEAH3F7WQAAAABJRU5ErkJggg==");
+    opacity: 0.18; /* Medium Noise */
+    mix-blend-mode: overlay;
 }
