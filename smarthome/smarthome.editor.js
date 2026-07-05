@@ -2992,14 +2992,14 @@ render() {
     ctx.save();
     this.applyTransform();   // Welt-Transform aktiv
 
-    this.drawGrid();         // Grid zoomt mit (Linienfix kommt gleich)
+    this.drawGrid();         
     this.drawFloor();
     this.drawPolygon();
     this.drawWalls();
     this.drawWindows();
     this.drawDoors();
 
-    // Winkelanzeige beim Drag (gehört zur Welt-Ebene)
+    // Winkelanzeige beim Drag (Welt-Kontext)
     if (this.isDragging && this.selectedPoint) {
         const idx = this.points.indexOf(this.selectedPoint);
         const affected = new Set([idx]);
@@ -3027,23 +3027,18 @@ render() {
         }
     }
 
-    ctx.restore();
-
-    // ------------------------------------------------------------
-    // 2) UI-Ebene (zoomt NICHT mit)
-    // ------------------------------------------------------------
-    ctx.save();
-    ctx.setTransform(1, 0, 0, 1, 0, 0); // Screen-Space
-
-    this.drawWallLengths();  // bleibt lesbar, zoomt NICHT mit
+    // ⭐ Wandlängen IM WELT-KONTEXT zeichnen
+    // aber Schriftgröße kompensieren
+    this.drawWallLengths();
 
     ctx.restore();
 
     // ------------------------------------------------------------
-    // 3) Hover-Kreuz (Screen-Space)
+    // 2) Hover-Kreuz (Screen-Space)
     // ------------------------------------------------------------
     this.drawHoverCross();
 }
+
 ,
 
     checkCollision(a, b) {
