@@ -3121,25 +3121,26 @@ drawFloor() {
     ctx.fill();
 
     // Noise clippen
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(this.points[0].x, this.points[0].y);
-    for (let i = 1; i < this.points.length; i++) {
-        ctx.lineTo(this.points[i].x, this.points[i].y);
-    }
-    if (this.isClosed) ctx.closePath();
-    ctx.clip();
+ctx.save();
 
-    // Noise zeichnen (statisch, schnell)
-    ctx.drawImage(
-        this.floorNoiseCanvas,
-        -this.offsetX,
-        -this.offsetY,
-        this.floorNoiseCanvas.width * this.zoom,
-        this.floorNoiseCanvas.height * this.zoom
-    );
+// Welt-Transformation anwenden
+ctx.translate(this.offsetX, this.offsetY);
+ctx.scale(this.zoom, this.zoom);
 
-    ctx.restore();
+// Clip auf den Raum (im Welt-Koordinatensystem!)
+ctx.beginPath();
+ctx.moveTo(this.points[0].x, this.points[0].y);
+for (let i = 1; i < this.points.length; i++) {
+    ctx.lineTo(this.points[i].x, this.points[i].y);
+}
+if (this.isClosed) ctx.closePath();
+ctx.clip();
+
+// Noise zeichnen (ohne eigene Transformation!)
+ctx.drawImage(this.floorNoiseCanvas, 0, 0);
+
+ctx.restore();
+
 },
 
 generateFloorNoise() {
