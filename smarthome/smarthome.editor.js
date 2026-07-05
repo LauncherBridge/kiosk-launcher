@@ -3101,7 +3101,7 @@ drawFloor() {
 
     const ctx = this.ctx;
 
-    // 1) Transparenter Boden (keine Füllfarbe)
+    // Transparenter Boden
     ctx.fillStyle = "rgba(0,0,0,0)";
     ctx.beginPath();
     ctx.moveTo(this.points[0].x, this.points[0].y);
@@ -3113,40 +3113,37 @@ drawFloor() {
     if (this.isClosed) ctx.closePath();
     ctx.fill();
 
-    // 2) Sichtbare, starke Dreck-/Rauheits-Textur
+    // ⭐ Sichtbare, raue, dreckige Boden-Textur
     this.drawFloorNoiseStrong(ctx);
-},
+}
+,
 
 
 drawFloorNoiseStrong(ctx) {
-    const w = this.canvas.width;
-    const h = this.canvas.height;
+    ctx.save();
 
     // Clip auf den Bodenbereich
-    ctx.save();
     ctx.beginPath();
     ctx.moveTo(this.points[0].x, this.points[0].y);
-
     for (let i = 1; i < this.points.length; i++) {
         ctx.lineTo(this.points[i].x, this.points[i].y);
     }
-
     if (this.isClosed) ctx.closePath();
     ctx.clip();
 
-    // Noise erzeugen
-    const imageData = ctx.createImageData(w, h);
-    const data = imageData.data;
+    // Sehr deutliche, raue, dreckige Noise
+    const w = this.canvas.width;
+    const h = this.canvas.height;
 
-    for (let i = 0; i < data.length; i += 4) {
-        const n = Math.random() * 150;   // sehr stark
-        data[i] = n;
-        data[i+1] = n;
-        data[i+2] = n;
-        data[i+3] = 120;                 // sehr sichtbar
+    for (let i = 0; i < 60000; i++) {   // ⭐ Anzahl der Flecken
+        const x = Math.random() * w;
+        const y = Math.random() * h;
+
+        const intensity = Math.random() * 80; // ⭐ Stärke der Flecken
+        ctx.fillStyle = `rgba(${intensity}, ${intensity}, ${intensity}, 0.35)`; // ⭐ sichtbar
+        ctx.fillRect(x, y, 1.2, 1.2); // ⭐ kleine Pixel-Flecken
     }
 
-    ctx.putImageData(imageData, 0, 0);
     ctx.restore();
 }
 ,
