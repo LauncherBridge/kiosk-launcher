@@ -3131,21 +3131,22 @@ drawFloorNoiseStrong(ctx) {
     if (this.isClosed) ctx.closePath();
     ctx.clip();
 
-    // Sehr deutliche, raue, dreckige Noise
-    const w = this.canvas.width;
-    const h = this.canvas.height;
+    // Noise in Welt-Koordinaten erzeugen
+    const widthWorld = this.canvas.width / this.zoom;
+    const heightWorld = this.canvas.height / this.zoom;
 
-    for (let i = 0; i < 60000; i++) {   // ⭐ Anzahl der Flecken
-        const x = Math.random() * w;
-        const y = Math.random() * h;
+    for (let i = 0; i < 60000; i++) {
+        const x = (Math.random() * widthWorld) - this.offsetX;
+        const y = (Math.random() * heightWorld) - this.offsetY;
 
-        const intensity = Math.random() * 80; // ⭐ Stärke der Flecken
-        ctx.fillStyle = `rgba(${intensity}, ${intensity}, ${intensity}, 0.35)`; // ⭐ sichtbar
-        ctx.fillRect(x, y, 1.2, 1.2); // ⭐ kleine Pixel-Flecken
+        const intensity = Math.random() * 120;
+        ctx.fillStyle = `rgba(${intensity}, ${intensity}, ${intensity}, 0.35)`;
+        ctx.fillRect(x, y, 1.2, 1.2);
     }
 
     ctx.restore();
 }
+
 ,
 
 
