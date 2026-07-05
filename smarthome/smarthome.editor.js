@@ -22,9 +22,7 @@ const project = {
     furniture: {},   // Möbel
     devices: {},     // Smart-Home-Geräte
 
-    names: {}        // Alias-Namen für Titelzeile/Breadcrumbs
-
-
+    names: {}        // Alias-Namen für Titelzeile/Breadcrumb
 
 };
 
