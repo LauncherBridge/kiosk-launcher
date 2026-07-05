@@ -3114,8 +3114,30 @@ this._roomCenterBeforeMove = this._computeRoomCenter();
 
         if (this.isClosed) ctx.closePath();
         ctx.fill();
+        this.drawFloorNoise(ctx);
+
     },
 
+drawFloorNoise(ctx) {
+    const w = this.canvas.width;
+    const h = this.canvas.height;
+
+    const imageData = ctx.createImageData(w, h);
+    const data = imageData.data;
+
+    for (let i = 0; i < data.length; i += 4) {
+        const n = Math.random() * 40; // Stärke des „Drecks“
+        data[i] = n;     // R
+        data[i+1] = n;   // G
+        data[i+2] = n;   // B
+        data[i+3] = 20;  // Alpha (Transparenz)
+    }
+
+    ctx.putImageData(imageData, 0, 0);
+},
+
+
+    
     // --------------------------------------------------
     // Polygon zeichnen
     // --------------------------------------------------
