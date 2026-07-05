@@ -2077,8 +2077,7 @@ onDown(e) {
     // ⭐ Designer-Modus: Objekt auswählen statt normaler Aktionen
     if (this.isDesignerMode) {
         const pos = this.getMousePos(e);
-        const obj = this.pickObjectAt(pos.x, pos.y);
-
+        const obj = this.hitTest(pos.x, pos.y);
         if (obj) {
             this.designerSelection = obj;
             console.log("Designer-Auswahl:", obj);
