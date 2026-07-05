@@ -1383,6 +1383,7 @@ init() {
     this.centerView();   
     this.render();
 
+    this.setupDesignerButton();
     this.isDesignerMode = false;
     this.designerSelection = null; // später: aktuell ausgewähltes Objekt im Designer
 
@@ -1391,6 +1392,41 @@ init() {
 ,
 
 
+
+    setupDesignerButton() {
+        const btn = document.getElementById("btnDesignerStart");
+        if (!btn) return;
+    
+        btn.addEventListener("click", () => {
+            if (!this.isDesignerMode) {
+                this.startDesignerMode();
+                btn.classList.add("active");
+                btn.textContent = "Designer beenden";
+            } else {
+                this.stopDesignerMode();
+                btn.classList.remove("active");
+                btn.textContent = "Designer starten";
+            }
+        });
+    },
+
+    startDesignerMode() {
+    this.isDesignerMode = true;
+    this.designerSelection = null;
+
+    console.log("Designer-Modus aktiviert");
+    // später: Panel öffnen
+},
+
+stopDesignerMode() {
+    this.isDesignerMode = false;
+    this.designerSelection = null;
+
+    console.log("Designer-Modus deaktiviert");
+    // später: Panel schließen
+},
+
+    
     resize() {
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
