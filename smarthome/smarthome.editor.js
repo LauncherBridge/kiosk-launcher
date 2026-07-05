@@ -3123,11 +3123,11 @@ drawFloor() {
     // Noise clippen
 ctx.save();
 
-// Welt-Transformation anwenden
-ctx.translate(this.offsetX, this.offsetY);
+// 1) Welt-Transformation korrekt anwenden
 ctx.scale(this.zoom, this.zoom);
+ctx.translate(this.offsetX, this.offsetY);
 
-// Clip auf den Raum (im Welt-Koordinatensystem!)
+// 2) Clip auf den Raum (im Welt-Koordinatensystem)
 ctx.beginPath();
 ctx.moveTo(this.points[0].x, this.points[0].y);
 for (let i = 1; i < this.points.length; i++) {
@@ -3136,11 +3136,10 @@ for (let i = 1; i < this.points.length; i++) {
 if (this.isClosed) ctx.closePath();
 ctx.clip();
 
-// Noise zeichnen (ohne eigene Transformation!)
+// 3) Noise zeichnen (ohne eigene Transformation)
 ctx.drawImage(this.floorNoiseCanvas, 0, 0);
 
 ctx.restore();
-
 },
 
 generateFloorNoise() {
