@@ -3154,53 +3154,57 @@ generateFloorNoise() {
     const c = this.floorNoiseCanvas;
     const ctx = c.getContext("2d");
 
-    for (let i = 0; i < 40000; i++) {
+    const area = c.width * c.height;
+
+    const countDark = area * 0.0016;
+    const countLight = area * 0.0006;
+    const countHeavy = area * 0.00032;
+    const countScratches = area * 0.000012;
+
+    // Dunkle Punkte
+    for (let i = 0; i < countDark; i++) {
         const x = Math.random() * c.width;
         const y = Math.random() * c.height;
-
         const intensity = Math.random() * 120;
         ctx.fillStyle = `rgba(${intensity}, ${intensity}, ${intensity}, 0.35)`;
         ctx.fillRect(x, y, 1.2, 1.2);
     }
 
-for (let i = 0; i < 15000; i++) {
-    const x = Math.random() * c.width;
-    const y = Math.random() * c.height;
+    // Helle Flecken
+    for (let i = 0; i < countLight; i++) {
+        const x = Math.random() * c.width;
+        const y = Math.random() * c.height;
+        const intensity = 180 + Math.random() * 50;
+        ctx.fillStyle = `rgba(${intensity}, ${intensity}, ${intensity}, 0.15)`;
+        ctx.fillRect(x, y, 2.5, 2.5);
+    }
 
-    const intensity = 180 + Math.random() * 50; // hellere Flecken
-    ctx.fillStyle = `rgba(${intensity}, ${intensity}, ${intensity}, 0.15)`;
-    ctx.fillRect(x, y, 2.5, 2.5);
+    // Dunkle Flecken
+    for (let i = 0; i < countHeavy; i++) {
+        const x = Math.random() * c.width;
+        const y = Math.random() * c.height;
+        const intensity = Math.random() * 40;
+        ctx.fillStyle = `rgba(${intensity}, ${intensity}, ${intensity}, 0.45)`;
+        ctx.fillRect(x, y, 3, 3);
+    }
+
+    // Kratzer
+    for (let i = 0; i < countScratches; i++) {
+        const x = Math.random() * c.width;
+        const y = Math.random() * c.height;
+        const len = 20 + Math.random() * 40;
+        const angle = Math.random() * Math.PI;
+
+        ctx.strokeStyle = "rgba(255,255,255,0.08)";
+        ctx.lineWidth = 1;
+
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + Math.cos(angle) * len, y + Math.sin(angle) * len);
+        ctx.stroke();
+    }
 }
-for (let i = 0; i < 8000; i++) {
-    const x = Math.random() * c.width;
-    const y = Math.random() * c.height;
-
-    const intensity = Math.random() * 40; // dunkler
-    ctx.fillStyle = `rgba(${intensity}, ${intensity}, ${intensity}, 0.45)`;
-    ctx.fillRect(x, y, 3, 3);
-}
-for (let i = 0; i < 300; i++) {
-    const x = Math.random() * c.width;
-    const y = Math.random() * c.height;
-
-    const len = 20 + Math.random() * 40;
-    const angle = Math.random() * Math.PI;
-
-    ctx.strokeStyle = "rgba(255,255,255,0.08)";
-    ctx.lineWidth = 1;
-
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(x + Math.cos(angle) * len, y + Math.sin(angle) * len);
-    ctx.stroke();
-}
-
-
-
-
-
-    
-},
+,
 
 
 
