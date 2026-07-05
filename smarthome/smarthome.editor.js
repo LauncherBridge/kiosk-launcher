@@ -3102,8 +3102,9 @@ this._roomCenterBeforeMove = this._computeRoomCenter();
         const ctx = this.ctx;
         
     this._floorColor = "rgba(255,255,255,0.03)";
-    ctx.fillStyle = this._floorColor;
-        
+  //  ctx.fillStyle = this._floorColor;
+    ctx.fillStyle = "rgba(0,0,0,0)";
+    
         ctx.beginPath();
         ctx.moveTo(this.points[0].x, this.points[0].y);
 
