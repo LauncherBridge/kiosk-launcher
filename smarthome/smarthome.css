@@ -1367,15 +1367,3 @@ body:not(.editor-mode) #editor-bottombar {
         rgba(0, 0, 0, 0.10) 4px
     );
 }
-
-/* Noise (unter dem Canvas) */
-.room-floor::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-
-    background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIW2NkYGD4DwABBAEAH3F7WQAAAABJRU5ErkJggg==");
-    opacity: 0.08; /* subtiler Filmgrain */
-}
