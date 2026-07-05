@@ -1202,6 +1202,7 @@ body:not(.editor-mode) #editor-bottombar {
     right: calc(var(--sidebar-width) + 20px);
     display: flex;
     gap: 12px; /* Abstand zwischen Button und Slider */
+    align-items: center;
     z-index: 999999;
 }
 
