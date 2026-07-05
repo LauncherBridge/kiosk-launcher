@@ -3122,20 +3122,32 @@ drawFloorNoiseStrong(ctx) {
     const w = this.canvas.width;
     const h = this.canvas.height;
 
+    // Clip auf den Bodenbereich
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(this.points[0].x, this.points[0].y);
+
+    for (let i = 1; i < this.points.length; i++) {
+        ctx.lineTo(this.points[i].x, this.points[i].y);
+    }
+
+    if (this.isClosed) ctx.closePath();
+    ctx.clip();
+
+    // Noise erzeugen
     const imageData = ctx.createImageData(w, h);
     const data = imageData.data;
 
     for (let i = 0; i < data.length; i += 4) {
-        // Sehr deutliche Dreck-/Rauheits-Pixel
-        const n = Math.random() * 120;   // ⭐ viel stärker als vorher
-
-        data[i] = n;       // R
-        data[i+1] = n;     // G
-        data[i+2] = n;     // B
-        data[i+3] = 80;    // ⭐ hohe Sichtbarkeit (0–255)
+        const n = Math.random() * 150;   // sehr stark
+        data[i] = n;
+        data[i+1] = n;
+        data[i+2] = n;
+        data[i+3] = 120;                 // sehr sichtbar
     }
 
     ctx.putImageData(imageData, 0, 0);
+    ctx.restore();
 }
 ,
 
