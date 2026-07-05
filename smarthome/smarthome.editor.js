@@ -3138,30 +3138,21 @@ drawFloor() {
     ctx.fill();
 
     // Noise clippen
-ctx.save();
-
-// 1) Transformationszustand komplett zurücksetzen
-ctx.setTransform(1, 0, 0, 1, 0, 0);
-
-// 2) Welt-Transformation manuell anwenden
-ctx.translate(this.offsetX, this.offsetY);
-ctx.scale(this.zoom, this.zoom);
-
-// 3) Clip auf den Raum
-ctx.beginPath();
-ctx.moveTo(this.points[0].x, this.points[0].y);
-for (let i = 1; i < this.points.length; i++) {
-    ctx.lineTo(this.points[i].x, this.points[i].y);
-}
-if (this.isClosed) ctx.closePath();
-ctx.clip();
-
-// 4) Noise zeichnen
-ctx.drawImage(this.floorNoiseCanvas, 0, 0);
-
-ctx.restore();
-
-
+    ctx.save();
+    
+    // Clip auf den Raum (im bereits transformierten Welt-Kontext!)
+    ctx.beginPath();
+    ctx.moveTo(this.points[0].x, this.points[0].y);
+    for (let i = 1; i < this.points.length; i++) {
+        ctx.lineTo(this.points[i].x, this.points[i].y);
+    }
+    if (this.isClosed) ctx.closePath();
+    ctx.clip();
+    
+    // Noise zeichnen – OHNE scale(), OHNE translate()
+    ctx.drawImage(this.floorNoiseCanvas, 0, 0);
+    
+    ctx.restore();
 },
 
 generateFloorNoise() {
