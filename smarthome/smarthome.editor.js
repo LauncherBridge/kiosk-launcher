@@ -2978,58 +2978,73 @@ this._roomCenterBeforeMove = this._computeRoomCenter();
     // --------------------------------------------------
     // Rendering
     // --------------------------------------------------
-    render() {
-        
-        const ctx = this.ctx;
-        if (!ctx || !this.canvas) return;
-        
-        this.drawnLabels = [];
-        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+render() {
 
-        ctx.save();
-        this.applyTransform();   // Transform aktiv
+    const ctx = this.ctx;
+    if (!ctx || !this.canvas) return;
 
-        this.drawGrid();         // Grid im Welt-Raum
-        this.drawFloor();
-        this.drawPolygon();
-        this.drawWalls();
-        this.drawWallLengths();
-        this.drawWindows();
-        this.drawDoors();
+    this.drawnLabels = [];
+    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // Winkelanzeige beim Drag
-        if (this.isDragging && this.selectedPoint) {
-            const idx = this.points.indexOf(this.selectedPoint);
-            const affected = new Set([idx]);
+    // ------------------------------------------------------------
+    // 1) Welt-Ebene (zoomt mit)
+    // ------------------------------------------------------------
+    ctx.save();
+    this.applyTransform();   // Welt-Transform aktiv
 
-            if (this.isClosed) {
-                affected.add((idx - 1 + this.points.length) % this.points.length);
-                affected.add((idx + 1) % this.points.length);
-            } else {
-                if (idx > 0) affected.add(idx - 1);
-                if (idx < this.points.length - 1) affected.add(idx + 1);
-            }
+    this.drawGrid();         // Grid zoomt mit (Linienfix kommt gleich)
+    this.drawFloor();
+    this.drawPolygon();
+    this.drawWalls();
+    this.drawWindows();
+    this.drawDoors();
 
-            for (const i of affected) {
-                const prev = this.isClosed
-                    ? this.points[(i - 1 + this.points.length) % this.points.length]
-                    : this.points[i - 1];
+    // Winkelanzeige beim Drag (gehört zur Welt-Ebene)
+    if (this.isDragging && this.selectedPoint) {
+        const idx = this.points.indexOf(this.selectedPoint);
+        const affected = new Set([idx]);
 
-                const next = this.isClosed
-                    ? this.points[(i + 1) % this.points.length]
-                    : this.points[i + 1];
-
-                if (prev && next) {
-                    this.drawAngleAtPoint(this.points[i], prev, next);
-                }
-            }
+        if (this.isClosed) {
+            affected.add((idx - 1 + this.points.length) % this.points.length);
+            affected.add((idx + 1) % this.points.length);
+        } else {
+            if (idx > 0) affected.add(idx - 1);
+            if (idx < this.points.length - 1) affected.add(idx + 1);
         }
 
-        ctx.restore();
+        for (const i of affected) {
+            const prev = this.isClosed
+                ? this.points[(i - 1 + this.points.length) % this.points.length]
+                : this.points[i - 1];
 
-        // Hover-Kreuz im Screen-Space
-        this.drawHoverCross();
-    },
+            const next = this.isClosed
+                ? this.points[(i + 1) % this.points.length]
+                : this.points[i + 1];
+
+            if (prev && next) {
+                this.drawAngleAtPoint(this.points[i], prev, next);
+            }
+        }
+    }
+
+    ctx.restore();
+
+    // ------------------------------------------------------------
+    // 2) UI-Ebene (zoomt NICHT mit)
+    // ------------------------------------------------------------
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0); // Screen-Space
+
+    this.drawWallLengths();  // bleibt lesbar, zoomt NICHT mit
+
+    ctx.restore();
+
+    // ------------------------------------------------------------
+    // 3) Hover-Kreuz (Screen-Space)
+    // ------------------------------------------------------------
+    this.drawHoverCross();
+}
+,
 
     checkCollision(a, b) {
         return !(
