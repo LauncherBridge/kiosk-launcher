@@ -2060,6 +2060,16 @@ saveRoom(roomId) {
 }
 ,
 
+getMousePos(e) {
+    const rect = this.canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    return {
+        x: (mouseX / this.zoom) - this.offsetX,
+        y: (mouseY / this.zoom) - this.offsetY
+    };
+},
 
     
 onDown(e) {
