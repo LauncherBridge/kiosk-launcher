@@ -1345,6 +1345,13 @@ init() {
     this.canvas = document.getElementById("roomdesigner");
     this.ctx = this.canvas.getContext("2d");
 
+    // ⭐⭐ Noise einmalig erzeugen (richtiger Ort!)
+    this.floorNoiseCanvas = document.createElement("canvas");
+    this.floorNoiseCanvas.width = 800;
+    this.floorNoiseCanvas.height = 800;
+    this.generateFloorNoise();
+    // ⭐⭐ Ende Noise-Init
+
     window.addEventListener("resize", () => this.resize());
     this.canvas.addEventListener("mousemove", (e) => this.onMove(e));
     this.canvas.addEventListener("mousedown", (e) => this.onDown(e));
@@ -3113,16 +3120,8 @@ drawFloor() {
     if (this.isClosed) ctx.closePath();
     ctx.fill();
 
-    // ⭐ Sichtbare, raue, dreckige Boden-Textur
-    this.drawFloorNoiseStrong(ctx);
-}
-,
-
-
-drawFloorNoiseStrong(ctx) {
+    // Noise clippen
     ctx.save();
-
-    // Clip auf den Bodenbereich
     ctx.beginPath();
     ctx.moveTo(this.points[0].x, this.points[0].y);
     for (let i = 1; i < this.points.length; i++) {
@@ -3131,23 +3130,32 @@ drawFloorNoiseStrong(ctx) {
     if (this.isClosed) ctx.closePath();
     ctx.clip();
 
-    // Noise in Welt-Koordinaten erzeugen
-    const widthWorld = this.canvas.width / this.zoom;
-    const heightWorld = this.canvas.height / this.zoom;
+    // Noise zeichnen (statisch, schnell)
+    ctx.drawImage(
+        this.floorNoiseCanvas,
+        -this.offsetX,
+        -this.offsetY,
+        this.floorNoiseCanvas.width * this.zoom,
+        this.floorNoiseCanvas.height * this.zoom
+    );
 
-    for (let i = 0; i < 60000; i++) {
-        const x = (Math.random() * widthWorld) - this.offsetX;
-        const y = (Math.random() * heightWorld) - this.offsetY;
+    ctx.restore();
+},
+
+generateFloorNoise() {
+    const c = this.floorNoiseCanvas;
+    const ctx = c.getContext("2d");
+
+    for (let i = 0; i < 40000; i++) {
+        const x = Math.random() * c.width;
+        const y = Math.random() * c.height;
 
         const intensity = Math.random() * 120;
         ctx.fillStyle = `rgba(${intensity}, ${intensity}, ${intensity}, 0.35)`;
         ctx.fillRect(x, y, 1.2, 1.2);
     }
+},
 
-    ctx.restore();
-}
-
-,
 
 
     
