@@ -1339,3 +1339,21 @@ body:not(.editor-mode) #editor-bottombar {
 .sh-floor-item[data-floor="EG"] {
     display: none !important;
 }
+
+/* ---------------------------------------------------------
+   RESIDENT EVIL REQUIEM – FLOOR SCANLINES (Medium)
+--------------------------------------------------------- */
+
+.room-floor {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+
+    background: repeating-linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.02) 0px,
+        rgba(255, 255, 255, 0.02) 2px,
+        rgba(0, 0, 0, 0.12) 3px,
+        rgba(0, 0, 0, 0.12) 4px
+    );
+}
