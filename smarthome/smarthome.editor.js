@@ -3257,7 +3257,8 @@ drawWallLengths() {
     if (!this.isDragging || !this.selectedPoint) return;
 
     const ctx = this.ctx;
-    ctx.font = "14px sans-serif";
+    ctx.font = `${12 / this.zoom}px Arial`;
+
     ctx.fillStyle = "white";
     ctx.strokeStyle = "rgba(0,0,0,0.7)";
     ctx.lineWidth = 3;
@@ -3315,10 +3316,12 @@ drawAngleAtPoint(P, A, B) {
     const angle = Math.acos(dot / (len1 * len2));
     const deg = (angle * 180 / Math.PI).toFixed(1);
 
-    ctx.font = "14px sans-serif";
+    ctx.font = `${12 / this.zoom}px Arial`;
+    ctx.lineWidth = 1 / this.zoom;
+
     ctx.fillStyle = "white";
     ctx.strokeStyle = "rgba(0,0,0,0.7)";
-    ctx.lineWidth = 3;
+
 
     const text = deg + "°";
     const metrics = ctx.measureText(text);
