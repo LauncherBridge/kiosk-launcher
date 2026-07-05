@@ -1347,8 +1347,8 @@ init() {
 
     // ⭐⭐ Noise einmalig erzeugen (richtiger Ort!)
     this.floorNoiseCanvas = document.createElement("canvas");
-    this.floorNoiseCanvas.width = 8000;
-    this.floorNoiseCanvas.height = 8000;
+    this.floorNoiseCanvas.width = 5000;
+    this.floorNoiseCanvas.height = 5000;
 
 
     this.generateFloorNoise();
@@ -3134,7 +3134,7 @@ for (let i = 1; i < this.points.length; i++) {
 if (this.isClosed) ctx.closePath();
 ctx.clip();
 
-// Noise zeichnen – OHNE scale(), OHNE translate()
+// Noise zeichnen – OHNE scale(), OHNE translate(), OHNE setTransform()
 ctx.drawImage(this.floorNoiseCanvas, 0, 0);
 
 ctx.restore();
