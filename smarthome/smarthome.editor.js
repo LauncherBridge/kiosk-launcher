@@ -3125,7 +3125,7 @@ drawFloor() {
     // Noise clippen
 ctx.save();
 
-// 1) Transformationszustand zurücksetzen
+// 1) Transformationszustand komplett zurücksetzen
 ctx.setTransform(1, 0, 0, 1, 0, 0);
 
 // 2) Welt-Transformation manuell anwenden
