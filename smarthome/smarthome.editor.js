@@ -3154,6 +3154,44 @@ generateFloorNoise() {
         ctx.fillStyle = `rgba(${intensity}, ${intensity}, ${intensity}, 0.35)`;
         ctx.fillRect(x, y, 1.2, 1.2);
     }
+
+for (let i = 0; i < 15000; i++) {
+    const x = Math.random() * c.width;
+    const y = Math.random() * c.height;
+
+    const intensity = 180 + Math.random() * 50; // hellere Flecken
+    ctx.fillStyle = `rgba(${intensity}, ${intensity}, ${intensity}, 0.15)`;
+    ctx.fillRect(x, y, 2.5, 2.5);
+}
+for (let i = 0; i < 8000; i++) {
+    const x = Math.random() * c.width;
+    const y = Math.random() * c.height;
+
+    const intensity = Math.random() * 40; // dunkler
+    ctx.fillStyle = `rgba(${intensity}, ${intensity}, ${intensity}, 0.45)`;
+    ctx.fillRect(x, y, 3, 3);
+}
+for (let i = 0; i < 300; i++) {
+    const x = Math.random() * c.width;
+    const y = Math.random() * c.height;
+
+    const len = 20 + Math.random() * 40;
+    const angle = Math.random() * Math.PI;
+
+    ctx.strokeStyle = "rgba(255,255,255,0.08)";
+    ctx.lineWidth = 1;
+
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + Math.cos(angle) * len, y + Math.sin(angle) * len);
+    ctx.stroke();
+}
+
+
+
+
+
+    
 },
 
 
