@@ -3096,29 +3096,29 @@ this._roomCenterBeforeMove = this._computeRoomCenter();
     // --------------------------------------------------
     // Boden zeichnen
     // --------------------------------------------------
-    drawFloor() {
-        if (this.points.length < 3) return;
+drawFloor() {
+    if (this.points.length < 3) return;
 
-        const ctx = this.ctx;
-        
-    this._floorColor = "rgba(0,0,0,0)";
-    ctx.fillStyle = this._floorColor
+    const ctx = this.ctx;
 
-    
-        ctx.beginPath();
-        ctx.moveTo(this.points[0].x, this.points[0].y);
+    // 1) Transparenter Boden (keine Füllfarbe)
+    ctx.fillStyle = "rgba(0,0,0,0)";
+    ctx.beginPath();
+    ctx.moveTo(this.points[0].x, this.points[0].y);
 
-        for (let i = 1; i < this.points.length; i++) {
-            ctx.lineTo(this.points[i].x, this.points[i].y);
-        }
+    for (let i = 1; i < this.points.length; i++) {
+        ctx.lineTo(this.points[i].x, this.points[i].y);
+    }
 
-        if (this.isClosed) ctx.closePath();
-        ctx.fill();
-        this.drawFloorNoise(ctx);
+    if (this.isClosed) ctx.closePath();
+    ctx.fill();
 
-    },
+    // 2) Sichtbare, starke Dreck-/Rauheits-Textur
+    this.drawFloorNoiseStrong(ctx);
+},
 
-drawFloorNoise(ctx) {
+
+drawFloorNoiseStrong(ctx) {
     const w = this.canvas.width;
     const h = this.canvas.height;
 
@@ -3126,15 +3126,18 @@ drawFloorNoise(ctx) {
     const data = imageData.data;
 
     for (let i = 0; i < data.length; i += 4) {
-        const n = Math.random() * 40; // Stärke des „Drecks“
-        data[i] = n;     // R
-        data[i+1] = n;   // G
-        data[i+2] = n;   // B
-        data[i+3] = 20;  // Alpha (Transparenz)
+        // Sehr deutliche Dreck-/Rauheits-Pixel
+        const n = Math.random() * 120;   // ⭐ viel stärker als vorher
+
+        data[i] = n;       // R
+        data[i+1] = n;     // G
+        data[i+2] = n;     // B
+        data[i+3] = 80;    // ⭐ hohe Sichtbarkeit (0–255)
     }
 
     ctx.putImageData(imageData, 0, 0);
-},
+}
+,
 
 
     
