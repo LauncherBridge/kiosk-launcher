@@ -1357,7 +1357,7 @@ body:not(.editor-mode) #editor-bottombar {
     position: absolute;
     inset: 0;
     pointer-events: none;
-    z-index: 0;
+    z-index: 2;
 
     background: repeating-linear-gradient(
         to bottom,
