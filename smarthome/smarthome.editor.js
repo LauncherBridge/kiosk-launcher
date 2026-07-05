@@ -1382,6 +1382,11 @@ init() {
     this.resize();
     this.centerView();   
     this.render();
+
+    this.isDesignerMode = false;
+    this.designerSelection = null; // später: aktuell ausgewähltes Objekt im Designer
+
+    
 }
 ,
 
