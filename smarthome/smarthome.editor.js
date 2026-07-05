@@ -2063,6 +2063,22 @@ saveRoom(roomId) {
 
     
 onDown(e) {
+
+    // ⭐ Designer-Modus: Objekt auswählen statt normaler Aktionen
+    if (this.isDesignerMode) {
+        const pos = this.getMousePos(e);
+        const obj = this.pickObjectAt(pos.x, pos.y);
+
+        if (obj) {
+            this.designerSelection = obj;
+            console.log("Designer-Auswahl:", obj);
+        } else {
+            console.log("Designer: Kein Objekt getroffen");
+        }
+
+        return; // ⭐ verhindert normale Editor-Aktionen
+    }
+    
     const rect = this.canvas.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
