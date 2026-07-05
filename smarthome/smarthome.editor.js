@@ -3122,7 +3122,7 @@ drawFloor() {
 
     // Transparenter Boden
 //    ctx.fillStyle = "rgba(0,0,0,0)";
-    ctx.fillStyle = "rgba(180, 180, 180, 0.05)";
+    ctx.fillStyle = "rgba(180, 180, 180, 0.1)";
 
     ctx.beginPath();
     ctx.moveTo(this.points[0].x, this.points[0].y);
