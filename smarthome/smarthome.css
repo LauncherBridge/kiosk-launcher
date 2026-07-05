@@ -1372,7 +1372,7 @@ body:not(.editor-mode) #editor-bottombar {
     inset: 0;
     pointer-events: none;
 
-    background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIW2NkYGD4DwABBAEAH3F7WQAAAABJRU5ErkJggg==");
+  /*   background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIW2NkYGD4DwABBAEAH3F7WQAAAABJRU5ErkJggg==");  */
     opacity: 0.18; /* Medium Noise */
     mix-blend-mode: overlay;
 }
