@@ -2252,7 +2252,7 @@ onDown(e) {
             index: hit.index ?? null,
             data: fullObject
         };
-    
+        RoomDesigner.openDesignerPanel(this.designerSelection);
         return;
     }
 
@@ -5483,7 +5483,103 @@ room.windows = RoomDesigner.windows.map(w => {
     profilePerformance() {
         console.log("[RoomDesigner] Performance-Profiling (Stub).");
         alert("Performance-Profiling Stub – hier könnte später ein echtes Profiling laufen.");
+    },
+
+// DESGINER PANEL BEZOGENE FUNKTIONEN
+// DESGINER PANEL BEZOGENE FUNKTIONEN
+// DESGINER PANEL BEZOGENE FUNKTIONEN
+
+    openDesignerPanel(selection) {
+        this.designerSelection = selection;
+    
+        const panel = document.getElementById("designerPanel");
+        const title = document.getElementById("designerTitle");
+        const content = document.getElementById("designerContent");
+    
+        // Titel setzen
+        title.textContent = `Designer: ${selection.category}`;
+    
+        // Inhalt generieren
+        content.innerHTML = this.renderDesignerContent(selection);
+    
+        // Panel anzeigen
+        panel.classList.remove("hidden");
+        panel.classList.add("visible");
+    },
+    
+    closeDesignerPanel() {
+        const panel = document.getElementById("designerPanel");
+        panel.classList.remove("visible");
+        panel.classList.add("hidden");
+    },
+
+    renderDesignerContent(selection) {
+
+    const obj = selection.data;
+
+    let html = `
+        <div class="designer-section">
+            <h3>Allgemein</h3>
+            <p><strong>Kategorie:</strong> ${selection.category}</p>
+            <p><strong>SubType:</strong> ${selection.subCategory}</p>
+            <p><strong>Index:</strong> ${selection.index}</p>
+        </div>
+    `;
+
+    // Kategorie-spezifische Abschnitte
+    if (selection.category === "door") {
+        html += `
+            <div class="designer-section">
+                <h3>Tür-Eigenschaften</h3>
+                <p>Breite: ${obj.width}</p>
+                <p>Typ: ${obj.type}</p>
+                <p>HingeAngle: ${obj.hingeAngle ?? "—"}</p>
+            </div>
+        `;
     }
+
+    if (selection.category === "window") {
+        html += `
+            <div class="designer-section">
+                <h3>Fenster-Eigenschaften</h3>
+                <p>Breite: ${obj.width}</p>
+                <p>Position t: ${obj.t}</p>
+            </div>
+        `;
+    }
+
+    if (selection.category === "wall") {
+        html += `
+            <div class="designer-section">
+                <h3>Wand-Eigenschaften</h3>
+                <p>Start: (${obj.x1}, ${obj.y1})</p>
+                <p>Ende: (${obj.x2}, ${obj.y2})</p>
+                <p>Trefferpunkt: (${obj.x}, ${obj.y})</p>
+                <p>t: ${obj.t}</p>
+            </div>
+        `;
+    }
+
+    // Weitere Kategorien vorbereiten
+    if (selection.category === "furniture") {
+        html += `<div class="designer-section"><h3>Möbel</h3><p>Typ: ${obj.type}</p></div>`;
+    }
+
+    if (selection.category === "device") {
+        html += `<div class="designer-section"><h3>Gerät</h3><p>Typ: ${obj.type}</p></div>`;
+    }
+
+    if (selection.category === "smart") {
+        html += `<div class="designer-section"><h3>Smart-Container</h3><p>Typ: ${obj.type}</p></div>`;
+    }
+
+    if (selection.category === "garden") {
+        html += `<div class="designer-section"><h3>Gartenelement</h3><p>Typ: ${obj.type}</p></div>`;
+    }
+
+    return html;
+}
+   
 }; // Ende RoomDesigner
 
 // ------------------------------------------------------------------------------------------------------------------------
@@ -6895,6 +6991,12 @@ window.addEventListener("DOMContentLoaded", () => {
 
 
 
+// ===============================
+// DESIGNER schließen
+// ===============================
+document.getElementById("designerCloseBtn").onclick = () => {
+    this.closeDesignerPanel();
+};
 
 
 // ===============================
