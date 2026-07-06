@@ -2166,7 +2166,7 @@ onDown(e) {
             return;
         }
     
-        console.log("Designer-Auswahl:", obj);
+        console.log("Designer-Auswahl (Canvas):", obj);
     
         let fullObject = null;
     
