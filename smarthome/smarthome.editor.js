@@ -2194,42 +2194,42 @@ onDown(e) {
 
     // ⭐ Designer-Modus: Pan ODER Auswahl
     if (this.isDesignerMode) {
-
+    
         const hit = this.hitTest(mouseX, mouseY);
-
+    
         // 👉 Wie im normalen Modus: PAN bei empty oder wall
         if (!hit || hit.type === "empty" || hit.type === "wall") {
             console.log("Designer-PAN gestartet, hit.type =", hit?.type);
-
+    
             this.isPanning = true;
             this.lastPanX = mouseX;
             this.lastPanY = mouseY;
-
+    
             return;
         }
-
+    
         // 👉 Objekt getroffen → Designer-Auswahl
         console.log("Designer-Auswahl (Canvas):", hit);
     
         let fullObject = null;
     
         // Hauptobjekt holen
-        if (obj.type === "door") fullObject = this.doors[obj.index];
-        if (obj.type === "window") fullObject = this.windows[obj.index];
-        if (obj.type === "point") fullObject = this.points[obj.index];
-        if (obj.type === "wall") fullObject = obj.data; // Wände kommen als data zurück
+        if (hit.type === "door") fullObject = this.doors[hit.index];
+        if (hit.type === "window") fullObject = this.windows[hit.index];
+        if (hit.type === "point") fullObject = this.points[hit.index];
+        if (hit.type === "wall") fullObject = hit.data; // Wände kommen als data zurück
     
         // Falls du später Möbel hast:
-        if (obj.type === "furniture") fullObject = this.furniture?.[obj.index];
+        if (hit.type === "furniture") fullObject = this.furniture?.[hit.index];
     
         // Falls du später Elektrogeräte hast:
-        if (obj.type === "device") fullObject = this.devices?.[obj.index];
+        if (hit.type === "device") fullObject = this.devices?.[hit.index];
     
         // Falls du später Smart-Device-Container hast:
-        if (obj.type === "smart") fullObject = this.smartContainers?.[obj.index];
+        if (hit.type === "smart") fullObject = this.smartContainers?.[hit.index];
     
         // Falls du später Gartenelemente hast:
-        if (obj.type === "garden") fullObject = this.garden?.[obj.index];
+        if (hit.type === "garden") fullObject = this.garden?.[hit.index];
     
         // Unterkategorie sicher auslesen
         let subType = "keine Unterkategorie";
@@ -2240,7 +2240,7 @@ onDown(e) {
     
         console.log("Unterkategorie:", subType);
         console.log("Komplettes Objekt:", fullObject);
-
+    
         this.designerSelection = {
             source: "canvas",
             category: hit.type,
@@ -2251,6 +2251,7 @@ onDown(e) {
     
         return;
     }
+
 
 
     const worldX = (mouseX / this.zoom) - this.offsetX;
