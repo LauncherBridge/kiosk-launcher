@@ -1053,6 +1053,11 @@ function migrateProjectsToID() {
 // Projekt → Editor
 function importToEditor() {
     try {
+        
+        // Designer-Modus sichern
+        const wasDesignerMode = RoomDesigner.isDesignerMode;
+        const wasDesignerSelection = RoomDesigner.designerSelection;
+        
         // 1) Projekt absichern
         if (!project || typeof project !== "object") {
             project = { meta: {}, floors: {}, rooms: {} };
@@ -1133,6 +1138,11 @@ function importToEditor() {
 
         // 6) Sidebar aktualisieren
         renderEditorProjectSidebar();
+
+        // Designer-Modus wiederherstellen
+        RoomDesigner.isDesignerMode = wasDesignerMode;
+        RoomDesigner.designerSelection = wasDesignerSelection;
+        
     }
     catch (err) {
         console.error("❌ importToEditor Fehler:", err);
