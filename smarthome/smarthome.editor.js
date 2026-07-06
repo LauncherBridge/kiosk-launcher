@@ -2155,54 +2155,59 @@ getSidebarItem(tool, subtype = null) {
 onDown(e) {
 
     // ⭐ Designer-Modus: Objekt auswählen statt normaler Aktionen
-if (this.isDesignerMode) {
-    const screen = this.getScreenPos(e);
-    const obj = this.hitTest(screen.x, screen.y);
-
-    console.log("Designer-Auswahl:", obj);
-
-    let fullObject = null;
-
-    // Hauptobjekt holen
-    if (obj.type === "door") fullObject = this.doors[obj.index];
-    if (obj.type === "window") fullObject = this.windows[obj.index];
-    if (obj.type === "point") fullObject = this.points[obj.index];
-    if (obj.type === "wall") fullObject = obj.data; // Wände kommen als data zurück
-
-    // Falls du später Möbel hast:
-    if (obj.type === "furniture") fullObject = this.furniture[obj.index];
-
-    // Falls du später Elektrogeräte hast:
-    if (obj.type === "device") fullObject = this.devices[obj.index];
-
-    // Falls du später Smart-Device-Container hast:
-    if (obj.type === "smart") fullObject = this.smartContainers[obj.index];
-
-    // Falls du später Gartenelemente hast:
-    if (obj.type === "garden") fullObject = this.garden[obj.index];
-
-    // Unterkategorie sicher auslesen
-    let subType = "keine Unterkategorie";
-
-    if (fullObject && typeof fullObject.type === "string") {
-        subType = fullObject.type;
-    }
-
-    console.log("Unterkategorie:", subType);
-    console.log("Komplettes Objekt:", fullObject);
-
-    this.designerSelection = {
-        source: "canvas",
-        category: obj.type,
-        subCategory: subType,
-        index: obj.index ?? null,
-        data: fullObject
-    };
+    if (this.isDesignerMode) {
     
-    return;
-}
-
-
+        const screen = this.getScreenPos(e);
+        const obj = this.hitTest(screen.x, screen.y);
+    
+        // WICHTIG: Prüfen, ob überhaupt ein Objekt getroffen wurde
+        if (!obj || !obj.type) {
+            console.log("Designer-Auswahl: kein Objekt getroffen");
+            return;
+        }
+    
+        console.log("Designer-Auswahl:", obj);
+    
+        let fullObject = null;
+    
+        // Hauptobjekt holen
+        if (obj.type === "door") fullObject = this.doors[obj.index];
+        if (obj.type === "window") fullObject = this.windows[obj.index];
+        if (obj.type === "point") fullObject = this.points[obj.index];
+        if (obj.type === "wall") fullObject = obj.data; // Wände kommen als data zurück
+    
+        // Falls du später Möbel hast:
+        if (obj.type === "furniture") fullObject = this.furniture?.[obj.index];
+    
+        // Falls du später Elektrogeräte hast:
+        if (obj.type === "device") fullObject = this.devices?.[obj.index];
+    
+        // Falls du später Smart-Device-Container hast:
+        if (obj.type === "smart") fullObject = this.smartContainers?.[obj.index];
+    
+        // Falls du später Gartenelemente hast:
+        if (obj.type === "garden") fullObject = this.garden?.[obj.index];
+    
+        // Unterkategorie sicher auslesen
+        let subType = "keine Unterkategorie";
+    
+        if (fullObject && typeof fullObject.type === "string") {
+            subType = fullObject.type;
+        }
+    
+        console.log("Unterkategorie:", subType);
+        console.log("Komplettes Objekt:", fullObject);
+    
+        this.designerSelection = {
+            source: "canvas",
+            category: obj.type,
+            subCategory: subType,
+            index: obj.index ?? null,
+            data: fullObject
+        };
+    
+        return;
+    }
 
     
     const rect = this.canvas.getBoundingClientRect();
