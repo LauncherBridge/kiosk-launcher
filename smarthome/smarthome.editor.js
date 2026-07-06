@@ -2237,7 +2237,8 @@ onDown(e) {
         if (fullObject && typeof fullObject.type === "string") {
             subType = fullObject.type;
         }
-    
+
+        
       // ⭐ Vollständige Ausgabe
         console.log("Designer-Auswahl → Kategorie:", hit.type);
         console.log("Designer-Auswahl → Index:", hit.index);
