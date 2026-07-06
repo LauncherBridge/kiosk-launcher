@@ -1413,21 +1413,21 @@ init() {
         });
     },
 
-    startDesignerMode() {
-    this.isDesignerMode = true;
-    this.designerSelection = null;
+startDesignerMode() {
+    RoomDesigner.isDesignerMode = true;   // WICHTIG: nicht this, sondern RoomDesigner
+    RoomDesigner.designerSelection = null;
 
     console.log("Designer-Modus aktiviert");
-    // später: Panel öffnen
-},
+}
+,
 
 stopDesignerMode() {
-    this.isDesignerMode = false;
-    this.designerSelection = null;
+    RoomDesigner.isDesignerMode = false;
+    RoomDesigner.designerSelection = null;
 
     console.log("Designer-Modus deaktiviert");
-    // später: Panel schließen
-},
+}
+,
 
     
     resize() {
