@@ -2238,8 +2238,11 @@ onDown(e) {
             subType = fullObject.type;
         }
     
-        console.log("Unterkategorie:", subType);
-        console.log("Komplettes Objekt:", fullObject);
+      // ⭐ Vollständige Ausgabe
+        console.log("Designer-Auswahl → Kategorie:", hit.type);
+        console.log("Designer-Auswahl → Index:", hit.index);
+        console.log("Designer-Auswahl → SubType:", subType);
+        console.log("Designer-Auswahl → Daten:", fullObject);
     
         this.designerSelection = {
             source: "canvas",
