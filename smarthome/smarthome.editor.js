@@ -2109,6 +2109,43 @@ onSidebarSelect(item) {
     console.log("Designer-Auswahl (Sidebar):", this.designerSelection);
 },
 
+
+getSidebarItem(tool, subtype = null) {
+
+    // Türen
+    if (tool === "door") {
+        return {
+            category: "door",
+            index: null, // Hauptkategorie
+            data: { type: subtype || "default" }
+        };
+    }
+
+    // Fenster
+    if (tool === "window") {
+        return {
+            category: "window",
+            index: null,
+            data: { type: subtype || null }
+        };
+    }
+
+    // Dachluke
+    if (tool === "dachluke") {
+        return {
+            category: "door",
+            index: null,
+            data: { type: "dachluke" }
+        };
+    }
+
+    // Weitere Kategorien später:
+    // furniture, device, smart, garden, etc.
+
+    return null;
+},
+
+    
 // ===============================================================
 // ===============================================================
 // Bis hier kommen die spezifischen Designer Code-Elemente hinein
@@ -6888,19 +6925,41 @@ document.querySelectorAll(".item[data-type='dachluke']").forEach(item => {
     // ===============================
     // Tools aus der Sidebar aktivieren
     // ===============================
-    document.querySelectorAll(".tool-button").forEach(btn => {
-        btn.addEventListener("click", () => {
-    
-            // Aktiven Button markieren
-            document.querySelectorAll(".tool-button")
-                .forEach(b => b.classList.remove("active"));
-            btn.classList.add("active");
-    
+document.querySelectorAll(".tool-button").forEach(btn => {
+    btn.addEventListener("click", () => {
+
+        // Wenn Designer-Modus aktiv ist → NICHT setTool() ausführen!
+        if (RoomDesigner.isDesignerMode) {
+
+            // Sidebar-Item in Designer-Modus auswählen
             const tool = btn.getAttribute("data-tool");
-    
-            // Tool an RoomDesigner übergeben
-            if (RoomDesigner && typeof RoomDesigner.setTool === "function") {
-                RoomDesigner.setTool(tool);
+            const subtype = btn.getAttribute("data-subtype") || null;
+
+            // Objekt aus RoomDesigner holen
+            const item = RoomDesigner.getSidebarItem(tool, subtype);
+
+            if (item) {
+                RoomDesigner.onSidebarSelect(item);
             }
-        });
+
+            return; // WICHTIG: Platzierungslogik NICHT ausführen
+        }
+
+        // ------------------------------------------------------------
+        // Normaler Modus (Objekte platzieren)
+        // ------------------------------------------------------------
+
+        // Aktiven Button markieren
+        document.querySelectorAll(".tool-button")
+            .forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+
+        const tool = btn.getAttribute("data-tool");
+        const subtype = btn.getAttribute("data-subtype") || null;
+
+        // Tool an RoomDesigner übergeben
+        if (RoomDesigner && typeof RoomDesigner.setTool === "function") {
+            RoomDesigner.setTool(tool, subtype);
+        }
     });
+});
