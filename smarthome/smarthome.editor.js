@@ -1396,22 +1396,31 @@ init() {
 
 
 
-    setupDesignerButton() {
-        const btn = document.getElementById("btnDesignerStart");
-        if (!btn) return;
-    
-        btn.addEventListener("click", () => {
-            if (!this.isDesignerMode) {
-                this.startDesignerMode();
-                btn.classList.add("active");
-                btn.textContent = "Designer beenden";
-            } else {
-                this.stopDesignerMode();
-                btn.classList.remove("active");
-                btn.textContent = "Designer starten";
-            }
-        });
-    },
+setupDesignerButton() {
+    const btn = document.getElementById("btnDesignerStart");
+    if (!btn) return;
+
+    btn.addEventListener("click", () => {
+
+        console.log("Designer-Button klick → aktueller Zustand:", RoomDesigner.isDesignerMode);
+
+        if (!RoomDesigner.isDesignerMode) {
+            RoomDesigner.isDesignerMode = true;
+            RoomDesigner.designerSelection = null;
+
+            console.log("Designer-Modus aktiviert (RoomDesigner.isDesignerMode = true)");
+            btn.classList.add("active");
+            btn.textContent = "Designer beenden";
+        } else {
+            RoomDesigner.isDesignerMode = false;
+            RoomDesigner.designerSelection = null;
+
+            console.log("Designer-Modus deaktiviert (RoomDesigner.isDesignerMode = false)");
+            btn.classList.remove("active");
+            btn.textContent = "Designer starten";
+        }
+    });
+},
 
 startDesignerMode() {
     RoomDesigner.isDesignerMode = true;   // WICHTIG: nicht this, sondern RoomDesigner
@@ -6934,15 +6943,16 @@ document.querySelectorAll(".item[data-type='dachluke']").forEach(item => {
 document.querySelectorAll(".tool-button").forEach(btn => {
     btn.addEventListener("click", () => {
 
+        console.log("Sidebar-Klick → DesignerMode:", RoomDesigner.isDesignerMode);
+
         // Wenn Designer-Modus aktiv ist → NICHT setTool() ausführen!
         if (RoomDesigner.isDesignerMode) {
-
-            // Sidebar-Item in Designer-Modus auswählen
             const tool = btn.getAttribute("data-tool");
             const subtype = btn.getAttribute("data-subtype") || null;
 
-            // Objekt aus RoomDesigner holen
             const item = RoomDesigner.getSidebarItem(tool, subtype);
+
+            console.log("Sidebar-Item für Designer:", item);
 
             if (item) {
                 RoomDesigner.onSidebarSelect(item);
