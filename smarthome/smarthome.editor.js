@@ -2081,10 +2081,42 @@ if (this.isDesignerMode) {
     const obj = this.hitTest(screen.x, screen.y);
 
     console.log("Designer-Auswahl:", obj);
-    this.designerSelection = obj;
 
+    let fullObject = null;
+
+    // Hauptobjekt holen
+    if (obj.type === "door") fullObject = this.doors[obj.index];
+    if (obj.type === "window") fullObject = this.windows[obj.index];
+    if (obj.type === "point") fullObject = this.points[obj.index];
+    if (obj.type === "wall") fullObject = obj.data; // Wände kommen als data zurück
+
+    // Falls du später Möbel hast:
+    if (obj.type === "furniture") fullObject = this.furniture[obj.index];
+
+    // Falls du später Elektrogeräte hast:
+    if (obj.type === "device") fullObject = this.devices[obj.index];
+
+    // Falls du später Smart-Device-Container hast:
+    if (obj.type === "smart") fullObject = this.smartContainers[obj.index];
+
+    // Falls du später Gartenelemente hast:
+    if (obj.type === "garden") fullObject = this.garden[obj.index];
+
+    // Unterkategorie sicher auslesen
+    let subType = "keine Unterkategorie";
+
+    if (fullObject && typeof fullObject.type === "string") {
+        subType = fullObject.type;
+    }
+
+    console.log("Unterkategorie:", subType);
+    console.log("Komplettes Objekt:", fullObject);
+
+    this.designerSelection = { obj, fullObject, subType };
     return;
 }
+
+
 
     
     const rect = this.canvas.getBoundingClientRect();
