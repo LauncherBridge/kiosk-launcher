@@ -2061,6 +2061,10 @@ saveRoom(roomId) {
     console.log("[RoomDesigner] Autosave für Raum:", activeRoomId);
 }
 ,
+
+// Ab hier kommen die spezifischen Designer Code-Elemente hinein
+// ==============================================================
+// ==============================================================
     
 getScreenPos(e) {
     const rect = this.canvas.getBoundingClientRect();
@@ -2070,7 +2074,44 @@ getScreenPos(e) {
     };
 },
 
+onSidebarSelect(item) {
 
+    // Wenn wir NICHT im Designer-Modus sind:
+    // → Sidebar verhält sich wie immer (Objekte platzieren etc.)
+    if (!this.isDesignerMode) {
+        // NICHTS tun, normale Sidebar-Logik bleibt aktiv
+        return;
+    }
+
+    // Ab hier: Designer-Modus ist aktiv
+    // → Sidebar-Klick soll Designer-Auswahl erzeugen
+
+    const fullObject = item.data;
+    const category = item.category;
+    const index = item.index ?? null;
+
+    // Unterkategorie sicher auslesen
+    let subCategory = "keine Unterkategorie";
+
+    if (fullObject && typeof fullObject.type === "string") {
+        subCategory = fullObject.type;
+    }
+
+    // Einheitliche Designer-Auswahl-Struktur
+    this.designerSelection = {
+        source: "sidebar",
+        category: category,
+        subCategory: subCategory,
+        index: index,
+        data: fullObject
+    };
+
+    console.log("Designer-Auswahl (Sidebar):", this.designerSelection);
+},
+
+// ===============================================================
+// ===============================================================
+// Bis hier kommen die spezifischen Designer Code-Elemente hinein
 
     
 onDown(e) {
@@ -2112,7 +2153,14 @@ if (this.isDesignerMode) {
     console.log("Unterkategorie:", subType);
     console.log("Komplettes Objekt:", fullObject);
 
-    this.designerSelection = { obj, fullObject, subType };
+    this.designerSelection = {
+        source: "canvas",
+        category: obj.type,
+        subCategory: subType,
+        index: obj.index ?? null,
+        data: fullObject
+    };
+    
     return;
 }
 
