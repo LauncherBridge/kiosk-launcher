@@ -2197,8 +2197,8 @@ onDown(e) {
     
         const hit = this.hitTest(mouseX, mouseY);
     
-        // 👉 Wie im normalen Modus: PAN bei empty oder wall
-        if (!hit || hit.type === "empty" || hit.type === "wall") {
+        // 👉 PAN bei empty
+        if (!hit || hit.type === "empty") {
             console.log("Designer-PAN gestartet, hit.type =", hit?.type);
     
             this.isPanning = true;
