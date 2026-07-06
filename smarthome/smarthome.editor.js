@@ -1803,28 +1803,27 @@ addContextButton(label, fn, closeMenu = false) {
 
     onMove(e) {
 
-        // ⭐ Designer-Modus: Pan bewegen
-        if (this.isDesignerMode && this.isPanning) {
-        
-            const dx = mouseX - this.lastPanX;
-            const dy = mouseY - this.lastPanY;
-        
-            this.offsetX += dx / this.zoom;
-            this.offsetY += dy / this.zoom;
-        
-            this.lastPanX = mouseX;
-            this.lastPanY = mouseY;
-        
-            this.render();
-            return;
-        }
-        
-        const rect = this.canvas.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
+    const rect = this.canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
 
-        const worldX = (mouseX / this.zoom) - this.offsetX;
-        const worldY = (mouseY / this.zoom) - this.offsetY;
+    const worldX = (mouseX / this.zoom) - this.offsetX;
+    const worldY = (mouseY / this.zoom) - this.offsetY;
+
+    // ⭐ Designer-Modus: Pan bewegen
+    if (this.isDesignerMode && this.isPanning) {
+        const dx = mouseX - this.lastPanX;
+        const dy = mouseY - this.lastPanY;
+
+        this.offsetX += dx / this.zoom;
+        this.offsetY += dy / this.zoom;
+
+        this.lastPanX = mouseX;
+        this.lastPanY = mouseY;
+
+        this.render();
+        return;
+    }
 
         // Pan starten
         if (this.isPanCandidate && !this.isPanning) {
@@ -2189,24 +2188,28 @@ getSidebarItem(tool, subtype = null) {
     
 onDown(e) {
 
-    // ⭐ Designer-Modus: Objekt auswählen statt normaler Aktionen
+    const rect = this.canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    // ⭐ Designer-Modus: Pan ODER Auswahl
     if (this.isDesignerMode) {
-    
-        const screen = this.getScreenPos(e);
-        const obj = this.hitTest(screen.x, screen.y);
-    
-        // WICHTIG: Prüfen, ob überhaupt ein Objekt getroffen wurde
-        if (!obj || !obj.type) {
-            console.log("Designer-Auswahl: kein Objekt getroffen - Designer-PAN gestartet");
+
+        const hit = this.hitTest(mouseX, mouseY);
+
+        // 👉 Wie im normalen Modus: PAN bei empty oder wall
+        if (!hit || hit.type === "empty" || hit.type === "wall") {
+            console.log("Designer-PAN gestartet, hit.type =", hit?.type);
 
             this.isPanning = true;
-            this.panStartX = e.clientX;
-            this.panStartY = e.clientY;
-            
+            this.lastPanX = mouseX;
+            this.lastPanY = mouseY;
+
             return;
         }
-    
-        console.log("Designer-Auswahl (Canvas):", obj);
+
+        // 👉 Objekt getroffen → Designer-Auswahl
+        console.log("Designer-Auswahl (Canvas):", hit);
     
         let fullObject = null;
     
@@ -2237,12 +2240,12 @@ onDown(e) {
     
         console.log("Unterkategorie:", subType);
         console.log("Komplettes Objekt:", fullObject);
-    
+
         this.designerSelection = {
             source: "canvas",
-            category: obj.type,
+            category: hit.type,
             subCategory: subType,
-            index: obj.index ?? null,
+            index: hit.index ?? null,
             data: fullObject
         };
     
