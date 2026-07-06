@@ -1802,6 +1802,23 @@ addContextButton(label, fn, closeMenu = false) {
 ,
 
     onMove(e) {
+
+        // ⭐ Designer-Modus: Pan bewegen
+        if (this.isDesignerMode && this.isPanning) {
+        
+            const dx = mouseX - this.lastPanX;
+            const dy = mouseY - this.lastPanY;
+        
+            this.offsetX += dx / this.zoom;
+            this.offsetY += dy / this.zoom;
+        
+            this.lastPanX = mouseX;
+            this.lastPanY = mouseY;
+        
+            this.render();
+            return;
+        }
+        
         const rect = this.canvas.getBoundingClientRect();
         const mouseX = e.clientX - rect.left;
         const mouseY = e.clientY - rect.top;
@@ -2180,7 +2197,12 @@ onDown(e) {
     
         // WICHTIG: Prüfen, ob überhaupt ein Objekt getroffen wurde
         if (!obj || !obj.type) {
-            console.log("Designer-Auswahl: kein Objekt getroffen");
+            console.log("Designer-Auswahl: kein Objekt getroffen - Designer-PAN gestartet");
+
+            this.isPanning = true;
+            this.panStartX = e.clientX;
+            this.panStartY = e.clientY;
+            
             return;
         }
     
@@ -2583,6 +2605,11 @@ onDown(e) {
 
 
 onUp(e) {
+
+    if (this.isDesignerMode) {
+        this.isPanning = false;
+    }
+
     // Wenn gerade gesnapped wurde → Klick komplett ignorieren
     if (this._justSnapped) {
         this._justSnapped = false;
