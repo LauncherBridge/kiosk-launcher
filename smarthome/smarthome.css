@@ -1197,7 +1197,7 @@ body:not(.editor-mode) #editor-bottombar {
 --------------------------------------------------------- */
 
 .designer-panel {
-    position: absolute;
+    position: fixed;
     right: 0;
     top: 0;
     width: 320px;
