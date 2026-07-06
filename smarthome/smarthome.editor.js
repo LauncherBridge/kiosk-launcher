@@ -1174,7 +1174,12 @@ function loadCurrentRoom() {
 }
 
 
-    
+// ------------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------------
+
 const RoomDesigner = {
     canvas: null,
     ctx: null,
@@ -2057,16 +2062,14 @@ saveRoom(roomId) {
 }
 ,
     
-getMousePos(e) {
+getScreenPos(e) {
     const rect = this.canvas.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-
     return {
-        x: (mouseX / this.zoom) - this.offsetX,
-        y: (mouseY / this.zoom) - this.offsetY
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
     };
 },
+
 
 
     
@@ -2074,8 +2077,8 @@ onDown(e) {
 
     // ⭐ Designer-Modus: Objekt auswählen statt normaler Aktionen
     if (this.isDesignerMode) {
-        const pos = this.getMousePos(e);
-        const obj = this.hitTest(pos.x, pos.y);
+        const pos = this.getScreenPos(e);
+        const obj = this.hitTest(screen.x, screen.y);
         if (obj) {
             this.designerSelection = obj;
             console.log("Designer-Auswahl:", obj);
@@ -5306,6 +5309,13 @@ room.windows = RoomDesigner.windows.map(w => {
         alert("Performance-Profiling Stub – hier könnte später ein echtes Profiling laufen.");
     }
 }; // Ende RoomDesigner
+
+// ------------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------------
+
 
 RoomDesigner.loadRoom = function(roomId) {
     const room = project.rooms?.[roomId];
