@@ -2076,18 +2076,16 @@ getScreenPos(e) {
 onDown(e) {
 
     // ⭐ Designer-Modus: Objekt auswählen statt normaler Aktionen
-    if (this.isDesignerMode) {
-        const pos = this.getScreenPos(e);
-        const obj = this.hitTest(screen.x, screen.y);
-        if (obj) {
-            this.designerSelection = obj;
-            console.log("Designer-Auswahl:", obj);
-        } else {
-            console.log("Designer: Kein Objekt getroffen");
-        }
+if (this.isDesignerMode) {
+    const screen = this.getScreenPos(e);
+    const obj = this.hitTest(screen.x, screen.y);
 
-        return; // ⭐ verhindert normale Editor-Aktionen
-    }
+    console.log("Designer-Auswahl:", obj);
+    this.designerSelection = obj;
+
+    return;
+}
+
     
     const rect = this.canvas.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
