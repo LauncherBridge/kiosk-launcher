@@ -2239,7 +2239,7 @@ onDown(e) {
         }
 
         
-      // ⭐ Vollständige Ausgabe
+      //  Vollständige Ausgabe
         console.log("Designer-Auswahl → Kategorie:", hit.type);
         console.log("Designer-Auswahl → Index:", hit.index);
         console.log("Designer-Auswahl → SubType:", subType);
