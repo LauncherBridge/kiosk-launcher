@@ -1400,6 +1400,10 @@ init() {
     this.isDesignerMode = false;
     this.designerSelection = null; // später: aktuell ausgewähltes Objekt im Designer
 
+
+    document.getElementById("designerCloseBtn").onclick = () => {
+    RoomDesigner.closeDesignerPanel();
+};
     
 }
 ,
@@ -6989,14 +6993,6 @@ window.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-
-
-// ===============================
-// DESIGNER schließen
-// ===============================
-document.getElementById("designerCloseBtn").onclick = () => {
-    this.closeDesignerPanel();
-};
 
 
 // ===============================
