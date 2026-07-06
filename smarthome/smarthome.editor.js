@@ -6943,7 +6943,7 @@ document.querySelectorAll(".item[data-type='dachluke']").forEach(item => {
 document.querySelectorAll(".tool-button").forEach(btn => {
     btn.addEventListener("click", () => {
 
-        console.log("Sidebar-Klick → DesignerMode:", RoomDesigner.isDesignerMode);
+        console.log("Sidebar-Klick → DesignerMode (Query DOM):", RoomDesigner.isDesignerMode);
 
         // Wenn Designer-Modus aktiv ist → NICHT setTool() ausführen!
         if (RoomDesigner.isDesignerMode) {
