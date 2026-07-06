@@ -1402,25 +1402,24 @@ setupDesignerButton() {
 
     btn.addEventListener("click", () => {
 
-        console.log("Designer-Button klick → aktueller Zustand:", RoomDesigner.isDesignerMode);
-
         if (!RoomDesigner.isDesignerMode) {
             RoomDesigner.isDesignerMode = true;
             RoomDesigner.designerSelection = null;
 
-            console.log("Designer-Modus aktiviert (RoomDesigner.isDesignerMode = true)");
+            console.log("Designer-Modus aktiviert → RoomDesigner.isDesignerMode =", RoomDesigner.isDesignerMode);
             btn.classList.add("active");
             btn.textContent = "Designer beenden";
         } else {
             RoomDesigner.isDesignerMode = false;
             RoomDesigner.designerSelection = null;
 
-            console.log("Designer-Modus deaktiviert (RoomDesigner.isDesignerMode = false)");
+            console.log("Designer-Modus deaktiviert → RoomDesigner.isDesignerMode =", RoomDesigner.isDesignerMode);
             btn.classList.remove("active");
             btn.textContent = "Designer starten";
         }
     });
 },
+
 
 startDesignerMode() {
     RoomDesigner.isDesignerMode = true;   // WICHTIG: nicht this, sondern RoomDesigner
@@ -6949,15 +6948,15 @@ document.querySelectorAll(".item[data-type='dachluke']").forEach(item => {
 document.querySelectorAll(".tool-button").forEach(btn => {
     btn.addEventListener("click", () => {
 
-        console.log("Sidebar-Klick → DesignerMode (Query DOM):", RoomDesigner.isDesignerMode);
+        console.log("Sidebar-Klick → DesignerMode:", RoomDesigner.isDesignerMode);
 
-        // Wenn Designer-Modus aktiv ist → NICHT setTool() ausführen!
+        const tool = btn.getAttribute("data-tool");
+        const subtype = btn.getAttribute("data-subtype") || null;
+
+        // Designer-Modus → Auswahl, KEIN setTool()
         if (RoomDesigner.isDesignerMode) {
-            const tool = btn.getAttribute("data-tool");
-            const subtype = btn.getAttribute("data-subtype") || null;
 
             const item = RoomDesigner.getSidebarItem(tool, subtype);
-
             console.log("Sidebar-Item für Designer:", item);
 
             if (item) {
@@ -6967,19 +6966,11 @@ document.querySelectorAll(".tool-button").forEach(btn => {
             return; // WICHTIG: Platzierungslogik NICHT ausführen
         }
 
-        // ------------------------------------------------------------
-        // Normaler Modus (Objekte platzieren)
-        // ------------------------------------------------------------
-
-        // Aktiven Button markieren
+        // Normaler Modus → Platzierung
         document.querySelectorAll(".tool-button")
             .forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
 
-        const tool = btn.getAttribute("data-tool");
-        const subtype = btn.getAttribute("data-subtype") || null;
-
-        // Tool an RoomDesigner übergeben
         if (RoomDesigner && typeof RoomDesigner.setTool === "function") {
             RoomDesigner.setTool(tool, subtype);
         }
