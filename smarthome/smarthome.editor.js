@@ -4912,6 +4912,12 @@ setupGridButton() {
 // Werkzeug setzen (z.B. "select", "draw", "door", "window", "smartdevice")
 setTool(tool, subtype = null) {
 
+    // 🚫 Im Designer-Modus KEINE Tool-Umschaltung / Platzierung
+    if (this.isDesignerMode) {
+        console.log("[RoomDesigner] setTool IGNORIERT im Designer-Modus →", tool, "subtype:", subtype);
+        return;
+    }
+    
     this.currentTool = tool;
 
 
