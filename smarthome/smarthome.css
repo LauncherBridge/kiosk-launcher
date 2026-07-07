@@ -1240,6 +1240,31 @@ body:not(.editor-mode) #editor-bottombar {
     z-index: 2147483647;
 }
 
+.designer-control {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 8px 0;
+}
+
+.designer-control span {
+    font-size: 15px;
+}
+
+.designer-control input[type="color"] {
+    width: 40px;
+    height: 24px;
+    border: none;
+    padding: 0;
+}
+
+.designer-control input[type="range"] {
+    width: 150px;
+}
+
+.designer-control select {
+    width: 150px;
+}
 
 /* ---------------------------------------------------------
    CANVAS TOOLS – Resident Evil Style, sauber nebeneinander
