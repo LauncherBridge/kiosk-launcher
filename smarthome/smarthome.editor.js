@@ -5509,6 +5509,7 @@ room.windows = RoomDesigner.windows.map(w => {
         // ⭐ Controls initialisieren
         this.initDesignerControls(selection);
         this.initDesignerViewModes(selection);
+        this.initDesignerScope(selection);
 
     
         // Panel anzeigen
@@ -5740,6 +5741,35 @@ initDesignerViewModes(selection) {
     roomCB.onchange = () => obj.design.viewModes.room = roomCB.checked;
     floorCB.onchange = () => obj.design.viewModes.floor = floorCB.checked;
     objectCB.onchange = () => obj.design.viewModes.object = objectCB.checked;
+},
+
+    initDesignerScope(selection) {
+
+    const obj = selection.data;
+
+    // Falls noch nicht vorhanden → anlegen
+    if (!obj.design) obj.design = {};
+    if (!obj.design.scope) {
+        obj.design.scope = "single"; // Default
+    }
+
+    // Radiobuttons referenzieren
+    const scopeSingle = document.getElementById("scopeSingle");
+    const scopeRoom = document.getElementById("scopeRoom");
+    const scopeFloor = document.getElementById("scopeFloor");
+    const scopeProject = document.getElementById("scopeProject");
+
+    // Werte setzen
+    scopeSingle.checked = obj.design.scope === "single";
+    scopeRoom.checked = obj.design.scope === "room";
+    scopeFloor.checked = obj.design.scope === "floor";
+    scopeProject.checked = obj.design.scope === "project";
+
+    // Listener
+    scopeSingle.onchange = () => obj.design.scope = "single";
+    scopeRoom.onchange = () => obj.design.scope = "room";
+    scopeFloor.onchange = () => obj.design.scope = "floor";
+    scopeProject.onchange = () => obj.design.scope = "project";
 },
 
     
