@@ -1274,6 +1274,13 @@ body:not(.editor-mode) #editor-bottombar {
     margin: 6px 0;
     font-size: 15px;
 }
+/* Block 3 */
+.designer-check input[type="radio"] {
+    width: 18px;
+    height: 18px;
+}
+
+
 
 .designer-check input[type="checkbox"] {
     width: 18px;
