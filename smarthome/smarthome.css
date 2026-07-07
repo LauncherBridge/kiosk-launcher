@@ -1266,6 +1266,21 @@ body:not(.editor-mode) #editor-bottombar {
     width: 150px;
 }
 
+/* Block 2 */
+.designer-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 6px 0;
+    font-size: 15px;
+}
+
+.designer-check input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+}
+
+
 /* ---------------------------------------------------------
    CANVAS TOOLS – Resident Evil Style, sauber nebeneinander
 --------------------------------------------------------- */
