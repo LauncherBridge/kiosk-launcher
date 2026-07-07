@@ -5505,6 +5505,9 @@ room.windows = RoomDesigner.windows.map(w => {
     
         // Inhalt generieren
         content.innerHTML = this.renderDesignerContent(selection);
+
+        // ⭐ Controls initialisieren
+        this.initDesignerControls(selection);
     
         // Panel anzeigen
         panel.classList.remove("hidden");
@@ -5620,7 +5623,59 @@ renderDesignerContent(selection) {
     }
 
     return html;
+},
+
+initDesignerControls(selection) {
+
+    const obj = selection.data;
+
+    // Falls das Objekt noch kein Design hat → anlegen
+    if (!obj.design) {
+        obj.design = {
+            color: "#ffffff",
+            effect: "none",
+            effectStrength: 50,
+            effectColor: "#ffffff",
+            strokeWidth: 2
+        };
+    }
+
+    // Controls referenzieren
+    const colorInput = document.getElementById("designColor");
+    const effectSelect = document.getElementById("designEffect");
+    const strengthInput = document.getElementById("designEffectStrength");
+    const effectColorInput = document.getElementById("designEffectColor");
+    const strokeInput = document.getElementById("designStrokeWidth");
+
+    // Werte setzen
+    colorInput.value = obj.design.color;
+    effectSelect.value = obj.design.effect;
+    strengthInput.value = obj.design.effectStrength;
+    effectColorInput.value = obj.design.effectColor;
+    strokeInput.value = obj.design.strokeWidth;
+
+    // Listener: Änderungen speichern + Live-Update
+    colorInput.oninput = () => this.applyDesignChange(obj, "color", colorInput.value);
+    effectSelect.onchange = () => this.applyDesignChange(obj, "effect", effectSelect.value);
+    strengthInput.oninput = () => this.applyDesignChange(obj, "effectStrength", strengthInput.value);
+    effectColorInput.oninput = () => this.applyDesignChange(obj, "effectColor", effectColorInput.value);
+    strokeInput.oninput = () => this.applyDesignChange(obj, "strokeWidth", strokeInput.value);
+},
+
+applyDesignChange(obj, key, value) {
+    obj.design[key] = value;
+
+    // ⭐ Live-Update im Canvas
+    this.updateObjectVisual(obj);
+},
+
+updateObjectVisual(obj) {
+    // TODO: später echte Canvas-Updates einbauen
+    // console.log("Update visual for", obj);
 }
+
+
+
 
    
 }; // Ende RoomDesigner
