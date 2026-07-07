@@ -5517,11 +5517,50 @@ room.windows = RoomDesigner.windows.map(w => {
         panel.classList.add("hidden");
     },
 
-    renderDesignerContent(selection) {
+renderDesignerContent(selection) {
 
     const obj = selection.data;
 
     let html = `
+        <!-- DESIGN-CONTROLS (Block 0) -->
+        <div class="designer-section">
+            <h3>Design</h3>
+
+            <label class="designer-control">
+                <span>Farbe</span>
+                <input type="color" id="designColor">
+            </label>
+
+            <label class="designer-control">
+                <span>Effekt</span>
+                <select id="designEffect">
+                    <option value="none">Keiner</option>
+                    <option value="shadow">Schatten</option>
+                    <option value="glow">Leuchten</option>
+                    <option value="outline">Umrandung</option>
+                    <option value="blur">Weichzeichnen</option>
+                </select>
+            </label>
+
+            <label class="designer-control">
+                <span>Effektstärke</span>
+                <input type="range" id="designEffectStrength" min="0" max="100" value="50">
+            </label>
+
+            <label class="designer-control">
+                <span>Effektfarbe</span>
+                <input type="color" id="designEffectColor">
+            </label>
+
+            <label class="designer-control">
+                <span>Strichstärke</span>
+                <input type="range" id="designStrokeWidth" min="1" max="10" value="2">
+            </label>
+        </div>
+    `;
+
+    /* --- ALLGEMEIN --- */
+    html += `
         <div class="designer-section">
             <h3>Allgemein</h3>
             <p><strong>Kategorie:</strong> ${selection.category}</p>
@@ -5530,7 +5569,7 @@ room.windows = RoomDesigner.windows.map(w => {
         </div>
     `;
 
-    // Kategorie-spezifische Abschnitte
+    /* --- KATEGORIE-SPEZIFISCH --- */
     if (selection.category === "door") {
         html += `
             <div class="designer-section">
@@ -5564,7 +5603,6 @@ room.windows = RoomDesigner.windows.map(w => {
         `;
     }
 
-    // Weitere Kategorien vorbereiten
     if (selection.category === "furniture") {
         html += `<div class="designer-section"><h3>Möbel</h3><p>Typ: ${obj.type}</p></div>`;
     }
@@ -5583,6 +5621,7 @@ room.windows = RoomDesigner.windows.map(w => {
 
     return html;
 }
+
    
 }; // Ende RoomDesigner
 
