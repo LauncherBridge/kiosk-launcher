@@ -5508,6 +5508,8 @@ room.windows = RoomDesigner.windows.map(w => {
 
         // ⭐ Controls initialisieren
         this.initDesignerControls(selection);
+        this.initDesignerViewModes(selection);
+
     
         // Panel anzeigen
         panel.classList.remove("hidden");
@@ -5685,6 +5687,37 @@ initDesignerControls(selection) {
     strokeInput.oninput = () => this.applyDesignChange(obj, "strokeWidth", strokeInput.value);
 },
 
+initDesignerViewModes(selection) {
+
+    const obj = selection.data;
+
+    // Falls noch nicht vorhanden → anlegen
+    if (!obj.design) obj.design = {};
+    if (!obj.design.viewModes) {
+        obj.design.viewModes = {
+            room: true,
+            floor: true,
+            object: true
+        };
+    }
+
+    // Checkboxen referenzieren
+    const roomCB = document.getElementById("applyRoomView");
+    const floorCB = document.getElementById("applyFloorView");
+    const objectCB = document.getElementById("applyObjectView");
+
+    // Werte setzen
+    roomCB.checked = obj.design.viewModes.room;
+    floorCB.checked = obj.design.viewModes.floor;
+    objectCB.checked = obj.design.viewModes.object;
+
+    // Listener
+    roomCB.onchange = () => obj.design.viewModes.room = roomCB.checked;
+    floorCB.onchange = () => obj.design.viewModes.floor = floorCB.checked;
+    objectCB.onchange = () => obj.design.viewModes.object = objectCB.checked;
+},
+
+    
 applyDesignChange(obj, key, value) {
     obj.design[key] = value;
 
