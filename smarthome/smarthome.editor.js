@@ -5585,7 +5585,32 @@ renderDesignerContent(selection) {
     </div>
 `;
 
-    
+   html += `
+    <div class="designer-section">
+        <h3>Design‑Anwendbarkeit…</h3>
+
+        <label class="designer-check">
+            <input type="radio" name="designScope" id="scopeSingle" value="single" checked>
+            Nur dieses Objekt
+        </label>
+
+        <label class="designer-check">
+            <input type="radio" name="designScope" id="scopeRoom" value="room">
+            Alle gleichartigen im Raum
+        </label>
+
+        <label class="designer-check">
+            <input type="radio" name="designScope" id="scopeFloor" value="floor">
+            Alle gleichartigen in der Etage
+        </label>
+
+        <label class="designer-check">
+            <input type="radio" name="designScope" id="scopeProject" value="project">
+            Alle gleichartigen im Projekt
+        </label>
+    </div>
+`;
+ 
     
     /* --- ALLGEMEIN --- */
     html += `
