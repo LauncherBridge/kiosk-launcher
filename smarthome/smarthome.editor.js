@@ -5562,6 +5562,29 @@ renderDesignerContent(selection) {
         </div>
     `;
 
+    html += `
+    <div class="designer-section">
+        <h3>Anwendung bei…</h3>
+
+        <label class="designer-check">
+            <input type="checkbox" id="applyRoomView" checked>
+            Raumansicht
+        </label>
+
+        <label class="designer-check">
+            <input type="checkbox" id="applyFloorView" checked>
+            Etagenansicht
+        </label>
+
+        <label class="designer-check">
+            <input type="checkbox" id="applyObjectView" checked>
+            Objektansicht (3D)
+        </label>
+    </div>
+`;
+
+    
+    
     /* --- ALLGEMEIN --- */
     html += `
         <div class="designer-section">
