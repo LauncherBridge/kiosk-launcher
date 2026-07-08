@@ -1408,7 +1408,13 @@ init() {
 }
 ,
 
-
+d.design = {
+    color: "#00ffc8",
+    strokeWidth: 5,
+    effect: "none",
+    effectColor: "#00ffc8",
+    effectStrength: 0
+};
 
 setupDesignerButton() {
     const btn = document.getElementById("btnDesignerStart");
@@ -3747,8 +3753,10 @@ case "zimmertuer": {
     // ------------------------------------------------------------
     // 2. Türblatt (offen/geschlossen) – Zimmertür filigraner
     // ------------------------------------------------------------
-    ctx.strokeStyle = "#00ffc8";  // Zimmertürfarbe
-    ctx.lineWidth = 5;            // dünner als Haustür
+    ctx.strokeStyle = "#00ffc8";
+    ctx.lineWidth = 5;
+
+
     ctx.shadowColor = "transparent"; // kein Glow
     ctx.shadowBlur = 0;
 
@@ -4723,8 +4731,12 @@ drawDoorArc(ctx, d, hx, hy, px, py, elen, side) {
     const baseVecY = py * elen * side;
 
     const steps = 24;
+    const design = d.design || {};
+
     ctx.strokeStyle = "rgba(0,255,200,0.25)";
     ctx.lineWidth = 1.5;
+
+
     ctx.beginPath();
 
     for (let i = 0; i <= steps; i++) {
@@ -5780,10 +5792,10 @@ applyDesignChange(obj, key, value) {
     this.updateObjectVisual(obj);
 },
 
-updateObjectVisual(obj) {
-    // TODO: später echte Canvas-Updates einbauen
-    // console.log("Update visual for", obj);
+    updateObjectVisual(obj) {
+    this.render();
 }
+
 
 
 
