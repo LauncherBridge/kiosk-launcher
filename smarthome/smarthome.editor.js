@@ -5987,13 +5987,10 @@ initDesignerControls(selection) {
 
     const obj = selection.data;
 
-    // Neue Design-Struktur sicherstellen (Migration)
     ensureDoorDesignStructure(obj);
 
-    // Komponenten ermitteln (z.B. blatt, schwelle, arc, hinge)
     const comps = getDoorComponents(obj);
 
-    // Für jede Komponente eigene Controls initialisieren
     for (const comp of comps) {
 
         const dcomp = obj.design[comp];
@@ -6006,9 +6003,15 @@ initDesignerControls(selection) {
             colorInput.value = dcomp.color;
             colorInput.oninput = () => this.applyDesignChange(obj, comp, "color", colorInput.value);
 
-            // Color-Picker Freeze Fix
-            colorInput.addEventListener("click", () => RoomDesigner._pauseCanvasEvents());
+            // Color-Picker Freeze Fix (robust)
+            colorInput.addEventListener("click", () => {
+                RoomDesigner._pauseCanvasEvents();
+                setTimeout(() => RoomDesigner._resumeCanvasEvents(), 50);
+            });
+
             colorInput.addEventListener("blur", () => RoomDesigner._resumeCanvasEvents());
+            colorInput.addEventListener("change", () => RoomDesigner._resumeCanvasEvents());
+            colorInput.addEventListener("input", () => RoomDesigner._resumeCanvasEvents());
         }
 
         // -----------------------------
@@ -6043,13 +6046,20 @@ initDesignerControls(selection) {
                 effectColorInput.value = dcomp.effectColor;
                 effectColorInput.oninput = () => this.applyDesignChange(obj, comp, "effectColor", effectColorInput.value);
 
-                // Color-Picker Freeze Fix (auch hier!)
-                effectColorInput.addEventListener("click", () => RoomDesigner._pauseCanvasEvents());
+                // Color-Picker Freeze Fix (robust)
+                effectColorInput.addEventListener("click", () => {
+                    RoomDesigner._pauseCanvasEvents();
+                    setTimeout(() => RoomDesigner._resumeCanvasEvents(), 50);
+                });
+
                 effectColorInput.addEventListener("blur", () => RoomDesigner._resumeCanvasEvents());
+                effectColorInput.addEventListener("change", () => RoomDesigner._resumeCanvasEvents());
+                effectColorInput.addEventListener("input", () => RoomDesigner._resumeCanvasEvents());
             }
         }
     }
 }
+
 
 ,
 
