@@ -6147,6 +6147,14 @@ applyDesignChange(obj, comp, key, value) {
 // ------------------------------------------------------------------------------------------------------------------------
 
 
+// Globaler Fix für Eye-Dropper Freeze
+window.addEventListener("focus", () => {
+    if (RoomDesigner._eventsPaused) {
+        RoomDesigner._resumeCanvasEvents();
+    }
+});
+
+
 // Canvas-Events pausieren (Color-Picker Workaround)
 RoomDesigner._pauseCanvasEvents = function() {
     this._eventsPaused = true;
