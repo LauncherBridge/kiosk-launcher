@@ -1433,8 +1433,6 @@ d.design = {
     }
 };
 
-,
-
 setupDesignerButton() {
     const btn = document.getElementById("btnDesignerStart");
     if (!btn) return;
