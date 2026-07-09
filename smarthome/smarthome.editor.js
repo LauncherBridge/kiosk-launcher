@@ -5965,47 +5965,7 @@ renderDesignerContent(selection) {
 }
 ,
 
-function renderDesignSection(name, design) {
-    return `
-        <div class="designer-section">
-            <h3>${name}</h3>
 
-            <label class="designer-control">
-                <span>Farbe</span>
-                <input type="color" id="design_${name}_color" value="${design.color}">
-            </label>
-
-            <label class="designer-control">
-                <span>Strichstärke</span>
-                <input type="range" id="design_${name}_stroke" min="1" max="20" value="${design.strokeWidth}">
-            </label>
-
-            <!-- Effekt nur für blatt -->
-            ${name === "blatt" ? `
-                <label class="designer-control">
-                    <span>Effekt</span>
-                    <select id="design_${name}_effect">
-                        <option value="none">Keiner</option>
-                        <option value="shadow">Schatten</option>
-                        <option value="glow">Leuchten</option>
-                        <option value="outline">Umrandung</option>
-                        <option value="blur">Weichzeichnen</option>
-                    </select>
-                </label>
-
-                <label class="designer-control">
-                    <span>Effektstärke</span>
-                    <input type="range" id="design_${name}_effectStrength" min="0" max="100" value="${design.effectStrength}">
-                </label>
-
-                <label class="designer-control">
-                    <span>Effektfarbe</span>
-                    <input type="color" id="design_${name}_effectColor" value="${design.effectColor}">
-                </label>
-            ` : ""}
-        </div>
-    `;
-},
 
 
 initDesignerControls(selection) {
