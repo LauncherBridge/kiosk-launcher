@@ -3685,6 +3685,7 @@ drawAngleAtPoint(P, A, B) {
     },
 
 drawDoorByType(ctx, d, geo) {
+ensureDoorDesignStructure(d);
 
     const { x1, y1, x2, y2 } = geo;
 
