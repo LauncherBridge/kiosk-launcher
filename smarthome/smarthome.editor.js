@@ -6147,14 +6147,30 @@ applyDesignChange(obj, comp, key, value) {
 // ------------------------------------------------------------------------------------------------------------------------
 
 // Globaler Fix für EyeDropper-Freeze
+// Finaler Fix für EyeDropper-Freeze
 window.addEventListener("pointerup", () => {
     if (RoomDesigner._eventsPaused) {
+
         RoomDesigner._resumeCanvasEvents();
 
-        // Alle Color-Inputs neu laden
-        document.querySelectorAll('input[type="color"]').forEach(input => {
-            const newInput = input.cloneNode(true);
-            input.replaceWith(newInput);
+        // Alle Color-Inputs vollständig neu erzeugen
+        document.querySelectorAll('input[type="color"]').forEach(oldInput => {
+
+            const parent = oldInput.parentNode;
+            const newInput = document.createElement("input");
+
+            newInput.type = "color";
+            newInput.id = oldInput.id;
+            newInput.className = oldInput.className;
+            newInput.value = oldInput.value;
+
+            // Event-Listener neu setzen
+            newInput.addEventListener("click", () => RoomDesigner._pauseCanvasEvents());
+            newInput.addEventListener("blur", () => RoomDesigner._resumeCanvasEvents());
+            newInput.addEventListener("change", () => RoomDesigner._resumeCanvasEvents());
+            newInput.addEventListener("input", () => RoomDesigner._resumeCanvasEvents());
+
+            parent.replaceChild(newInput, oldInput);
         });
     }
 });
