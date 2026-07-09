@@ -1418,7 +1418,7 @@ d.design = {
     effect: "none",
     effectColor: "#00ffc8",
     effectStrength: 0
-};
+},
 
 setupDesignerButton() {
     const btn = document.getElementById("btnDesignerStart");
