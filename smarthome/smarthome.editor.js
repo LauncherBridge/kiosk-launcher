@@ -6132,7 +6132,7 @@ initDesignerViewModes(selection) {
 applyDesignChange(obj, comp, key, value) {
     obj.design[comp][key] = value;
     this.updateObjectVisual(obj);
-}
+},
 
 
     updateObjectVisual(obj) {
