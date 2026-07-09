@@ -1124,7 +1124,11 @@ function importToEditor() {
         //    .map(id => project.doors?.[id])
         //    .filter(Boolean)
         //    .map(d => ({ ...d }));
-        RoomDesigner.doors = (room.doors || []).map(d => ({ ...d }));
+        RoomDesigner.doors = (room.doors || []).map(d => {
+            const copy = { ...d };
+            ensureDoorDesignStructure(copy);
+            return copy;
+        });
 
 
         RoomDesigner.windows = (room.windows || [])
@@ -3669,8 +3673,9 @@ drawAngleAtPoint(P, A, B) {
             // ⭐ Scharnier-Strich NUR für klassische Türen
             // ------------------------------------------------------------
             if (DOOR_TYPES_WITH_ARC.has(d.type)) {
-                ctx.strokeStyle = "rgba(0,255,200,0.4)";
-                ctx.lineWidth = 2;
+                ctx.strokeStyle = d.design.hinge.color;
+                ctx.lineWidth = d.design.hinge.strokeWidth;
+
                 ctx.beginPath();
                 ctx.moveTo(hx, hy);
                 ctx.lineTo(sx, sy);
@@ -3696,8 +3701,6 @@ drawDoorByType(ctx, d, geo) {
         // ------------------------------------------------------------
 case "zimmertuer": {
 
- //   d.isOpen = true;  nur zum Testen
-
     // Drehpunkt bestimmen
     const hx = (d.hinge === "start") ? x1 : x2;
     const hy = (d.hinge === "start") ? y1 : y2;
@@ -3718,7 +3721,7 @@ case "zimmertuer": {
     const side = d.side || 1;
 
     // ------------------------------------------------------------
-    // 1. Türschwelle bei offener Tür (wie bei Haustür, nur ohne Glow)
+    // 1. Türschwelle (nur wenn offen)
     // ------------------------------------------------------------
     if (d.isOpen) {
 
@@ -3745,21 +3748,40 @@ case "zimmertuer": {
         ctx.lineTo(s3x, s3y);
         ctx.lineTo(s4x, s4y);
         ctx.closePath();
-        ctx.fillStyle = "rgba(0,0,0,0.5)";
+        ctx.fillStyle = d.design.schwelle.color;
         ctx.fill();
         ctx.restore();
     }
 
     // ------------------------------------------------------------
-    // 2. Türblatt (offen/geschlossen) – Zimmertür filigraner
+    // 2. Türblatt (offen/geschlossen)
     // ------------------------------------------------------------
-    ctx.strokeStyle = "#00ffc8";
-    ctx.lineWidth = 5;
+    ctx.strokeStyle = d.design.blatt.color;
+    ctx.lineWidth = d.design.blatt.strokeWidth;
 
+    // ⭐ Effekt anwenden (nur Türblatt)
+    if (d.design.blatt.effect === "glow") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.effectStrength;
+    } 
+    else if (d.design.blatt.effect === "shadow") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.effectStrength * 0.5;
+    } 
+    else if (d.design.blatt.effect === "outline") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.strokeWidth * 2;
+    } 
+    else if (d.design.blatt.effect === "blur") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.effectStrength * 1.5;
+    } 
+    else {
+        ctx.shadowColor = "transparent";
+        ctx.shadowBlur = 0;
+    }
 
-    ctx.shadowColor = "transparent"; // kein Glow
-    ctx.shadowBlur = 0;
-
+    // Offen → 90° Drehung
     if (d.isOpen) {
         const angle = Math.PI / 2 * side;
 
@@ -3772,6 +3794,7 @@ case "zimmertuer": {
         ctx.stroke();
 
     } else {
+        // Geschlossen → Wandlinie
         ctx.beginPath();
         ctx.moveTo(x1, y1);
         ctx.lineTo(x2, y2);
@@ -3782,12 +3805,11 @@ case "zimmertuer": {
 }
 
 
+
         // ------------------------------------------------------------
         // ⭐ Haustür
         // ------------------------------------------------------------
 case "haustuer": {
-
-//    d.isOpen = true;  nur zum Testen
 
     // Drehpunkt bestimmen (Scharnier)
     const hx = (d.hinge === "start") ? x1 : x2;
@@ -3838,20 +3860,41 @@ case "haustuer": {
         ctx.lineTo(s3x, s3y);
         ctx.lineTo(s4x, s4y);
         ctx.closePath();
-        ctx.fillStyle = "rgba(0,0,0,0.5)";
+        ctx.fillStyle = d.design.schwelle.color;
         ctx.fill();
         ctx.restore();
     }
 
     // ------------------------------------------------------------
-    // 2. Türblatt (offen/geschlossen) – Haustür dicker + Glow
+    // 2. Türblatt (offen/geschlossen) – Haustür dicker + Effekte
     // ------------------------------------------------------------
 
-    ctx.strokeStyle = "#00d4a8";   // Haustürfarbe
-    ctx.lineWidth = 9;             // dicker als Zimmertür
-    ctx.shadowColor = "rgba(0, 212, 168, 0.35)"; // dezentes Leuchten
-    ctx.shadowBlur = 12;
+    ctx.strokeStyle = d.design.blatt.color;
+    ctx.lineWidth = d.design.blatt.strokeWidth;
 
+    // ⭐ Effekt anwenden (nur Türblatt)
+    if (d.design.blatt.effect === "glow") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.effectStrength;
+    }
+    else if (d.design.blatt.effect === "shadow") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.effectStrength * 0.5;
+    }
+    else if (d.design.blatt.effect === "outline") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.strokeWidth * 2;
+    }
+    else if (d.design.blatt.effect === "blur") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.effectStrength * 1.5;
+    }
+    else {
+        ctx.shadowColor = "transparent";
+        ctx.shadowBlur = 0;
+    }
+
+    // Offen → 90° Drehung
     if (d.isOpen) {
         const angle = Math.PI / 2 * side;
 
@@ -3864,6 +3907,7 @@ case "haustuer": {
         ctx.stroke();
 
     } else {
+        // Geschlossen → Wandlinie
         ctx.beginPath();
         ctx.moveTo(x1, y1);
         ctx.lineTo(x2, y2);
@@ -3874,53 +3918,10 @@ case "haustuer": {
 }
 
 
-    // ------------------------------------------------------------
-    // 3. Haussymbol auf GEGENÜBERLIEGENDER Seite
-    // ------------------------------------------------------------
-
- //   const mx = (x1 + x2) / 2;
-  //  const my = (y1 + y2) / 2;
-
- //   const iconOffset = 18;
-
-//    const ix = mx + px * (-side) * iconOffset;
-//    const iy = my + py * (-side) * iconOffset;
-
-//    ctx.save();
-//    ctx.translate(ix, iy);
-//    ctx.rotate(Math.atan2(ny, nx));
-//    drawDoorIcon(ctx, 0, 0, 24);
-//    ctx.restore();
-
-//    return;
-//}
-
-
-
-
-        // ------------------------------------------------------------
-        // ⭐ Dachluke → rund, frei platzierbar
-        // ------------------------------------------------------------
-//        case "dachluke":
-//            ctx.strokeStyle = "#00b7ff";
- //           ctx.lineWidth = 3;
-  //          ctx.beginPath();
-   //         ctx.arc(d.x, d.y, d.width / 2, 0, Math.PI * 2);
-    //        ctx.stroke();
-        
-    //        ctx.fillStyle = "rgba(0,183,255,0.15)";
-     //       ctx.beginPath();
-      //      ctx.arc(d.x, d.y, d.width / 2.5, 0, Math.PI * 2);
-       //     ctx.fill();
-        //    return;
-
-
-
 // ------------------------------------------------------------
 // ⭐ Schiebetür → kein Viertelkreis
 // ------------------------------------------------------------
 case "schiebetuer": {
- //   d.isOpen = true;  nur zum Testen
 
     // ------------------------------------------------------------
     // 1. Türschwelle (identisch zur Falttür)
@@ -3960,7 +3961,7 @@ case "schiebetuer": {
     ctx.lineTo(t3x, t3y);
     ctx.lineTo(t4x, t4y);
     ctx.closePath();
-    ctx.fillStyle = "rgba(0,0,0,0.5)";
+    ctx.fillStyle = d.design.schwelle.color;
     ctx.fill();
     ctx.restore();
 
@@ -3969,7 +3970,7 @@ case "schiebetuer": {
     // 2. Schiebetür-Linie: offen/geschlossen
     // ------------------------------------------------------------
 
-    // 1. Scharnier-Ende bestimmen
+    // Scharnier-Ende bestimmen
     let hx, hy, ox, oy;
     if (d.hinge === "start") {
         hx = x1; hy = y1;
@@ -3979,7 +3980,7 @@ case "schiebetuer": {
         ox = x1; oy = y1;
     }
 
-    // 2. Richtungsvektoren entlang der Tür
+    // Richtungsvektoren entlang der Tür
     const dx2 = ox - hx;
     const dy2 = oy - hy;
     const len2 = Math.hypot(dx2, dy2);
@@ -3992,16 +3993,42 @@ case "schiebetuer": {
     const py2 = nx2;
 
     const side = d.side || 1;
-    const offset = 4; // Abstand von der Schwelle (wie bisher)
+    const offset = 4; // Abstand von der Schwelle
 
     ctx.save();
-    ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 2;
+
+    // ------------------------------------------------------------
+    // Türblatt-Design
+    // ------------------------------------------------------------
+    ctx.strokeStyle = d.design.blatt.color;
+    ctx.lineWidth = d.design.blatt.strokeWidth;
+
+    // ⭐ Effekt anwenden (nur Türblatt)
+    if (d.design.blatt.effect === "glow") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.effectStrength;
+    }
+    else if (d.design.blatt.effect === "shadow") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.effectStrength * 0.5;
+    }
+    else if (d.design.blatt.effect === "outline") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.strokeWidth * 2;
+    }
+    else if (d.design.blatt.effect === "blur") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.effectStrength * 1.5;
+    }
+    else {
+        ctx.shadowColor = "transparent";
+        ctx.shadowBlur = 0;
+    }
+
 
     if (d.isOpen) {
         // --------------------------------------------------------
-        // OFFENE SCHIEBETÜR (DEIN BISHERIGER CODE, UNVERÄNDERT)
-        // Mittelpunkt am Scharnier, volle Länge, seitlich versetzt
+        // OFFENE SCHIEBETÜR (dein bisheriger Code)
         // --------------------------------------------------------
 
         const mx = hx + px2 * offset * side;
@@ -4023,9 +4050,6 @@ case "schiebetuer": {
     } else {
         // --------------------------------------------------------
         // GESCHLOSSENE SCHIEBETÜR
-        // gleiche Seite, gleicher offset,
-        // aber NICHT mehr hälftig verschoben:
-        // Türblatt startet am Scharnier und läuft bis zum anderen Ende
         // --------------------------------------------------------
 
         const bx = hx + px2 * offset * side;
@@ -4042,11 +4066,11 @@ case "schiebetuer": {
 }
 
 
+
         // ------------------------------------------------------------
         // ⭐ Falttür → segmentiert
         // ------------------------------------------------------------
 case "falttuer": {
-  //  d.isOpen = true;  nur zum Testen
 
     // Wandvektor
     const dx = x2 - x1;
@@ -4089,7 +4113,7 @@ case "falttuer": {
     ctx.lineTo(t3x, t3y);
     ctx.lineTo(t4x, t4y);
     ctx.closePath();
-    ctx.fillStyle = "rgba(0,0,0,0.5)";
+    ctx.fillStyle = d.design.schwelle.color;
     ctx.fill();
     ctx.restore();
 
@@ -4097,6 +4121,7 @@ case "falttuer": {
     // 2. Geschlossene Falttür: dünne Linie in der MITTE der Schwelle
     // ------------------------------------------------------------
     if (!d.isOpen) {
+
         // Mittelpunkt der Schwelle in Querrichtung
         const c1x = (t1x + t4x) / 2;
         const c1y = (t1y + t4y) / 2;
@@ -4105,8 +4130,31 @@ case "falttuer": {
         const c2y = (t2y + t3y) / 2;
 
         ctx.save();
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 1; // sehr dünn
+        ctx.strokeStyle = d.design.blatt.color;
+        ctx.lineWidth = d.design.blatt.strokeWidth;
+
+        // ⭐ Effekt anwenden (nur Türblatt)
+        if (d.design.blatt.effect === "glow") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.effectStrength;
+        }
+        else if (d.design.blatt.effect === "shadow") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.effectStrength * 0.5;
+        }
+        else if (d.design.blatt.effect === "outline") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.strokeWidth * 2;
+        }
+        else if (d.design.blatt.effect === "blur") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.effectStrength * 1.5;
+        }
+        else {
+            ctx.shadowColor = "transparent";
+            ctx.shadowBlur = 0;
+        }
+
         ctx.beginPath();
         ctx.moveTo(c1x, c1y);
         ctx.lineTo(c2x, c2y);
@@ -4117,7 +4165,7 @@ case "falttuer": {
     }
 
     // ------------------------------------------------------------
-    // 3. Offene Falttür – dein bisheriger Code (Zacken)
+    // 3. Offene Falttür – Zackenlinie
     // ------------------------------------------------------------
 
     // Scharnier-Ende bestimmen
@@ -4149,8 +4197,30 @@ case "falttuer": {
     ctx.translate(hx, hy);
     ctx.rotate(Math.atan2(dy2, dx2));
 
-    ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 1.2;
+    ctx.strokeStyle = d.design.blatt.color;
+    ctx.lineWidth = d.design.blatt.strokeWidth;
+
+    // ⭐ Effekt anwenden (nur Türblatt)
+    if (d.design.blatt.effect === "glow") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.effectStrength;
+    }
+    else if (d.design.blatt.effect === "shadow") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.effectStrength * 0.5;
+    }
+    else if (d.design.blatt.effect === "outline") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.strokeWidth * 2;
+    }
+    else if (d.design.blatt.effect === "blur") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.effectStrength * 1.5;
+    }
+    else {
+        ctx.shadowColor = "transparent";
+        ctx.shadowBlur = 0;
+    }
 
     ctx.beginPath();
     ctx.moveTo(0, 0);
@@ -4174,7 +4244,6 @@ case "falttuer": {
         // ⭐ Terrassentür → Glas
         // ------------------------------------------------------------
 case "terrassentuer": {
- //   d.isOpen = false;  nur zum Testen
 
     // ------------------------------------------------------------
     // 0. Drehpunkt bestimmen (IDENTISCH zur Zimmertür)
@@ -4199,7 +4268,7 @@ case "terrassentuer": {
     const side = d.side || 1;
 
     // ------------------------------------------------------------
-    // 1. Türschwelle bei offener Tür (IDENTISCH zur Zimmertür)
+    // 1. Türschwelle bei offener Tür
     // ------------------------------------------------------------
     if (d.isOpen) {
 
@@ -4226,18 +4295,18 @@ case "terrassentuer": {
         ctx.lineTo(s3x, s3y);
         ctx.lineTo(s4x, s4y);
         ctx.closePath();
-        ctx.fillStyle = "rgba(0,0,0,0.5)";
+        ctx.fillStyle = d.design.schwelle.color;
         ctx.fill();
         ctx.restore();
     }
 
     // ------------------------------------------------------------
-    // 2. Türblatt (offen/geschlossen) – DESIGN BLEIBT TERRASSENTÜR
+    // 2. Türblatt (offen/geschlossen) – Terrassentür-Design
     // ------------------------------------------------------------
 
-    // OFFEN → geschwenktes Türblatt (wie Zimmertür)
     if (d.isOpen) {
 
+        // 90° Drehung wie Zimmertür
         const angle = Math.PI / 2 * side;
 
         const rx = nx * Math.cos(angle) - ny * Math.sin(angle);
@@ -4246,17 +4315,45 @@ case "terrassentuer": {
         const ex = hx + rx * len;
         const ey = hy + ry * len;
 
-        // Rahmen (Terrassentür-Design)
-        ctx.strokeStyle = "#00ffc8";
-        ctx.lineWidth = 4;
+        // --------------------------------------------------------
+        // Rahmenlinie (Blatt)
+        // --------------------------------------------------------
+        ctx.strokeStyle = d.design.blatt.color;
+        ctx.lineWidth = d.design.blatt.strokeWidth;
+
+        // ⭐ Effekt anwenden (nur Türblatt)
+        if (d.design.blatt.effect === "glow") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.effectStrength;
+        }
+        else if (d.design.blatt.effect === "shadow") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.effectStrength * 0.5;
+        }
+        else if (d.design.blatt.effect === "outline") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.strokeWidth * 2;
+        }
+        else if (d.design.blatt.effect === "blur") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.effectStrength * 1.5;
+        }
+        else {
+            ctx.shadowColor = "transparent";
+            ctx.shadowBlur = 0;
+        }
+
         ctx.beginPath();
         ctx.moveTo(hx, hy);
         ctx.lineTo(ex, ey);
         ctx.stroke();
 
-        // Glasfüllung (Terrassentür-Design)
-        ctx.strokeStyle = "rgba(0, 180, 255, 0.7)";
-        ctx.lineWidth = 8;
+        // --------------------------------------------------------
+        // Glasfüllung (Effektfarbe + Effektstärke)
+        // --------------------------------------------------------
+        ctx.strokeStyle = d.design.blatt.effectColor;
+        ctx.lineWidth = d.design.blatt.effectStrength;
+
         ctx.beginPath();
         ctx.moveTo(hx, hy);
         ctx.lineTo(ex, ey);
@@ -4264,16 +4361,46 @@ case "terrassentuer": {
 
     } else {
 
-        // GESCHLOSSEN → Linie auf der Wand (wie Zimmertür)
-        ctx.strokeStyle = "#00ffc8";
-        ctx.lineWidth = 4;
+        // --------------------------------------------------------
+        // GESCHLOSSENE TERRASSENTÜR
+        // Rahmenlinie
+        // --------------------------------------------------------
+        ctx.strokeStyle = d.design.blatt.color;
+        ctx.lineWidth = d.design.blatt.strokeWidth;
+
+        // ⭐ Effekt anwenden (nur Türblatt)
+        if (d.design.blatt.effect === "glow") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.effectStrength;
+        }
+        else if (d.design.blatt.effect === "shadow") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.effectStrength * 0.5;
+        }
+        else if (d.design.blatt.effect === "outline") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.strokeWidth * 2;
+        }
+        else if (d.design.blatt.effect === "blur") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.effectStrength * 1.5;
+        }
+        else {
+            ctx.shadowColor = "transparent";
+            ctx.shadowBlur = 0;
+        }
+
         ctx.beginPath();
         ctx.moveTo(x1, y1);
         ctx.lineTo(x2, y2);
         ctx.stroke();
 
-        ctx.strokeStyle = "rgba(0, 180, 255, 0.7)";
-        ctx.lineWidth = 8;
+        // --------------------------------------------------------
+        // Glasfüllung
+        // --------------------------------------------------------
+        ctx.strokeStyle = d.design.blatt.effectColor;
+        ctx.lineWidth = d.design.blatt.effectStrength;
+
         ctx.beginPath();
         ctx.moveTo(x1, y1);
         ctx.lineTo(x2, y2);
@@ -4288,7 +4415,6 @@ case "terrassentuer": {
         // ⭐ Garagentor → dicke Linie
         // ------------------------------------------------------------
 case "garagentor": {
-   // d.isOpen = true;  nur zum Testen
 
     // ------------------------------------------------------------
     // 0. Drehpunkt bestimmen (Scharnierseite)
@@ -4341,7 +4467,7 @@ case "garagentor": {
         ctx.lineTo(s3x, s3y);
         ctx.lineTo(s4x, s4y);
         ctx.closePath();
-        ctx.fillStyle = "rgba(0,0,0,0.5)";
+        ctx.fillStyle = d.design.schwelle.color;
         ctx.fill();
         ctx.restore();
     }
@@ -4368,17 +4494,44 @@ case "garagentor": {
 
     if (d.isOpen) {
 
-        // --- OFFEN: dickes, transparentes Torblatt
-        ctx.strokeStyle = "rgba(0,255,200,0.25)";
-        ctx.lineWidth = 80;
+        // --------------------------------------------------------
+        // OFFEN: dickes, transparentes Torblatt
+        // --------------------------------------------------------
+        ctx.strokeStyle = d.design.blatt.color + "40"; // leichte Transparenz
+        ctx.lineWidth = d.design.blatt.strokeWidth * 8; // dickes Torblatt
+
+        // ⭐ Effekt anwenden (nur Türblatt)
+        if (d.design.blatt.effect === "glow") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.effectStrength;
+        }
+        else if (d.design.blatt.effect === "shadow") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.effectStrength * 0.5;
+        }
+        else if (d.design.blatt.effect === "outline") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.strokeWidth * 2;
+        }
+        else if (d.design.blatt.effect === "blur") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.effectStrength * 1.5;
+        }
+        else {
+            ctx.shadowColor = "transparent";
+            ctx.shadowBlur = 0;
+        }
+
         ctx.beginPath();
         ctx.moveTo(bx1, by1);
         ctx.lineTo(bx2, by2);
         ctx.stroke();
 
-        // --- Strukturstreifen
-        ctx.strokeStyle = "rgba(0,255,200,0.3)";
-        ctx.lineWidth = 2;
+        // --------------------------------------------------------
+        // Strukturstreifen
+        // --------------------------------------------------------
+        ctx.strokeStyle = d.design.blatt.color;
+        ctx.lineWidth = d.design.blatt.strokeWidth;
 
         const steps = 3;
         for (let i = 1; i <= steps; i++) {
@@ -4398,13 +4551,59 @@ case "garagentor": {
 
     } else {
 
-        // --- GESCHLOSSEN: dünne Linie auf der Schwelle
-        ctx.strokeStyle = "#00ffc8";
-        ctx.lineWidth = 8;
+        // --------------------------------------------------------
+        // GESCHLOSSEN: dünne Linie auf der Schwelle
+        // --------------------------------------------------------
+        ctx.strokeStyle = d.design.blatt.color;
+        ctx.lineWidth = d.design.blatt.strokeWidth;
+
+        // ⭐ Effekt anwenden (nur Türblatt)
+        if (d.design.blatt.effect === "glow") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.effectStrength;
+        }
+        else if (d.design.blatt.effect === "shadow") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.effectStrength * 0.5;
+        }
+        else if (d.design.blatt.effect === "outline") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.strokeWidth * 2;
+        }
+        else if (d.design.blatt.effect === "blur") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.effectStrength * 1.5;
+        }
+        else {
+            ctx.shadowColor = "transparent";
+            ctx.shadowBlur = 0;
+        }
+
         ctx.beginPath();
         ctx.moveTo(x1, y1);
         ctx.lineTo(x2, y2);
         ctx.stroke();
+
+        // --------------------------------------------------------
+        // ⭐ NEU: dünner Rahmen, der zeigt, wo das Tor wäre, wenn offen
+        // --------------------------------------------------------
+        const offset = 40 * side;
+
+        const fx1 = x1 + px * offset;
+        const fy1 = y1 + py * offset;
+
+        const fx2 = x2 + px * offset;
+        const fy2 = y2 + py * offset;
+
+        ctx.save();
+        ctx.strokeStyle = d.design.blatt.color;
+        ctx.lineWidth = Math.max(1, d.design.blatt.strokeWidth * 0.5);
+
+        ctx.beginPath();
+        ctx.moveTo(fx1, fy1);
+        ctx.lineTo(fx2, fy2);
+        ctx.stroke();
+        ctx.restore();
     }
 
     return;
@@ -4416,8 +4615,6 @@ case "garagentor": {
         // ⭐ Gartentörchen → schmal
         // ------------------------------------------------------------
 case "gartentor": {
-
-//    d.isOpen = true;  nur zum Testen
 
     // ------------------------------------------------------------
     // 0. Drehpunkt bestimmen (Scharnier)
@@ -4461,13 +4658,13 @@ case "gartentor": {
         rx = nx * cosA - ny * sinA;
         ry = nx * sinA + ny * cosA;
 
-        // Normalenvektor mitdrehen (wichtig für offene Darstellung)
+        // Normalenvektor mitdrehen
         px2 = px * cosA - py * sinA;
         py2 = px * sinA + py * cosA;
     }
 
     // ------------------------------------------------------------
-    // 2. Türschwelle (wie bei allen anderen Türen)
+    // 2. Türschwelle
     // ------------------------------------------------------------
     {
         const wallThickness = 16;
@@ -4493,7 +4690,7 @@ case "gartentor": {
         ctx.lineTo(s3x, s3y);
         ctx.lineTo(s4x, s4y);
         ctx.closePath();
-        ctx.fillStyle = "rgba(0,0,0,0.5)";
+        ctx.fillStyle = d.design.schwelle.color;
         ctx.fill();
         ctx.restore();
     }
@@ -4504,16 +4701,40 @@ case "gartentor": {
     const torBreite = len;
     const torHoehe = 4;
     const streben = 6;
-    const strebenBreite = 4;
-    const querBreite = 6;
 
     ctx.save();
     ctx.lineCap = "round";
-    ctx.strokeStyle = "#8b5a2b";
-    ctx.fillStyle = "#8b5a2b";
 
     // ------------------------------------------------------------
-    // 4. Querlatte oben (rotiert korrekt)
+    // ⭐ Effekt anwenden (nur Türblatt)
+    // ------------------------------------------------------------
+    if (d.design.blatt.effect === "glow") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.effectStrength;
+    }
+    else if (d.design.blatt.effect === "shadow") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.effectStrength * 0.5;
+    }
+    else if (d.design.blatt.effect === "outline") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.strokeWidth * 2;
+    }
+    else if (d.design.blatt.effect === "blur") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.effectStrength * 1.5;
+    }
+    else {
+        ctx.shadowColor = "transparent";
+        ctx.shadowBlur = 0;
+    }
+
+    ctx.strokeStyle = d.design.blatt.color;
+    ctx.fillStyle = d.design.blatt.color;
+    ctx.lineWidth = d.design.blatt.strokeWidth;
+
+    // ------------------------------------------------------------
+    // 4. Querlatte oben
     // ------------------------------------------------------------
     const q1x = hx;
     const q1y = hy;
@@ -4521,7 +4742,6 @@ case "gartentor": {
     const q2x = hx + rx * torBreite;
     const q2y = hy + ry * torBreite;
 
-    ctx.lineWidth = querBreite;
     ctx.beginPath();
     ctx.moveTo(q1x, q1y);
     ctx.lineTo(q2x, q2y);
@@ -4529,11 +4749,7 @@ case "gartentor": {
 
     // ------------------------------------------------------------
     // 5. Senkrechte Latten
-    //    → immer auf der GEGENÜBERLIEGENDEN Seite des Viertelkreises
-    //    → korrekt rotiert im offenen Zustand
     // ------------------------------------------------------------
-    ctx.lineWidth = strebenBreite;
-
     const lattenSide = -side; // andere Seite als Scharnier/Viertelkreis
 
     for (let i = 0; i <= streben; i++) {
@@ -4556,6 +4772,7 @@ case "gartentor": {
     ctx.restore();
     return;
 }
+
 
 
          // ------------------------------------------------------------
@@ -4610,7 +4827,10 @@ case "durchgang": {
     ctx.lineTo(s3x, s3y);
     ctx.lineTo(s4x, s4y);
     ctx.closePath();
-    ctx.fillStyle = "rgba(0,0,0,0.5)";
+
+    // ⭐ Durchgang hat nur Schwelle → Designfarbe
+    ctx.fillStyle = d.design.schwelle.color;
+
     ctx.fill();
     ctx.restore();
 
@@ -4618,11 +4838,8 @@ case "durchgang": {
 }
 
 
-// ------------------------------------------------------------
-// ⭐ Dachluke
-// ------------------------------------------------------------     
+
 case "dachluke": {
-    // d.isOpen = false;  nur zum Testen
 
     const r = d.width / 2;
 
@@ -4630,22 +4847,50 @@ case "dachluke": {
     // Geschlossen
     // -------------------------------
     if (!d.isOpen) {
-        ctx.strokeStyle = "#00b7ff";
-        ctx.lineWidth = 3;
 
-        // Außenkreis
+        // ⭐ Türblatt-Design (Kontur des Deckels)
+        ctx.strokeStyle = d.design.blatt.color;
+        ctx.lineWidth = d.design.blatt.strokeWidth;
+
+        // ⭐ Effekt anwenden (nur Türblatt)
+        if (d.design.blatt.effect === "glow") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.effectStrength;
+        }
+        else if (d.design.blatt.effect === "shadow") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.effectStrength * 0.5;
+        }
+        else if (d.design.blatt.effect === "outline") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.strokeWidth * 2;
+        }
+        else if (d.design.blatt.effect === "blur") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.effectStrength * 1.5;
+        }
+        else {
+            ctx.shadowColor = "transparent";
+            ctx.shadowBlur = 0;
+        }
+
+        // Außenkreis (Deckel)
         ctx.beginPath();
         ctx.arc(d.x, d.y, r, 0, Math.PI * 2);
         ctx.stroke();
 
-        // Innenfüllung
-        ctx.fillStyle = "rgba(0,183,255,0.15)";
+        // ⭐ Innenfüllung (Schwelle-Design)
+        ctx.fillStyle = d.design.schwelle.color;
         ctx.beginPath();
         ctx.arc(d.x, d.y, r * 0.6, 0, Math.PI * 2);
         ctx.fill();
 
-        // Scharnier anzeigen (Tangente)
+        // ⭐ Scharnier-Strich (hinge-Design)
         if (d.hingeAngle !== undefined) {
+
+            ctx.strokeStyle = d.design.hinge.color;
+            ctx.lineWidth = d.design.hinge.strokeWidth;
+
             const hingeX = d.x + Math.cos(d.hingeAngle) * r;
             const hingeY = d.y + Math.sin(d.hingeAngle) * r;
 
@@ -4666,8 +4911,9 @@ case "dachluke": {
     // Offen → Ellipse als Klappe
     // -------------------------------
 
-    ctx.strokeStyle = "#00b7ff";
-    ctx.lineWidth = 3;
+    // ⭐ Scharnier-Design für offenen Zustand
+    ctx.strokeStyle = d.design.hinge.color;
+    ctx.lineWidth = d.design.hinge.strokeWidth;
 
     // 1) Hauptkreis (Loch)
     ctx.beginPath();
@@ -4677,40 +4923,42 @@ case "dachluke": {
     // 2) Ellipse (Deckel)
     const angle = d.hingeAngle || 0;
 
-    // Ellipsen-Radien → quer
     const rx = r;          // breit
     const ry = r * 0.35;   // flach
 
-    // ⭐ Abstand exakt so, dass Ellipse tangential am Kreis anliegt
+    // Abstand so, dass Ellipse tangential am Kreis anliegt
     const offsetX = Math.cos(angle) * (r + ry);
     const offsetY = Math.sin(angle) * (r + ry);
 
     ctx.save();
     ctx.translate(d.x + offsetX, d.y + offsetY);
 
-    // ⭐ Ellipse um 90° versetzt drehen, damit breite Seite am Kreis anliegt
+    // Ellipse um 90° versetzt drehen
     ctx.rotate(angle + Math.PI / 2);
 
-    // Füllung
-    ctx.fillStyle = "rgba(0,183,255,0.15)";
+    // ⭐ Füllung (Schwelle-Design)
+    ctx.fillStyle = d.design.schwelle.color;
     ctx.beginPath();
     ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Kontur
-    ctx.strokeStyle = "#00b7ff";
-    ctx.lineWidth = 3;
+    // ⭐ Kontur (Hinge-Design)
+    ctx.strokeStyle = d.design.hinge.color;
+    ctx.lineWidth = d.design.hinge.strokeWidth;
     ctx.stroke();
 
     ctx.restore();
 
-    // 3) Scharnier-Strich → TANGENTE
+    // 3) Scharnier-Strich → Tangente
     const hingeX = d.x + Math.cos(angle) * r;
     const hingeY = d.y + Math.sin(angle) * r;
 
     const hingeLen = r * 1.2;
     const tx = Math.cos(angle + Math.PI / 2);
     const ty = Math.sin(angle + Math.PI / 2);
+
+    ctx.strokeStyle = d.design.hinge.color;
+    ctx.lineWidth = d.design.hinge.strokeWidth;
 
     ctx.beginPath();
     ctx.moveTo(hingeX - tx * hingeLen / 2, hingeY - ty * hingeLen / 2);
@@ -4719,9 +4967,6 @@ case "dachluke": {
 
     return;
 }
-
-            
-
 }
 },
 
@@ -4733,8 +4978,9 @@ drawDoorArc(ctx, d, hx, hy, px, py, elen, side) {
     const steps = 24;
     const design = d.design || {};
 
-    ctx.strokeStyle = "rgba(0,255,200,0.25)";
-    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = d.design.arc.color;
+    ctx.lineWidth = d.design.arc.strokeWidth;
+
 
 
     ctx.beginPath();
@@ -5507,6 +5753,8 @@ room.windows = RoomDesigner.windows.map(w => {
 
     openDesignerPanel(selection) {
         this.designerSelection = selection;
+        ensureDoorDesignStructure(selection.data);
+
     
         const panel = document.getElementById("designerPanel");
         const title = document.getElementById("designerTitle");
@@ -5539,93 +5787,125 @@ renderDesignerContent(selection) {
 
     const obj = selection.data;
 
-    let html = `
-        <!-- DESIGN-CONTROLS (Block 0) -->
+    // Neue Design-Struktur sicherstellen
+    ensureDoorDesignStructure(obj);
+
+    // Komponenten ermitteln (z.B. blatt, schwelle, arc, hinge)
+    const comps = getDoorComponents(obj);
+
+    let html = "";
+
+    // ------------------------------------------------------------
+    // ⭐ Dynamische Design-Sektionen pro Komponente
+    // ------------------------------------------------------------
+    for (const comp of comps) {
+
+        const dcomp = obj.design[comp];
+
+        html += `
+            <div class="designer-section">
+                <h3>Design: ${comp}</h3>
+
+                <!-- FARBE -->
+                <label class="designer-control">
+                    <span>Farbe</span>
+                    <input type="color" id="design_${comp}_color" value="${dcomp.color}">
+                </label>
+
+                <!-- STRICHSTÄRKE -->
+                <label class="designer-control">
+                    <span>Strichstärke</span>
+                    <input type="range" id="design_${comp}_stroke" min="1" max="20" value="${dcomp.strokeWidth}">
+                </label>
+        `;
+
+        // ------------------------------------------------------------
+        // ⭐ Effekte nur für BLATT
+        // ------------------------------------------------------------
+        if (comp === "blatt") {
+            html += `
+                <label class="designer-control">
+                    <span>Effekt</span>
+                    <select id="design_${comp}_effect">
+                        <option value="none">Keiner</option>
+                        <option value="shadow">Schatten</option>
+                        <option value="glow">Leuchten</option>
+                        <option value="outline">Umrandung</option>
+                        <option value="blur">Weichzeichnen</option>
+                    </select>
+                </label>
+
+                <label class="designer-control">
+                    <span>Effektstärke</span>
+                    <input type="range" id="design_${comp}_effectStrength" min="0" max="100" value="${dcomp.effectStrength}">
+                </label>
+
+                <label class="designer-control">
+                    <span>Effektfarbe</span>
+                    <input type="color" id="design_${comp}_effectColor" value="${dcomp.effectColor}">
+                </label>
+            `;
+        }
+
+        html += `</div>`;
+    }
+
+    // ------------------------------------------------------------
+    // ⭐ ViewModes
+    // ------------------------------------------------------------
+    html += `
         <div class="designer-section">
-            <h3>Design</h3>
+            <h3>Anwendung bei…</h3>
 
-            <label class="designer-control">
-                <span>Farbe</span>
-                <input type="color" id="designColor">
+            <label class="designer-check">
+                <input type="checkbox" id="applyRoomView" checked>
+                Raumansicht
             </label>
 
-            <label class="designer-control">
-                <span>Effekt</span>
-                <select id="designEffect">
-                    <option value="none">Keiner</option>
-                    <option value="shadow">Schatten</option>
-                    <option value="glow">Leuchten</option>
-                    <option value="outline">Umrandung</option>
-                    <option value="blur">Weichzeichnen</option>
-                </select>
+            <label class="designer-check">
+                <input type="checkbox" id="applyFloorView" checked>
+                Etagenansicht
             </label>
 
-            <label class="designer-control">
-                <span>Effektstärke</span>
-                <input type="range" id="designEffectStrength" min="0" max="100" value="50">
-            </label>
-
-            <label class="designer-control">
-                <span>Effektfarbe</span>
-                <input type="color" id="designEffectColor">
-            </label>
-
-            <label class="designer-control">
-                <span>Strichstärke</span>
-                <input type="range" id="designStrokeWidth" min="1" max="10" value="2">
+            <label class="designer-check">
+                <input type="checkbox" id="applyObjectView" checked>
+                Objektansicht (3D)
             </label>
         </div>
     `;
 
+    // ------------------------------------------------------------
+    // ⭐ Scope
+    // ------------------------------------------------------------
     html += `
-    <div class="designer-section">
-        <h3>Anwendung bei…</h3>
+        <div class="designer-section">
+            <h3>Design‑Anwendbarkeit…</h3>
 
-        <label class="designer-check">
-            <input type="checkbox" id="applyRoomView" checked>
-            Raumansicht
-        </label>
+            <label class="designer-check">
+                <input type="radio" name="designScope" id="scopeSingle" value="single" checked>
+                Nur dieses Objekt
+            </label>
 
-        <label class="designer-check">
-            <input type="checkbox" id="applyFloorView" checked>
-            Etagenansicht
-        </label>
+            <label class="designer-check">
+                <input type="radio" name="designScope" id="scopeRoom" value="room">
+                Alle gleichartigen im Raum
+            </label>
 
-        <label class="designer-check">
-            <input type="checkbox" id="applyObjectView" checked>
-            Objektansicht (3D)
-        </label>
-    </div>
-`;
+            <label class="designer-check">
+                <input type="radio" name="designScope" id="scopeFloor" value="floor">
+                Alle gleichartigen in der Etage
+            </label>
 
-   html += `
-    <div class="designer-section">
-        <h3>Design‑Anwendbarkeit…</h3>
+            <label class="designer-check">
+                <input type="radio" name="designScope" id="scopeProject" value="project">
+                Alle gleichartigen im Projekt
+            </label>
+        </div>
+    `;
 
-        <label class="designer-check">
-            <input type="radio" name="designScope" id="scopeSingle" value="single" checked>
-            Nur dieses Objekt
-        </label>
-
-        <label class="designer-check">
-            <input type="radio" name="designScope" id="scopeRoom" value="room">
-            Alle gleichartigen im Raum
-        </label>
-
-        <label class="designer-check">
-            <input type="radio" name="designScope" id="scopeFloor" value="floor">
-            Alle gleichartigen in der Etage
-        </label>
-
-        <label class="designer-check">
-            <input type="radio" name="designScope" id="scopeProject" value="project">
-            Alle gleichartigen im Projekt
-        </label>
-    </div>
-`;
- 
-    
-    /* --- ALLGEMEIN --- */
+    // ------------------------------------------------------------
+    // ⭐ Allgemein
+    // ------------------------------------------------------------
     html += `
         <div class="designer-section">
             <h3>Allgemein</h3>
@@ -5635,7 +5915,9 @@ renderDesignerContent(selection) {
         </div>
     `;
 
-    /* --- KATEGORIE-SPEZIFISCH --- */
+    // ------------------------------------------------------------
+    // ⭐ Kategorie-spezifisch
+    // ------------------------------------------------------------
     if (selection.category === "door") {
         html += `
             <div class="designer-section">
@@ -5686,44 +5968,112 @@ renderDesignerContent(selection) {
     }
 
     return html;
+}
+,
+
+function renderDesignSection(name, design) {
+    return `
+        <div class="designer-section">
+            <h3>${name}</h3>
+
+            <label class="designer-control">
+                <span>Farbe</span>
+                <input type="color" id="design_${name}_color" value="${design.color}">
+            </label>
+
+            <label class="designer-control">
+                <span>Strichstärke</span>
+                <input type="range" id="design_${name}_stroke" min="1" max="20" value="${design.strokeWidth}">
+            </label>
+
+            <!-- Effekt nur für blatt -->
+            ${name === "blatt" ? `
+                <label class="designer-control">
+                    <span>Effekt</span>
+                    <select id="design_${name}_effect">
+                        <option value="none">Keiner</option>
+                        <option value="shadow">Schatten</option>
+                        <option value="glow">Leuchten</option>
+                        <option value="outline">Umrandung</option>
+                        <option value="blur">Weichzeichnen</option>
+                    </select>
+                </label>
+
+                <label class="designer-control">
+                    <span>Effektstärke</span>
+                    <input type="range" id="design_${name}_effectStrength" min="0" max="100" value="${design.effectStrength}">
+                </label>
+
+                <label class="designer-control">
+                    <span>Effektfarbe</span>
+                    <input type="color" id="design_${name}_effectColor" value="${design.effectColor}">
+                </label>
+            ` : ""}
+        </div>
+    `;
 },
+
 
 initDesignerControls(selection) {
 
     const obj = selection.data;
 
-    // Falls das Objekt noch kein Design hat → anlegen
-    if (!obj.design) {
-        obj.design = {
-            color: "#ffffff",
-            effect: "none",
-            effectStrength: 50,
-            effectColor: "#ffffff",
-            strokeWidth: 2
-        };
+    // Neue Design-Struktur sicherstellen (Migration)
+    ensureDoorDesignStructure(obj);
+
+    // Komponenten ermitteln (z.B. blatt, schwelle, arc, hinge)
+    const comps = getDoorComponents(obj);
+
+    // Für jede Komponente eigene Controls initialisieren
+    for (const comp of comps) {
+
+        const dcomp = obj.design[comp];
+
+        // -----------------------------
+        // FARBE
+        // -----------------------------
+        const colorInput = document.getElementById(`design_${comp}_color`);
+        if (colorInput) {
+            colorInput.value = dcomp.color;
+            colorInput.oninput = () => this.applyDesignChange(obj, comp, "color", colorInput.value);
+        }
+
+        // -----------------------------
+        // STRICHSTÄRKE
+        // -----------------------------
+        const strokeInput = document.getElementById(`design_${comp}_stroke`);
+        if (strokeInput) {
+            strokeInput.value = dcomp.strokeWidth;
+            strokeInput.oninput = () => this.applyDesignChange(obj, comp, "strokeWidth", strokeInput.value);
+        }
+
+        // -----------------------------
+        // EFFEKTE (nur für blatt)
+        // -----------------------------
+        if (comp === "blatt") {
+
+            const effectSelect = document.getElementById(`design_${comp}_effect`);
+            const strengthInput = document.getElementById(`design_${comp}_effectStrength`);
+            const effectColorInput = document.getElementById(`design_${comp}_effectColor`);
+
+            if (effectSelect) {
+                effectSelect.value = dcomp.effect;
+                effectSelect.onchange = () => this.applyDesignChange(obj, comp, "effect", effectSelect.value);
+            }
+
+            if (strengthInput) {
+                strengthInput.value = dcomp.effectStrength;
+                strengthInput.oninput = () => this.applyDesignChange(obj, comp, "effectStrength", strengthInput.value);
+            }
+
+            if (effectColorInput) {
+                effectColorInput.value = dcomp.effectColor;
+                effectColorInput.oninput = () => this.applyDesignChange(obj, comp, "effectColor", effectColorInput.value);
+            }
+        }
     }
-
-    // Controls referenzieren
-    const colorInput = document.getElementById("designColor");
-    const effectSelect = document.getElementById("designEffect");
-    const strengthInput = document.getElementById("designEffectStrength");
-    const effectColorInput = document.getElementById("designEffectColor");
-    const strokeInput = document.getElementById("designStrokeWidth");
-
-    // Werte setzen
-    colorInput.value = obj.design.color;
-    effectSelect.value = obj.design.effect;
-    strengthInput.value = obj.design.effectStrength;
-    effectColorInput.value = obj.design.effectColor;
-    strokeInput.value = obj.design.strokeWidth;
-
-    // Listener: Änderungen speichern + Live-Update
-    colorInput.oninput = () => this.applyDesignChange(obj, "color", colorInput.value);
-    effectSelect.onchange = () => this.applyDesignChange(obj, "effect", effectSelect.value);
-    strengthInput.oninput = () => this.applyDesignChange(obj, "effectStrength", strengthInput.value);
-    effectColorInput.oninput = () => this.applyDesignChange(obj, "effectColor", effectColorInput.value);
-    strokeInput.oninput = () => this.applyDesignChange(obj, "strokeWidth", strokeInput.value);
-},
+}
+,
 
 initDesignerViewModes(selection) {
 
@@ -5785,12 +6135,11 @@ initDesignerViewModes(selection) {
 },
 
     
-applyDesignChange(obj, key, value) {
-    obj.design[key] = value;
-
-    // ⭐ Live-Update im Canvas
+applyDesignChange(obj, comp, key, value) {
+    obj.design[comp][key] = value;
     this.updateObjectVisual(obj);
-},
+}
+
 
     updateObjectVisual(obj) {
     this.render();
@@ -5808,6 +6157,38 @@ applyDesignChange(obj, key, value) {
 // ------------------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------------
+
+function getDoorComponents(d) {
+    switch (d.type) {
+        case "zimmertuer":
+        case "haustuer":
+        case "terrassentuer":
+            return ["blatt", "schwelle", "arc", "hinge"];
+
+        case "gartentor":
+            return ["blatt", "schwelle", "arc", "hinge"];
+
+        case "garagentor":
+            return ["blatt", "schwelle"];
+
+        case "falttuer":
+            return ["schwelle", "blatt"];
+
+        case "schiebetuer":
+            return ["schwelle", "blatt"];
+
+        case "durchgang":
+            return ["schwelle"];
+
+        case "dachluke":
+            return ["blatt", "hinge"]; // Kreis + Tangente
+
+        default:
+            return ["blatt"];
+    }
+}
+
+
 
 
 RoomDesigner.loadRoom = function(roomId) {
