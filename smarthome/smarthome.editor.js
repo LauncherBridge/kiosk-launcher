@@ -1810,6 +1810,7 @@ addContextButton(label, fn, closeMenu = false) {
 ,
 
     onMove(e) {
+    if (this._eventsPaused) return;
 
     const rect = this.canvas.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
@@ -2195,6 +2196,7 @@ getSidebarItem(tool, subtype = null) {
 
     
 onDown(e) {
+    if (this._eventsPaused) return;
 
     const rect = this.canvas.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
@@ -2617,6 +2619,7 @@ onDown(e) {
 
 
 onUp(e) {
+    if (this._eventsPaused) return;
 
     if (this.isDesignerMode) {
         this.isPanning = false;
@@ -2759,6 +2762,8 @@ onUp(e) {
     // Zoom per Mausrad
     // --------------------------------------------------
     onWheelZoom(e) {
+        if (this._eventsPaused) return;
+
         e.preventDefault();
 
         const rect = this.canvas.getBoundingClientRect();
@@ -2819,6 +2824,8 @@ onDoubleClickZoom(e) {
     // TOUCH START
     // --------------------------------------------------
     onTouchStart(e) {
+        if (this._eventsPaused) return;
+
         e.preventDefault();
 
         const touches = e.touches;
@@ -2864,6 +2871,8 @@ onDoubleClickZoom(e) {
     // TOUCH MOVE
     // --------------------------------------------------
     onTouchMove(e) {
+        if (this._eventsPaused) return;
+
         e.preventDefault();
 
         const touches = e.touches;
@@ -2915,6 +2924,8 @@ onDoubleClickZoom(e) {
     },
 
     onTouchEnd(e) {
+        if (this._eventsPaused) return;
+
         if (e.touches.length === 0) {
             this.isPanning = false;
             this.touchState.active = false;
@@ -3224,6 +3235,7 @@ this._roomCenterBeforeMove = this._computeRoomCenter();
     // Rendering
     // --------------------------------------------------
 render() {
+    if (this._eventsPaused) return;
 
     const ctx = this.ctx;
     if (!ctx || !this.canvas) return;
@@ -5041,6 +5053,8 @@ drawDoorArc(ctx, d, hx, hy, px, py, elen, side) {
     // Hover-Kreuz
     // --------------------------------------------------
     drawHoverCross() {
+        if (this._eventsPaused) return;
+
         const ctx = this.ctx;
         const { x, y } = this.hover;
 
@@ -5991,6 +6005,10 @@ initDesignerControls(selection) {
         if (colorInput) {
             colorInput.value = dcomp.color;
             colorInput.oninput = () => this.applyDesignChange(obj, comp, "color", colorInput.value);
+
+            // Color-Picker Freeze Fix
+            colorInput.addEventListener("click", () => RoomDesigner._pauseCanvasEvents());
+            colorInput.addEventListener("blur", () => RoomDesigner._resumeCanvasEvents());
         }
 
         // -----------------------------
@@ -6024,10 +6042,15 @@ initDesignerControls(selection) {
             if (effectColorInput) {
                 effectColorInput.value = dcomp.effectColor;
                 effectColorInput.oninput = () => this.applyDesignChange(obj, comp, "effectColor", effectColorInput.value);
+
+                // Color-Picker Freeze Fix (auch hier!)
+                effectColorInput.addEventListener("click", () => RoomDesigner._pauseCanvasEvents());
+                effectColorInput.addEventListener("blur", () => RoomDesigner._resumeCanvasEvents());
             }
         }
     }
 }
+
 ,
 
 initDesignerViewModes(selection) {
@@ -6112,6 +6135,18 @@ applyDesignChange(obj, comp, key, value) {
 // ------------------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------------
+
+
+// Canvas-Events pausieren (Color-Picker Workaround)
+RoomDesigner._pauseCanvasEvents = function() {
+    this._eventsPaused = true;
+};
+
+// Canvas-Events wieder aktivieren
+RoomDesigner._resumeCanvasEvents = function() {
+    this._eventsPaused = false;
+};
+
 
 function getDoorComponents(d) {
     switch (d.type) {
