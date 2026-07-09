@@ -1413,12 +1413,27 @@ init() {
 ,
 
 d.design = {
-    color: "#00ffc8",
-    strokeWidth: 5,
-    effect: "none",
-    effectColor: "#00ffc8",
-    effectStrength: 0
-},
+    blatt: {
+        color: "#00ffc8",
+        strokeWidth: 5,
+        effect: "none",
+        effectColor: "#00ffc8",
+        effectStrength: 0
+    },
+    schwelle: {
+        color: "#00ffc8"
+    },
+    arc: {
+        color: "#00ffc8",
+        strokeWidth: 5
+    },
+    hinge: {
+        color: "#00ffc8",
+        strokeWidth: 5
+    }
+};
+
+,
 
 setupDesignerButton() {
     const btn = document.getElementById("btnDesignerStart");
