@@ -6143,6 +6143,38 @@ function getDoorComponents(d) {
 }
 
 
+function ensureDoorDesignStructure(obj) {
+    if (!obj.design) obj.design = {};
+
+    // Standard-Komponenten
+    const defaults = {
+        blatt: {
+            color: "#ffffff",
+            strokeWidth: 4,
+            effect: "none",
+            effectStrength: 0,
+            effectColor: "#ffffff"
+        },
+        schwelle: {
+            color: "#cccccc",
+            strokeWidth: 2
+        },
+        arc: {
+            color: "#ffffff",
+            strokeWidth: 2
+        },
+        hinge: {
+            color: "#ffffff",
+            strokeWidth: 2
+        }
+    };
+
+    for (const key in defaults) {
+        if (!obj.design[key]) {
+            obj.design[key] = { ...defaults[key] };
+        }
+    }
+}
 
 
 RoomDesigner.loadRoom = function(roomId) {
