@@ -6146,6 +6146,19 @@ applyDesignChange(obj, comp, key, value) {
 // ------------------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------------
 
+// Globaler Fix für EyeDropper-Freeze
+window.addEventListener("pointerup", () => {
+    if (RoomDesigner._eventsPaused) {
+        RoomDesigner._resumeCanvasEvents();
+
+        // Alle Color-Inputs neu laden
+        document.querySelectorAll('input[type="color"]').forEach(input => {
+            const newInput = input.cloneNode(true);
+            input.replaceWith(newInput);
+        });
+    }
+});
+
 
 // Globaler Fix für Eye-Dropper Freeze
 window.addEventListener("focus", () => {
