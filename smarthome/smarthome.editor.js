@@ -2207,6 +2207,11 @@ if (this.isDesignerMode) {
 
     // 👉 PAN bei empty
     if (!hit || hit.type === "empty") {
+
+        // ⭐ Kontextmenü schließen, wenn man ins Leere klickt
+        this.hideContextMenu();
+        this._pendingContext = null;
+        
         console.log("Designer-PAN gestartet, hit.type =", hit?.type);
 
         this.isPanning = true;
