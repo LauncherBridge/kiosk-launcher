@@ -2268,6 +2268,10 @@ if (this.isDesignerMode) {
         subType = fullObject.type;
     }
 
+    // ⭐ WICHTIG: Beim Objektwechsel → Kontextmenü schließen + pendingContext löschen
+    this.hideContextMenu();
+    this._pendingContext = null;
+
     // Vollständige Ausgabe
     console.log("Designer-Auswahl → Kategorie:", hit.type);
     console.log("Designer-Auswahl → Index:", hit.index);
@@ -2285,6 +2289,7 @@ if (this.isDesignerMode) {
     RoomDesigner.openDesignerPanel(this.designerSelection);
     return;
 }
+
 
 
 
