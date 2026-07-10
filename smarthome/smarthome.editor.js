@@ -3633,8 +3633,7 @@ drawAngleAtPoint(P, A, B) {
 
         const ctx = this.ctx;
         for (const d of this.doors) {
-        ensureDoorDesignStructure(d);
-
+        
             // ⭐ Dachluke: frei im Raum, braucht keine Wandgeometrie
             if (d.type === "dachluke") {
                 // drawDoorByType nutzt bei Dachluke nur d.x/d.y, die Geometrie ist egal
@@ -6183,10 +6182,10 @@ function getDoorComponents(d) {
 
 
 function ensureDoorDesignStructure(obj) {
-
     if (!obj.design) obj.design = {};
 
-    const DEV_DEFAULTS = {
+    // Standard-Komponenten
+    const defaults = {
         blatt: {
             color: "#ffffff",
             strokeWidth: 4,
@@ -6194,75 +6193,26 @@ function ensureDoorDesignStructure(obj) {
             effectStrength: 0,
             effectColor: "#ffffff"
         },
+        schwelle: {
+            color: "#cccccc",
+            strokeWidth: 2
+        },
         arc: {
             color: "#ffffff",
             strokeWidth: 2
         },
         hinge: {
             color: "#ffffff",
-            strokeWidth: 1
-        },
-        schwelle: {
-            color: "#cccccc",
-            strokeWidth: 1
+            strokeWidth: 2
         }
     };
 
-    const ORDER = ["blatt", "arc", "hinge", "schwelle"];
-
-    // open/closed sicher anlegen
-    if (!obj.design.open) obj.design.open = {};
-    if (!obj.design.closed) obj.design.closed = {};
-
-    // Legacy: alte Struktur ohne open/closed migrieren
-    for (const key of ORDER) {
-        if (obj.design[key]) {
-            if (!obj.design.open[key])  obj.design.open[key]  = {};
-            if (!obj.design.closed[key]) obj.design.closed[key] = {};
-
-            Object.assign(obj.design.open[key],  obj.design[key]);
-            Object.assign(obj.design.closed[key], obj.design[key]);
-
-            delete obj.design[key];
+    for (const key in defaults) {
+        if (!obj.design[key]) {
+            obj.design[key] = { ...defaults[key] };
         }
     }
-
-    // Für beide Zustände alle Komponenten und Felder ergänzen
-    for (const state of ["open", "closed"]) {
-        for (const key of ORDER) {
-
-            if (!obj.design[state][key]) {
-                obj.design[state][key] = { ...DEV_DEFAULTS[key] };
-            }
-
-            for (const defKey in DEV_DEFAULTS[key]) {
-                if (obj.design[state][key][defKey] === undefined) {
-                    obj.design[state][key][defKey] = DEV_DEFAULTS[key][defKey];
-                }
-            }
-        }
-    }
-
-    obj.design._order = ORDER;
 }
-
-    // ⭐ Legacy‑Kompatibilität (falls alte Struktur ohne open/closed existiert)
-    // obj.design.blatt → wird zu obj.design.open.blatt usw.
-    for (const key of ORDER) {
-        if (obj.design[key]) {
-            // in open übernehmen
-            Object.assign(obj.design.open[key], obj.design[key]);
-            // in closed übernehmen
-            Object.assign(obj.design.closed[key], obj.design[key]);
-            // alte Struktur entfernen
-            delete obj.design[key];
-        }
-    }
-
-    // ⭐ Reihenfolge speichern (optional für UI)
-    obj.design._order = ORDER;
-}
-
 
 
 RoomDesigner.loadRoom = function(roomId) {
