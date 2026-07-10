@@ -3633,7 +3633,8 @@ drawAngleAtPoint(P, A, B) {
 
         const ctx = this.ctx;
         for (const d of this.doors) {
-        
+        ensureDoorDesignStructure(door);
+
             // ⭐ Dachluke: frei im Raum, braucht keine Wandgeometrie
             if (d.type === "dachluke") {
                 // drawDoorByType nutzt bei Dachluke nur d.x/d.y, die Geometrie ist egal
