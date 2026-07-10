@@ -2201,68 +2201,91 @@ onDown(e) {
     const mouseY = e.clientY - rect.top;
 
     // ⭐ Designer-Modus: Pan ODER Auswahl
-    if (this.isDesignerMode) {
-    
-        const hit = this.hitTest(mouseX, mouseY);
-    
-        // 👉 PAN bei empty
-        if (!hit || hit.type === "empty") {
-            console.log("Designer-PAN gestartet, hit.type =", hit?.type);
-    
-            this.isPanning = true;
-            this.lastPanX = mouseX;
-            this.lastPanY = mouseY;
-    
-            return;
-        }
-    
-        // 👉 Objekt getroffen → Designer-Auswahl
-        console.log("Designer-Auswahl (Canvas):", hit);
-    
-        let fullObject = null;
-    
-        // Hauptobjekt holen
-        if (hit.type === "door") fullObject = this.doors[hit.index];
-        if (hit.type === "window") fullObject = this.windows[hit.index];
-        if (hit.type === "point") fullObject = this.points[hit.index];
-        if (hit.type === "wall") fullObject = hit.data; // Wände kommen als data zurück
-    
-        // Falls du später Möbel hast:
-        if (hit.type === "furniture") fullObject = this.furniture?.[hit.index];
-    
-        // Falls du später Elektrogeräte hast:
-        if (hit.type === "device") fullObject = this.devices?.[hit.index];
-    
-        // Falls du später Smart-Device-Container hast:
-        if (hit.type === "smart") fullObject = this.smartContainers?.[hit.index];
-    
-        // Falls du später Gartenelemente hast:
-        if (hit.type === "garden") fullObject = this.garden?.[hit.index];
-    
-        // Unterkategorie sicher auslesen
-        let subType = "keine Unterkategorie";
-    
-        if (fullObject && typeof fullObject.type === "string") {
-            subType = fullObject.type;
-        }
+if (this.isDesignerMode) {
 
-        
-      //  Vollständige Ausgabe
-        console.log("Designer-Auswahl → Kategorie:", hit.type);
-        console.log("Designer-Auswahl → Index:", hit.index);
-        console.log("Designer-Auswahl → SubType:", subType);
-        console.log("Designer-Auswahl → Daten:", fullObject);
-    
-        this.designerSelection = {
-            source: "canvas",
-            category: hit.type,
-            subCategory: subType,
-            index: hit.index ?? null,
-            data: fullObject
-        };
-        RoomDesigner.openDesignerPanel(this.designerSelection);
+    const hit = this.hitTest(mouseX, mouseY);
+
+    // 👉 PAN bei empty
+    if (!hit || hit.type === "empty") {
+        console.log("Designer-PAN gestartet, hit.type =", hit?.type);
+
+        this.isPanning = true;
+        this.lastPanX = mouseX;
+        this.lastPanY = mouseY;
+
         return;
     }
+
+    // 👉 Prüfen: Ist dieses Objekt bereits ausgewählt?
+    const alreadySelected =
+        this.designerSelection &&
+        this.designerSelection.category === hit.type &&
+        this.designerSelection.index === hit.index;
+
+    if (alreadySelected) {
+
+        // 👉 Kontextmenü öffnen statt Designer-Panel
+        const worldX = (mouseX / this.zoom) - this.offsetX;
+        const worldY = (mouseY / this.zoom) - this.offsetY;
+
+        this._pendingContext = {
+            x: worldX,
+            y: worldY,
+            type: hit.type,
+            index: hit.index
+        };
+
+        return; // NICHT Designer-Panel öffnen
+    }
+
+    // 👉 Objekt getroffen → Designer-Auswahl
+    console.log("Designer-Auswahl (Canvas):", hit);
+
+    let fullObject = null;
+
+    // Hauptobjekt holen
+    if (hit.type === "door") fullObject = this.doors[hit.index];
+    if (hit.type === "window") fullObject = this.windows[hit.index];
+    if (hit.type === "point") fullObject = this.points[hit.index];
+    if (hit.type === "wall") fullObject = hit.data;
+
+    // Falls du später Möbel hast:
+    if (hit.type === "furniture") fullObject = this.furniture?.[hit.index];
+
+    // Falls du später Elektrogeräte hast:
+    if (hit.type === "device") fullObject = this.devices?.[hit.index];
+
+    // Falls du später Smart-Device-Container hast:
+    if (hit.type === "smart") fullObject = this.smartContainers?.[hit.index];
+
+    // Falls du später Gartenelemente hast:
+    if (hit.type === "garden") fullObject = this.garden?.[hit.index];
+
+    // Unterkategorie sicher auslesen
+    let subType = "keine Unterkategorie";
+
+    if (fullObject && typeof fullObject.type === "string") {
+        subType = fullObject.type;
+    }
+
+    // Vollständige Ausgabe
+    console.log("Designer-Auswahl → Kategorie:", hit.type);
+    console.log("Designer-Auswahl → Index:", hit.index);
+    console.log("Designer-Auswahl → SubType:", subType);
+    console.log("Designer-Auswahl → Daten:", fullObject);
+
+    this.designerSelection = {
+        source: "canvas",
+        category: hit.type,
+        subCategory: subType,
+        index: hit.index ?? null,
+        data: fullObject
+    };
+
+    RoomDesigner.openDesignerPanel(this.designerSelection);
+    return;
+}
+
 
 
 
