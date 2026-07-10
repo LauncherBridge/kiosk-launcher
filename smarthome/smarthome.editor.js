@@ -6182,10 +6182,11 @@ function getDoorComponents(d) {
 
 
 function ensureDoorDesignStructure(obj) {
+
     if (!obj.design) obj.design = {};
 
-    // Standard-Komponenten
-    const defaults = {
+    // ⭐ Developer Defaults (können später extern konfiguriert werden)
+    const DEV_DEFAULTS = {
         blatt: {
             color: "#ffffff",
             strokeWidth: 4,
@@ -6193,26 +6194,63 @@ function ensureDoorDesignStructure(obj) {
             effectStrength: 0,
             effectColor: "#ffffff"
         },
-        schwelle: {
-            color: "#cccccc",
-            strokeWidth: 2
-        },
         arc: {
             color: "#ffffff",
             strokeWidth: 2
         },
         hinge: {
             color: "#ffffff",
-            strokeWidth: 2
+            strokeWidth: 1   // ⭐ filigraner Minimalwert
+        },
+        schwelle: {
+            color: "#cccccc",
+            strokeWidth: 1   // ⭐ filigraner Minimalwert
         }
     };
 
-    for (const key in defaults) {
-        if (!obj.design[key]) {
-            obj.design[key] = { ...defaults[key] };
+    // ⭐ Reihenfolge fixieren (C1)
+    const ORDER = ["blatt", "arc", "hinge", "schwelle"];
+
+    // ⭐ open/closed‑Design vorbereiten (C4)
+    if (!obj.design.open) obj.design.open = {};
+    if (!obj.design.closed) obj.design.closed = {};
+
+    // ⭐ Für beide Zustände sicherstellen
+    for (const state of ["open", "closed"]) {
+
+        for (const key of ORDER) {
+
+            if (!obj.design[state][key]) {
+                // Defaults kopieren
+                obj.design[state][key] = { ...DEV_DEFAULTS[key] };
+            }
+
+            // ⭐ Fehlende Felder ergänzen (Crash‑Fix A3)
+            for (const defKey in DEV_DEFAULTS[key]) {
+                if (obj.design[state][key][defKey] === undefined) {
+                    obj.design[state][key][defKey] = DEV_DEFAULTS[key][defKey];
+                }
+            }
         }
     }
+
+    // ⭐ Legacy‑Kompatibilität (falls alte Struktur ohne open/closed existiert)
+    // obj.design.blatt → wird zu obj.design.open.blatt usw.
+    for (const key of ORDER) {
+        if (obj.design[key]) {
+            // in open übernehmen
+            Object.assign(obj.design.open[key], obj.design[key]);
+            // in closed übernehmen
+            Object.assign(obj.design.closed[key], obj.design[key]);
+            // alte Struktur entfernen
+            delete obj.design[key];
+        }
+    }
+
+    // ⭐ Reihenfolge speichern (optional für UI)
+    obj.design._order = ORDER;
 }
+
 
 
 RoomDesigner.loadRoom = function(roomId) {
