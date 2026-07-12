@@ -1052,67 +1052,24 @@ function migrateProjectsToID() {
 
 // Projekt → Editor
 function importToEditor() {
-    editorAutoFix(project);
-
     try {
-
+        
         // Designer-Modus sichern
         const wasDesignerMode = RoomDesigner.isDesignerMode;
         const wasDesignerSelection = RoomDesigner.designerSelection;
-
-        // ---------------------------------------------------------
+        
         // 1) Projekt absichern
-        // ---------------------------------------------------------
         if (!project || typeof project !== "object") {
             project = { meta: {}, floors: {}, rooms: {} };
         }
         if (!project.rooms) project.rooms = {};
         if (!project.floors) project.floors = {};
 
-        // ---------------------------------------------------------
-        // 2) Räume vollständig initialisieren (Editor-Sicherheit)
-        // ---------------------------------------------------------
-        Object.values(project.rooms).forEach(room => {
+        // ❌ WICHTIG:
+        // KEIN automatisches "ersten Raum wählen" mehr!
+        // activeRoomId wird von switchFloor / Sidebar gesetzt.
 
-            // Punkte
-            if (!Array.isArray(room.points)) {
-                // Falls polygon existiert → übernehmen
-                if (Array.isArray(room.polygon)) {
-                    room.points = room.polygon.map(p => ({ x: p.x, y: p.y }));
-                } else {
-                    room.points = [];
-                }
-            }
-
-            // Türen
-            if (!Array.isArray(room.doors)) {
-                room.doors = [];
-            }
-
-            // Fenster
-            if (!Array.isArray(room.windows)) {
-                room.windows = [];
-            }
-
-            // Passagen
-            if (!Array.isArray(room.passages)) {
-                room.passages = [];
-            }
-
-            // Etage
-            if (room.floorId === undefined || room.floorId === null) {
-                room.floorId = 0;
-            }
-
-            // Raum geschlossen?
-            if (typeof room.isClosed !== "boolean") {
-                room.isClosed = true;
-            }
-        });
-
-        // ---------------------------------------------------------
-        // 3) Kein aktiver Raum → Etage anzeigen, Canvas leeren
-        // ---------------------------------------------------------
+        // 2) Kein aktiver Raum → Etage anzeigen, Raum leer, Canvas leer
         if (!activeRoomId) {
 
             const projectEl = document.getElementById("editor-project-name");
@@ -1139,18 +1096,14 @@ function importToEditor() {
             return;
         }
 
-        // ---------------------------------------------------------
-        // 4) Raum laden
-        // ---------------------------------------------------------
+        // 3) Raum laden
         const room = project.rooms[activeRoomId];
         if (!room) return;
 
         // Floor synchronisieren
         activeFloorId = room.floorId;
 
-        // ---------------------------------------------------------
-        // 5) Titel setzen
-        // ---------------------------------------------------------
+        // 4) Titel setzen
         const projectEl = document.getElementById("editor-project-name");
         if (projectEl) projectEl.textContent = project.meta?.name || "Projekt";
 
@@ -1163,84 +1116,43 @@ function importToEditor() {
         const roomEl = document.getElementById("editor-room-name");
         if (roomEl) roomEl.textContent = room.name || room.id;
 
-        // ---------------------------------------------------------
-        // 6) Raumdaten in den Editor übertragen
-        // ---------------------------------------------------------
-        RoomDesigner.points = room.points.map(p => ({ x: p.x, y: p.y }));
+        // 5) Raumdaten übertragen
+        RoomDesigner.points = (room.points || []).map(p => ({ x: p.x, y: p.y }));
         RoomDesigner.isClosed = room.isClosed || false;
 
-        RoomDesigner.doors = room.doors.map(d => {
+        // RoomDesigner.doors = (room.doors || [])
+        //    .map(id => project.doors?.[id])
+        //    .filter(Boolean)
+        //    .map(d => ({ ...d }));
+        RoomDesigner.doors = (room.doors || []).map(d => {
             const copy = { ...d };
             ensureDoorDesignStructure(copy);
             return copy;
         });
 
-        RoomDesigner.windows = room.windows.map(w => ({ ...w }));
 
-        // ---------------------------------------------------------
-        // 7) Editor aktualisieren
-        // ---------------------------------------------------------
+        RoomDesigner.windows = (room.windows || [])
+            .map(id => project.windows?.[id])
+            .filter(Boolean)
+            .map(w => ({ ...w }));
+
         RoomDesigner.updateWalls();
         RoomDesigner.centerView();
         RoomDesigner.render();
 
-        // ---------------------------------------------------------
-        // 8) Sidebar aktualisieren
-        // ---------------------------------------------------------
+        // 6) Sidebar aktualisieren
         renderEditorProjectSidebar();
 
         // Designer-Modus wiederherstellen
         RoomDesigner.isDesignerMode = wasDesignerMode;
         RoomDesigner.designerSelection = wasDesignerSelection;
-
+        
     }
     catch (err) {
         console.error("❌ importToEditor Fehler:", err);
     }
 }
 
-function editorAutoFix(project) {
-
-    if (!project || typeof project !== "object") return;
-
-    // Räume absichern
-    Object.values(project.rooms || {}).forEach(room => {
-
-        // Punkte
-        if (!Array.isArray(room.points)) {
-            if (Array.isArray(room.polygon)) {
-                room.points = room.polygon.map(p => ({ x: p.x, y: p.y }));
-            } else {
-                room.points = [];
-            }
-        }
-
-        // Türen
-        if (!Array.isArray(room.doors)) {
-            room.doors = [];
-        }
-
-        // Fenster
-        if (!Array.isArray(room.windows)) {
-            room.windows = [];
-        }
-
-        // Passagen
-        if (!Array.isArray(room.passages)) {
-            room.passages = [];
-        }
-
-        // Etage
-        if (room.floorId === undefined || room.floorId === null) {
-            room.floorId = 0;
-        }
-
-        // Raum geschlossen?
-        if (typeof room.isClosed !== "boolean") {
-            room.isClosed = true;
-        }
-    });
-}
 
 
 
@@ -2289,88 +2201,119 @@ onDown(e) {
     const mouseY = e.clientY - rect.top;
 
     // ⭐ Designer-Modus: Pan ODER Auswahl
-    if (this.isDesignerMode) {
+if (this.isDesignerMode) {
 
-        const hit = this.hitTest(mouseX, mouseY);
+    const hit = this.hitTest(mouseX, mouseY);
 
-        // 👉 PAN bei empty
-        if (!hit || hit.type === "empty") {
+    // 👉 PAN bei empty
+    if (!hit || hit.type === "empty") {
 
-            this.hideContextMenu();
-            this._pendingContext = null;
-
-            this.isPanning = true;
-            this.lastPanX = mouseX;
-            this.lastPanY = mouseY;
-
-            return;
-        }
-
-        const alreadySelected =
-            this.designerSelection &&
-            this.designerSelection.category === hit.type &&
-            this.designerSelection.index === hit.index;
-
-        if (alreadySelected) {
-
-            const worldX = (mouseX / this.zoom) - this.offsetX;
-            const worldY = (mouseY / this.zoom) - this.offsetY;
-
-            this._pendingContext = {
-                x: worldX,
-                y: worldY,
-                type: hit.type,
-                index: hit.index
-            };
-
-            return;
-        }
-
-        let fullObject = null;
-
-        if (hit.type === "door") fullObject = this.doors[hit.index];
-        if (hit.type === "window") fullObject = this.windows[hit.index];
-        if (hit.type === "point") fullObject = this.points[hit.index];
-        if (hit.type === "wall") fullObject = hit.data;
-
-        if (hit.type === "furniture") fullObject = this.furniture?.[hit.index];
-        if (hit.type === "device") fullObject = this.devices?.[hit.index];
-        if (hit.type === "smart") fullObject = this.smartContainers?.[hit.index];
-        if (hit.type === "garden") fullObject = this.garden?.[hit.index];
-
-        let subType = "keine Unterkategorie";
-        if (fullObject && typeof fullObject.type === "string") {
-            subType = fullObject.type;
-        }
-
+        // ⭐ Kontextmenü schließen, wenn man ins Leere klickt
         this.hideContextMenu();
         this._pendingContext = null;
+        
+        console.log("Designer-PAN gestartet, hit.type =", hit?.type);
 
-        this.designerSelection = {
-            source: "canvas",
-            category: hit.type,
-            subCategory: subType,
-            index: hit.index ?? null,
-            data: fullObject
-        };
+        this.isPanning = true;
+        this.lastPanX = mouseX;
+        this.lastPanY = mouseY;
 
-        RoomDesigner.openDesignerPanel(this.designerSelection);
         return;
     }
+
+    // 👉 Prüfen: Ist dieses Objekt bereits ausgewählt?
+    const alreadySelected =
+        this.designerSelection &&
+        this.designerSelection.category === hit.type &&
+        this.designerSelection.index === hit.index;
+
+    if (alreadySelected) {
+
+        // 👉 Kontextmenü öffnen statt Designer-Panel
+        const worldX = (mouseX / this.zoom) - this.offsetX;
+        const worldY = (mouseY / this.zoom) - this.offsetY;
+
+        this._pendingContext = {
+            x: worldX,
+            y: worldY,
+            type: hit.type,
+            index: hit.index
+        };
+
+        return; // NICHT Designer-Panel öffnen
+    }
+
+    // 👉 Objekt getroffen → Designer-Auswahl
+    console.log("Designer-Auswahl (Canvas):", hit);
+
+    let fullObject = null;
+
+    // Hauptobjekt holen
+    if (hit.type === "door") fullObject = this.doors[hit.index];
+    if (hit.type === "window") fullObject = this.windows[hit.index];
+    if (hit.type === "point") fullObject = this.points[hit.index];
+    if (hit.type === "wall") fullObject = hit.data;
+
+    // Falls du später Möbel hast:
+    if (hit.type === "furniture") fullObject = this.furniture?.[hit.index];
+
+    // Falls du später Elektrogeräte hast:
+    if (hit.type === "device") fullObject = this.devices?.[hit.index];
+
+    // Falls du später Smart-Device-Container hast:
+    if (hit.type === "smart") fullObject = this.smartContainers?.[hit.index];
+
+    // Falls du später Gartenelemente hast:
+    if (hit.type === "garden") fullObject = this.garden?.[hit.index];
+
+    // Unterkategorie sicher auslesen
+    let subType = "keine Unterkategorie";
+
+    if (fullObject && typeof fullObject.type === "string") {
+        subType = fullObject.type;
+    }
+
+    // ⭐ WICHTIG: Beim Objektwechsel → Kontextmenü schließen + pendingContext löschen
+    this.hideContextMenu();
+    this._pendingContext = null;
+
+    // Vollständige Ausgabe
+    console.log("Designer-Auswahl → Kategorie:", hit.type);
+    console.log("Designer-Auswahl → Index:", hit.index);
+    console.log("Designer-Auswahl → SubType:", subType);
+    console.log("Designer-Auswahl → Daten:", fullObject);
+
+    this.designerSelection = {
+        source: "canvas",
+        category: hit.type,
+        subCategory: subType,
+        index: hit.index ?? null,
+        data: fullObject
+    };
+
+    RoomDesigner.openDesignerPanel(this.designerSelection);
+    return;
+}
+
+
+
+
 
     const worldX = (mouseX / this.zoom) - this.offsetX;
     const worldY = (mouseY / this.zoom) - this.offsetY;
 
+    // ⭐ WICHTIGER FIX: Pan-Zustände immer zu Beginn zurücksetzen
     this.isPanCandidate = false;
     this.isPanning = false;
 
+    // Rechtsklick → Menü schließen
     if (e.button === 2) {
         this.hideContextMenu();
         return;
     }
 
     // ------------------------------------------------------------
-    // ⭐ SCHARNIER NEU SETZEN
+    // ⭐ SCHARNIER NEU SETZEN (für normale Türen, NICHT Dachluke)
     // ------------------------------------------------------------
     if (this.mode === "setHinge") {
 
@@ -2382,6 +2325,7 @@ onDown(e) {
             return;
         }
 
+        // ⭐ Dachluke → hingeAngle setzen
         if (d.type === "dachluke") {
 
             const dx = worldX - d.x;
@@ -2391,11 +2335,14 @@ onDown(e) {
             this.mode = "points";
             this._hingeDoorIndex = null;
             this.render();
+
+            // ⭐ Autosave
             this.saveRoom(activeRoomId);
 
             return;
         }
 
+        // ⭐ Normale Türen → setDoorHingeFromTap
         const w = this.walls[d.wallIndex];
         if (w) {
             this.setDoorHingeFromTap(d, worldX, worldY, w);
@@ -2403,19 +2350,20 @@ onDown(e) {
 
         this.mode = "points";
         this._hingeDoorIndex = null;
-
-        this.updateWalls();   // ⭐ FIX
         this.render();
+
+        // ⭐ Autosave
         this.saveRoom(activeRoomId);
 
         return;
     }
 
     // ------------------------------------------------------------
-    // ⭐ DACHLUKE
+    // ⭐ DACHLUKE: 1. Klick = Luke setzen, 2. Klick = Scharnier setzen
     // ------------------------------------------------------------
     if (this.mode === "dachluke") {
 
+        // 1. Klick → Luke setzen
         if (!this._placingDachluke) {
 
             if (!this.isClosed) {
@@ -2438,14 +2386,15 @@ onDown(e) {
             });
 
             this._placingDachluke = true;
-
-            this.updateWalls();   // ⭐ FIX
             this.render();
+
+            // ⭐ Autosave
             this.saveRoom(activeRoomId);
 
             return;
         }
 
+        // 2. Klick → hingeAngle setzen
         const d = this.doors[this.doors.length - 1];
 
         const dx = worldX - d.x;
@@ -2454,9 +2403,9 @@ onDown(e) {
 
         this._placingDachluke = false;
         this.mode = "points";
-
-        this.updateWalls();   // ⭐ FIX
         this.render();
+
+        // ⭐ Autosave
         this.saveRoom(activeRoomId);
 
         return;
@@ -2487,7 +2436,7 @@ onDown(e) {
     }
 
     // ------------------------------------------------------------
-    // ⭐ Raum schließen
+    // ⭐ Raum schließen durch Klick auf ersten Punkt
     // ------------------------------------------------------------
     if (!this.isClosed && this.points.length >= 2) {
         const first = this.points[0];
@@ -2504,6 +2453,7 @@ onDown(e) {
             this.isDragging = false;
             this.selectedPoint = null;
 
+            // ⭐ Autosave
             this.saveRoom(activeRoomId);
 
             return;
@@ -2511,7 +2461,7 @@ onDown(e) {
     }
 
     // ------------------------------------------------------------
-    // ⭐ FENSTER
+    // ⭐ FENSTER-MODUS
     // ------------------------------------------------------------
     if (this.mode === "windows") {
 
@@ -2529,9 +2479,10 @@ onDown(e) {
                 y: w.y,
                 width: 80
             });
-
-            this.updateWalls();   // ⭐ FIX
+            this.updateWalls();
             this.render();
+
+            // ⭐ Autosave
             this.saveRoom(activeRoomId);
         }
 
@@ -2540,13 +2491,13 @@ onDown(e) {
     }
 
     // ------------------------------------------------------------
-    // ⭐ TÜREN (mit Drift-Fix)
+    // ⭐ TÜR-MODUS (ALLE Türtypen)
     // ------------------------------------------------------------
     if (this.mode === "doors") {
 
         const type = this.currentDoorType || "default";
 
-        // ⭐ Durchgang
+        // ⭐ Durchgang → 1 Klick
         if (type === "durchgang") {
 
             if (hit.type !== "wall") return;
@@ -2556,6 +2507,13 @@ onDown(e) {
 
             const cx = w.x;
             const cy = w.y;
+
+            const dx = w.x2 - w.x1;
+            const dy = w.y2 - w.y1;
+            const len = Math.hypot(dx, dy) || 1;
+
+            const tx = dx / len;
+            const ty = dy / len;
 
             this.doors.push({
                 type: "durchgang",
@@ -2568,19 +2526,19 @@ onDown(e) {
                 side: null
             });
 
-            this.updateWalls();   // ⭐ FIX
             this.render();
             this.mode = "points";
+
+            // ⭐ Autosave
             this.saveRoom(activeRoomId);
 
             return;
         }
 
-        // ⭐ Normale Tür – erster Klick
+        // ⭐ Normale Türen → Wandgebunden
         if (!this._placingDoor) {
             if (hit.type === "wall") {
                 const w = hit.data;
-
                 this.doors.push({
                     wallIndex: w.index,
                     t: w.t,
@@ -2591,27 +2549,27 @@ onDown(e) {
                     side: 1,
                     type: type
                 });
-
-                this.updateWalls();   // ⭐ FIX
                 this._placingDoor = true;
                 this.render();
+
+                // ⭐ Autosave
                 this.saveRoom(activeRoomId);
 
                 return;
             }
         }
 
-        // ⭐ Normale Tür – zweiter Klick (Scharnier)
+        // ⭐ Hinge setzen (normale Türen)
         if (this._placingDoor) {
             const lastDoor = this.doors[this.doors.length - 1];
             const w = this.walls[lastDoor.wallIndex];
-
             this.setDoorHingeFromTap(lastDoor, worldX, worldY, w);
 
-            this.updateWalls();   // ⭐ FIX
             this._placingDoor = false;
             this.mode = "points";
             this.render();
+
+            // ⭐ Autosave
             this.saveRoom(activeRoomId);
 
             return;
@@ -2619,22 +2577,29 @@ onDown(e) {
     }
 
     // ------------------------------------------------------------
-    // ⭐ Kontextmenüs
+    // ⭐ Kontextmenü für Türen
     // ------------------------------------------------------------
     if (hit.type === "door") {
         this._pendingContext = { x: worldX, y: worldY, type: "door", index: hit.index };
         return;
     }
 
+    // ------------------------------------------------------------
+    // ⭐ Kontextmenü für Fenster
+    // ------------------------------------------------------------
     if (hit.type === "window") {
         this._pendingContext = { x: worldX, y: worldY, type: "window", index: hit.index };
         return;
     }
 
+    // ------------------------------------------------------------
+    // ⭐ Kontextmenü für Punkte
+    // ------------------------------------------------------------
     if (hit.type === "point") {
+        // ⭐ Objekt getroffen → Pan abbrechen
         this.isPanCandidate = false;
         this.isPanning = false;
-
+        
         this._pendingContext = { x: worldX, y: worldY, type: "point", index: hit.index };
         return;
     }
@@ -2648,15 +2613,17 @@ onDown(e) {
 
         this.points.splice(w.index + 1, 0, insertPoint);
 
-        this.updateWalls();   // ⭐ FIX
+        this.updateWalls();
         this.render();
+
+        // ⭐ Autosave
         this.saveRoom(activeRoomId);
 
         return;
     }
 
     // ------------------------------------------------------------
-    // ⭐ Neuer Punkt im offenen Raum
+    // ⭐ Punkt-Kandidat im leeren Raum
     // ------------------------------------------------------------
     if (!this.isClosed && hit.type === "empty") {
         let px = worldX;
@@ -2674,12 +2641,12 @@ onDown(e) {
     // ⭐ PAN-Kandidat
     // ------------------------------------------------------------
     if (hit.type === "empty" || hit.type === "wall") {
+            console.log("[onDown] PAN-Kandidat, hit.type =", hit.type);
         this.isPanCandidate = true;
         this.panStartX = mouseX;
         this.panStartY = mouseY;
     }
-}
-,
+},
 
 
 onUp(e) {
@@ -3200,8 +3167,8 @@ onDoubleClickZoom(e) {
                 const w = this.walls[bestWall];
                 const A = { x: w.x1, y: w.y1 };
                 const B = { x: w.x2, y: w.y2 };
-             //   d.x = A.x + (B.x - A.x) * d.t;
-               // d.y = A.y + (B.y - A.y) * d.t;
+                d.x = A.x + (B.x - A.x) * d.t;
+                d.y = A.y + (B.y - A.y) * d.t;
             }
         }
 
@@ -3656,37 +3623,23 @@ drawAngleAtPoint(P, A, B) {
     // --------------------------------------------------
     // Türen zeichnen (alte Darstellung)
     // --------------------------------------------------
-drawDoors() {
-    const DOOR_TYPES_WITH_ARC = new Set([
-        "zimmertuer",
-        "haustuer",
-        "terrassentuer",
-        "gartentor"
-    ]);
+    drawDoors() {
+        const DOOR_TYPES_WITH_ARC = new Set([
+            "zimmertuer",
+            "haustuer",
+            "terrassentuer",
+            "gartentor"
+        ]);
 
-    const ctx = this.ctx;
-
-    for (const d of this.doors) {
-
-        // ⭐ Design-Struktur sicherstellen
-        ensureDoorDesignStructure(d);
-
-        // ⭐ Zustand wählen
-        const designState = d.isOpen ? d.design.open : d.design.closed;
-
-        // ⭐ Bestandteile extrahieren
-        const blatt    = designState.blatt;
-        const arc      = designState.arc;
-        const hinge    = designState.hinge;
-        const schwelle = designState.schwelle;
-
-        // ⭐ Dachluke: frei im Raum, braucht keine Wandgeometrie
-        if (d.type === "dachluke") {
-            this.drawDoorByType(ctx, d, {});
-            continue;
-        }
-
-
+        const ctx = this.ctx;
+        for (const d of this.doors) {
+        
+            // ⭐ Dachluke: frei im Raum, braucht keine Wandgeometrie
+            if (d.type === "dachluke") {
+                // drawDoorByType nutzt bei Dachluke nur d.x/d.y, die Geometrie ist egal
+                this.drawDoorByType(ctx, d, {});
+                continue;
+            }
         
             const w = this.walls[d.wallIndex];
             if (!w) continue;
@@ -3713,14 +3666,9 @@ drawDoors() {
             // ------------------------------------------------------------
             // ⭐ Tür nach Typ zeichnen
             // ------------------------------------------------------------
-ctx.save();
-
-this.drawDoorByType(ctx, d, {
-    w, x1, y1, x2, y2, hx: null, hy: null, ox: null, oy: null, px: null, py: null, elen: null
-});
-
-ctx.restore();
-
+            this.drawDoorByType(ctx, d, {
+                w, x1, y1, x2, y2, hx: null, hy: null, ox: null, oy: null, px: null, py: null, elen: null
+            });
             
             // Wenn kein Scharnier → fertig (z.B. Schiebetür, Durchgang)
             if (!d.hinge) continue;
@@ -3754,9 +3702,8 @@ ctx.restore();
             // ⭐ Scharnier-Strich NUR für klassische Türen
             // ------------------------------------------------------------
             if (DOOR_TYPES_WITH_ARC.has(d.type)) {
-ctx.strokeStyle = hinge.color;
-ctx.lineWidth   = hinge.strokeWidth;
-
+                ctx.strokeStyle = d.design.hinge.color;
+                ctx.lineWidth = d.design.hinge.strokeWidth;
 
                 ctx.beginPath();
                 ctx.moveTo(hx, hy);
@@ -3773,23 +3720,9 @@ ctx.lineWidth   = hinge.strokeWidth;
     },
 
 drawDoorByType(ctx, d, geo) {
-
-    ctx.save();   // ⭐ globaler Schutz für den gesamten Türtyp
-    
-    // ⭐ Design-Struktur sicherstellen
-    ensureDoorDesignStructure(d);
-
-    // ⭐ Zustand wählen (offen/geschlossen)
-    const designState = d.isOpen ? d.design.open : d.design.closed;
-
-    // ⭐ Bestandteile extrahieren
-    const blatt    = designState.blatt;
-    const arc      = designState.arc;
-    const hinge    = designState.hinge;
-    const schwelle = designState.schwelle;
+ensureDoorDesignStructure(d);
 
     const { x1, y1, x2, y2 } = geo;
-
 
     switch (d.type) {
 
@@ -3845,7 +3778,7 @@ case "zimmertuer": {
         ctx.lineTo(s3x, s3y);
         ctx.lineTo(s4x, s4y);
         ctx.closePath();
-        ctx.fillStyle = schwelle.color;
+        ctx.fillStyle = d.design.schwelle.color;
         ctx.fill();
         ctx.restore();
     }
@@ -3853,31 +3786,29 @@ case "zimmertuer": {
     // ------------------------------------------------------------
     // 2. Türblatt (offen/geschlossen)
     // ------------------------------------------------------------
-    ctx.save();
-
-    ctx.strokeStyle = blatt.color;
-    ctx.lineWidth   = blatt.strokeWidth;
+    ctx.strokeStyle = d.design.blatt.color;
+    ctx.lineWidth = d.design.blatt.strokeWidth;
 
     // ⭐ Effekt anwenden (nur Türblatt)
-    if (blatt.effect === "glow") {
-        ctx.shadowColor = blatt.effectColor;
-        ctx.shadowBlur  = blatt.effectStrength;
-    }
-    else if (blatt.effect === "shadow") {
-        ctx.shadowColor = blatt.effectColor;
-        ctx.shadowBlur  = blatt.effectStrength * 0.5;
-    }
-    else if (blatt.effect === "outline") {
-        ctx.shadowColor = blatt.effectColor;
-        ctx.shadowBlur  = blatt.strokeWidth * 2;
-    }
-    else if (blatt.effect === "blur") {
-        ctx.shadowColor = blatt.effectColor;
-        ctx.shadowBlur  = blatt.effectStrength * 1.5;
-    }
+    if (d.design.blatt.effect === "glow") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.effectStrength;
+    } 
+    else if (d.design.blatt.effect === "shadow") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.effectStrength * 0.5;
+    } 
+    else if (d.design.blatt.effect === "outline") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.strokeWidth * 2;
+    } 
+    else if (d.design.blatt.effect === "blur") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.effectStrength * 1.5;
+    } 
     else {
         ctx.shadowColor = "transparent";
-        ctx.shadowBlur  = 0;
+        ctx.shadowBlur = 0;
     }
 
     // Offen → 90° Drehung
@@ -3900,10 +3831,8 @@ case "zimmertuer": {
         ctx.stroke();
     }
 
-    ctx.restore();
     return;
 }
-
 
 
 
@@ -3961,7 +3890,7 @@ case "haustuer": {
         ctx.lineTo(s3x, s3y);
         ctx.lineTo(s4x, s4y);
         ctx.closePath();
-        ctx.fillStyle = schwelle.color;
+        ctx.fillStyle = d.design.schwelle.color;
         ctx.fill();
         ctx.restore();
     }
@@ -3969,31 +3898,30 @@ case "haustuer": {
     // ------------------------------------------------------------
     // 2. Türblatt (offen/geschlossen) – Haustür dicker + Effekte
     // ------------------------------------------------------------
-    ctx.save();
 
-    ctx.strokeStyle = blatt.color;
-    ctx.lineWidth   = blatt.strokeWidth;
+    ctx.strokeStyle = d.design.blatt.color;
+    ctx.lineWidth = d.design.blatt.strokeWidth;
 
     // ⭐ Effekt anwenden (nur Türblatt)
-    if (blatt.effect === "glow") {
-        ctx.shadowColor = blatt.effectColor;
-        ctx.shadowBlur  = blatt.effectStrength;
+    if (d.design.blatt.effect === "glow") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.effectStrength;
     }
-    else if (blatt.effect === "shadow") {
-        ctx.shadowColor = blatt.effectColor;
-        ctx.shadowBlur  = blatt.effectStrength * 0.5;
+    else if (d.design.blatt.effect === "shadow") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.effectStrength * 0.5;
     }
-    else if (blatt.effect === "outline") {
-        ctx.shadowColor = blatt.effectColor;
-        ctx.shadowBlur  = blatt.strokeWidth * 2;
+    else if (d.design.blatt.effect === "outline") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.strokeWidth * 2;
     }
-    else if (blatt.effect === "blur") {
-        ctx.shadowColor = blatt.effectColor;
-        ctx.shadowBlur  = blatt.effectStrength * 1.5;
+    else if (d.design.blatt.effect === "blur") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.effectStrength * 1.5;
     }
     else {
         ctx.shadowColor = "transparent";
-        ctx.shadowBlur  = 0;
+        ctx.shadowBlur = 0;
     }
 
     // Offen → 90° Drehung
@@ -4016,10 +3944,8 @@ case "haustuer": {
         ctx.stroke();
     }
 
-    ctx.restore();
     return;
 }
-
 
 
 // ------------------------------------------------------------
@@ -4065,14 +3991,16 @@ case "schiebetuer": {
     ctx.lineTo(t3x, t3y);
     ctx.lineTo(t4x, t4y);
     ctx.closePath();
-    ctx.fillStyle = schwelle.color;
+    ctx.fillStyle = d.design.schwelle.color;
     ctx.fill();
     ctx.restore();
+
 
     // ------------------------------------------------------------
     // 2. Schiebetür-Linie: offen/geschlossen
     // ------------------------------------------------------------
 
+    // Scharnier-Ende bestimmen
     let hx, hy, ox, oy;
     if (d.hinge === "start") {
         hx = x1; hy = y1;
@@ -4082,15 +4010,16 @@ case "schiebetuer": {
         ox = x1; oy = y1;
     }
 
+    // Richtungsvektoren entlang der Tür
     const dx2 = ox - hx;
     const dy2 = oy - hy;
     const len2 = Math.hypot(dx2, dy2);
     if (!len2) return;
 
-    const nx2 = dx2 / len2;
+    const nx2 = dx2 / len2;   // entlang der Tür
     const ny2 = dy2 / len2;
 
-    const px2 = -ny2;
+    const px2 = -ny2;         // senkrecht zur Tür
     const py2 = nx2;
 
     const side = d.side || 1;
@@ -4101,34 +4030,35 @@ case "schiebetuer": {
     // ------------------------------------------------------------
     // Türblatt-Design
     // ------------------------------------------------------------
-    ctx.strokeStyle = blatt.color;
-    ctx.lineWidth   = blatt.strokeWidth;
+    ctx.strokeStyle = d.design.blatt.color;
+    ctx.lineWidth = d.design.blatt.strokeWidth;
 
     // ⭐ Effekt anwenden (nur Türblatt)
-    if (blatt.effect === "glow") {
-        ctx.shadowColor = blatt.effectColor;
-        ctx.shadowBlur  = blatt.effectStrength;
+    if (d.design.blatt.effect === "glow") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.effectStrength;
     }
-    else if (blatt.effect === "shadow") {
-        ctx.shadowColor = blatt.effectColor;
-        ctx.shadowBlur  = blatt.effectStrength * 0.5;
+    else if (d.design.blatt.effect === "shadow") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.effectStrength * 0.5;
     }
-    else if (blatt.effect === "outline") {
-        ctx.shadowColor = blatt.effectColor;
-        ctx.shadowBlur  = blatt.strokeWidth * 2;
+    else if (d.design.blatt.effect === "outline") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.strokeWidth * 2;
     }
-    else if (blatt.effect === "blur") {
-        ctx.shadowColor = blatt.effectColor;
-        ctx.shadowBlur  = blatt.effectStrength * 1.5;
+    else if (d.design.blatt.effect === "blur") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.effectStrength * 1.5;
     }
     else {
         ctx.shadowColor = "transparent";
-        ctx.shadowBlur  = 0;
+        ctx.shadowBlur = 0;
     }
+
 
     if (d.isOpen) {
         // --------------------------------------------------------
-        // OFFENE SCHIEBETÜR
+        // OFFENE SCHIEBETÜR (dein bisheriger Code)
         // --------------------------------------------------------
 
         const mx = hx + px2 * offset * side;
@@ -4164,7 +4094,6 @@ case "schiebetuer": {
     ctx.restore();
     return;
 }
-
 
 
 
@@ -4214,7 +4143,7 @@ case "falttuer": {
     ctx.lineTo(t3x, t3y);
     ctx.lineTo(t4x, t4y);
     ctx.closePath();
-    ctx.fillStyle = schwelle.color;
+    ctx.fillStyle = d.design.schwelle.color;
     ctx.fill();
     ctx.restore();
 
@@ -4231,38 +4160,37 @@ case "falttuer": {
         const c2y = (t2y + t3y) / 2;
 
         ctx.save();
-
-        ctx.strokeStyle = blatt.color;
-        ctx.lineWidth   = blatt.strokeWidth;
+        ctx.strokeStyle = d.design.blatt.color;
+        ctx.lineWidth = d.design.blatt.strokeWidth;
 
         // ⭐ Effekt anwenden (nur Türblatt)
-        if (blatt.effect === "glow") {
-            ctx.shadowColor = blatt.effectColor;
-            ctx.shadowBlur  = blatt.effectStrength;
+        if (d.design.blatt.effect === "glow") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.effectStrength;
         }
-        else if (blatt.effect === "shadow") {
-            ctx.shadowColor = blatt.effectColor;
-            ctx.shadowBlur  = blatt.effectStrength * 0.5;
+        else if (d.design.blatt.effect === "shadow") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.effectStrength * 0.5;
         }
-        else if (blatt.effect === "outline") {
-            ctx.shadowColor = blatt.effectColor;
-            ctx.shadowBlur  = blatt.strokeWidth * 2;
+        else if (d.design.blatt.effect === "outline") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.strokeWidth * 2;
         }
-        else if (blatt.effect === "blur") {
-            ctx.shadowColor = blatt.effectColor;
-            ctx.shadowBlur  = blatt.effectStrength * 1.5;
+        else if (d.design.blatt.effect === "blur") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.effectStrength * 1.5;
         }
         else {
             ctx.shadowColor = "transparent";
-            ctx.shadowBlur  = 0;
+            ctx.shadowBlur = 0;
         }
 
         ctx.beginPath();
         ctx.moveTo(c1x, c1y);
         ctx.lineTo(c2x, c2y);
         ctx.stroke();
-
         ctx.restore();
+
         return;
     }
 
@@ -4299,29 +4227,29 @@ case "falttuer": {
     ctx.translate(hx, hy);
     ctx.rotate(Math.atan2(dy2, dx2));
 
-    ctx.strokeStyle = blatt.color;
-    ctx.lineWidth   = blatt.strokeWidth;
+    ctx.strokeStyle = d.design.blatt.color;
+    ctx.lineWidth = d.design.blatt.strokeWidth;
 
     // ⭐ Effekt anwenden (nur Türblatt)
-    if (blatt.effect === "glow") {
-        ctx.shadowColor = blatt.effectColor;
-        ctx.shadowBlur  = blatt.effectStrength;
+    if (d.design.blatt.effect === "glow") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.effectStrength;
     }
-    else if (blatt.effect === "shadow") {
-        ctx.shadowColor = blatt.effectColor;
-        ctx.shadowBlur  = blatt.effectStrength * 0.5;
+    else if (d.design.blatt.effect === "shadow") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.effectStrength * 0.5;
     }
-    else if (blatt.effect === "outline") {
-        ctx.shadowColor = blatt.effectColor;
-        ctx.shadowBlur  = blatt.strokeWidth * 2;
+    else if (d.design.blatt.effect === "outline") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.strokeWidth * 2;
     }
-    else if (blatt.effect === "blur") {
-        ctx.shadowColor = blatt.effectColor;
-        ctx.shadowBlur  = blatt.effectStrength * 1.5;
+    else if (d.design.blatt.effect === "blur") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.effectStrength * 1.5;
     }
     else {
         ctx.shadowColor = "transparent";
-        ctx.shadowBlur  = 0;
+        ctx.shadowBlur = 0;
     }
 
     ctx.beginPath();
@@ -4338,6 +4266,7 @@ case "falttuer": {
 
     return;
 }
+
 
 
 
@@ -4396,7 +4325,7 @@ case "terrassentuer": {
         ctx.lineTo(s3x, s3y);
         ctx.lineTo(s4x, s4y);
         ctx.closePath();
-        ctx.fillStyle = schwelle.color;
+        ctx.fillStyle = d.design.schwelle.color;
         ctx.fill();
         ctx.restore();
     }
@@ -4404,32 +4333,6 @@ case "terrassentuer": {
     // ------------------------------------------------------------
     // 2. Türblatt (offen/geschlossen) – Terrassentür-Design
     // ------------------------------------------------------------
-    ctx.save();
-
-    ctx.strokeStyle = blatt.color;
-    ctx.lineWidth   = blatt.strokeWidth;
-
-    // ⭐ Effekt anwenden (nur Türblatt)
-    if (blatt.effect === "glow") {
-        ctx.shadowColor = blatt.effectColor;
-        ctx.shadowBlur  = blatt.effectStrength;
-    }
-    else if (blatt.effect === "shadow") {
-        ctx.shadowColor = blatt.effectColor;
-        ctx.shadowBlur  = blatt.effectStrength * 0.5;
-    }
-    else if (blatt.effect === "outline") {
-        ctx.shadowColor = blatt.effectColor;
-        ctx.shadowBlur  = blatt.strokeWidth * 2;
-    }
-    else if (blatt.effect === "blur") {
-        ctx.shadowColor = blatt.effectColor;
-        ctx.shadowBlur  = blatt.effectStrength * 1.5;
-    }
-    else {
-        ctx.shadowColor = "transparent";
-        ctx.shadowBlur  = 0;
-    }
 
     if (d.isOpen) {
 
@@ -4442,7 +4345,34 @@ case "terrassentuer": {
         const ex = hx + rx * len;
         const ey = hy + ry * len;
 
+        // --------------------------------------------------------
         // Rahmenlinie (Blatt)
+        // --------------------------------------------------------
+        ctx.strokeStyle = d.design.blatt.color;
+        ctx.lineWidth = d.design.blatt.strokeWidth;
+
+        // ⭐ Effekt anwenden (nur Türblatt)
+        if (d.design.blatt.effect === "glow") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.effectStrength;
+        }
+        else if (d.design.blatt.effect === "shadow") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.effectStrength * 0.5;
+        }
+        else if (d.design.blatt.effect === "outline") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.strokeWidth * 2;
+        }
+        else if (d.design.blatt.effect === "blur") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.effectStrength * 1.5;
+        }
+        else {
+            ctx.shadowColor = "transparent";
+            ctx.shadowBlur = 0;
+        }
+
         ctx.beginPath();
         ctx.moveTo(hx, hy);
         ctx.lineTo(ex, ey);
@@ -4451,8 +4381,8 @@ case "terrassentuer": {
         // --------------------------------------------------------
         // Glasfüllung (Effektfarbe + Effektstärke)
         // --------------------------------------------------------
-        ctx.strokeStyle = blatt.effectColor;
-        ctx.lineWidth   = blatt.effectStrength;
+        ctx.strokeStyle = d.design.blatt.effectColor;
+        ctx.lineWidth = d.design.blatt.effectStrength;
 
         ctx.beginPath();
         ctx.moveTo(hx, hy);
@@ -4463,15 +4393,43 @@ case "terrassentuer": {
 
         // --------------------------------------------------------
         // GESCHLOSSENE TERRASSENTÜR
+        // Rahmenlinie
         // --------------------------------------------------------
+        ctx.strokeStyle = d.design.blatt.color;
+        ctx.lineWidth = d.design.blatt.strokeWidth;
+
+        // ⭐ Effekt anwenden (nur Türblatt)
+        if (d.design.blatt.effect === "glow") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.effectStrength;
+        }
+        else if (d.design.blatt.effect === "shadow") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.effectStrength * 0.5;
+        }
+        else if (d.design.blatt.effect === "outline") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.strokeWidth * 2;
+        }
+        else if (d.design.blatt.effect === "blur") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.effectStrength * 1.5;
+        }
+        else {
+            ctx.shadowColor = "transparent";
+            ctx.shadowBlur = 0;
+        }
+
         ctx.beginPath();
         ctx.moveTo(x1, y1);
         ctx.lineTo(x2, y2);
         ctx.stroke();
 
+        // --------------------------------------------------------
         // Glasfüllung
-        ctx.strokeStyle = blatt.effectColor;
-        ctx.lineWidth   = blatt.effectStrength;
+        // --------------------------------------------------------
+        ctx.strokeStyle = d.design.blatt.effectColor;
+        ctx.lineWidth = d.design.blatt.effectStrength;
 
         ctx.beginPath();
         ctx.moveTo(x1, y1);
@@ -4479,9 +4437,9 @@ case "terrassentuer": {
         ctx.stroke();
     }
 
-    ctx.restore();
     return;
 }
+
 
         // ------------------------------------------------------------
         // ⭐ Garagentor → dicke Linie
@@ -4539,7 +4497,7 @@ case "garagentor": {
         ctx.lineTo(s3x, s3y);
         ctx.lineTo(s4x, s4y);
         ctx.closePath();
-        ctx.fillStyle = schwelle.color;
+        ctx.fillStyle = d.design.schwelle.color;
         ctx.fill();
         ctx.restore();
     }
@@ -4564,36 +4522,34 @@ case "garagentor": {
         by2 = y2 + py * offset;
     }
 
-    ctx.save();
-
     if (d.isOpen) {
 
         // --------------------------------------------------------
         // OFFEN: dickes, transparentes Torblatt
         // --------------------------------------------------------
-        ctx.strokeStyle = blatt.color + "40"; // leichte Transparenz
-        ctx.lineWidth   = blatt.strokeWidth * 8; // dickes Torblatt
+        ctx.strokeStyle = d.design.blatt.color + "40"; // leichte Transparenz
+        ctx.lineWidth = d.design.blatt.strokeWidth * 8; // dickes Torblatt
 
-        // ⭐ Effekt anwenden (nur Torblatt)
-        if (blatt.effect === "glow") {
-            ctx.shadowColor = blatt.effectColor;
-            ctx.shadowBlur  = blatt.effectStrength;
+        // ⭐ Effekt anwenden (nur Türblatt)
+        if (d.design.blatt.effect === "glow") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.effectStrength;
         }
-        else if (blatt.effect === "shadow") {
-            ctx.shadowColor = blatt.effectColor;
-            ctx.shadowBlur  = blatt.effectStrength * 0.5;
+        else if (d.design.blatt.effect === "shadow") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.effectStrength * 0.5;
         }
-        else if (blatt.effect === "outline") {
-            ctx.shadowColor = blatt.effectColor;
-            ctx.shadowBlur  = blatt.strokeWidth * 2;
+        else if (d.design.blatt.effect === "outline") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.strokeWidth * 2;
         }
-        else if (blatt.effect === "blur") {
-            ctx.shadowColor = blatt.effectColor;
-            ctx.shadowBlur  = blatt.effectStrength * 1.5;
+        else if (d.design.blatt.effect === "blur") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.effectStrength * 1.5;
         }
         else {
             ctx.shadowColor = "transparent";
-            ctx.shadowBlur  = 0;
+            ctx.shadowBlur = 0;
         }
 
         ctx.beginPath();
@@ -4604,8 +4560,8 @@ case "garagentor": {
         // --------------------------------------------------------
         // Strukturstreifen
         // --------------------------------------------------------
-        ctx.strokeStyle = blatt.color;
-        ctx.lineWidth   = blatt.strokeWidth;
+        ctx.strokeStyle = d.design.blatt.color;
+        ctx.lineWidth = d.design.blatt.strokeWidth;
 
         const steps = 3;
         for (let i = 1; i <= steps; i++) {
@@ -4628,29 +4584,29 @@ case "garagentor": {
         // --------------------------------------------------------
         // GESCHLOSSEN: dünne Linie auf der Schwelle
         // --------------------------------------------------------
-        ctx.strokeStyle = blatt.color;
-        ctx.lineWidth   = blatt.strokeWidth;
+        ctx.strokeStyle = d.design.blatt.color;
+        ctx.lineWidth = d.design.blatt.strokeWidth;
 
-        // ⭐ Effekt anwenden (nur Torblatt)
-        if (blatt.effect === "glow") {
-            ctx.shadowColor = blatt.effectColor;
-            ctx.shadowBlur  = blatt.effectStrength;
+        // ⭐ Effekt anwenden (nur Türblatt)
+        if (d.design.blatt.effect === "glow") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.effectStrength;
         }
-        else if (blatt.effect === "shadow") {
-            ctx.shadowColor = blatt.effectColor;
-            ctx.shadowBlur  = blatt.effectStrength * 0.5;
+        else if (d.design.blatt.effect === "shadow") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.effectStrength * 0.5;
         }
-        else if (blatt.effect === "outline") {
-            ctx.shadowColor = blatt.effectColor;
-            ctx.shadowBlur  = blatt.strokeWidth * 2;
+        else if (d.design.blatt.effect === "outline") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.strokeWidth * 2;
         }
-        else if (blatt.effect === "blur") {
-            ctx.shadowColor = blatt.effectColor;
-            ctx.shadowBlur  = blatt.effectStrength * 1.5;
+        else if (d.design.blatt.effect === "blur") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.effectStrength * 1.5;
         }
         else {
             ctx.shadowColor = "transparent";
-            ctx.shadowBlur  = 0;
+            ctx.shadowBlur = 0;
         }
 
         ctx.beginPath();
@@ -4670,8 +4626,8 @@ case "garagentor": {
         const fy2 = y2 + py * offset;
 
         ctx.save();
-        ctx.strokeStyle = blatt.color;
-        ctx.lineWidth   = Math.max(1, blatt.strokeWidth * 0.5);
+        ctx.strokeStyle = d.design.blatt.color;
+        ctx.lineWidth = Math.max(1, d.design.blatt.strokeWidth * 0.5);
 
         ctx.beginPath();
         ctx.moveTo(fx1, fy1);
@@ -4680,7 +4636,6 @@ case "garagentor": {
         ctx.restore();
     }
 
-    ctx.restore();
     return;
 }
 
@@ -4765,7 +4720,7 @@ case "gartentor": {
         ctx.lineTo(s3x, s3y);
         ctx.lineTo(s4x, s4y);
         ctx.closePath();
-        ctx.fillStyle = schwelle.color;
+        ctx.fillStyle = d.design.schwelle.color;
         ctx.fill();
         ctx.restore();
     }
@@ -4783,30 +4738,30 @@ case "gartentor": {
     // ------------------------------------------------------------
     // ⭐ Effekt anwenden (nur Türblatt)
     // ------------------------------------------------------------
-    ctx.strokeStyle = blatt.color;
-    ctx.fillStyle   = blatt.color;
-    ctx.lineWidth   = blatt.strokeWidth;
-
-    if (blatt.effect === "glow") {
-        ctx.shadowColor = blatt.effectColor;
-        ctx.shadowBlur  = blatt.effectStrength;
+    if (d.design.blatt.effect === "glow") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.effectStrength;
     }
-    else if (blatt.effect === "shadow") {
-        ctx.shadowColor = blatt.effectColor;
-        ctx.shadowBlur  = blatt.effectStrength * 0.5;
+    else if (d.design.blatt.effect === "shadow") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.effectStrength * 0.5;
     }
-    else if (blatt.effect === "outline") {
-        ctx.shadowColor = blatt.effectColor;
-        ctx.shadowBlur  = blatt.strokeWidth * 2;
+    else if (d.design.blatt.effect === "outline") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.strokeWidth * 2;
     }
-    else if (blatt.effect === "blur") {
-        ctx.shadowColor = blatt.effectColor;
-        ctx.shadowBlur  = blatt.effectStrength * 1.5;
+    else if (d.design.blatt.effect === "blur") {
+        ctx.shadowColor = d.design.blatt.effectColor;
+        ctx.shadowBlur = d.design.blatt.effectStrength * 1.5;
     }
     else {
         ctx.shadowColor = "transparent";
-        ctx.shadowBlur  = 0;
+        ctx.shadowBlur = 0;
     }
+
+    ctx.strokeStyle = d.design.blatt.color;
+    ctx.fillStyle = d.design.blatt.color;
+    ctx.lineWidth = d.design.blatt.strokeWidth;
 
     // ------------------------------------------------------------
     // 4. Querlatte oben
@@ -4849,13 +4804,14 @@ case "gartentor": {
 }
 
 
+
          // ------------------------------------------------------------
         // ⭐ Durchgang
         // ------------------------------------------------------------           
 case "durchgang": {
 
     // ------------------------------------------------------------
-    // 0. Drehpunkt bestimmen (Scharnier irrelevant)
+    // 0. Drehpunkt bestimmen (Scharnier irrelevant, aber wir brauchen hx/ox)
     // ------------------------------------------------------------
     const hx = x1;
     const hy = y1;
@@ -4876,7 +4832,7 @@ case "durchgang": {
     const py = nx;
 
     // ------------------------------------------------------------
-    // 1. Schwelle zeichnen (einziger Bestandteil des Durchgangs)
+    // 1. Schwelle zeichnen (identisch zu allen anderen Türen)
     // ------------------------------------------------------------
     const wallThickness = 16;
     const extra = 10;
@@ -4903,7 +4859,7 @@ case "durchgang": {
     ctx.closePath();
 
     // ⭐ Durchgang hat nur Schwelle → Designfarbe
-    ctx.fillStyle = schwelle.color;
+    ctx.fillStyle = d.design.schwelle.color;
 
     ctx.fill();
     ctx.restore();
@@ -4913,63 +4869,57 @@ case "durchgang": {
 
 
 
-
 case "dachluke": {
 
     const r = d.width / 2;
 
-    // ------------------------------------------------------------
-    // GESCHLOSSEN
-    // ------------------------------------------------------------
+    // -------------------------------
+    // Geschlossen
+    // -------------------------------
     if (!d.isOpen) {
 
-        // ⭐ Türblatt-Design (Deckel-Kontur)
-        ctx.save();
-        ctx.strokeStyle = blatt.color;
-        ctx.lineWidth   = blatt.strokeWidth;
+        // ⭐ Türblatt-Design (Kontur des Deckels)
+        ctx.strokeStyle = d.design.blatt.color;
+        ctx.lineWidth = d.design.blatt.strokeWidth;
 
         // ⭐ Effekt anwenden (nur Türblatt)
-        if (blatt.effect === "glow") {
-            ctx.shadowColor = blatt.effectColor;
-            ctx.shadowBlur  = blatt.effectStrength;
+        if (d.design.blatt.effect === "glow") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.effectStrength;
         }
-        else if (blatt.effect === "shadow") {
-            ctx.shadowColor = blatt.effectColor;
-            ctx.shadowBlur  = blatt.effectStrength * 0.5;
+        else if (d.design.blatt.effect === "shadow") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.effectStrength * 0.5;
         }
-        else if (blatt.effect === "outline") {
-            ctx.shadowColor = blatt.effectColor;
-            ctx.shadowBlur  = blatt.strokeWidth * 2;
+        else if (d.design.blatt.effect === "outline") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.strokeWidth * 2;
         }
-        else if (blatt.effect === "blur") {
-            ctx.shadowColor = blatt.effectColor;
-            ctx.shadowBlur  = blatt.effectStrength * 1.5;
+        else if (d.design.blatt.effect === "blur") {
+            ctx.shadowColor = d.design.blatt.effectColor;
+            ctx.shadowBlur = d.design.blatt.effectStrength * 1.5;
         }
         else {
             ctx.shadowColor = "transparent";
-            ctx.shadowBlur  = 0;
+            ctx.shadowBlur = 0;
         }
 
         // Außenkreis (Deckel)
         ctx.beginPath();
         ctx.arc(d.x, d.y, r, 0, Math.PI * 2);
         ctx.stroke();
-        ctx.restore();
 
         // ⭐ Innenfüllung (Schwelle-Design)
-        ctx.save();
-        ctx.fillStyle = schwelle.color;
+        ctx.fillStyle = d.design.schwelle.color;
         ctx.beginPath();
         ctx.arc(d.x, d.y, r * 0.6, 0, Math.PI * 2);
         ctx.fill();
-        ctx.restore();
 
         // ⭐ Scharnier-Strich (hinge-Design)
         if (d.hingeAngle !== undefined) {
 
-            ctx.save();
-            ctx.strokeStyle = hinge.color;
-            ctx.lineWidth   = hinge.strokeWidth;
+            ctx.strokeStyle = d.design.hinge.color;
+            ctx.lineWidth = d.design.hinge.strokeWidth;
 
             const hingeX = d.x + Math.cos(d.hingeAngle) * r;
             const hingeY = d.y + Math.sin(d.hingeAngle) * r;
@@ -4982,32 +4932,31 @@ case "dachluke": {
             ctx.moveTo(hingeX - tx * hingeLen / 2, hingeY - ty * hingeLen / 2);
             ctx.lineTo(hingeX + tx * hingeLen / 2, hingeY + ty * hingeLen / 2);
             ctx.stroke();
-            ctx.restore();
         }
 
         return;
     }
 
-    // ------------------------------------------------------------
-    // OFFEN → Ellipse als Klappe
-    // ------------------------------------------------------------
+    // -------------------------------
+    // Offen → Ellipse als Klappe
+    // -------------------------------
 
-    const angle = d.hingeAngle || 0;
+    // ⭐ Scharnier-Design für offenen Zustand
+    ctx.strokeStyle = d.design.hinge.color;
+    ctx.lineWidth = d.design.hinge.strokeWidth;
 
     // 1) Hauptkreis (Loch)
-    ctx.save();
-    ctx.strokeStyle = hinge.color;
-    ctx.lineWidth   = hinge.strokeWidth;
-
     ctx.beginPath();
     ctx.arc(d.x, d.y, r, 0, Math.PI * 2);
     ctx.stroke();
-    ctx.restore();
 
     // 2) Ellipse (Deckel)
-    const rx = r;
-    const ry = r * 0.35;
+    const angle = d.hingeAngle || 0;
 
+    const rx = r;          // breit
+    const ry = r * 0.35;   // flach
+
+    // Abstand so, dass Ellipse tangential am Kreis anliegt
     const offsetX = Math.cos(angle) * (r + ry);
     const offsetY = Math.sin(angle) * (r + ry);
 
@@ -5018,14 +4967,14 @@ case "dachluke": {
     ctx.rotate(angle + Math.PI / 2);
 
     // ⭐ Füllung (Schwelle-Design)
-    ctx.fillStyle = schwelle.color;
+    ctx.fillStyle = d.design.schwelle.color;
     ctx.beginPath();
     ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
     ctx.fill();
 
     // ⭐ Kontur (Hinge-Design)
-    ctx.strokeStyle = hinge.color;
-    ctx.lineWidth   = hinge.strokeWidth;
+    ctx.strokeStyle = d.design.hinge.color;
+    ctx.lineWidth = d.design.hinge.strokeWidth;
     ctx.stroke();
 
     ctx.restore();
@@ -5038,69 +4987,31 @@ case "dachluke": {
     const tx = Math.cos(angle + Math.PI / 2);
     const ty = Math.sin(angle + Math.PI / 2);
 
-    ctx.save();
-    ctx.strokeStyle = hinge.color;
-    ctx.lineWidth   = hinge.strokeWidth;
+    ctx.strokeStyle = d.design.hinge.color;
+    ctx.lineWidth = d.design.hinge.strokeWidth;
 
     ctx.beginPath();
     ctx.moveTo(hingeX - tx * hingeLen / 2, hingeY - ty * hingeLen / 2);
     ctx.lineTo(hingeX + tx * hingeLen / 2, hingeY + ty * hingeLen / 2);
     ctx.stroke();
-    ctx.restore();
 
     return;
 }
-
 }
-        ctx.restore();   // ⭐ globaler Restore
-
 },
 
 
 drawDoorArc(ctx, d, hx, hy, px, py, elen, side) {
-
-    // ⭐ Design-Struktur sicherstellen
-    ensureDoorDesignStructure(d);
-
-    // ⭐ Zustand wählen (offen/geschlossen)
-    const designState = d.isOpen ? d.design.open : d.design.closed;
-
-    // ⭐ Arc-Design extrahieren
-    const arc = designState.arc;
-
-    // ⭐ Effekt + Linien kapseln
-    ctx.save();
-
-    ctx.strokeStyle = arc.color;
-    ctx.lineWidth   = arc.strokeWidth;
-
-    // ⭐ Effekt anwenden (Arc)
-    if (arc.effect === "glow") {
-        ctx.shadowColor = arc.effectColor;
-        ctx.shadowBlur  = arc.effectStrength;
-    }
-    else if (arc.effect === "shadow") {
-        ctx.shadowColor = arc.effectColor;
-        ctx.shadowBlur  = arc.effectStrength * 0.5;
-    }
-    else if (arc.effect === "outline") {
-        ctx.shadowColor = arc.effectColor;
-        ctx.shadowBlur  = arc.strokeWidth * 2;
-    }
-    else if (arc.effect === "blur") {
-        ctx.shadowColor = arc.effectColor;
-        ctx.shadowBlur  = arc.effectStrength * 1.5;
-    }
-    else {
-        ctx.shadowColor = "transparent";
-        ctx.shadowBlur  = 0;
-    }
-
-    // ⭐ Viertelkreis berechnen
     const baseVecX = px * elen * side;
     const baseVecY = py * elen * side;
 
     const steps = 24;
+    const design = d.design || {};
+
+    ctx.strokeStyle = d.design.arc.color;
+    ctx.lineWidth = d.design.arc.strokeWidth;
+
+
 
     ctx.beginPath();
 
@@ -5122,9 +5033,7 @@ drawDoorArc(ctx, d, hx, hy, px, py, elen, side) {
     }
 
     ctx.stroke();
-    ctx.restore();
-}
-,
+},
     
     
     drawWindows() {
@@ -6272,51 +6181,38 @@ function getDoorComponents(d) {
 }
 
 
-function ensureDoorDesignStructure(d) {
+function ensureDoorDesignStructure(obj) {
+    if (!obj.design) obj.design = {};
 
-    // Developer-Defaults (global)
-    const DEV_DEFAULTS = {
-        blatt:   { color: "#ffffff", strokeWidth: 4, effect: "none", effectColor: "#00ffff", effectStrength: 4 },
-        arc:     { color: "#ffffff", strokeWidth: 2, effect: "none", effectColor: "#00ffff", effectStrength: 4 },
-        hinge:   { color: "#ffffff", strokeWidth: 1, effect: "none", effectColor: "#00ffff", effectStrength: 4 },
-        schwelle:{ color: "#cccccc", strokeWidth: 1, effect: "none", effectColor: "#00ffff", effectStrength: 4 }
+    // Standard-Komponenten
+    const defaults = {
+        blatt: {
+            color: "#ffffff",
+            strokeWidth: 4,
+            effect: "none",
+            effectStrength: 0,
+            effectColor: "#ffffff"
+        },
+        schwelle: {
+            color: "#cccccc",
+            strokeWidth: 2
+        },
+        arc: {
+            color: "#ffffff",
+            strokeWidth: 2
+        },
+        hinge: {
+            color: "#ffffff",
+            strokeWidth: 2
+        }
     };
 
-    // User-Defaults (projektbezogen oder global)
-    const USER_DEFAULTS = window.userDoorDefaults || {};
-
-    // Zielstruktur
-    const STATES = ["open", "closed"];
-    const PARTS  = ["blatt", "arc", "hinge", "schwelle"];
-
-    if (!d.design) d.design = {};
-
-    for (const state of STATES) {
-        if (!d.design[state]) d.design[state] = {};
-
-        for (const part of PARTS) {
-
-            // Developer-Default
-            const dev = DEV_DEFAULTS[part];
-
-            // User-Default (falls vorhanden)
-            const usr = USER_DEFAULTS[state]?.[part] || {};
-
-            // Objekt-Default (falls vorhanden)
-            const obj = d.design[state][part] || {};
-
-            // Finaler Merge
-            d.design[state][part] = {
-                color:         obj.color         ?? usr.color         ?? dev.color,
-                strokeWidth:   obj.strokeWidth   ?? usr.strokeWidth   ?? dev.strokeWidth,
-                effect:        obj.effect        ?? usr.effect        ?? dev.effect,
-                effectColor:   obj.effectColor   ?? usr.effectColor   ?? dev.effectColor,
-                effectStrength:obj.effectStrength?? usr.effectStrength?? dev.effectStrength
-            };
+    for (const key in defaults) {
+        if (!obj.design[key]) {
+            obj.design[key] = { ...defaults[key] };
         }
     }
 }
-
 
 
 RoomDesigner.loadRoom = function(roomId) {
