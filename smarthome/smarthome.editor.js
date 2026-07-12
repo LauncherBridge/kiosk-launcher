@@ -3328,43 +3328,43 @@ render() {
     this.drawWindows();
     this.drawDoors();
 
-    // ⭐ Pan-Schutz: Box bleibt sichtbar, Hit-Test wird ignoriert
+    // ------------------------------------------------------------
+    // 2) MODAL-FOCUS (Objekt bleibt normal, Rest wird abgedunkelt)
+    // ------------------------------------------------------------
     const isPanning = this.isPanning || this.isPanCandidate;
 
-    // ⭐ Auswahl-Box IM WELT-KONTEXT
-    if (!isPanning && window.hit) {
-        const obj = (() => {
+    if (!isPanning) {
+
+        let obj = null;
+
+        if (window.hit) {
             switch (window.hit.type) {
-                case "door": return this.doors[window.hit.index];
-                case "window": return this.windows[window.hit.index];
-                case "smart": return this.smartContainers?.[window.hit.index];
-                case "device": return this.devices?.[window.hit.index];
-                case "furniture": return this.furniture?.[window.hit.index];
-                case "garden": return this.garden?.[window.hit.index];
-                default: return null;
+                case "door": obj = this.doors[window.hit.index]; break;
+                case "window": obj = this.windows[window.hit.index]; break;
+                case "smart": obj = this.smartContainers?.[window.hit.index]; break;
+                case "device": obj = this.devices?.[window.hit.index]; break;
+                case "furniture": obj = this.furniture?.[window.hit.index]; break;
+                case "garden": obj = this.garden?.[window.hit.index]; break;
             }
-        })();
+        }
 
-        if (obj) this.drawSelectionBoxRounded(ctx, obj);
-    }
-
-    if (!isPanning && window.placeMode) {
-        const obj = (() => {
+        if (!obj && window.placeMode) {
             switch (window.placeMode) {
-                case "door": return this.doors[this.doors.length - 1];
-                case "window": return this.windows[this.windows.length - 1];
-                case "smart": return this.smartContainers?.[this.smartContainers.length - 1];
-                case "device": return this.devices?.[this.devices.length - 1];
-                case "furniture": return this.furniture?.[this.furniture.length - 1];
-                case "garden": return this.garden?.[this.garden.length - 1];
-                default: return null;
+                case "door": obj = this.doors[this.doors.length - 1]; break;
+                case "window": obj = this.windows[this.windows.length - 1]; break;
+                case "smart": obj = this.smartContainers?.[this.smartContainers.length - 1]; break;
+                case "device": obj = this.devices?.[this.devices.length - 1]; break;
+                case "furniture": obj = this.furniture?.[this.furniture.length - 1]; break;
+                case "garden": obj = this.garden?.[this.garden.length - 1]; break;
             }
-        })();
+        }
 
-        if (obj) this.drawSelectionBoxRounded(ctx, obj);
+        if (obj) this.drawModalFocus(ctx, obj);
     }
 
-    // Winkelanzeige beim Drag (Welt-Kontext)
+    // ------------------------------------------------------------
+    // 3) Winkelanzeige beim Drag (Welt-Kontext)
+    // ------------------------------------------------------------
     if (this.isDragging && this.selectedPoint) {
         const idx = this.points.indexOf(this.selectedPoint);
         const affected = new Set([idx]);
@@ -3397,16 +3397,56 @@ render() {
     ctx.restore();
 
     // ------------------------------------------------------------
-    // 2) Hover-Kreuz (Screen-Space)
+    // 4) Hover-Kreuz (Screen-Space)
     // ------------------------------------------------------------
     this.drawHoverCross();
 },
 
 
+drawModalFocus(ctx, obj) {
+    if (!obj) return;
+
+    // Maße bestimmen
+    let w = obj.width || obj.w || obj.length || 80;
+    let h = obj.height || obj.h || (obj.thickness ? obj.thickness * 4 : 80);
+
+    const padding = 40;
+
+    const x = obj.x - w / 2 - padding;
+    const y = obj.y - h / 2 - padding;
+    const boxW = w + padding * 2;
+    const boxH = h + padding * 2;
+
+    // 1) Abdunkeln + Blur über die gesamte Welt
+    ctx.save();
+    ctx.filter = "blur(4px)";
+    ctx.globalAlpha = 0.45;
+    ctx.fillStyle = "black";
+    ctx.fillRect(-99999, -99999, 999999, 999999);
+    ctx.restore();
+
+    // 2) Loch ausschneiden (Cutout)
+    ctx.save();
+    ctx.globalCompositeOperation = "destination-out";
+
+    ctx.beginPath();
+    ctx.rect(x, y, boxW, boxH);
+    ctx.fill();
+
+    ctx.restore();
+
+    // 3) Optional: leichte Outline um das Objekt
+    ctx.save();
+    ctx.strokeStyle = "rgba(255,255,255,0.25)";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x, y, boxW, boxH);
+    ctx.restore();
+}
+,
 
 
 
-drawSelectionBoxRounded(ctx, obj) {
+drawSelectionBoxRounded(ctx, obj) { //kann eingentlich raus, wenn modalfocus passt
     if (!obj) return;
 
     // ⭐ Maße je nach Typ bestimmen
