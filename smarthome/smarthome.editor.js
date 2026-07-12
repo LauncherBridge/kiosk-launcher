@@ -3342,7 +3342,7 @@ render() {
             }
         })();
 
-        if (obj) this.drawSelectionBox(ctx, obj);
+        if (obj) this.drawSelectionBoxRounded(ctx, obj);
     }
 
     if (window.placeMode) {
@@ -3358,7 +3358,7 @@ render() {
             }
         })();
 
-        if (obj) this.drawSelectionBox(ctx, obj);
+        if (obj) this.drawSelectionBoxRounded(ctx, obj);
     }
 
     // Winkelanzeige beim Drag (Welt-Kontext)
@@ -3402,31 +3402,52 @@ render() {
 drawSelectionBoxRounded(ctx, obj) {
     if (!obj) return;
 
-    const padding = 20; // Abstand um das Objekt herum
+    // ⭐ Maße je nach Typ bestimmen
+    let w = 80;
+    let h = 80;
 
-    const x = obj.x - (obj.width / 2) - padding;
-    const y = obj.y - (obj.height / 2) - padding;
-    const w = obj.width + padding * 2;
-    const h = obj.height + padding * 2;
-    const r = Math.min(w, h) * 0.2; // Radius der abgerundeten Ecken
+    if (obj.length && obj.thickness) {
+        // Türen / Fenster / Dachluken
+        w = obj.length;
+        h = obj.thickness * 4; // optisch etwas breiter
+    }
+
+    if (obj.w && obj.h) {
+        // Möbel
+        w = obj.w;
+        h = obj.h;
+    }
+
+    if (obj.width && obj.height) {
+        // Smart-Objekte / Geräte
+        w = obj.width;
+        h = obj.height;
+    }
+
+    const padding = 20;
+
+    const x = obj.x - (w / 2) - padding;
+    const y = obj.y - (h / 2) - padding;
+    const boxW = w + padding * 2;
+    const boxH = h + padding * 2;
+    const r = Math.min(boxW, boxH) * 0.2;
 
     ctx.strokeStyle = "#66aaff";
     ctx.lineWidth = 2;
 
     ctx.beginPath();
     ctx.moveTo(x + r, y);
-    ctx.lineTo(x + w - r, y);
-    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-    ctx.lineTo(x + w, y + h - r);
-    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-    ctx.lineTo(x + r, y + h);
-    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x + boxW - r, y);
+    ctx.quadraticCurveTo(x + boxW, y, x + boxW, y + r);
+    ctx.lineTo(x + boxW, y + boxH - r);
+    ctx.quadraticCurveTo(x + boxW, y + boxH, x + boxW - r, y + boxH);
+    ctx.lineTo(x + r, y + boxH);
+    ctx.quadraticCurveTo(x, y + boxH, x, y + boxH - r);
     ctx.lineTo(x, y + r);
     ctx.quadraticCurveTo(x, y, x + r, y);
     ctx.stroke();
-}
+},
 
-,
 
     
     checkCollision(a, b) {
