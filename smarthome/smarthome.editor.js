@@ -6420,39 +6420,41 @@ function updateEditorTitle() {
 
     if (!object) return;
 
+    // ⭐ GLOBAL niceNames
+    const niceNames = {
+        haustuer: "Haustür",
+        zimmertuer: "Zimmertür",
+        terrassentuer: "Terrassentür",
+        falttuer: "Falttür",
+        schiebetuer: "Schiebetür",
+        garagentor: "Garagentor",
+        gartentor: "Gartentor",
+        dachluke: "Dachluke",
+        fenster: "Fenster",
+        punkt: "Punkt"
+    };
+
+    const iconMap = {
+        zimmertuer: "🚪",
+        haustuer: "🚪",
+        terrassentuer: "🚪",
+        falttuer: "🚪",
+        schiebetuer: "🚪",
+        garagentor: "🚪",
+        gartentor: "🚪",
+        dachluke: "🪟",
+        fenster: "🪟",
+        punkt: "•",
+        default: "❖"
+    };
+
     // ⭐ 1) Platziermodus hat Vorrang
     if (window.placeMode) {
-
         const subtype = window.placeSubtype || "default";
-        const niceNames = {
-            haustuer: "Haustür",
-            zimmertuer: "Zimmertür",
-            terrassentuer: "Terrassentür",
-            falttuer: "Falttür",
-            schiebetuer: "Schiebetür",
-            garagentor: "Garagentor",
-            gartentor: "Gartentor",
-            dachluke: "Dachluke",
-            fenster: "Fenster"
-        };
-
-        const iconMap = {
-            zimmertuer: "🚪",
-            haustuer: "🚪",
-            terrassentuer: "🚪",
-            falttuer: "🚪",
-            schiebetuer: "🚪",
-            garagentor: "🚪",
-            gartentor: "🚪",
-            dachluke: "🪟",
-            fenster: "🪟",
-            punkt: "•",
-            default: "❖"
-        };
-
+        const nice = niceNames[subtype] || subtype;
         const icon = iconMap[subtype] || iconMap.default;
 
-        object.textContent = `${icon} Neue ${subtype} platzieren`;
+        object.textContent = `${icon} Neue ${nice} platzieren`;
         return;
     }
 
@@ -6468,35 +6470,22 @@ function updateEditorTitle() {
         object.textContent = "";
         return;
     }
-    
+
+    // ⭐ 3) Scharnier-Platzierung
     if (h.state === "placingHinge") {
-    
+
         const roomData = project.rooms[activeRoomId];
         const d = roomData.doors[h.index];
         const subtype = d?.type || "Türe";
 
         const nice = niceNames[subtype] || subtype;
-        
-        const iconMap = {
-            zimmertuer: "🚪",
-            haustuer: "🚪",
-            terrassentuer: "🚪",
-            falttuer: "🚪",
-            schiebetuer: "🚪",
-            garagentor: "🚪",
-            gartentor: "🚪",
-            dachluke: "🪟",
-            fenster: "🪟",
-            default: "🚪"
-        };
-    
         const icon = iconMap[subtype] || iconMap.default;
-    
-        object.textContent = `${icon} ${subtype} hinzugefügt – bitte Scharnierseite definieren`;
+
+        object.textContent = `${icon} ${nice} hinzugefügt – bitte Scharnierseite definieren`;
         return;
     }
 
-
+    // ⭐ 4) Normale Objektanzeige
     const roomData = project.rooms[activeRoomId];
     let sub = null;
 
@@ -6524,21 +6513,12 @@ function updateEditorTitle() {
         return;
     }
 
-    const iconMap = {
-        zimmertuer: "🚪",
-        haustuer: "🚪",
-        terrassentuer: "🚪",
-        dachluke: "🪟",
-        fenster: "🪟",
-        punkt: "•",
-        default: "❖"
-    };
-
     const icon = iconMap[sub] || iconMap.default;
     const id = h.index !== undefined ? `#${h.index}` : "";
 
     object.textContent = `${icon} ${sub} ${id}`;
 }
+
 
 
 
