@@ -3405,6 +3405,7 @@ render() {
 
 
 
+
 drawSelectionBoxRounded(ctx, obj) {
     if (!obj) return;
 
@@ -3453,6 +3454,7 @@ drawSelectionBoxRounded(ctx, obj) {
     ctx.quadraticCurveTo(x, y, x + r, y);
     ctx.stroke();
 },
+
 
 
 
