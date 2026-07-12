@@ -2575,8 +2575,9 @@ onDown(e) {
                     index: this.doors.length - 1,
                     state: "placingHinge"
                 };
+                window.placeMode = null;
+                window.placeSubtype = null;
                 updateEditorTitle();
-
                 return;
             }
         }
