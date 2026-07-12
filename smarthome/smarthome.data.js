@@ -486,6 +486,49 @@ window.SmartHomeData = {
 };
 
 // ---------------------------------------------------------
+// Developer Defaults – Rendering, Türen, Fenster, Designer
+// ---------------------------------------------------------
+SmartHomeData.defaults = {
+    render: {
+        roomFill: "#444",
+        roomActiveFill: "rgba(255,184,108,0.5)",
+        roomStroke: "#222",
+        roomStrokeWidth: 2,
+
+        doorColor: "#FFD28A",
+        doorStroke: "#000",
+        doorStrokeWidth: 1,
+
+        windowColor: "#A0CFFF",
+        windowStroke: "#000",
+        windowStrokeWidth: 1
+    },
+
+    door: {
+        thresholdWidth: 4,
+        leafWidth: 30,
+        hingeSize: 6,
+        arcColor: "rgba(255,184,108,0.4)",
+        arcWidth: 2
+    },
+
+    window: {
+        frameWidth: 4,
+        glassColor: "rgba(160,207,255,0.4)"
+    },
+
+    designer: {
+        pointSize: 6,
+        pointColor: "#FFD28A",
+        wallColor: "#333",
+        wallWidth: 3
+    }
+};
+
+
+
+
+// ---------------------------------------------------------
 // Auto-Fixer (Daten stabilisieren)
 // ---------------------------------------------------------
 SmartHomeData.autoFix = function() {
