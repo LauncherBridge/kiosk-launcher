@@ -3399,23 +3399,33 @@ render() {
     this.drawHoverCross();
 },
 
-
-drawSelectionBox(ctx, obj) {
+drawSelectionBoxRounded(ctx, obj) {
     if (!obj) return;
 
-    const cx = obj.x;
-    const cy = obj.y;
+    const padding = 20; // Abstand um das Objekt herum
 
-    const baseSize = Math.max(obj.width || 0, obj.height || 0);
-    const radius = Math.max(30, baseSize * 0.7);
+    const x = obj.x - (obj.width / 2) - padding;
+    const y = obj.y - (obj.height / 2) - padding;
+    const w = obj.width + padding * 2;
+    const h = obj.height + padding * 2;
+    const r = Math.min(w, h) * 0.2; // Radius der abgerundeten Ecken
 
     ctx.strokeStyle = "#66aaff";
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = 2;
 
     ctx.beginPath();
-    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
     ctx.stroke();
-},
+}
+
 
 
     
