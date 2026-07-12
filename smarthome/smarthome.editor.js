@@ -2577,23 +2577,26 @@ onDown(e) {
             }
         }
 
-        if (this._placingDoor) {
-            const lastDoor = this.doors[this.doors.length - 1];
-            const w = this.walls[lastDoor.wallIndex];
-            this.setDoorHingeFromTap(lastDoor, worldX, worldY, w);
+if (this._placingDoor) {
+    const lastDoor = this.doors[this.doors.length - 1];
+    const w = this.walls[lastDoor.wallIndex];
+    this.setDoorHingeFromTap(lastDoor, worldX, worldY, w);
 
-            this._placingDoor = false;
-            this.mode = "points";
-             this.currentDoorType = null;
-            this.render();
-            this.saveRoom(activeRoomId);
+    // ⭐ Tür-Platzierung korrekt beenden
+    this._placingDoor = false;
+    this.mode = "points";          // ← richtig
+    this.currentDoorType = null;   // ← richtig
+    // ⭐ WICHTIG: NICHT editor.mode, NICHT placingSubtype
 
-            // ⭐ Schritt 2 → Crumb: „Zimmertüre #n“
-            window.hit = { type: "door", index: this.doors.length - 1 };
-            updateEditorTitle();
+    this.render();
+    this.saveRoom(activeRoomId);
 
-            return;
-        }
+    window.hit = { type: "door", index: this.doors.length - 1 };
+    updateEditorTitle();
+
+    return;
+}
+
     }
 
     // ------------------------------------------------------------
@@ -6376,28 +6379,28 @@ function updateEditorTitle() {
     // ------------------------------------------------------------
     if (!object) return;
 
-    // ⭐ Sidebar-Modus: Neue Tür platzieren
-    if (editor.mode === "placingDoor") {
+// Sidebar: Neue Tür platzieren
+if (this.mode === "doors" && !this._placingDoor) {
 
-        const subtype = editor.placingSubtype || "default";
+    const subtype = this.currentDoorType || "default";
 
-        const iconMap = {
-            zimmertuer: "🚪",
-            haustuer: "🚪",
-            terrassentuer: "🚪",
-            falttuer: "🚪",
-            schiebetuer: "🚪",
-            garagentor: "🚪",
-            gartentor: "🚪",
-            dachluke: "🪟",
-            default: "🚪"
-        };
+    const iconMap = {
+        zimmertuer: "🚪",
+        haustuer: "🚪",
+        terrassentuer: "🚪",
+        falttuer: "🚪",
+        schiebetuer: "🚪",
+        garagentor: "🚪",
+        gartentor: "🚪",
+        default: "🚪"
+    };
 
-        const icon = iconMap[subtype] || iconMap.default;
+    const icon = iconMap[subtype] || iconMap.default;
 
-        object.textContent = `${icon} Neue ${subtype} an Wand platzieren`;
-        return;
-    }
+    object.textContent = `${icon} Neue ${subtype} an Wand platzieren`;
+    return;
+}
+
 
     // ⭐ Sidebar-Modus: Neues Fenster platzieren
     if (editor.mode === "placingWindow") {
