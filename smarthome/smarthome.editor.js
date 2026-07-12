@@ -3620,13 +3620,13 @@ drawAngleAtPoint(P, A, B) {
 },
 
     // --------------------------------------------------
-    // Türen zeichnen (alte Darstellung)
+    // Türen grundsätzlich zeichnen 
     // --------------------------------------------------
     drawDoors() {
         const DOOR_TYPES_WITH_ARC = new Set([
             "zimmertuer",
             "haustuer",
-            "terrassentuer",
+        //    "terrassentuer",
             "gartentor"
         ]);
 
