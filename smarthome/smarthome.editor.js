@@ -6378,13 +6378,7 @@ function updateEditorTitle() {
 
     const h = window.hit;
 
-    // Wand NICHT anzeigen
-    if (h.type === "wall") {
-        object.textContent = "";
-        return;
-    }
-
-    // Neue Tür platzieren (Sidebar-Auswahl)
+    // ⭐ Neue Tür platzieren (Sidebar-Auswahl) – MUSS GANZ OBEN SEIN
     if (h.state === "placingDoor") {
         const iconMap = {
             zimmertuer: "🚪",
@@ -6401,6 +6395,12 @@ function updateEditorTitle() {
         const icon = iconMap[subtype] || iconMap.default;
 
         object.textContent = `${icon} Neue ${subtype} an Wand platzieren`;
+        return;
+    }
+
+    // Wand NICHT anzeigen
+    if (h.type === "wall") {
+        object.textContent = "";
         return;
     }
 
