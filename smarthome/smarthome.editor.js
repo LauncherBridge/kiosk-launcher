@@ -1561,6 +1561,8 @@ showContextMenu(x, y, type, index) {
 
             const p = this.points[index];
             this.points = this.points.filter(pt => pt !== p);
+window.hit = null;
+updateEditorTitle();
 
             if (this.points.length < 3) {
                 this.isClosed = false;
@@ -1645,6 +1647,9 @@ showContextMenu(x, y, type, index) {
             // Löschen
             this.addContextButton("🗑", () => {
                 this.doors.splice(index, 1);
+                window.hit = null;
+updateEditorTitle();
+
                 this.updateWalls();
                 this.render();
                 this.saveRoom(activeRoomId);   // ⭐ Autosave
@@ -1728,6 +1733,9 @@ showContextMenu(x, y, type, index) {
 
         this.addContextButton("🗑", () => {
             this.windows.splice(index, 1);
+            window.hit = null;
+updateEditorTitle();
+
             this.updateWalls();
             this.render();
             this.saveRoom(activeRoomId);   // ⭐ Autosave
@@ -2204,17 +2212,20 @@ onDown(e) {
 
         const hit = this.hitTest(mouseX, mouseY);
 
-        // ⭐ Crumb sofort aktualisieren
-        window.hit = hit;
-        updateEditorTitle();
+        // ⭐ Crumb sofort aktualisieren (aber empty NICHT anzeigen)
+        if (hit.type !== "empty") {
+            window.hit = hit;
+            updateEditorTitle();
+        } else {
+            window.hit = null;
+            updateEditorTitle();
+        }
 
         // 👉 PAN bei empty
         if (!hit || hit.type === "empty") {
 
             this.hideContextMenu();
             this._pendingContext = null;
-
-            console.log("Designer-PAN gestartet, hit.type =", hit?.type);
 
             this.isPanning = true;
             this.lastPanX = mouseX;
@@ -2245,8 +2256,6 @@ onDown(e) {
         }
 
         // 👉 Objekt getroffen → Designer-Auswahl
-        console.log("Designer-Auswahl (Canvas):", hit);
-
         let fullObject = null;
 
         if (hit.type === "door") fullObject = this.doors[hit.index];
@@ -2266,11 +2275,6 @@ onDown(e) {
 
         this.hideContextMenu();
         this._pendingContext = null;
-
-        console.log("Designer-Auswahl → Kategorie:", hit.type);
-        console.log("Designer-Auswahl → Index:", hit.index);
-        console.log("Designer-Auswahl → SubType:", subType);
-        console.log("Designer-Auswahl → Daten:", fullObject);
 
         this.designerSelection = {
             source: "canvas",
@@ -2387,9 +2391,14 @@ onDown(e) {
     // ------------------------------------------------------------
     const hit = this.hitTest(mouseX, mouseY);
 
-    // ⭐ Crumb sofort aktualisieren
-    window.hit = hit;
-    updateEditorTitle();
+    // ⭐ Crumb sofort aktualisieren (aber empty NICHT anzeigen)
+    if (hit.type !== "empty") {
+        window.hit = hit;
+        updateEditorTitle();
+    } else {
+        window.hit = null;
+        updateEditorTitle();
+    }
 
     const clickingObject =
         hit.type === "point" ||
@@ -2409,6 +2418,12 @@ onDown(e) {
 
     if (this._contextJustClosed && clickingObject) {
         this._contextJustClosed = false;
+    }
+
+    // ⭐ Klick ins Leere → Crumb leeren (Schritt 4)
+    if (hit.type === "empty") {
+        window.hit = null;
+        updateEditorTitle();
     }
 
     // ------------------------------------------------------------
@@ -2457,6 +2472,10 @@ onDown(e) {
             this.updateWalls();
             this.render();
             this.saveRoom(activeRoomId);
+
+            // ⭐ Neues Fenster → Crumb aktualisieren
+            window.hit = { type: "window", index: this.windows.length - 1 };
+            updateEditorTitle();
         }
 
         this.mode = "points";
@@ -2464,7 +2483,7 @@ onDown(e) {
     }
 
     // ------------------------------------------------------------
-    // ⭐ TÜR-MODUS
+    // ⭐ TÜR-MODUS (inkl. zweistufiger Platzierung)
     // ------------------------------------------------------------
     if (this.mode === "doors") {
 
@@ -2502,6 +2521,10 @@ onDown(e) {
             this.mode = "points";
             this.saveRoom(activeRoomId);
 
+            // ⭐ Neues Objekt → Crumb aktualisieren
+            window.hit = { type: "door", index: this.doors.length - 1 };
+            updateEditorTitle();
+
             return;
         }
 
@@ -2522,6 +2545,14 @@ onDown(e) {
                 this.render();
                 this.saveRoom(activeRoomId);
 
+                // ⭐ Schritt 1 → Crumb: „Bitte Scharnier definieren“
+                window.hit = {
+                    type: "door",
+                    index: this.doors.length - 1,
+                    state: "placingHinge"
+                };
+                updateEditorTitle();
+
                 return;
             }
         }
@@ -2535,6 +2566,10 @@ onDown(e) {
             this.mode = "points";
             this.render();
             this.saveRoom(activeRoomId);
+
+            // ⭐ Schritt 2 → Crumb: „Zimmertüre #n“
+            window.hit = { type: "door", index: this.doors.length - 1 };
+            updateEditorTitle();
 
             return;
         }
@@ -2602,7 +2637,6 @@ onDown(e) {
     // ⭐ PAN-Kandidat
     // ------------------------------------------------------------
     if (hit.type === "empty" || hit.type === "wall") {
-        console.log("[onDown] PAN-Kandidat, hit.type =", hit.type);
         this.isPanCandidate = true;
         this.panStartX = mouseX;
         this.panStartY = mouseY;
@@ -6350,8 +6384,7 @@ if (object) {
         }
 
         if (h.type === "wall") {
-            sub = h.data?.type || "wand";
-        }
+            return object.textContent = "";   // Wand NICHT anzeigen        }
 
         if (h.type === "point") {
             sub = "punkt";
