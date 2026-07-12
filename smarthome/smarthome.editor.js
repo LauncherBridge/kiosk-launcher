@@ -3328,6 +3328,39 @@ render() {
     this.drawWindows();
     this.drawDoors();
 
+    // ⭐ Orbit IM WELT-KONTEXT zeichnen (korrekte Position!)
+    if (window.hit) {
+        const obj = (() => {
+            switch (window.hit.type) {
+                case "door": return this.doors[window.hit.index];
+                case "window": return this.windows[window.hit.index];
+                case "smart": return this.smartContainers?.[window.hit.index];
+                case "device": return this.devices?.[window.hit.index];
+                case "furniture": return this.furniture?.[window.hit.index];
+                case "garden": return this.garden?.[window.hit.index];
+                default: return null;
+            }
+        })();
+
+        if (obj) this.drawSelectionOrbit(ctx, obj);
+    }
+
+    if (window.placeMode) {
+        const obj = (() => {
+            switch (window.placeMode) {
+                case "door": return this.doors[this.doors.length - 1];
+                case "window": return this.windows[this.windows.length - 1];
+                case "smart": return this.smartContainers?.[this.smartContainers.length - 1];
+                case "device": return this.devices?.[this.devices.length - 1];
+                case "furniture": return this.furniture?.[this.furniture.length - 1];
+                case "garden": return this.garden?.[this.garden.length - 1];
+                default: return null;
+            }
+        })();
+
+        if (obj) this.drawSelectionOrbit(ctx, obj);
+    }
+
     // Winkelanzeige beim Drag (Welt-Kontext)
     if (this.isDragging && this.selectedPoint) {
         const idx = this.points.indexOf(this.selectedPoint);
@@ -3356,53 +3389,17 @@ render() {
         }
     }
 
-    // ⭐ Wandlängen IM WELT-KONTEXT zeichnen
     this.drawWallLengths();
 
     ctx.restore();
 
     // ------------------------------------------------------------
-    // 2) Orbit um ausgewählte Objekte (Screen-Space)
-    // ------------------------------------------------------------
-
-    if (window.hit) {
-
-        const obj = (() => {
-            switch (window.hit.type) {
-                case "door": return this.doors[window.hit.index];
-                case "window": return this.windows[window.hit.index];
-                case "smart": return this.smartContainers?.[window.hit.index];
-                case "device": return this.devices?.[window.hit.index];
-                case "furniture": return this.furniture?.[window.hit.index];
-                case "garden": return this.garden?.[window.hit.index];
-                default: return null;
-            }
-        })();
-
-        if (obj) this.drawSelectionOrbit(ctx, obj);
-    }
-
-    if (window.placeMode) {
-
-        const obj = (() => {
-            switch (window.placeMode) {
-                case "door": return this.doors[this.doors.length - 1];
-                case "window": return this.windows[this.windows.length - 1];
-                case "smart": return this.smartContainers?.[this.smartContainers.length - 1];
-                case "device": return this.devices?.[this.devices.length - 1];
-                case "furniture": return this.furniture?.[this.furniture.length - 1];
-                case "garden": return this.garden?.[this.garden.length - 1];
-                default: return null;
-            }
-        })();
-
-        if (obj) this.drawSelectionOrbit(ctx, obj);
-    }
-
-    // ------------------------------------------------------------
-    // 3) Hover-Kreuz (Screen-Space)
+    // 2) Hover-Kreuz (Screen-Space)
     // ------------------------------------------------------------
     this.drawHoverCross();
+
+    // ⭐ Animationsloop aktiv halten
+    requestAnimationFrame(() => this.render());
 },
 
 drawSelectionOrbit(ctx, obj) {
@@ -3413,18 +3410,17 @@ drawSelectionOrbit(ctx, obj) {
     const cx = obj.x;
     const cy = obj.y;
 
-    const radius = (obj.width || 60) * 0.8;
+    const baseSize = Math.max(obj.width || 0, obj.height || 0);
+    const radius = Math.max(30, baseSize * 0.7);
 
-    // Orbit-Kreis
     ctx.strokeStyle = "#66aaff";
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.arc(cx, cy, radius, 0, Math.PI * 2);
     ctx.stroke();
 
-    // Satelliten
-    const sat1Angle = time * 1.2;   // schneller
-    const sat2Angle = -time * 0.7;  // langsamer, gegenläufig
+    const sat1Angle = time * 1.2;
+    const sat2Angle = -time * 0.7;
 
     const sat1x = cx + Math.cos(sat1Angle) * radius;
     const sat1y = cy + Math.sin(sat1Angle) * radius;
