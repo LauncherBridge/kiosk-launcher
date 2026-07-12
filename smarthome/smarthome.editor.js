@@ -2051,8 +2051,8 @@ if (d.type === "dachluke") {
         const worldY = (y / this.zoom) - this.offsetY;
 
         const doorIndex = this.getDoorIndexAt(worldX, worldY);
-        if (doorIndex !== null) return { type: "door", index: doorIndex, data: this.doors[doorIndex] };
-
+        if (doorIndex !== null) return { type: "door", index: doorIndex };
+        
         const windowIndex = this.getWindowIndexAt(worldX, worldY);
         if (windowIndex !== null) return { type: "window", index: windowIndex };
 
