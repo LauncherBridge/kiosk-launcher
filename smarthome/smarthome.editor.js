@@ -3329,7 +3329,7 @@ render() {
     this.drawDoors();
 
     // ------------------------------------------------------------
-    // 2) MODAL-FOCUS (Objekt bleibt normal, Rest wird abgedunkelt)
+    // 2) MODAL-FOCUS (Objekt bleibt sichtbar, Rest wird dunkel)
     // ------------------------------------------------------------
     const isPanning = this.isPanning || this.isPanCandidate;
 
@@ -3435,13 +3435,14 @@ drawModalFocus(ctx, obj) {
 
     ctx.restore();
 
-    // 3) Optional: leichte Outline um das Objekt
+    // 3) leichte Outline um das Objekt
     ctx.save();
     ctx.strokeStyle = "rgba(255,255,255,0.25)";
     ctx.lineWidth = 2;
     ctx.strokeRect(x, y, boxW, boxH);
     ctx.restore();
 }
+
 ,
 
 
