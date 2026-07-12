@@ -3255,8 +3255,8 @@ onDoubleClickZoom(e) {
                 const w = this.walls[bestWall];
                 const A = { x: w.x1, y: w.y1 };
                 const B = { x: w.x2, y: w.y2 };
-                d.x = A.x + (B.x - A.x) * d.t;
-                d.y = A.y + (B.y - A.y) * d.t;
+             //   d.x = A.x + (B.x - A.x) * d.t;
+               // d.y = A.y + (B.y - A.y) * d.t;
             }
         }
 
