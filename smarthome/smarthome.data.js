@@ -486,10 +486,72 @@ window.SmartHomeData = {
 };
 
 // ---------------------------------------------------------
+// Auto-Fixer (Daten stabilisieren)
+// ---------------------------------------------------------
+SmartHomeData.autoFix = function() {
+
+    // 🛡️ Raumtypen absichern
+    this.rooms.forEach(room => {
+        if (!room.type || !this.roomTypes[room.type]) {
+            console.warn("AutoFix: Raumtyp fehlte → gesetzt auf 'default'", room);
+            room.type = "default";
+        }
+    });
+
+    if (!this.roomTypes.default) {
+        this.roomTypes.default = {
+            icon: "crop_square",
+            color: "#444"
+        };
+    }
+
+    // 🛡️ Container absichern
+    (this.containers || []).forEach(container => {
+        if (!container.type || !this.deviceTypes[container.type]) {
+            console.warn("AutoFix: Container-Typ fehlte → gesetzt auf 'unknown'", container);
+            container.type = "unknown";
+        }
+    });
+
+    if (!this.deviceTypes.unknown) {
+        this.deviceTypes.unknown = {
+            icon: "device_unknown",
+            color: "#FFFFFF"
+        };
+    }
+
+    // 🛡️ Türen absichern
+    (this.rooms || []).forEach(room => {
+        room.doors = room.doors || [];
+        room.doors = room.doors.filter(d => d?.position);
+    });
+
+    // 🛡️ Floors absichern
+    if (!Array.isArray(this.floors) || this.floors.length === 0) {
+        console.warn("AutoFix: Floors fehlten → Dummy-Floor erzeugt");
+        this.floors = [{ id: 0, alias: null, rooms: this.rooms.map(r => r.id) }];
+    }
+
+    // 🛡️ activeFloor absichern
+    if (!this.structure.activeFloor && this.structure.activeFloor !== 0) {
+        this.structure.activeFloor = 0;
+    }
+
+    // 🛡️ activeRoom absichern
+    if (!this.getRoom(this.structure.activeRoom)) {
+        this.structure.activeRoom = this.rooms[0]?.id || null;
+    }
+};
+
+
+
+
+// ---------------------------------------------------------
 // Initialisierung
 // ---------------------------------------------------------
 window.SmartHomeData.loadFloorMeta();
 window.SmartHomeData.refreshFloors();
+window.SmartHomeData.autoFix();
 
 // ---------------------------------------------------------
 // Fix: passages-Array für jeden Raum sicherstellen
