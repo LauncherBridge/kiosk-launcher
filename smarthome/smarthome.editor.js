@@ -1052,24 +1052,67 @@ function migrateProjectsToID() {
 
 // Projekt → Editor
 function importToEditor() {
+    editorAutoFix(project);
+
     try {
-        
+
         // Designer-Modus sichern
         const wasDesignerMode = RoomDesigner.isDesignerMode;
         const wasDesignerSelection = RoomDesigner.designerSelection;
-        
+
+        // ---------------------------------------------------------
         // 1) Projekt absichern
+        // ---------------------------------------------------------
         if (!project || typeof project !== "object") {
             project = { meta: {}, floors: {}, rooms: {} };
         }
         if (!project.rooms) project.rooms = {};
         if (!project.floors) project.floors = {};
 
-        // ❌ WICHTIG:
-        // KEIN automatisches "ersten Raum wählen" mehr!
-        // activeRoomId wird von switchFloor / Sidebar gesetzt.
+        // ---------------------------------------------------------
+        // 2) Räume vollständig initialisieren (Editor-Sicherheit)
+        // ---------------------------------------------------------
+        Object.values(project.rooms).forEach(room => {
 
-        // 2) Kein aktiver Raum → Etage anzeigen, Raum leer, Canvas leer
+            // Punkte
+            if (!Array.isArray(room.points)) {
+                // Falls polygon existiert → übernehmen
+                if (Array.isArray(room.polygon)) {
+                    room.points = room.polygon.map(p => ({ x: p.x, y: p.y }));
+                } else {
+                    room.points = [];
+                }
+            }
+
+            // Türen
+            if (!Array.isArray(room.doors)) {
+                room.doors = [];
+            }
+
+            // Fenster
+            if (!Array.isArray(room.windows)) {
+                room.windows = [];
+            }
+
+            // Passagen
+            if (!Array.isArray(room.passages)) {
+                room.passages = [];
+            }
+
+            // Etage
+            if (room.floorId === undefined || room.floorId === null) {
+                room.floorId = 0;
+            }
+
+            // Raum geschlossen?
+            if (typeof room.isClosed !== "boolean") {
+                room.isClosed = true;
+            }
+        });
+
+        // ---------------------------------------------------------
+        // 3) Kein aktiver Raum → Etage anzeigen, Canvas leeren
+        // ---------------------------------------------------------
         if (!activeRoomId) {
 
             const projectEl = document.getElementById("editor-project-name");
@@ -1096,14 +1139,18 @@ function importToEditor() {
             return;
         }
 
-        // 3) Raum laden
+        // ---------------------------------------------------------
+        // 4) Raum laden
+        // ---------------------------------------------------------
         const room = project.rooms[activeRoomId];
         if (!room) return;
 
         // Floor synchronisieren
         activeFloorId = room.floorId;
 
-        // 4) Titel setzen
+        // ---------------------------------------------------------
+        // 5) Titel setzen
+        // ---------------------------------------------------------
         const projectEl = document.getElementById("editor-project-name");
         if (projectEl) projectEl.textContent = project.meta?.name || "Projekt";
 
@@ -1116,43 +1163,84 @@ function importToEditor() {
         const roomEl = document.getElementById("editor-room-name");
         if (roomEl) roomEl.textContent = room.name || room.id;
 
-        // 5) Raumdaten übertragen
-        RoomDesigner.points = (room.points || []).map(p => ({ x: p.x, y: p.y }));
+        // ---------------------------------------------------------
+        // 6) Raumdaten in den Editor übertragen
+        // ---------------------------------------------------------
+        RoomDesigner.points = room.points.map(p => ({ x: p.x, y: p.y }));
         RoomDesigner.isClosed = room.isClosed || false;
 
-        // RoomDesigner.doors = (room.doors || [])
-        //    .map(id => project.doors?.[id])
-        //    .filter(Boolean)
-        //    .map(d => ({ ...d }));
-        RoomDesigner.doors = (room.doors || []).map(d => {
+        RoomDesigner.doors = room.doors.map(d => {
             const copy = { ...d };
             ensureDoorDesignStructure(copy);
             return copy;
         });
 
+        RoomDesigner.windows = room.windows.map(w => ({ ...w }));
 
-        RoomDesigner.windows = (room.windows || [])
-            .map(id => project.windows?.[id])
-            .filter(Boolean)
-            .map(w => ({ ...w }));
-
+        // ---------------------------------------------------------
+        // 7) Editor aktualisieren
+        // ---------------------------------------------------------
         RoomDesigner.updateWalls();
         RoomDesigner.centerView();
         RoomDesigner.render();
 
-        // 6) Sidebar aktualisieren
+        // ---------------------------------------------------------
+        // 8) Sidebar aktualisieren
+        // ---------------------------------------------------------
         renderEditorProjectSidebar();
 
         // Designer-Modus wiederherstellen
         RoomDesigner.isDesignerMode = wasDesignerMode;
         RoomDesigner.designerSelection = wasDesignerSelection;
-        
+
     }
     catch (err) {
         console.error("❌ importToEditor Fehler:", err);
     }
 }
 
+function editorAutoFix(project) {
+
+    if (!project || typeof project !== "object") return;
+
+    // Räume absichern
+    Object.values(project.rooms || {}).forEach(room => {
+
+        // Punkte
+        if (!Array.isArray(room.points)) {
+            if (Array.isArray(room.polygon)) {
+                room.points = room.polygon.map(p => ({ x: p.x, y: p.y }));
+            } else {
+                room.points = [];
+            }
+        }
+
+        // Türen
+        if (!Array.isArray(room.doors)) {
+            room.doors = [];
+        }
+
+        // Fenster
+        if (!Array.isArray(room.windows)) {
+            room.windows = [];
+        }
+
+        // Passagen
+        if (!Array.isArray(room.passages)) {
+            room.passages = [];
+        }
+
+        // Etage
+        if (room.floorId === undefined || room.floorId === null) {
+            room.floorId = 0;
+        }
+
+        // Raum geschlossen?
+        if (typeof room.isClosed !== "boolean") {
+            room.isClosed = true;
+        }
+    });
+}
 
 
 
