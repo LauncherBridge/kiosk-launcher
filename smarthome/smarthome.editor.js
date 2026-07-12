@@ -3626,7 +3626,7 @@ drawAngleAtPoint(P, A, B) {
         const DOOR_TYPES_WITH_ARC = new Set([
             "zimmertuer",
             "haustuer",
-        //    "terrassentuer",
+            "terrassentuer",
             "gartentor"
         ]);
 
@@ -4378,21 +4378,23 @@ case "terrassentuer": {
         ctx.stroke();
 
         // --------------------------------------------------------
-        // Glasfüllung (Effektfarbe + Effektstärke)
+        // ⭐ Glasfüllung (schmaler + leicht nach innen versetzt)
         // --------------------------------------------------------
+        const inset = d.design.blatt.strokeWidth * 0.3;
+        const glassWidth = Math.max(1, d.design.blatt.strokeWidth * 0.5);
+
         ctx.strokeStyle = d.design.blatt.effectColor;
-        ctx.lineWidth = d.design.blatt.effectStrength;
+        ctx.lineWidth = glassWidth;
 
         ctx.beginPath();
-        ctx.moveTo(hx, hy);
-        ctx.lineTo(ex, ey);
+        ctx.moveTo(hx + px * inset, hy + py * inset);
+        ctx.lineTo(ex + px * inset, ey + py * inset);
         ctx.stroke();
 
     } else {
 
         // --------------------------------------------------------
-        // GESCHLOSSENE TERRASSENTÜR
-        // Rahmenlinie
+        // GESCHLOSSENE TERRASSENTÜR – Rahmenlinie
         // --------------------------------------------------------
         ctx.strokeStyle = d.design.blatt.color;
         ctx.lineWidth = d.design.blatt.strokeWidth;
@@ -4425,19 +4427,23 @@ case "terrassentuer": {
         ctx.stroke();
 
         // --------------------------------------------------------
-        // Glasfüllung
+        // ⭐ Glasfüllung (schmaler + leicht nach innen versetzt)
         // --------------------------------------------------------
+        const inset = d.design.blatt.strokeWidth * 0.3;
+        const glassWidth = Math.max(1, d.design.blatt.strokeWidth * 0.5);
+
         ctx.strokeStyle = d.design.blatt.effectColor;
-        ctx.lineWidth = d.design.blatt.effectStrength;
+        ctx.lineWidth = glassWidth;
 
         ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
+        ctx.moveTo(x1 + px * inset, y1 + py * inset);
+        ctx.lineTo(x2 + px * inset, y2 + py * inset);
         ctx.stroke();
     }
 
     return;
 }
+
 
 
         // ------------------------------------------------------------
