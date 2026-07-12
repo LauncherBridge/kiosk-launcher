@@ -1616,6 +1616,7 @@ updateEditorTitle();
                 d.isOpen = !d.isOpen;
                 this.render();
                 this.saveRoom(activeRoomId);   // ⭐ Autosave
+                updateEditorTitle(); 
             }, false);
 
             // Scharnier neu setzen
@@ -1664,6 +1665,7 @@ updateEditorTitle();
                     d.isOpen = !d.isOpen;
                     this.render();
                     this.saveRoom(activeRoomId);   // ⭐ Autosave
+                    updateEditorTitle(); 
                 }, false);
             }
 
