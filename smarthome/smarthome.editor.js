@@ -3357,19 +3357,92 @@ render() {
     }
 
     // ⭐ Wandlängen IM WELT-KONTEXT zeichnen
-    // aber Schriftgröße kompensieren
     this.drawWallLengths();
 
     ctx.restore();
 
     // ------------------------------------------------------------
-    // 2) Hover-Kreuz (Screen-Space)
+    // 2) Orbit um ausgewählte Objekte (Screen-Space)
+    // ------------------------------------------------------------
+
+    if (window.hit) {
+
+        const obj = (() => {
+            switch (window.hit.type) {
+                case "door": return this.doors[window.hit.index];
+                case "window": return this.windows[window.hit.index];
+                case "smart": return this.smartContainers?.[window.hit.index];
+                case "device": return this.devices?.[window.hit.index];
+                case "furniture": return this.furniture?.[window.hit.index];
+                case "garden": return this.garden?.[window.hit.index];
+                default: return null;
+            }
+        })();
+
+        if (obj) this.drawSelectionOrbit(ctx, obj);
+    }
+
+    if (window.placeMode) {
+
+        const obj = (() => {
+            switch (window.placeMode) {
+                case "door": return this.doors[this.doors.length - 1];
+                case "window": return this.windows[this.windows.length - 1];
+                case "smart": return this.smartContainers?.[this.smartContainers.length - 1];
+                case "device": return this.devices?.[this.devices.length - 1];
+                case "furniture": return this.furniture?.[this.furniture.length - 1];
+                case "garden": return this.garden?.[this.garden.length - 1];
+                default: return null;
+            }
+        })();
+
+        if (obj) this.drawSelectionOrbit(ctx, obj);
+    }
+
+    // ------------------------------------------------------------
+    // 3) Hover-Kreuz (Screen-Space)
     // ------------------------------------------------------------
     this.drawHoverCross();
-}
+},
 
-,
+drawSelectionOrbit(ctx, obj) {
+    if (!obj) return;
 
+    const time = performance.now() / 1000;
+
+    const cx = obj.x;
+    const cy = obj.y;
+
+    const radius = (obj.width || 60) * 0.8;
+
+    // Orbit-Kreis
+    ctx.strokeStyle = "#66aaff";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Satelliten
+    const sat1Angle = time * 1.2;   // schneller
+    const sat2Angle = -time * 0.7;  // langsamer, gegenläufig
+
+    const sat1x = cx + Math.cos(sat1Angle) * radius;
+    const sat1y = cy + Math.sin(sat1Angle) * radius;
+
+    const sat2x = cx + Math.cos(sat2Angle) * radius;
+    const sat2y = cy + Math.sin(sat2Angle) * radius;
+
+    ctx.fillStyle = "#66aaff";
+    ctx.beginPath();
+    ctx.arc(sat1x, sat1y, 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(sat2x, sat2y, 3, 0, Math.PI * 2);
+    ctx.fill();
+},
+
+    
     checkCollision(a, b) {
         return !(
             a.x + a.w < b.x ||
