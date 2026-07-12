@@ -842,134 +842,138 @@ _drawMainView() {
 
     const activeGroup = this.activeGroup ? this.activeGroup.roomIds : null;
 
-    this.rooms.forEach(room => {
+this.rooms.forEach(room => {
 
-        // 🛡️ Raum-Objekt prüfen
-        if (!room || !room.polygon) return;
+    // 🛡️ Raum-Objekt prüfen
+    if (!room || !Array.isArray(room.polygon)) return;
 
-        const type = SmartHomeData.roomTypes[room.type];
-        const fillColor = type?.color || "#444";
+    // 🛡️ Raumtyp sicher lesen
+    const type = SmartHomeData.roomTypes?.[room.type] || null;
+    const fillColor = type?.color || "#444";
 
-        const isInGroup = activeGroup && activeGroup.includes(room.id);
+    const isInGroup = activeGroup && activeGroup.includes(room.id);
 
-        // 🛡️ Polygon muss mindestens 1 Punkt haben
-        if (room.polygon.length >= 1) {
+    // 🛡️ Polygon muss mindestens 1 Punkt haben
+    if (room.polygon.length >= 1) {
 
-            const p0 = room.polygon[0];
-            if (!p0) return;
+        const p0 = room.polygon[0];
+        if (!p0) return;
 
-            ctx.beginPath();
-            ctx.moveTo(p0.x, p0.y);
+        ctx.beginPath();
+        ctx.moveTo(p0.x, p0.y);
 
-            for (let i = 1; i < room.polygon.length; i++) {
-                const p = room.polygon[i];
-                if (!p) continue;
-                ctx.lineTo(p.x, p.y);
-            }
-
-            ctx.closePath();
-
-            if (this.activeRoom === room.id) {
-                ctx.fillStyle = `rgba(255, 184, 108, ${0.3 + this.highlightAlpha * 0.4})`;
-            } else {
-                ctx.fillStyle = fillColor;
-            }
-
-            ctx.fill();
-
-            if (isInGroup) {
-                ctx.save();
-                ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
-                ctx.fill();
-                ctx.restore();
-
-                ctx.save();
-                ctx.lineWidth = 3;
-                ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
-                ctx.stroke();
-                ctx.restore();
-            }
-
-            // 🛡️ Raumname sicher zeichnen
-            ctx.fillStyle = "var(--sh-text)";
-            ctx.font = "20px sans-serif";
-            ctx.textBaseline = "top";
-            ctx.fillText(room.name, p0.x + 12, p0.y + 12);
+        for (let i = 1; i < room.polygon.length; i++) {
+            const p = room.polygon[i];
+            if (!p) continue;
+            ctx.lineTo(p.x, p.y);
         }
 
-        // 🛡️ Icon sicher zeichnen (egal wie viele Punkte)
-        if (type?.icon && room.polygon.length >= 1) {
-            ctx.fillStyle = "var(--sh-text)";
-            ctx.font = "28px MaterialIcons";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
+        ctx.closePath();
 
-            let cx = 0, cy = 0, count = 0;
-
-            room.polygon.forEach(p => {
-                if (!p) return;
-                cx += p.x;
-                cy += p.y;
-                count++;
-            });
-
-            if (count > 0) {
-                cx /= count;
-                cy /= count;
-                ctx.fillText(type.icon, cx, cy);
-            }
+        // 🛡️ Raumfarbe sicher setzen
+        if (this.activeRoom === room.id) {
+            ctx.fillStyle = `rgba(255, 184, 108, ${0.3 + this.highlightAlpha * 0.4})`;
+        } else {
+            ctx.fillStyle = fillColor;
         }
 
-        // 🛡️ Container sicher rendern
-        SmartHomeData.containers.forEach(container => {
-            if (container.room !== room.id) return;
-            if (!container.position) return;
+        ctx.fill();
 
-            const ctype = SmartHomeData.deviceTypes[container.type];
-            const icon = ctype?.icon || "device_unknown";
-            const color = ctype?.color || "#FFFFFF";
-
-            const dx = container.position.x;
-            const dy = container.position.y;
-
-            if (dx == null || dy == null) return;
-
-            ctx.fillStyle = color;
-            ctx.font = "26px MaterialIcons";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText(icon, dx, dy);
-
-            ctx.fillStyle = "#FFFFFF";
-            ctx.beginPath();
-            ctx.arc(dx, dy + 18, 3, 0, Math.PI * 2);
+        // 🛡️ Gruppierung sicher rendern
+        if (isInGroup) {
+            ctx.save();
+            ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
             ctx.fill();
-        });
-    });
-
-    // 🛡️ Türen sicher rendern
-    const mergedDoors = SmartHomeData.getMergedDoorsForFloor(this.activeFloor);
-    if (mergedDoors && mergedDoors.length) {
-        mergedDoors.forEach(d => {
-            if (!d || !d.posA || !d.posB || !d.mergedPos) return;
-
-            const { posA, posB, mergedPos } = d;
-            const dx = posB.x - posA.x;
-            const dy = posB.y - posA.y;
-            const angle = Math.atan2(dy, dx);
+            ctx.restore();
 
             ctx.save();
-            ctx.translate(mergedPos.x, mergedPos.y);
-            ctx.rotate(angle);
-
-            ctx.fillStyle = "#FFD28A";
-            ctx.fillRect(-10, -3, 20, 6);
-
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
+            ctx.stroke();
             ctx.restore();
-        });
+        }
+
+        // 🛡️ Raumname sicher zeichnen
+        ctx.fillStyle = "var(--sh-text)";
+        ctx.font = "20px sans-serif";
+        ctx.textBaseline = "top";
+        ctx.fillText(room.name || "Unbenannt", p0.x + 12, p0.y + 12);
     }
 
-    ctx.restore();
+    // 🛡️ Icon sicher zeichnen (egal wie viele Punkte)
+    if (type?.icon && room.polygon.length >= 1) {
+        ctx.fillStyle = "var(--sh-text)";
+        ctx.font = "28px MaterialIcons";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        let cx = 0, cy = 0, count = 0;
+
+        room.polygon.forEach(p => {
+            if (!p) return;
+            cx += p.x;
+            cy += p.y;
+            count++;
+        });
+
+        if (count > 0) {
+            cx /= count;
+            cy /= count;
+            ctx.fillText(type.icon, cx, cy);
+        }
+    }
+
+    // 🛡️ Container sicher rendern
+    (SmartHomeData.containers || []).forEach(container => {
+        if (!container || container.room !== room.id) return;
+        if (!container.position) return;
+
+        const ctype = SmartHomeData.deviceTypes?.[container.type] || null;
+        const icon = ctype?.icon || "device_unknown";
+        const color = ctype?.color || "#FFFFFF";
+
+        const dx = container.position.x;
+        const dy = container.position.y;
+
+        if (dx == null || dy == null) return;
+
+        ctx.fillStyle = color;
+        ctx.font = "26px MaterialIcons";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(icon, dx, dy);
+
+        ctx.fillStyle = "#FFFFFF";
+        ctx.beginPath();
+        ctx.arc(dx, dy + 18, 3, 0, Math.PI * 2);
+        ctx.fill();
+    });
+});
+
+// 🛡️ Türen sicher rendern
+const mergedDoors = SmartHomeData.getMergedDoorsForFloor?.(this.activeFloor) || [];
+if (mergedDoors.length) {
+    mergedDoors.forEach(d => {
+        if (!d || !d.posA || !d.posB || !d.mergedPos) return;
+
+        const { posA, posB, mergedPos } = d;
+        const dx = posB.x - posA.x;
+        const dy = posB.y - posA.y;
+        const angle = Math.atan2(dy, dx);
+
+        ctx.save();
+        ctx.translate(mergedPos.x, mergedPos.y);
+        ctx.rotate(angle);
+
+        ctx.fillStyle = "#FFD28A";
+        ctx.fillRect(-10, -3, 20, 6);
+
+        ctx.restore();
+    });
+}
+
+ctx.restore();
+
 },
 
     // ---------------------------------------------------------
