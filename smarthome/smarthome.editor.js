@@ -6335,37 +6335,30 @@ if (object) {
     if (window.hit) {
         const h = window.hit;
 
+        const roomData = project.rooms[activeRoomId];
+
         let sub = null;
 
-        // Türen
         if (h.type === "door") {
-            const d = this.doors[h.index];
+            const d = roomData.doors[h.index];
             sub = d?.type || "door";
         }
 
-        // Fenster
         if (h.type === "window") {
-            const w = this.windows[h.index];
+            const w = roomData.windows[h.index];
             sub = w?.type || "window";
         }
 
-        // Wand
         if (h.type === "wall") {
             sub = h.data?.type || "wand";
         }
 
-        // Punkt
         if (h.type === "point") {
             sub = "punkt";
         }
 
-        // Fallback
         const displayName = sub || h.type;
-
-        // ID aus index erzeugen
         const id = h.index !== undefined ? `#${h.index}` : "";
-
-        // Icon anhand der SubCategory oder Kategorie
         const icon = iconMap[displayName] || iconMap.default;
 
         object.textContent = `${icon} ${displayName} ${id}`;
@@ -6373,7 +6366,6 @@ if (object) {
         object.textContent = "";
     }
 }
-
 
 
 }
