@@ -3328,8 +3328,40 @@ render() {
     this.drawWindows();
     this.drawDoors();
 
+    // Winkelanzeige beim Drag (Welt-Kontext)
+    if (this.isDragging && this.selectedPoint) {
+        const idx = this.points.indexOf(this.selectedPoint);
+        const affected = new Set([idx]);
+
+        if (this.isClosed) {
+            affected.add((idx - 1 + this.points.length) % this.points.length);
+            affected.add((idx + 1) % this.points.length);
+        } else {
+            if (idx > 0) affected.add(idx - 1);
+            if (idx < this.points.length - 1) affected.add(idx + 1);
+        }
+
+        for (const i of affected) {
+            const prev = this.isClosed
+                ? this.points[(i - 1 + this.points.length) % this.points.length]
+                : this.points[i - 1];
+
+            const next = this.isClosed
+                ? this.points[(i + 1) % this.points.length]
+                : this.points[i + 1];
+
+            if (prev && next) {
+                this.drawAngleAtPoint(this.points[i], prev, next);
+            }
+        }
+    }
+
+    this.drawWallLengths();
+
+    ctx.restore(); // ⭐ Welt fertig gezeichnet
+
     // ------------------------------------------------------------
-    // 2) MODAL-FOCUS (Objekt bleibt sichtbar, Rest wird dunkel)
+    // 2) MODAL-FOCUS (über dem Canvas, nicht über der Welt)
     // ------------------------------------------------------------
     const isPanning = this.isPanning || this.isPanCandidate;
 
@@ -3363,45 +3395,10 @@ render() {
     }
 
     // ------------------------------------------------------------
-    // 3) Winkelanzeige beim Drag (Welt-Kontext)
-    // ------------------------------------------------------------
-    if (this.isDragging && this.selectedPoint) {
-        const idx = this.points.indexOf(this.selectedPoint);
-        const affected = new Set([idx]);
-
-        if (this.isClosed) {
-            affected.add((idx - 1 + this.points.length) % this.points.length);
-            affected.add((idx + 1) % this.points.length);
-        } else {
-            if (idx > 0) affected.add(idx - 1);
-            if (idx < this.points.length - 1) affected.add(idx + 1);
-        }
-
-        for (const i of affected) {
-            const prev = this.isClosed
-                ? this.points[(i - 1 + this.points.length) % this.points.length]
-                : this.points[i - 1];
-
-            const next = this.isClosed
-                ? this.points[(i + 1) % this.points.length]
-                : this.points[i + 1];
-
-            if (prev && next) {
-                this.drawAngleAtPoint(this.points[i], prev, next);
-            }
-        }
-    }
-
-    this.drawWallLengths();
-
-    ctx.restore();
-
-    // ------------------------------------------------------------
-    // 4) Hover-Kreuz (Screen-Space)
+    // 3) Hover-Kreuz (Screen-Space)
     // ------------------------------------------------------------
     this.drawHoverCross();
 },
-
 
 drawModalFocus(ctx, obj) {
     if (!obj) return;
@@ -3417,12 +3414,12 @@ drawModalFocus(ctx, obj) {
     const boxW = w + padding * 2;
     const boxH = h + padding * 2;
 
-    // 1) Abdunkeln + Blur über die gesamte Welt
+    // 1) Abdunkeln + Blur über den gesamten Canvas
     ctx.save();
     ctx.filter = "blur(4px)";
     ctx.globalAlpha = 0.45;
     ctx.fillStyle = "black";
-    ctx.fillRect(-99999, -99999, 999999, 999999);
+    ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     ctx.restore();
 
     // 2) Loch ausschneiden (Cutout)
