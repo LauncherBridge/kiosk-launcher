@@ -2169,6 +2169,16 @@ getSidebarItem(tool, subtype = null) {
 
     // Türen
     if (tool === "door") {
+
+    // Titelzeile sofort aktualisieren
+    window.hit = {
+        type: "door",
+        index: null,
+        state: "placingDoor",
+        sub: subtype || "default"
+    };
+    updateEditorTitle();
+        
         return {
             category: "door",
             index: null, // Hauptkategorie
@@ -6374,6 +6384,26 @@ function updateEditorTitle() {
         return;
     }
 
+    // Neue Tür platzieren (Sidebar-Auswahl)
+    if (h.state === "placingDoor") {
+        const iconMap = {
+            zimmertuer: "🚪",
+            haustuer: "🚪",
+            terrassentuer: "🚪",
+            falttuer: "🚪",
+            schiebetuer: "🚪",
+            garagentor: "🚪",
+            gartentor: "🚪",
+            default: "🚪"
+        };
+
+        const subtype = h.sub || "default";
+        const icon = iconMap[subtype] || iconMap.default;
+
+        object.textContent = `${icon} Neue ${subtype} an Wand platzieren`;
+        return;
+    }
+
     // Zweistufige Tür-Platzierung
     if (h.state === "placingHinge") {
         object.textContent = "🚪 Neue Türe hinzugefügt – bitte Scharnier definieren";
@@ -6386,14 +6416,13 @@ function updateEditorTitle() {
     if (h.type === "door") {
         const d = roomData.doors[h.index];
         sub = d?.type || "door";
-    
+
         // Zustand ergänzen
         if (d) {
             const stateIcon = d.isOpen ? "🔓" : "🔒";
             sub = `${sub} ${stateIcon}`;
         }
     }
-
 
     if (h.type === "window") {
         const w = roomData.windows[h.index];
@@ -6410,6 +6439,9 @@ function updateEditorTitle() {
         return;
     }
 
+    // Für Icon nur den Basis-Typ ohne Zustand verwenden
+    const baseSub = sub.split(" ")[0];
+
     const iconMap = {
         zimmertuer: "🚪",
         haustuer: "🚪",
@@ -6420,8 +6452,8 @@ function updateEditorTitle() {
         default: "❖"
     };
 
-    const icon = iconMap[sub] || iconMap.default;
-    const id = h.index !== undefined ? `#${h.index}` : "";
+    const icon = iconMap[baseSub] || iconMap.default;
+    const id = h.index !== undefined && h.index !== null ? `#${h.index}` : "";
 
     object.textContent = `${icon} ${sub} ${id}`;
 }
