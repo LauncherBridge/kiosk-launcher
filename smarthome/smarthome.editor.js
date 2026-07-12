@@ -3328,8 +3328,8 @@ render() {
     this.drawWindows();
     this.drawDoors();
 
-    // ⭐ Pan-Schutz: Box bleibt sichtbar, Klick wird nicht konsumiert
-    const isPanning = this.isPanning || window.isPanning || this.panActive;
+    // ⭐ Pan-Schutz: Box bleibt sichtbar, Klicks werden ignoriert
+    const isPanning = this.isPanning || this.isPanCandidate;
 
     // ⭐ Statische Auswahl-Box IM WELT-KONTEXT
     if (!isPanning && window.hit) {
@@ -3403,6 +3403,7 @@ render() {
 },
 
 
+
 drawSelectionBoxRounded(ctx, obj) {
     if (!obj) return;
 
@@ -3451,6 +3452,7 @@ drawSelectionBoxRounded(ctx, obj) {
     ctx.quadraticCurveTo(x, y, x + r, y);
     ctx.stroke();
 },
+
 
 
     
