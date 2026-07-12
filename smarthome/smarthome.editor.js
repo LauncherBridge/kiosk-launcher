@@ -6384,7 +6384,14 @@ function updateEditorTitle() {
     if (h.type === "door") {
         const d = roomData.doors[h.index];
         sub = d?.type || "door";
+    
+        // Zustand ergänzen
+        if (d) {
+            const stateIcon = d.isOpen ? "🔓" : "🔒";
+            sub = `${sub} ${stateIcon}`;
+        }
     }
+
 
     if (h.type === "window") {
         const w = roomData.windows[h.index];
