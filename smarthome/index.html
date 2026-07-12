@@ -178,13 +178,17 @@
 
             <!-- TAB 3 -->
             <div class="sidebar-panel" data-panel="tab3" style="display:none;">
-                <div class="settings-item">Raster anzeigen</div>
-                <div class="settings-item">Snap aktivieren</div>
-                <div class="settings-item">Maßeinheit: Meter</div>
+            
+                <div class="category" data-cat="json">
+                    <div class="category-header">📁 Projekt‑JSON</div>
+                    <div class="category-content">
+                        <div class="item" onclick="RoomDesigner.exportProjectJSON()">JSON exportieren</div>
+                        <div class="item danger" onclick="RoomDesigner.clearProjectJSON()">JSON löschen</div>
+                    </div>
+                </div>
+            
             </div>
 
-        </div>
-    </div>
 
 </div>
 
