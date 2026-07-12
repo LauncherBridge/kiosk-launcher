@@ -6147,6 +6147,35 @@ applyDesignChange(obj, comp, key, value) {
 // ------------------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------------
 
+RoomDesigner.exportProjectJSON = function() {
+    const all = {};
+
+    for (const key of Object.keys(localStorage)) {
+        all[key] = localStorage.getItem(key);
+    }
+
+    const blob = new Blob([JSON.stringify(all, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "smarthome_project_export.json";
+    a.click();
+
+    URL.revokeObjectURL(url);
+
+    alert("JSON wurde exportiert.");
+};
+
+
+RoomDesigner.clearProjectJSON = function() {
+    if (!confirm("Wirklich ALLE SmartHome‑Daten löschen?")) return;
+
+    localStorage.clear();
+
+    alert("JSON wurde gelöscht. Seite wird neu geladen.");
+    location.reload();
+};
 
 
 
