@@ -6335,27 +6335,42 @@ if (object) {
     if (window.hit) {
         const h = window.hit;
 
-        // Kategorie (door, window, wall, point)
-        const category = h.type || "Objekt";
+        let sub = null;
 
-        // SubCategory (zimmertuer, terrassentuer, …)
-        let sub = "";
-        if (window.designerSelection && window.designerSelection.subCategory) {
-            sub = window.designerSelection.subCategory;
+        // Türen
+        if (h.type === "door") {
+            const d = this.doors[h.index];
+            sub = d?.type || "door";
         }
 
-        // ID
+        // Fenster
+        if (h.type === "window") {
+            const w = this.windows[h.index];
+            sub = w?.type || "window";
+        }
+
+        // Wand
+        if (h.type === "wall") {
+            sub = h.data?.type || "wand";
+        }
+
+        // Punkt
+        if (h.type === "point") {
+            sub = "punkt";
+        }
+
+        // Fallback
+        const displayName = sub || h.type;
+
         const id = h.id ? `#${h.id}` : "";
+        const icon = iconMap[displayName] || iconMap.default;
 
-        // Icon anhand der SubCategory
-        const icon = iconMap[sub] || iconMap[category] || iconMap.default;
-
-        // Ausgabe
-        object.textContent = `${icon} ${sub || category} ${id}`;
+        object.textContent = `${icon} ${displayName} ${id}`;
     } else {
         object.textContent = "";
     }
 }
+
 
 }
 
