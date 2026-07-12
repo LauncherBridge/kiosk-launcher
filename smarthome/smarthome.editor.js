@@ -2200,119 +2200,103 @@ onDown(e) {
     const mouseY = e.clientY - rect.top;
 
     // ⭐ Designer-Modus: Pan ODER Auswahl
-if (this.isDesignerMode) {
+    if (this.isDesignerMode) {
 
-    const hit = this.hitTest(mouseX, mouseY);
+        const hit = this.hitTest(mouseX, mouseY);
 
-    // 👉 PAN bei empty
-    if (!hit || hit.type === "empty") {
+        // ⭐ Crumb sofort aktualisieren
+        window.hit = hit;
+        updateEditorTitle();
 
-        // ⭐ Kontextmenü schließen, wenn man ins Leere klickt
+        // 👉 PAN bei empty
+        if (!hit || hit.type === "empty") {
+
+            this.hideContextMenu();
+            this._pendingContext = null;
+
+            console.log("Designer-PAN gestartet, hit.type =", hit?.type);
+
+            this.isPanning = true;
+            this.lastPanX = mouseX;
+            this.lastPanY = mouseY;
+
+            return;
+        }
+
+        // 👉 Prüfen: Ist dieses Objekt bereits ausgewählt?
+        const alreadySelected =
+            this.designerSelection &&
+            this.designerSelection.category === hit.type &&
+            this.designerSelection.index === hit.index;
+
+        if (alreadySelected) {
+
+            const worldX = (mouseX / this.zoom) - this.offsetX;
+            const worldY = (mouseY / this.zoom) - this.offsetY;
+
+            this._pendingContext = {
+                x: worldX,
+                y: worldY,
+                type: hit.type,
+                index: hit.index
+            };
+
+            return;
+        }
+
+        // 👉 Objekt getroffen → Designer-Auswahl
+        console.log("Designer-Auswahl (Canvas):", hit);
+
+        let fullObject = null;
+
+        if (hit.type === "door") fullObject = this.doors[hit.index];
+        if (hit.type === "window") fullObject = this.windows[hit.index];
+        if (hit.type === "point") fullObject = this.points[hit.index];
+        if (hit.type === "wall") fullObject = hit.data;
+
+        if (hit.type === "furniture") fullObject = this.furniture?.[hit.index];
+        if (hit.type === "device") fullObject = this.devices?.[hit.index];
+        if (hit.type === "smart") fullObject = this.smartContainers?.[hit.index];
+        if (hit.type === "garden") fullObject = this.garden?.[hit.index];
+
+        let subType = "keine Unterkategorie";
+        if (fullObject && typeof fullObject.type === "string") {
+            subType = fullObject.type;
+        }
+
         this.hideContextMenu();
         this._pendingContext = null;
-        
-        console.log("Designer-PAN gestartet, hit.type =", hit?.type);
 
-        this.isPanning = true;
-        this.lastPanX = mouseX;
-        this.lastPanY = mouseY;
+        console.log("Designer-Auswahl → Kategorie:", hit.type);
+        console.log("Designer-Auswahl → Index:", hit.index);
+        console.log("Designer-Auswahl → SubType:", subType);
+        console.log("Designer-Auswahl → Daten:", fullObject);
 
-        return;
-    }
-
-    // 👉 Prüfen: Ist dieses Objekt bereits ausgewählt?
-    const alreadySelected =
-        this.designerSelection &&
-        this.designerSelection.category === hit.type &&
-        this.designerSelection.index === hit.index;
-
-    if (alreadySelected) {
-
-        // 👉 Kontextmenü öffnen statt Designer-Panel
-        const worldX = (mouseX / this.zoom) - this.offsetX;
-        const worldY = (mouseY / this.zoom) - this.offsetY;
-
-        this._pendingContext = {
-            x: worldX,
-            y: worldY,
-            type: hit.type,
-            index: hit.index
+        this.designerSelection = {
+            source: "canvas",
+            category: hit.type,
+            subCategory: subType,
+            index: hit.index ?? null,
+            data: fullObject
         };
 
-        return; // NICHT Designer-Panel öffnen
+        RoomDesigner.openDesignerPanel(this.designerSelection);
+        return;
     }
-
-    // 👉 Objekt getroffen → Designer-Auswahl
-    console.log("Designer-Auswahl (Canvas):", hit);
-
-    let fullObject = null;
-
-    // Hauptobjekt holen
-    if (hit.type === "door") fullObject = this.doors[hit.index];
-    if (hit.type === "window") fullObject = this.windows[hit.index];
-    if (hit.type === "point") fullObject = this.points[hit.index];
-    if (hit.type === "wall") fullObject = hit.data;
-
-    // Falls du später Möbel hast:
-    if (hit.type === "furniture") fullObject = this.furniture?.[hit.index];
-
-    // Falls du später Elektrogeräte hast:
-    if (hit.type === "device") fullObject = this.devices?.[hit.index];
-
-    // Falls du später Smart-Device-Container hast:
-    if (hit.type === "smart") fullObject = this.smartContainers?.[hit.index];
-
-    // Falls du später Gartenelemente hast:
-    if (hit.type === "garden") fullObject = this.garden?.[hit.index];
-
-    // Unterkategorie sicher auslesen
-    let subType = "keine Unterkategorie";
-
-    if (fullObject && typeof fullObject.type === "string") {
-        subType = fullObject.type;
-    }
-
-    // ⭐ WICHTIG: Beim Objektwechsel → Kontextmenü schließen + pendingContext löschen
-    this.hideContextMenu();
-    this._pendingContext = null;
-
-    // Vollständige Ausgabe
-    console.log("Designer-Auswahl → Kategorie:", hit.type);
-    console.log("Designer-Auswahl → Index:", hit.index);
-    console.log("Designer-Auswahl → SubType:", subType);
-    console.log("Designer-Auswahl → Daten:", fullObject);
-
-    this.designerSelection = {
-        source: "canvas",
-        category: hit.type,
-        subCategory: subType,
-        index: hit.index ?? null,
-        data: fullObject
-    };
-
-    RoomDesigner.openDesignerPanel(this.designerSelection);
-    return;
-}
-
-
-
-
 
     const worldX = (mouseX / this.zoom) - this.offsetX;
     const worldY = (mouseY / this.zoom) - this.offsetY;
 
-    // ⭐ WICHTIGER FIX: Pan-Zustände immer zu Beginn zurücksetzen
     this.isPanCandidate = false;
     this.isPanning = false;
 
-    // Rechtsklick → Menü schließen
     if (e.button === 2) {
         this.hideContextMenu();
         return;
     }
 
     // ------------------------------------------------------------
-    // ⭐ SCHARNIER NEU SETZEN (für normale Türen, NICHT Dachluke)
+    // ⭐ SCHARNIER NEU SETZEN
     // ------------------------------------------------------------
     if (this.mode === "setHinge") {
 
@@ -2324,7 +2308,6 @@ if (this.isDesignerMode) {
             return;
         }
 
-        // ⭐ Dachluke → hingeAngle setzen
         if (d.type === "dachluke") {
 
             const dx = worldX - d.x;
@@ -2334,14 +2317,11 @@ if (this.isDesignerMode) {
             this.mode = "points";
             this._hingeDoorIndex = null;
             this.render();
-
-            // ⭐ Autosave
             this.saveRoom(activeRoomId);
 
             return;
         }
 
-        // ⭐ Normale Türen → setDoorHingeFromTap
         const w = this.walls[d.wallIndex];
         if (w) {
             this.setDoorHingeFromTap(d, worldX, worldY, w);
@@ -2350,19 +2330,16 @@ if (this.isDesignerMode) {
         this.mode = "points";
         this._hingeDoorIndex = null;
         this.render();
-
-        // ⭐ Autosave
         this.saveRoom(activeRoomId);
 
         return;
     }
 
     // ------------------------------------------------------------
-    // ⭐ DACHLUKE: 1. Klick = Luke setzen, 2. Klick = Scharnier setzen
+    // ⭐ DACHLUKE
     // ------------------------------------------------------------
     if (this.mode === "dachluke") {
 
-        // 1. Klick → Luke setzen
         if (!this._placingDachluke) {
 
             if (!this.isClosed) {
@@ -2386,14 +2363,11 @@ if (this.isDesignerMode) {
 
             this._placingDachluke = true;
             this.render();
-
-            // ⭐ Autosave
             this.saveRoom(activeRoomId);
 
             return;
         }
 
-        // 2. Klick → hingeAngle setzen
         const d = this.doors[this.doors.length - 1];
 
         const dx = worldX - d.x;
@@ -2403,17 +2377,20 @@ if (this.isDesignerMode) {
         this._placingDachluke = false;
         this.mode = "points";
         this.render();
-
-        // ⭐ Autosave
         this.saveRoom(activeRoomId);
 
         return;
     }
 
     // ------------------------------------------------------------
-    // ⭐ HIT-TEST
+    // ⭐ HIT-TEST (normaler Modus)
     // ------------------------------------------------------------
     const hit = this.hitTest(mouseX, mouseY);
+
+    // ⭐ Crumb sofort aktualisieren
+    window.hit = hit;
+    updateEditorTitle();
+
     const clickingObject =
         hit.type === "point" ||
         hit.type === "door" ||
@@ -2435,7 +2412,7 @@ if (this.isDesignerMode) {
     }
 
     // ------------------------------------------------------------
-    // ⭐ Raum schließen durch Klick auf ersten Punkt
+    // ⭐ Raum schließen
     // ------------------------------------------------------------
     if (!this.isClosed && this.points.length >= 2) {
         const first = this.points[0];
@@ -2452,7 +2429,6 @@ if (this.isDesignerMode) {
             this.isDragging = false;
             this.selectedPoint = null;
 
-            // ⭐ Autosave
             this.saveRoom(activeRoomId);
 
             return;
@@ -2480,8 +2456,6 @@ if (this.isDesignerMode) {
             });
             this.updateWalls();
             this.render();
-
-            // ⭐ Autosave
             this.saveRoom(activeRoomId);
         }
 
@@ -2490,13 +2464,12 @@ if (this.isDesignerMode) {
     }
 
     // ------------------------------------------------------------
-    // ⭐ TÜR-MODUS (ALLE Türtypen)
+    // ⭐ TÜR-MODUS
     // ------------------------------------------------------------
     if (this.mode === "doors") {
 
         const type = this.currentDoorType || "default";
 
-        // ⭐ Durchgang → 1 Klick
         if (type === "durchgang") {
 
             if (hit.type !== "wall") return;
@@ -2527,14 +2500,11 @@ if (this.isDesignerMode) {
 
             this.render();
             this.mode = "points";
-
-            // ⭐ Autosave
             this.saveRoom(activeRoomId);
 
             return;
         }
 
-        // ⭐ Normale Türen → Wandgebunden
         if (!this._placingDoor) {
             if (hit.type === "wall") {
                 const w = hit.data;
@@ -2550,15 +2520,12 @@ if (this.isDesignerMode) {
                 });
                 this._placingDoor = true;
                 this.render();
-
-                // ⭐ Autosave
                 this.saveRoom(activeRoomId);
 
                 return;
             }
         }
 
-        // ⭐ Hinge setzen (normale Türen)
         if (this._placingDoor) {
             const lastDoor = this.doors[this.doors.length - 1];
             const w = this.walls[lastDoor.wallIndex];
@@ -2567,8 +2534,6 @@ if (this.isDesignerMode) {
             this._placingDoor = false;
             this.mode = "points";
             this.render();
-
-            // ⭐ Autosave
             this.saveRoom(activeRoomId);
 
             return;
@@ -2595,10 +2560,9 @@ if (this.isDesignerMode) {
     // ⭐ Kontextmenü für Punkte
     // ------------------------------------------------------------
     if (hit.type === "point") {
-        // ⭐ Objekt getroffen → Pan abbrechen
         this.isPanCandidate = false;
         this.isPanning = false;
-        
+
         this._pendingContext = { x: worldX, y: worldY, type: "point", index: hit.index };
         return;
     }
@@ -2614,8 +2578,6 @@ if (this.isDesignerMode) {
 
         this.updateWalls();
         this.render();
-
-        // ⭐ Autosave
         this.saveRoom(activeRoomId);
 
         return;
@@ -2640,12 +2602,13 @@ if (this.isDesignerMode) {
     // ⭐ PAN-Kandidat
     // ------------------------------------------------------------
     if (hit.type === "empty" || hit.type === "wall") {
-            console.log("[onDown] PAN-Kandidat, hit.type =", hit.type);
+        console.log("[onDown] PAN-Kandidat, hit.type =", hit.type);
         this.isPanCandidate = true;
         this.panStartX = mouseX;
         this.panStartY = mouseY;
     }
-},
+}
+,
 
 
 onUp(e) {
@@ -6330,6 +6293,7 @@ function updateEditorTitle() {
     const proj = document.getElementById("editor-project-name");
     const floor = document.getElementById("editor-floor-name");
     const room = document.getElementById("editor-room-name");
+    const object = document.getElementById("editor-object-name");
 
     if (proj) proj.textContent = project.meta.name || "Projekt";
 
@@ -6350,8 +6314,37 @@ function updateEditorTitle() {
     if (room) {
         room.textContent = roomObj ? (roomObj.name || "Raum") : "";
     }
-}
 
+    // ------------------------------------------------------------
+    // Objekt (Hit) mit Icon
+    // ------------------------------------------------------------
+    if (object) {
+
+        const iconMap = {
+            zimmertuer: "🚪",
+            haustuer: "🚪",
+            terrassentuer: "🚪",
+            fenster: "🪟",
+            wand: "⬛",
+            punkt: "•",
+            raum: "📐",
+            default: "❖"
+        };
+
+        if (window.hit) {
+            const h = window.hit;
+
+            const type = h.type || "Objekt";
+            const id = h.id ? `#${h.id}` : "";
+
+            const icon = iconMap[type] || iconMap.default;
+
+            object.textContent = `${icon} ${type} ${id}`;
+        } else {
+            object.textContent = "";
+        }
+    }
+}
 
 
 
