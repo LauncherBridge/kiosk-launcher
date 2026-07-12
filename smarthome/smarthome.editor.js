@@ -6495,16 +6495,18 @@ if (h.type === "door") {
     const d = roomData.doors[h.index];
     let raw = d?.type || "door";
 
-    // ⭐ schönen Namen holen
+    // schönen Namen holen
     let nice = niceNames[raw] || raw;
 
-    if (d) {
+    // ⭐ Durchgang hat KEIN Schloss
+    if (raw !== "durchgang") {
         const stateIcon = d.isOpen ? "🔓" : "🔒";
         nice = `${nice} ${stateIcon}`;
     }
 
     sub = nice;
 }
+
 
 if (h.type === "window") {
     const w = roomData.windows[h.index];
