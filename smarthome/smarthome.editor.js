@@ -3328,7 +3328,7 @@ render() {
     this.drawWindows();
     this.drawDoors();
 
-    // ⭐ Orbit IM WELT-KONTEXT zeichnen (korrekte Position!)
+    // ⭐ Statische Auswahl-Box IM WELT-KONTEXT
     if (window.hit) {
         const obj = (() => {
             switch (window.hit.type) {
@@ -3342,7 +3342,7 @@ render() {
             }
         })();
 
-        if (obj) this.drawSelectionOrbit(ctx, obj);
+        if (obj) this.drawSelectionBox(ctx, obj);
     }
 
     if (window.placeMode) {
@@ -3358,7 +3358,7 @@ render() {
             }
         })();
 
-        if (obj) this.drawSelectionOrbit(ctx, obj);
+        if (obj) this.drawSelectionBox(ctx, obj);
     }
 
     // Winkelanzeige beim Drag (Welt-Kontext)
@@ -3397,15 +3397,11 @@ render() {
     // 2) Hover-Kreuz (Screen-Space)
     // ------------------------------------------------------------
     this.drawHoverCross();
-
-    // ⭐ Animationsloop aktiv halten
-    requestAnimationFrame(() => this.render());
 },
 
-drawSelectionOrbit(ctx, obj) {
-    if (!obj) return;
 
-    const time = performance.now() / 1000;
+drawSelectionBox(ctx, obj) {
+    if (!obj) return;
 
     const cx = obj.x;
     const cy = obj.y;
@@ -3415,28 +3411,12 @@ drawSelectionOrbit(ctx, obj) {
 
     ctx.strokeStyle = "#66aaff";
     ctx.lineWidth = 1.5;
+
     ctx.beginPath();
     ctx.arc(cx, cy, radius, 0, Math.PI * 2);
     ctx.stroke();
-
-    const sat1Angle = time * 1.2;
-    const sat2Angle = -time * 0.7;
-
-    const sat1x = cx + Math.cos(sat1Angle) * radius;
-    const sat1y = cy + Math.sin(sat1Angle) * radius;
-
-    const sat2x = cx + Math.cos(sat2Angle) * radius;
-    const sat2y = cy + Math.sin(sat2Angle) * radius;
-
-    ctx.fillStyle = "#66aaff";
-    ctx.beginPath();
-    ctx.arc(sat1x, sat1y, 3, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.arc(sat2x, sat2y, 3, 0, Math.PI * 2);
-    ctx.fill();
 },
+
 
     
     checkCollision(a, b) {
