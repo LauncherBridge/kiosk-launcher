@@ -6362,7 +6362,10 @@ if (object) {
         // Fallback
         const displayName = sub || h.type;
 
-        const id = h.id ? `#${h.id}` : "";
+        // ID aus index erzeugen
+        const id = h.index !== undefined ? `#${h.index}` : "";
+
+        // Icon anhand der SubCategory oder Kategorie
         const icon = iconMap[displayName] || iconMap.default;
 
         object.textContent = `${icon} ${displayName} ${id}`;
@@ -6370,6 +6373,7 @@ if (object) {
         object.textContent = "";
     }
 }
+
 
 
 }
