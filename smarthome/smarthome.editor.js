@@ -3328,7 +3328,43 @@ render() {
     this.drawWindows();
     this.drawDoors();
 
-    // Winkelanzeige beim Drag (Welt-Kontext)
+    // ------------------------------------------------------------
+    // 2) Unterstrich für aktives Objekt (Glow)
+    // ------------------------------------------------------------
+    const isPanning = this.isPanning || this.isPanCandidate;
+
+    if (!isPanning) {
+
+        let obj = null;
+
+        if (window.hit) {
+            switch (window.hit.type) {
+                case "door": obj = this.doors[window.hit.index]; break;
+                case "window": obj = this.windows[window.hit.index]; break;
+                case "smart": obj = this.smartContainers?.[window.hit.index]; break;
+                case "device": obj = this.devices?.[window.hit.index]; break;
+                case "furniture": obj = this.furniture?.[window.hit.index]; break;
+                case "garden": obj = this.garden?.[window.hit.index]; break;
+            }
+        }
+
+        if (!obj && window.placeMode) {
+            switch (window.placeMode) {
+                case "door": obj = this.doors.at(-1); break;
+                case "window": obj = this.windows.at(-1); break;
+                case "smart": obj = this.smartContainers?.at(-1); break;
+                case "device": obj = this.devices?.at(-1); break;
+                case "furniture": obj = this.furniture?.at(-1); break;
+                case "garden": obj = this.garden?.at(-1); break;
+            }
+        }
+
+        if (obj) this.drawSelectionUnderlineGlow(ctx, obj);
+    }
+
+    // ------------------------------------------------------------
+    // 3) Winkelanzeige beim Drag (Welt-Kontext)
+    // ------------------------------------------------------------
     if (this.isDragging && this.selectedPoint) {
         const idx = this.points.indexOf(this.selectedPoint);
         const affected = new Set([idx]);
@@ -3358,48 +3394,44 @@ render() {
 
     this.drawWallLengths();
 
-    ctx.restore(); // ⭐ Welt fertig gezeichnet
+    ctx.restore();
 
     // ------------------------------------------------------------
-    // 2) MODAL-FOCUS (über dem Canvas, nicht über der Welt)
-    // ------------------------------------------------------------
-    const isPanning = this.isPanning || this.isPanCandidate;
-
-    if (!isPanning) {
-
-        let obj = null;
-
-        if (window.hit) {
-            switch (window.hit.type) {
-                case "door": obj = this.doors[window.hit.index]; break;
-                case "window": obj = this.windows[window.hit.index]; break;
-                case "smart": obj = this.smartContainers?.[window.hit.index]; break;
-                case "device": obj = this.devices?.[window.hit.index]; break;
-                case "furniture": obj = this.furniture?.[window.hit.index]; break;
-                case "garden": obj = this.garden?.[window.hit.index]; break;
-            }
-        }
-
-        if (!obj && window.placeMode) {
-            switch (window.placeMode) {
-                case "door": obj = this.doors[this.doors.length - 1]; break;
-                case "window": obj = this.windows[this.windows.length - 1]; break;
-                case "smart": obj = this.smartContainers?.[this.smartContainers.length - 1]; break;
-                case "device": obj = this.devices?.[this.devices.length - 1]; break;
-                case "furniture": obj = this.furniture?.[this.furniture.length - 1]; break;
-                case "garden": obj = this.garden?.[this.garden.length - 1]; break;
-            }
-        }
-
-        if (obj) this.drawModalFocus(ctx, obj);
-    }
-
-    // ------------------------------------------------------------
-    // 3) Hover-Kreuz (Screen-Space)
+    // 4) Hover-Kreuz (Screen-Space)
     // ------------------------------------------------------------
     this.drawHoverCross();
-},
+}
+,
 
+drawSelectionUnderlineGlow(ctx, obj) {
+    if (!obj) return;
+
+    // Maße bestimmen
+    let w = obj.width || obj.w || obj.length || 80;
+    let h = obj.height || obj.h || (obj.thickness ? obj.thickness * 4 : 80);
+
+    const underlineY = obj.y + h / 2 + 12;   // leicht unter dem Objekt
+    const x1 = obj.x - w / 2;
+    const x2 = obj.x + w / 2;
+
+    ctx.save();
+
+    // Glow-Effekt
+    ctx.shadowColor = "rgba(102,170,255,0.9)";
+    ctx.shadowBlur = 18;
+
+    ctx.strokeStyle = "rgba(102,170,255,1)";
+    ctx.lineWidth = 3;
+
+    ctx.beginPath();
+    ctx.moveTo(x1, underlineY);
+    ctx.lineTo(x2, underlineY);
+    ctx.stroke();
+
+    ctx.restore();
+}
+,
+    
 drawModalFocus(ctx, obj) {
     if (!obj) return;
 
