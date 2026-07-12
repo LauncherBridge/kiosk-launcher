@@ -1616,7 +1616,6 @@ updateEditorTitle();
                 d.isOpen = !d.isOpen;
                 this.render();
                 this.saveRoom(activeRoomId);   // ⭐ Autosave
-                updateEditorTitle(); 
             }, false);
 
             // Scharnier neu setzen
@@ -1665,7 +1664,6 @@ updateEditorTitle();
                     d.isOpen = !d.isOpen;
                     this.render();
                     this.saveRoom(activeRoomId);   // ⭐ Autosave
-                    updateEditorTitle(); 
                 }, false);
             }
 
@@ -2169,26 +2167,15 @@ getSidebarItem(tool, subtype = null) {
 
     // Türen
     if (tool === "door") {
-
-        editor.mode = "placingDoor";
-        editor.placingSubtype = subtype || "default";
-
-        updateEditorTitle();
-
         return {
             category: "door",
-            index: null,
+            index: null, // Hauptkategorie
             data: { type: subtype || "default" }
         };
     }
 
     // Fenster
     if (tool === "window") {
-        editor.mode = "placingWindow";
-        editor.placingSubtype = subtype || null;
-
-        updateEditorTitle();
-
         return {
             category: "window",
             index: null,
@@ -2198,12 +2185,6 @@ getSidebarItem(tool, subtype = null) {
 
     // Dachluke
     if (tool === "dachluke") {
-
-        editor.mode = "placingDoor";
-        editor.placingSubtype = "dachluke";
-
-        updateEditorTitle();
-
         return {
             category: "door",
             index: null,
@@ -2211,9 +2192,11 @@ getSidebarItem(tool, subtype = null) {
         };
     }
 
+    // Weitere Kategorien später:
+    // furniture, device, smart, garden, etc.
+
     return null;
-}
-,
+},
 
     
 // ===============================================================
@@ -2577,26 +2560,22 @@ onDown(e) {
             }
         }
 
-if (this._placingDoor) {
-    const lastDoor = this.doors[this.doors.length - 1];
-    const w = this.walls[lastDoor.wallIndex];
-    this.setDoorHingeFromTap(lastDoor, worldX, worldY, w);
+        if (this._placingDoor) {
+            const lastDoor = this.doors[this.doors.length - 1];
+            const w = this.walls[lastDoor.wallIndex];
+            this.setDoorHingeFromTap(lastDoor, worldX, worldY, w);
 
-    // ⭐ Tür-Platzierung korrekt beenden
-    this._placingDoor = false;
-    this.mode = "points";          // ← richtig
-    this.currentDoorType = null;   // ← richtig
-    // ⭐ WICHTIG: NICHT editor.mode, NICHT placingSubtype
+            this._placingDoor = false;
+            this.mode = "points";
+            this.render();
+            this.saveRoom(activeRoomId);
 
-    this.render();
-    this.saveRoom(activeRoomId);
+            // ⭐ Schritt 2 → Crumb: „Zimmertüre #n“
+            window.hit = { type: "door", index: this.doors.length - 1 };
+            updateEditorTitle();
 
-    window.hit = { type: "door", index: this.doors.length - 1 };
-    updateEditorTitle();
-
-    return;
-}
-
+            return;
+        }
     }
 
     // ------------------------------------------------------------
@@ -6375,51 +6354,11 @@ function updateEditorTitle() {
     }
 
     // ------------------------------------------------------------
-    // Objekt (Hit) + Editor-Modi
+    // Objekt (Hit) mit Icon + SubCategory
     // ------------------------------------------------------------
     if (!object) return;
 
-// Sidebar: Neue Tür platzieren
-if (this.mode === "doors" && !this._placingDoor) {
-
-    const subtype = this.currentDoorType || "default";
-
-    const iconMap = {
-        zimmertuer: "🚪",
-        haustuer: "🚪",
-        terrassentuer: "🚪",
-        falttuer: "🚪",
-        schiebetuer: "🚪",
-        garagentor: "🚪",
-        gartentor: "🚪",
-        default: "🚪"
-    };
-
-    const icon = iconMap[subtype] || iconMap.default;
-
-    object.textContent = `${icon} Neue ${subtype} an Wand platzieren`;
-    return;
-}
-
-
-    // ⭐ Sidebar-Modus: Neues Fenster platzieren
-    if (editor.mode === "placingWindow") {
-
-        const subtype = editor.placingSubtype || "fenster";
-
-        const iconMap = {
-            fenster: "🪟",
-            dachluke: "🪟",
-            default: "🪟"
-        };
-
-        const icon = iconMap[subtype] || iconMap.default;
-
-        object.textContent = `${icon} Neues ${subtype} an Wand platzieren`;
-        return;
-    }
-
-    // Ab hier: Canvas-Hit-Objekte
+    // Kein Hit → Titel leeren
     if (!window.hit) {
         object.textContent = "";
         return;
@@ -6445,12 +6384,14 @@ if (this.mode === "doors" && !this._placingDoor) {
     if (h.type === "door") {
         const d = roomData.doors[h.index];
         sub = d?.type || "door";
-
+    
+        // Zustand ergänzen
         if (d) {
             const stateIcon = d.isOpen ? "🔓" : "🔒";
             sub = `${sub} ${stateIcon}`;
         }
     }
+
 
     if (h.type === "window") {
         const w = roomData.windows[h.index];
@@ -6461,12 +6402,11 @@ if (this.mode === "doors" && !this._placingDoor) {
         sub = "punkt";
     }
 
+    // Wenn wir nichts anzeigen sollen → raus
     if (!sub) {
         object.textContent = "";
         return;
     }
-
-    const baseSub = sub.split(" ")[0];
 
     const iconMap = {
         zimmertuer: "🚪",
@@ -6478,8 +6418,8 @@ if (this.mode === "doors" && !this._placingDoor) {
         default: "❖"
     };
 
-    const icon = iconMap[baseSub] || iconMap.default;
-    const id = h.index !== undefined && h.index !== null ? `#${h.index}` : "";
+    const icon = iconMap[sub] || iconMap.default;
+    const id = h.index !== undefined ? `#${h.index}` : "";
 
     object.textContent = `${icon} ${sub} ${id}`;
 }
