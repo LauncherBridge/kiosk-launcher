@@ -5285,19 +5285,22 @@ setTool(tool, subtype = null) {
     
     this.currentTool = tool;
 
-
     // ------------------------------------------------------------
     // ⭐ Dachluke
     // ------------------------------------------------------------    
-if (tool === "dachluke") {
-    this.mode = "dachluke";
-    this.currentDoorType = "dachluke";
-    this._placingDoor = false;
-    return;
-}
+    if (tool === "dachluke") {
+        this.mode = "dachluke";
+        this.currentDoorType = "dachluke";
+        this._placingDoor = false;
 
+        // Titelzeile für Platzierung
+        window.placeMode = "door";
+        window.placeSubtype = "dachluke";
+        updateEditorTitle();
 
-    
+        return;
+    }
+
     // ------------------------------------------------------------
     // ⭐ Türmodus aktivieren
     // ------------------------------------------------------------
@@ -5313,13 +5316,15 @@ if (tool === "dachluke") {
         this._placingDoor = false;
 
         console.log("[RoomDesigner] setTool: DOOR-MODE aktiviert →", subtype);
+
+        // Titelzeile für Platzierung
+        window.placeMode = "door";
+        window.placeSubtype = subtype || "default";
+        updateEditorTitle();
+
         return;
     }
 
-
-
-
-    
     // ------------------------------------------------------------
     // ⭐ Fenster-Modus aktivieren
     // ------------------------------------------------------------
@@ -5327,6 +5332,11 @@ if (tool === "dachluke") {
         this.mode = "windows";
         this._placingWindow = false;
         console.log("[RoomDesigner] setTool: WINDOW-MODE aktiviert");
+
+        window.placeMode = "window";
+        window.placeSubtype = subtype || "fenster";
+        updateEditorTitle();
+
         return;
     }
 
@@ -5335,7 +5345,13 @@ if (tool === "dachluke") {
     // ------------------------------------------------------------
     this.mode = "points";
     console.log("[RoomDesigner] setTool:", tool, "subtype:", subtype);
-},
+
+    // Kein Platziermodus → Titelzeile leeren
+    window.placeMode = null;
+    window.placeSubtype = null;
+    updateEditorTitle();
+}
+,
 
 
 
