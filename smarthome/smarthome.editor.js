@@ -6318,32 +6318,45 @@ function updateEditorTitle() {
     // ------------------------------------------------------------
     // Objekt (Hit) mit Icon
     // ------------------------------------------------------------
-    if (object) {
+// Objekt (Hit) mit Icon + SubCategory
+if (object) {
 
-        const iconMap = {
-            zimmertuer: "🚪",
-            haustuer: "🚪",
-            terrassentuer: "🚪",
-            fenster: "🪟",
-            wand: "⬛",
-            punkt: "•",
-            raum: "📐",
-            default: "❖"
-        };
+    const iconMap = {
+        zimmertuer: "🚪",
+        haustuer: "🚪",
+        terrassentuer: "🚪",
+        dachluke: "🪟",
+        fenster: "🪟",
+        wand: "⬛",
+        punkt: "•",
+        default: "❖"
+    };
 
-        if (window.hit) {
-            const h = window.hit;
+    if (window.hit) {
+        const h = window.hit;
 
-            const type = h.type || "Objekt";
-            const id = h.id ? `#${h.id}` : "";
+        // Kategorie (door, window, wall, point)
+        const category = h.type || "Objekt";
 
-            const icon = iconMap[type] || iconMap.default;
-
-            object.textContent = `${icon} ${type} ${id}`;
-        } else {
-            object.textContent = "";
+        // SubCategory (zimmertuer, terrassentuer, …)
+        let sub = "";
+        if (window.designerSelection && window.designerSelection.subCategory) {
+            sub = window.designerSelection.subCategory;
         }
+
+        // ID
+        const id = h.id ? `#${h.id}` : "";
+
+        // Icon anhand der SubCategory
+        const icon = iconMap[sub] || iconMap[category] || iconMap.default;
+
+        // Ausgabe
+        object.textContent = `${icon} ${sub || category} ${id}`;
+    } else {
+        object.textContent = "";
     }
+}
+
 }
 
 
