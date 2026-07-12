@@ -6431,7 +6431,9 @@ function updateEditorTitle() {
         gartentor: "Gartentor",
         dachluke: "Dachluke",
         fenster: "Fenster",
-        punkt: "Punkt"
+        punkt: "Punkt",
+        durchgang: "Offener Durchgang"
+
     };
 
     const iconMap = {
