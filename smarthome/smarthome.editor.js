@@ -3700,7 +3700,7 @@ drawAngleAtPoint(P, A, B) {
             // ------------------------------------------------------------
             // ⭐ Scharnier-Strich NUR für klassische Türen
             // ------------------------------------------------------------
-            if (DOOR_TYPES_WITH_ARC.has(d.type)) {
+            if (!d.isOpen && DOOR_TYPES_WITH_ARC.has(d.type)) {
                 ctx.strokeStyle = d.design.hinge.color;
                 ctx.lineWidth = d.design.hinge.strokeWidth;
 
