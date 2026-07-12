@@ -2170,24 +2170,25 @@ getSidebarItem(tool, subtype = null) {
     // Türen
     if (tool === "door") {
 
-    // Titelzeile sofort aktualisieren
-    window.hit = {
-        type: "door",
-        index: null,
-        state: "placingDoor",
-        sub: subtype || "default"
-    };
-    updateEditorTitle();
-        
+        editor.mode = "placingDoor";
+        editor.placingSubtype = subtype || "default";
+
+        updateEditorTitle();
+
         return {
             category: "door",
-            index: null, // Hauptkategorie
+            index: null,
             data: { type: subtype || "default" }
         };
     }
 
     // Fenster
     if (tool === "window") {
+        editor.mode = "placingWindow";
+        editor.placingSubtype = subtype || null;
+
+        updateEditorTitle();
+
         return {
             category: "window",
             index: null,
@@ -2197,6 +2198,12 @@ getSidebarItem(tool, subtype = null) {
 
     // Dachluke
     if (tool === "dachluke") {
+
+        editor.mode = "placingDoor";
+        editor.placingSubtype = "dachluke";
+
+        updateEditorTitle();
+
         return {
             category: "door",
             index: null,
@@ -2204,11 +2211,9 @@ getSidebarItem(tool, subtype = null) {
         };
     }
 
-    // Weitere Kategorien später:
-    // furniture, device, smart, garden, etc.
-
     return null;
-},
+}
+,
 
     
 // ===============================================================
@@ -2579,6 +2584,7 @@ onDown(e) {
 
             this._placingDoor = false;
             this.mode = "points";
+             this.currentDoorType = null;
             this.render();
             this.saveRoom(activeRoomId);
 
@@ -6366,20 +6372,15 @@ function updateEditorTitle() {
     }
 
     // ------------------------------------------------------------
-    // Objekt (Hit) mit Icon + SubCategory
+    // Objekt (Hit) + Editor-Modi
     // ------------------------------------------------------------
     if (!object) return;
 
-    // Kein Hit → Titel leeren
-    if (!window.hit) {
-        object.textContent = "";
-        return;
-    }
+    // ⭐ Sidebar-Modus: Neue Tür platzieren
+    if (editor.mode === "placingDoor") {
 
-    const h = window.hit;
+        const subtype = editor.placingSubtype || "default";
 
-    // ⭐ Neue Tür platzieren (Sidebar-Auswahl) – MUSS GANZ OBEN SEIN
-    if (h.state === "placingDoor") {
         const iconMap = {
             zimmertuer: "🚪",
             haustuer: "🚪",
@@ -6388,15 +6389,40 @@ function updateEditorTitle() {
             schiebetuer: "🚪",
             garagentor: "🚪",
             gartentor: "🚪",
+            dachluke: "🪟",
             default: "🚪"
         };
 
-        const subtype = h.sub || "default";
         const icon = iconMap[subtype] || iconMap.default;
 
         object.textContent = `${icon} Neue ${subtype} an Wand platzieren`;
         return;
     }
+
+    // ⭐ Sidebar-Modus: Neues Fenster platzieren
+    if (editor.mode === "placingWindow") {
+
+        const subtype = editor.placingSubtype || "fenster";
+
+        const iconMap = {
+            fenster: "🪟",
+            dachluke: "🪟",
+            default: "🪟"
+        };
+
+        const icon = iconMap[subtype] || iconMap.default;
+
+        object.textContent = `${icon} Neues ${subtype} an Wand platzieren`;
+        return;
+    }
+
+    // Ab hier: Canvas-Hit-Objekte
+    if (!window.hit) {
+        object.textContent = "";
+        return;
+    }
+
+    const h = window.hit;
 
     // Wand NICHT anzeigen
     if (h.type === "wall") {
@@ -6417,7 +6443,6 @@ function updateEditorTitle() {
         const d = roomData.doors[h.index];
         sub = d?.type || "door";
 
-        // Zustand ergänzen
         if (d) {
             const stateIcon = d.isOpen ? "🔓" : "🔒";
             sub = `${sub} ${stateIcon}`;
@@ -6433,13 +6458,11 @@ function updateEditorTitle() {
         sub = "punkt";
     }
 
-    // Wenn wir nichts anzeigen sollen → raus
     if (!sub) {
         object.textContent = "";
         return;
     }
 
-    // Für Icon nur den Basis-Typ ohne Zustand verwenden
     const baseSub = sub.split(" ")[0];
 
     const iconMap = {
