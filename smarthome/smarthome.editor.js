@@ -6379,9 +6379,9 @@ function updateEditorTitle() {
         room.textContent = roomObj ? (roomObj.name || "Raum") : "";
     }
 
-    // ------------------------------------------------------------
-    // Sidebar-Platziermodus (NEU)
-    // ------------------------------------------------------------
+    if (!object) return;
+
+    // ⭐ 1) Platziermodus hat Vorrang
     if (window.placeMode) {
 
         const subtype = window.placeSubtype || "default";
@@ -6406,12 +6406,7 @@ function updateEditorTitle() {
         return;
     }
 
-    // ------------------------------------------------------------
-    // Objekt (Hit) mit Icon + SubCategory
-    // ------------------------------------------------------------
-    if (!object) return;
-
-    // Kein Hit → Titel leeren
+    // ⭐ 2) Erst jetzt Hit prüfen
     if (!window.hit) {
         object.textContent = "";
         return;
@@ -6419,13 +6414,11 @@ function updateEditorTitle() {
 
     const h = window.hit;
 
-    // Wand NICHT anzeigen
     if (h.type === "wall") {
         object.textContent = "";
         return;
     }
 
-    // Zweistufige Tür-Platzierung
     if (h.state === "placingHinge") {
         object.textContent = "🚪 Neue Türe hinzugefügt – bitte Scharnier definieren";
         return;
@@ -6438,7 +6431,6 @@ function updateEditorTitle() {
         const d = roomData.doors[h.index];
         sub = d?.type || "door";
 
-        // Zustand ergänzen
         if (d) {
             const stateIcon = d.isOpen ? "🔓" : "🔒";
             sub = `${sub} ${stateIcon}`;
@@ -6454,7 +6446,6 @@ function updateEditorTitle() {
         sub = "punkt";
     }
 
-    // Wenn wir nichts anzeigen sollen → raus
     if (!sub) {
         object.textContent = "";
         return;
@@ -6475,7 +6466,6 @@ function updateEditorTitle() {
 
     object.textContent = `${icon} ${sub} ${id}`;
 }
-
 
 
 
