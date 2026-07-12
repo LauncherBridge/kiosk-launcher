@@ -2360,49 +2360,71 @@ onDown(e) {
     // ------------------------------------------------------------
     // ⭐ DACHLUKE
     // ------------------------------------------------------------
-    if (this.mode === "dachluke") {
+// ------------------------------------------------------------
+// ⭐ DACHLUKE
+// ------------------------------------------------------------
+if (this.mode === "dachluke") {
 
-        if (!this._placingDachluke) {
+    // ⭐ ERSTER KLICK → Dachluke platzieren
+    if (!this._placingDachluke) {
 
-            if (!this.isClosed) {
-                alert("Dachluken können nur in einem geschlossenen Raum platziert werden.");
-                return;
-            }
-
-            if (!this.isPointInsideRoom(worldX, worldY)) {
-                alert("Dachluken müssen innerhalb des Raumes platziert werden.");
-                return;
-            }
-
-            this.doors.push({
-                type: "dachluke",
-                x: worldX,
-                y: worldY,
-                width: 60,
-                isOpen: true,
-                hingeAngle: 0
-            });
-
-            this._placingDachluke = true;
-            this.render();
-            this.saveRoom(activeRoomId);
-
+        if (!this.isClosed) {
+            alert("Dachluken können nur in einem geschlossenen Raum platziert werden.");
             return;
         }
 
-        const d = this.doors[this.doors.length - 1];
+        if (!this.isPointInsideRoom(worldX, worldY)) {
+            alert("Dachluken müssen innerhalb des Raumes platziert werden.");
+            return;
+        }
 
-        const dx = worldX - d.x;
-        const dy = worldY - d.y;
-        d.hingeAngle = Math.atan2(dy, dx);
+        this.doors.push({
+            type: "dachluke",
+            x: worldX,
+            y: worldY,
+            width: 60,
+            isOpen: true,
+            hingeAngle: 0
+        });
 
-        this._placingDachluke = false;
-        this.mode = "points";
+        this._placingDachluke = true;
         this.render();
         this.saveRoom(activeRoomId);
 
+        // ⭐ Scharnier-Platzierung aktivieren
+        window.hit = {
+            type: "door",
+            index: this.doors.length - 1,
+            state: "placingHinge"
+        };
+
+        // ⭐ Platziermodus beenden
+        window.placeMode = null;
+        window.placeSubtype = null;
+
+        updateEditorTitle();
         return;
     }
+
+    // ⭐ ZWEITER KLICK → Scharnier setzen
+    const d = this.doors[this.doors.length - 1];
+
+    const dx = worldX - d.x;
+    const dy = worldY - d.y;
+    d.hingeAngle = Math.atan2(dy, dx);
+
+    this._placingDachluke = false;
+    this.mode = "points";
+    this.render();
+    this.saveRoom(activeRoomId);
+
+    // ⭐ Tür ist fertig → Hit aktualisieren
+    window.hit = { type: "door", index: this.doors.length - 1 };
+    updateEditorTitle();
+
+    return;
+}
+
 
     // ------------------------------------------------------------
     // ⭐ HIT-TEST (normaler Modus)
@@ -6402,6 +6424,17 @@ function updateEditorTitle() {
     if (window.placeMode) {
 
         const subtype = window.placeSubtype || "default";
+        const niceNames = {
+            haustuer: "Haustür",
+            zimmertuer: "Zimmertür",
+            terrassentuer: "Terrassentür",
+            falttuer: "Falttür",
+            schiebetuer: "Schiebetür",
+            garagentor: "Garagentor",
+            gartentor: "Gartentor",
+            dachluke: "Dachluke",
+            fenster: "Fenster"
+        };
 
         const iconMap = {
             zimmertuer: "🚪",
@@ -6419,7 +6452,7 @@ function updateEditorTitle() {
 
         const icon = iconMap[subtype] || iconMap.default;
 
-        object.textContent = `${icon} Neue ${subtype} an Wand platzieren`;
+        object.textContent = `${icon} Neue ${subtype} platzieren`;
         return;
     }
 
@@ -6435,11 +6468,34 @@ function updateEditorTitle() {
         object.textContent = "";
         return;
     }
-
+    
     if (h.state === "placingHinge") {
-        object.textContent = "🚪 Neue Türe hinzugefügt – bitte Scharnier definieren";
+    
+        const roomData = project.rooms[activeRoomId];
+        const d = roomData.doors[h.index];
+        const subtype = d?.type || "Türe";
+
+        const nice = niceNames[subtype] || subtype;
+        
+        const iconMap = {
+            zimmertuer: "🚪",
+            haustuer: "🚪",
+            terrassentuer: "🚪",
+            falttuer: "🚪",
+            schiebetuer: "🚪",
+            garagentor: "🚪",
+            gartentor: "🚪",
+            dachluke: "🪟",
+            fenster: "🪟",
+            default: "🚪"
+        };
+    
+        const icon = iconMap[subtype] || iconMap.default;
+    
+        object.textContent = `${icon} ${subtype} hinzugefügt – bitte Scharnierseite definieren`;
         return;
     }
+
 
     const roomData = project.rooms[activeRoomId];
     let sub = null;
