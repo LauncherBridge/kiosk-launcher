@@ -3328,10 +3328,10 @@ render() {
     this.drawWindows();
     this.drawDoors();
 
-    // ⭐ Pan-Schutz: Box bleibt sichtbar, Klicks werden ignoriert
+    // ⭐ Pan-Schutz: Box bleibt sichtbar, Hit-Test wird ignoriert
     const isPanning = this.isPanning || this.isPanCandidate;
 
-    // ⭐ Statische Auswahl-Box IM WELT-KONTEXT
+    // ⭐ Auswahl-Box IM WELT-KONTEXT
     if (!isPanning && window.hit) {
         const obj = (() => {
             switch (window.hit.type) {
@@ -3404,6 +3404,7 @@ render() {
 
 
 
+
 drawSelectionBoxRounded(ctx, obj) {
     if (!obj) return;
 
@@ -3414,7 +3415,7 @@ drawSelectionBoxRounded(ctx, obj) {
     if (obj.length && obj.thickness) {
         // Türen / Fenster / Dachluken
         w = obj.length;
-        h = obj.thickness * 4; // optisch etwas breiter
+        h = obj.thickness * 4;
     }
 
     if (obj.w && obj.h) {
@@ -3452,6 +3453,7 @@ drawSelectionBoxRounded(ctx, obj) {
     ctx.quadraticCurveTo(x, y, x + r, y);
     ctx.stroke();
 },
+
 
 
 
