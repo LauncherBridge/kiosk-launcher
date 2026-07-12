@@ -6489,24 +6489,31 @@ function updateEditorTitle() {
     const roomData = project.rooms[activeRoomId];
     let sub = null;
 
-    if (h.type === "door") {
-        const d = roomData.doors[h.index];
-        sub = d?.type || "door";
+if (h.type === "door") {
+    const d = roomData.doors[h.index];
+    let raw = d?.type || "door";
 
-        if (d) {
-            const stateIcon = d.isOpen ? "🔓" : "🔒";
-            sub = `${sub} ${stateIcon}`;
-        }
+    // ⭐ schönen Namen holen
+    let nice = niceNames[raw] || raw;
+
+    if (d) {
+        const stateIcon = d.isOpen ? "🔓" : "🔒";
+        nice = `${nice} ${stateIcon}`;
     }
 
-    if (h.type === "window") {
-        const w = roomData.windows[h.index];
-        sub = w?.type || "window";
-    }
+    sub = nice;
+}
 
-    if (h.type === "point") {
-        sub = "punkt";
-    }
+if (h.type === "window") {
+    const w = roomData.windows[h.index];
+    let raw = w?.type || "window";
+    sub = niceNames[raw] || raw;
+}
+
+if (h.type === "point") {
+    sub = niceNames["punkt"];
+}
+
 
     if (!sub) {
         object.textContent = "";
