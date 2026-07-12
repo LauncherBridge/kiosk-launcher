@@ -40,6 +40,8 @@ let activeMode = "editor";
 let activeFloorId = null;
 let activeRoomId = null;
 
+window.placeMode = null;      // "door", "window", "point", ...
+window.placeSubtype = null;   // "terrassentuer", "haustuer", ...
 
 function sanitizeProject(proj) {
     if (!proj || typeof proj !== "object") {
@@ -2169,6 +2171,12 @@ getSidebarItem(tool, subtype = null) {
 
     // Türen
     if (tool === "door") {
+        
+        // ⭐ NEU: Platziermodus setzen
+        window.placeMode = "door";
+        window.placeSubtype = subtype || "default";
+        updateEditorTitle();
+        
         return {
             category: "door",
             index: null, // Hauptkategorie
@@ -2178,15 +2186,25 @@ getSidebarItem(tool, subtype = null) {
 
     // Fenster
     if (tool === "window") {
+
+        window.placeMode = "window";
+        window.placeSubtype = subtype || "fenster";
+        updateEditorTitle();
+        
         return {
             category: "window",
             index: null,
-            data: { type: subtype || null }
+            data: { type: subtype || "fenster" }
         };
     }
 
     // Dachluke
     if (tool === "dachluke") {
+
+        window.placeMode = "door";
+        window.placeSubtype = subtype || "dachluke";
+        updateEditorTitle();
+        
         return {
             category: "door",
             index: null,
@@ -2217,7 +2235,6 @@ onDown(e) {
 
         const hit = this.hitTest(mouseX, mouseY);
 
-        // ⭐ Crumb sofort aktualisieren (aber empty NICHT anzeigen)
         if (hit.type !== "empty") {
             window.hit = hit;
             updateEditorTitle();
@@ -2226,9 +2243,7 @@ onDown(e) {
             updateEditorTitle();
         }
 
-        // 👉 PAN bei empty
         if (!hit || hit.type === "empty") {
-
             this.hideContextMenu();
             this._pendingContext = null;
 
@@ -2239,7 +2254,6 @@ onDown(e) {
             return;
         }
 
-        // 👉 Prüfen: Ist dieses Objekt bereits ausgewählt?
         const alreadySelected =
             this.designerSelection &&
             this.designerSelection.category === hit.type &&
@@ -2260,7 +2274,6 @@ onDown(e) {
             return;
         }
 
-        // 👉 Objekt getroffen → Designer-Auswahl
         let fullObject = null;
 
         if (hit.type === "door") fullObject = this.doors[hit.index];
@@ -2396,7 +2409,6 @@ onDown(e) {
     // ------------------------------------------------------------
     const hit = this.hitTest(mouseX, mouseY);
 
-    // ⭐ Crumb sofort aktualisieren (aber empty NICHT anzeigen)
     if (hit.type !== "empty") {
         window.hit = hit;
         updateEditorTitle();
@@ -2425,7 +2437,6 @@ onDown(e) {
         this._contextJustClosed = false;
     }
 
-    // ⭐ Klick ins Leere → Crumb leeren (Schritt 4)
     if (hit.type === "empty") {
         window.hit = null;
         updateEditorTitle();
@@ -2478,9 +2489,14 @@ onDown(e) {
             this.render();
             this.saveRoom(activeRoomId);
 
-            // ⭐ Neues Fenster → Crumb aktualisieren
             window.hit = { type: "window", index: this.windows.length - 1 };
             updateEditorTitle();
+
+            // ⭐ Platziermodus beenden
+            window.placeMode = null;
+            window.placeSubtype = null;
+            updateEditorTitle();
+
         }
 
         this.mode = "points";
@@ -2526,8 +2542,12 @@ onDown(e) {
             this.mode = "points";
             this.saveRoom(activeRoomId);
 
-            // ⭐ Neues Objekt → Crumb aktualisieren
             window.hit = { type: "door", index: this.doors.length - 1 };
+            updateEditorTitle();
+
+            // ⭐ Platziermodus beenden
+            window.placeMode = null;
+            window.placeSubtype = null;
             updateEditorTitle();
 
             return;
@@ -2550,7 +2570,6 @@ onDown(e) {
                 this.render();
                 this.saveRoom(activeRoomId);
 
-                // ⭐ Schritt 1 → Crumb: „Bitte Scharnier definieren“
                 window.hit = {
                     type: "door",
                     index: this.doors.length - 1,
@@ -2572,8 +2591,12 @@ onDown(e) {
             this.render();
             this.saveRoom(activeRoomId);
 
-            // ⭐ Schritt 2 → Crumb: „Zimmertüre #n“
             window.hit = { type: "door", index: this.doors.length - 1 };
+            updateEditorTitle();
+
+            // ⭐ Platziermodus beenden
+            window.placeMode = null;
+            window.placeSubtype = null;
             updateEditorTitle();
 
             return;
@@ -2647,6 +2670,7 @@ onDown(e) {
         this.panStartY = mouseY;
     }
 }
+
 ,
 
 
@@ -6356,6 +6380,33 @@ function updateEditorTitle() {
     }
 
     // ------------------------------------------------------------
+    // Sidebar-Platziermodus (NEU)
+    // ------------------------------------------------------------
+    if (window.placeMode) {
+
+        const subtype = window.placeSubtype || "default";
+
+        const iconMap = {
+            zimmertuer: "🚪",
+            haustuer: "🚪",
+            terrassentuer: "🚪",
+            falttuer: "🚪",
+            schiebetuer: "🚪",
+            garagentor: "🚪",
+            gartentor: "🚪",
+            dachluke: "🪟",
+            fenster: "🪟",
+            punkt: "•",
+            default: "❖"
+        };
+
+        const icon = iconMap[subtype] || iconMap.default;
+
+        object.textContent = `${icon} Neue ${subtype} an Wand platzieren`;
+        return;
+    }
+
+    // ------------------------------------------------------------
     // Objekt (Hit) mit Icon + SubCategory
     // ------------------------------------------------------------
     if (!object) return;
@@ -6386,14 +6437,13 @@ function updateEditorTitle() {
     if (h.type === "door") {
         const d = roomData.doors[h.index];
         sub = d?.type || "door";
-    
+
         // Zustand ergänzen
         if (d) {
             const stateIcon = d.isOpen ? "🔓" : "🔒";
             sub = `${sub} ${stateIcon}`;
         }
     }
-
 
     if (h.type === "window") {
         const w = roomData.windows[h.index];
@@ -6425,6 +6475,7 @@ function updateEditorTitle() {
 
     object.textContent = `${icon} ${sub} ${id}`;
 }
+
 
 
 
