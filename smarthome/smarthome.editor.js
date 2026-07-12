@@ -1048,35 +1048,6 @@ function migrateProjectsToID() {
     console.groupEnd();
 }
 
-// ---------------------------------------------------------
-// Editor / RoomDesigner Defaults
-// ---------------------------------------------------------
-RoomDesigner.defaults = {
-    pointSize: 6,
-    pointColor: "#FFD28A",
-
-    wallColor: "#333",
-    wallWidth: 3,
-
-    doorThresholdWidth: 4,
-    doorLeafWidth: 30,
-    doorArcColor: "rgba(255,184,108,0.4)",
-    doorArcWidth: 2,
-
-    windowFrameWidth: 4,
-    windowGlassColor: "rgba(160,207,255,0.4)"
-};
-
-RoomDesigner.renderDefaults = {
-    roomFill: "#444",
-    roomStroke: "#222",
-    roomStrokeWidth: 2
-};
-
-// Defaults aktivieren
-if (RoomDesigner.applyDefaults) {
-    RoomDesigner.applyDefaults();
-}
 
 
 // Projekt → Editor
@@ -6234,6 +6205,32 @@ applyDesignChange(obj, comp, key, value) {
 // ------------------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------------
 
+RoomDesigner.defaults = {
+    pointSize: 6,
+    pointColor: "#FFD28A",
+
+    wallColor: "#333",
+    wallWidth: 3,
+
+    doorThresholdWidth: 4,
+    doorLeafWidth: 30,
+    doorArcColor: "rgba(255,184,108,0.4)",
+    doorArcWidth: 2,
+
+    windowFrameWidth: 4,
+    windowGlassColor: "rgba(160,207,255,0.4)"
+};
+
+RoomDesigner.renderDefaults = {
+    roomFill: "#444",
+    roomStroke: "#222",
+    roomStrokeWidth: 2
+};
+
+// Defaults aktivieren
+if (RoomDesigner.applyDefaults) {
+    RoomDesigner.applyDefaults();
+}
 
 
 
