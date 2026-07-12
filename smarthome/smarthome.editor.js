@@ -6350,10 +6350,52 @@ function updateEditorTitle() {
     }
 
     // ------------------------------------------------------------
-    // Objekt (Hit) mit Icon
+    // Objekt (Hit) mit Icon + SubCategory
     // ------------------------------------------------------------
-// Objekt (Hit) mit Icon + SubCategory
-if (object) {
+    if (!object) return;
+
+    // Kein Hit → Titel leeren
+    if (!window.hit) {
+        object.textContent = "";
+        return;
+    }
+
+    const h = window.hit;
+
+    // Wand NICHT anzeigen
+    if (h.type === "wall") {
+        object.textContent = "";
+        return;
+    }
+
+    // Zweistufige Tür-Platzierung
+    if (h.state === "placingHinge") {
+        object.textContent = "🚪 Neue Türe hinzugefügt – bitte Scharnier definieren";
+        return;
+    }
+
+    const roomData = project.rooms[activeRoomId];
+    let sub = null;
+
+    if (h.type === "door") {
+        const d = roomData.doors[h.index];
+        sub = d?.type || "door";
+    }
+
+    if (h.type === "window") {
+        const w = roomData.windows[h.index];
+        sub = w?.type || "window";
+    }
+
+    if (h.type === "point") {
+        sub = "punkt";
+    }
+
+    // Wenn wir nichts anzeigen sollen → raus
+    if (!sub) {
+        object.textContent = "";
+        return;
+    }
 
     const iconMap = {
         zimmertuer: "🚪",
@@ -6361,48 +6403,16 @@ if (object) {
         terrassentuer: "🚪",
         dachluke: "🪟",
         fenster: "🪟",
-        wand: "⬛",
         punkt: "•",
         default: "❖"
     };
 
-    if (window.hit) {
-        const h = window.hit;
+    const icon = iconMap[sub] || iconMap.default;
+    const id = h.index !== undefined ? `#${h.index}` : "";
 
-        const roomData = project.rooms[activeRoomId];
-
-        let sub = null;
-
-        if (h.type === "door") {
-            const d = roomData.doors[h.index];
-            sub = d?.type || "door";
-        }
-
-        if (h.type === "window") {
-            const w = roomData.windows[h.index];
-            sub = w?.type || "window";
-        }
-
-        if (h.type === "wall") {
-            return object.textContent = "";   // Wand NICHT anzeigen        }
-
-        if (h.type === "point") {
-            sub = "punkt";
-        }
-
-        const displayName = sub || h.type;
-        const id = h.index !== undefined ? `#${h.index}` : "";
-        const icon = iconMap[displayName] || iconMap.default;
-
-        object.textContent = `${icon} ${displayName} ${id}`;
-    } else {
-        object.textContent = "";
-    }
+    object.textContent = `${icon} ${sub} ${id}`;
 }
 
-}
-
-}
 
 
 
