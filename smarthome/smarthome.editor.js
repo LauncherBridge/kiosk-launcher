@@ -1648,7 +1648,7 @@ updateEditorTitle();
             this.addContextButton("🗑", () => {
                 this.doors.splice(index, 1);
                 window.hit = null;
-updateEditorTitle();
+                updateEditorTitle();
 
                 this.updateWalls();
                 this.render();
@@ -1703,6 +1703,9 @@ updateEditorTitle();
 
             this.addContextButton("🗑", () => {
                 this.doors.splice(index, 1);
+                window.hit = null;
+                updateEditorTitle();
+
                 this.updateWalls();
                 this.render();
                 this.saveRoom(activeRoomId);   // ⭐ Autosave
@@ -2726,6 +2729,7 @@ onUp(e) {
 
                 // ⭐ Autosave: Dachluke toggeln
                 this.saveRoom(activeRoomId);
+
             }
             return;
         }
