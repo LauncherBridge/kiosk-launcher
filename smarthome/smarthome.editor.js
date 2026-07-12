@@ -3426,7 +3426,7 @@ drawSelectionBoxRounded(ctx, obj) {
     ctx.stroke();
 }
 
-
+,
 
     
     checkCollision(a, b) {
