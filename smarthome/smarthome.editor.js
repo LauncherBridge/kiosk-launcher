@@ -3967,50 +3967,38 @@ case "zimmertuer": {
     // ------------------------------------------------------------
     // 1. Schwelle (nur offen)
     // ------------------------------------------------------------
-// ⭐ ZIMMERTÜR – KORREKTE SCHWELLE
-if (d.isOpen) {
+    if (d.isOpen) {
 
-    const dx = ox - hx;
-    const dy = oy - hy;
-    const len = Math.hypot(dx, dy);
-    if (!len) return;
+        const half = Number(d.design.schwelle.height);
 
-    const nx = dx / len;
-    const ny = dy / len;
+        const s1x = hx + px * half;
+        const s1y = hy + py * half;
 
-    const px = -ny;
-    const py = nx;
+        const s2x = ox + px * half;
+        const s2y = oy + py * half;
 
-    const half = Number(d.design.schwelle.height);
+        const s3x = ox - px * half;
+        const s3y = oy - py * half;
 
-    const s1x = hx + px * half;
-    const s1y = hy + py * half;
+        const s4x = hx - px * half;
+        const s4y = hy - py * half;
 
-    const s2x = ox + px * half;
-    const s2y = oy + py * half;
+        ctx.save(); // ⭐ Schwelle kapseln
+        ctx.beginPath();
+        ctx.moveTo(s1x, s1y);
+        ctx.lineTo(s2x, s2y);
+        ctx.lineTo(s3x, s3y);
+        ctx.lineTo(s4x, s4y);
+        ctx.closePath();
 
-    const s3x = ox - px * half;
-    const s3y = oy - py * half;
+        ctx.fillStyle   = d.design.schwelle.color;
+        ctx.strokeStyle = d.design.schwelle.color;
+        ctx.lineWidth   = Number(d.design.schwelle.strokeWidth);
 
-    const s4x = hx - px * half;
-    const s4y = hy - py * half;
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(s1x, s1y);
-    ctx.lineTo(s2x, s2y);
-    ctx.lineTo(s3x, s3y);
-    ctx.lineTo(s4x, s4y);
-    ctx.closePath();
-
-    ctx.fillStyle   = d.design.schwelle.color;
-    ctx.strokeStyle = d.design.schwelle.color;
-    ctx.lineWidth   = Number(d.design.schwelle.strokeWidth);
-
-    ctx.fill();
-    ctx.stroke();
-    ctx.restore();
-}
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore(); // ⭐ Effekte bleiben draußen
+    }
 
     // ------------------------------------------------------------
     // 2. Türblatt
@@ -4064,6 +4052,7 @@ if (d.isOpen) {
     ctx.restore();
     return;
 }
+
 
 
 
