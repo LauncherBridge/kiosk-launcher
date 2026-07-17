@@ -3999,26 +3999,28 @@ if (d.isOpen) {
     ctx.strokeStyle = d.design.blatt.color;
     ctx.lineWidth   = blattStroke;
 
+    // ⭐ Effekt anwenden (nur Türblatt)
     if (d.design.blatt.effect === "glow") {
         ctx.shadowColor = d.design.blatt.effectColor;
-        ctx.shadowBlur  = blattEffStrength;
+        ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 2.5;
     }
     else if (d.design.blatt.effect === "shadow") {
         ctx.shadowColor = d.design.blatt.effectColor;
-        ctx.shadowBlur  = blattEffStrength * 0.5;
+        ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 1.2;
     }
     else if (d.design.blatt.effect === "outline") {
         ctx.shadowColor = d.design.blatt.effectColor;
-        ctx.shadowBlur  = blattStroke * 2;
+        ctx.shadowBlur  = Math.pow(blattStroke, 1.2) * 2.2;
     }
     else if (d.design.blatt.effect === "blur") {
         ctx.shadowColor = d.design.blatt.effectColor;
-        ctx.shadowBlur  = blattEffStrength * 1.5;
+        ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 3.0;
     }
     else {
         ctx.shadowColor = "transparent";
         ctx.shadowBlur  = 0;
     }
+
 
     if (d.isOpen) {
         const angle = Math.PI / 2 * side;
