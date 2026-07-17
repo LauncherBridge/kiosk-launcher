@@ -4010,8 +4010,14 @@ if (d.isOpen) {
     }
     else if (d.design.blatt.effect === "outline") {
         ctx.shadowColor = d.design.blatt.effectColor;
-        ctx.shadowBlur  = Math.pow(blattStroke, 1.2) * 2.2;
+    
+        // ⭐ Outline sichtbar machen – Effektstärke einbeziehen
+        const eff = Math.pow(blattEffStrength, 1.3);
+    
+        // ⭐ Kombination aus Strichstärke + Effektstärke
+        ctx.shadowBlur = blattStroke * 1.5 + eff * 2.0;
     }
+
     else if (d.design.blatt.effect === "blur") {
         ctx.shadowColor = d.design.blatt.effectColor;
         ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 3.0;
