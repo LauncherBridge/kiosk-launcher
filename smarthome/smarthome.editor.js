@@ -3970,12 +3970,9 @@ case "zimmertuer": {
 // ⭐ SCHWELLE – nur wenn offen
 if (d.isOpen) {
 
-    const wallThickness = 12; // wie im alten Code
-    const extra = Number(d.design.schwelle.height); // dein Schieberegler
-    const half = (wallThickness + extra) / 2;
-
-    const sw   = Number(d.design.schwelle.strokeWidth);
-    const col  = d.design.schwelle.color;
+    const half = 10;            // ⭐ FIXE BREITE DER SCHWELLE
+    const sw   = 2;             // ⭐ FIXE STRICHSTÄRKE
+    const col  = "#ff0000";     // ⭐ FIXE FARBE (nur Beispiel)
 
     const s1x = hx + px * half;
     const s1y = hy + py * half;
@@ -4005,6 +4002,7 @@ if (d.isOpen) {
     ctx.stroke();
     ctx.restore();
 }
+
 
 
     // ------------------------------------------------------------
