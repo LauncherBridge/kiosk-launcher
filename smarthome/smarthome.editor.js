@@ -6246,7 +6246,6 @@ initDesignerControls(selection) {
 
     const obj = selection.data;
 
-    // Neue Design-Struktur sicherstellen (Migration)
     ensureDoorDesignStructure(obj);
 
     const comps = getDoorComponents(obj);
@@ -6255,27 +6254,18 @@ initDesignerControls(selection) {
 
         const dcomp = obj.design[comp];
 
-        // -----------------------------
-        // FARBE
-        // -----------------------------
         const colorInput = document.getElementById(`design_${comp}_color`);
         if (colorInput) {
             colorInput.value = dcomp.color;
             colorInput.oninput = () => this.applyDesignChange(obj, comp, "color", colorInput.value);
         }
 
-        // -----------------------------
-        // STRICHSTÄRKE
-        // -----------------------------
         const strokeInput = document.getElementById(`design_${comp}_stroke`);
         if (strokeInput) {
             strokeInput.value = dcomp.strokeWidth;
             strokeInput.oninput = () => this.applyDesignChange(obj, comp, "strokeWidth", strokeInput.value);
         }
 
-        // -----------------------------
-        // EFFEKTE (nur für blatt)
-        // -----------------------------
         if (comp === "blatt") {
 
             const effectSelect = document.getElementById(`design_${comp}_effect`);
@@ -6299,6 +6289,7 @@ initDesignerControls(selection) {
         }
     }
 }
+
 ,
 
 initDesignerViewModes(selection) {
@@ -6362,9 +6353,63 @@ initDesignerViewModes(selection) {
 
     
 applyDesignChange(obj, comp, key, value) {
-    obj.design[comp][key] = value;
+    if (key === "strokeWidth" || key === "effectStrength") {
+        value = Number(value);
+        if (!Number.isFinite(value)) return;
+    }
+
+    const scope = obj.design.scope || "single";
+
+    const applyToList = [];
+
+    if (scope === "single") {
+        applyToList.push(obj);
+    } else {
+        const baseType = obj.type;
+        const currentRoom = project.rooms[activeRoomId];
+
+        if (!currentRoom) {
+            obj.design[comp][key] = value;
+            this.updateObjectVisual(obj);
+            return;
+        }
+
+        if (scope === "room") {
+            currentRoom.doors.forEach(d => {
+                if (d.type === baseType) applyToList.push(d);
+            });
+        }
+
+        if (scope === "floor") {
+            const floor = project.floors[currentRoom.floorId];
+            if (floor) {
+                floor.rooms.forEach(rid => {
+                    const r = project.rooms[rid];
+                    if (!r) return;
+                    r.doors.forEach(d => {
+                        if (d.type === baseType) applyToList.push(d);
+                    });
+                });
+            }
+        }
+
+        if (scope === "project") {
+            Object.values(project.rooms).forEach(r => {
+                r.doors.forEach(d => {
+                    if (d.type === baseType) applyToList.push(d);
+                });
+            });
+        }
+    }
+
+    applyToList.forEach(target => {
+        ensureDoorDesignStructure(target);
+        target.design[comp][key] = value;
+    });
+
     this.updateObjectVisual(obj);
-},
+}
+,
 
 
     updateObjectVisual(obj) {
@@ -6421,8 +6466,6 @@ function getDoorComponents(d) {
         case "zimmertuer":
         case "haustuer":
         case "terrassentuer":
-            return ["blatt", "schwelle", "arc", "hinge"];
-
         case "gartentor":
             return ["blatt", "schwelle", "arc", "hinge"];
 
@@ -6430,10 +6473,8 @@ function getDoorComponents(d) {
             return ["blatt", "schwelle"];
 
         case "falttuer":
-            return ["schwelle", "blatt"];
-
         case "schiebetuer":
-            return ["schwelle", "blatt"];
+            return ["blatt", "schwelle"];
 
         case "durchgang":
             return ["schwelle"];
@@ -6447,10 +6488,10 @@ function getDoorComponents(d) {
 }
 
 
+
 function ensureDoorDesignStructure(obj) {
     if (!obj.design) obj.design = {};
 
-    // Standard-Komponenten
     const defaults = {
         blatt: {
             color: "#ffffff",
@@ -6476,9 +6517,38 @@ function ensureDoorDesignStructure(obj) {
     for (const key in defaults) {
         if (!obj.design[key]) {
             obj.design[key] = { ...defaults[key] };
+        } else {
+            const d = obj.design[key];
+
+            if (d.strokeWidth != null) {
+                d.strokeWidth = Number(d.strokeWidth);
+                if (!Number.isFinite(d.strokeWidth)) {
+                    d.strokeWidth = defaults[key].strokeWidth;
+                }
+            }
+
+            if (d.effectStrength != null) {
+                d.effectStrength = Number(d.effectStrength);
+                if (!Number.isFinite(d.effectStrength)) {
+                    d.effectStrength = defaults[key].effectStrength ?? 0;
+                }
+            }
         }
     }
+
+    if (!obj.design.viewModes) {
+        obj.design.viewModes = {
+            room: true,
+            floor: true,
+            object: true
+        };
+    }
+
+    if (!obj.design.scope) {
+        obj.design.scope = "single";
+    }
 }
+
 
 
 RoomDesigner.loadRoom = function(roomId) {
@@ -7423,25 +7493,20 @@ function duplicateFloor(floorId) {
     const oldFloor = project.floors[floorId];
     if (!oldFloor) return;
 
-    // Neue Floor-ID
     const newFloorId = createId("floor");
 
-
-    // Floor kopieren
     project.floors[newFloorId] = {
         id: newFloorId,
         name: oldFloor.name + " (Kopie)",
         rooms: []
     };
 
-    // Räume kopieren
     oldFloor.rooms.forEach(oldRoomId => {
         const oldRoom = project.rooms[oldRoomId];
         if (!oldRoom) return;
 
         const newRoomId = createId("room");
 
-        // Raum kopieren
         project.rooms[newRoomId] = {
             id: newRoomId,
             name: oldRoom.name + " (Kopie)",
@@ -7452,44 +7517,45 @@ function duplicateFloor(floorId) {
             windows: []
         };
 
-        // Türen kopieren
         oldRoom.doors.forEach(doorId => {
             const oldDoor = project.doors[doorId];
             if (!oldDoor) return;
 
             const newDoorId = createId("door");
-            project.doors[newDoorId] = { ...oldDoor, id: newDoorId };
+            project.doors[newDoorId] = {
+                ...oldDoor,
+                id: newDoorId,
+                design: oldDoor.design ? structuredClone(oldDoor.design) : undefined
+            };
             project.rooms[newRoomId].doors.push(newDoorId);
         });
 
-        // Fenster kopieren
         oldRoom.windows.forEach(winId => {
             const oldWin = project.windows[winId];
             if (!oldWin) return;
 
             const newWinId = createId("window");
-            project.windows[newWinId] = { ...oldWin, id: newWinId };
+            project.windows[newWinId] = {
+                ...oldWin,
+                id: newWinId
+            };
             project.rooms[newRoomId].windows.push(newWinId);
         });
 
         project.floors[newFloorId].rooms.push(newRoomId);
     });
 
-    // Neue Etage aktivieren
     activeFloorId = newFloorId;
 
-    // Ersten Raum aktivieren
     const firstRoomId = project.floors[newFloorId].rooms[0];
     activeRoomId = firstRoomId;
 
-    // Editor laden
     importToEditor();
-
-    // UI aktualisieren
     renderEditorProjectSidebar();
     updateEditorTitle();
     saveProject();
 }
+
 
 function deleteFloor(floorId) {
     floorId = String(floorId);
@@ -7708,26 +7774,21 @@ function duplicateRoom(roomId) {
         floorId: room.floorId,
         points: room.points.map(p => ({ x: p.x, y: p.y })),
         isClosed: room.isClosed,
-
-        // ⭐ Fenster kopieren
         windows: room.windows.map(w => ({
             ...structuredClone(w),
             id: createId("window")
         })),
-
-        // ⭐ Türen kopieren
         doors: room.doors.map(d => ({
             ...structuredClone(d),
-            id: createId("door")
+            id: createId("door"),
+            design: d.design ? structuredClone(d.design) : undefined
         }))
     };
 
     project.rooms[newId] = newRoom;
 
-    // In Etage eintragen
     project.floors[room.floorId].rooms.push(newId);
 
-    // Aktivieren
     activeRoomId = newId;
     importToEditor();
 
@@ -7735,6 +7796,7 @@ function duplicateRoom(roomId) {
     updateEditorTitle();
     saveProject();
 }
+
 
 
 function moveRoom(roomId) {
@@ -7842,12 +7904,10 @@ function renderLeftSidebar() {
 
 function normalizeProjectIds() {
 
-    // ❗ Sicherheitscheck: Projekt muss vollständig sein
     if (!project || typeof project !== "object") return;
     if (!project.floors || !project.rooms) return;
     if (typeof project.floors !== "object" || typeof project.rooms !== "object") return;
 
-    // Floors normalisieren
     const newFloors = {};
     Object.values(project.floors).forEach(floor => {
         if (!floor) return;
@@ -7861,7 +7921,6 @@ function normalizeProjectIds() {
     });
     project.floors = newFloors;
 
-    // Rooms normalisieren
     const newRooms = {};
     Object.values(project.rooms).forEach(room => {
         if (!room) return;
@@ -7874,24 +7933,39 @@ function normalizeProjectIds() {
         if (!Array.isArray(room.doors)) room.doors = [];
         if (!Array.isArray(room.windows)) room.windows = [];
 
-        room.doors = room.doors.map(did => String(did));
-        room.windows = room.windows.map(wid => String(wid));
+        room.doors = room.doors.map(d => {
+            if (typeof d === "string") return String(d);
+            if (d && typeof d === "object") {
+                if (!d.id) d.id = createId("door");
+                ensureDoorDesignStructure(d);
+                return d;
+            }
+            return d;
+        });
+
+        room.windows = room.windows.map(w => {
+            if (typeof w === "string") return String(w);
+            if (w && typeof w === "object") {
+                if (!w.id) w.id = createId("window");
+                return w;
+            }
+            return w;
+        });
     });
     project.rooms = newRooms;
 
-    // Doors normalisieren
     if (project.doors) {
         const newDoors = {};
         Object.values(project.doors).forEach(door => {
             if (!door) return;
             const newId = String(door.id);
             door.id = newId;
+            ensureDoorDesignStructure(door);
             newDoors[newId] = door;
         });
         project.doors = newDoors;
     }
 
-    // Windows normalisieren
     if (project.windows) {
         const newWindows = {};
         Object.values(project.windows).forEach(win => {
@@ -7903,12 +7977,12 @@ function normalizeProjectIds() {
         project.windows = newWindows;
     }
 
-    // activeFloorId / activeRoomId normalisieren
     if (activeFloorId != null) activeFloorId = String(activeFloorId);
     if (activeRoomId != null) activeRoomId = String(activeRoomId);
 
     console.warn("Projekt-IDs wurden normalisiert.");
 }
+
 
 
 
