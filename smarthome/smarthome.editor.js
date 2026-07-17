@@ -3965,7 +3965,7 @@ case "zimmertuer": {
     const side = d.side || 1;
 
     // ------------------------------------------------------------
-    // 1. Schwelle (nur offen)
+    // ⭐ 1. SCHWELLE (nur offen)
     // ------------------------------------------------------------
     if (d.isOpen) {
 
@@ -3983,7 +3983,7 @@ case "zimmertuer": {
         const s4x = hx - px * half;
         const s4y = hy - py * half;
 
-        ctx.save(); // ⭐ Schwelle kapseln
+        ctx.save(); // ⭐ Schwelle kapseln – keine Effekte vom Türblatt
         ctx.beginPath();
         ctx.moveTo(s1x, s1y);
         ctx.lineTo(s2x, s2y);
@@ -3997,11 +3997,11 @@ case "zimmertuer": {
 
         ctx.fill();
         ctx.stroke();
-        ctx.restore(); // ⭐ Effekte bleiben draußen
+        ctx.restore();
     }
 
     // ------------------------------------------------------------
-    // 2. Türblatt
+    // ⭐ 2. TÜRBLATT
     // ------------------------------------------------------------
     ctx.save();
 
@@ -4052,7 +4052,6 @@ case "zimmertuer": {
     ctx.restore();
     return;
 }
-
 
 
 
