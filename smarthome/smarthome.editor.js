@@ -3970,9 +3970,12 @@ case "zimmertuer": {
 // ⭐ SCHWELLE – nur wenn offen
 if (d.isOpen) {
 
-    const half = Number(d.design.schwelle.height);          // Breite der Schwelle
-    const sw   = Number(d.design.schwelle.strokeWidth);     // Dicke der Schwelle
-    const col  = d.design.schwelle.color;                   // Farbe der Schwelle
+    const wallThickness = 12; // wie im alten Code
+    const extra = Number(d.design.schwelle.height); // dein Schieberegler
+    const half = (wallThickness + extra) / 2;
+
+    const sw   = Number(d.design.schwelle.strokeWidth);
+    const col  = d.design.schwelle.color;
 
     const s1x = hx + px * half;
     const s1y = hy + py * half;
@@ -3986,7 +3989,7 @@ if (d.isOpen) {
     const s4x = hx - px * half;
     const s4y = hy - py * half;
 
-    ctx.save(); // Schwelle kapseln – keine Türblatt-Effekte
+    ctx.save();
     ctx.beginPath();
     ctx.moveTo(s1x, s1y);
     ctx.lineTo(s2x, s2y);
@@ -4002,6 +4005,7 @@ if (d.isOpen) {
     ctx.stroke();
     ctx.restore();
 }
+
 
     // ------------------------------------------------------------
     // ⭐ 2. TÜRBLATT
