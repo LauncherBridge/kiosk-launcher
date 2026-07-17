@@ -3967,41 +3967,24 @@ case "zimmertuer": {
     // ------------------------------------------------------------
     // ⭐ 1. SCHWELLE (nur offen)
     // ------------------------------------------------------------
-// ⭐ SCHWELLE – nur wenn offen
+
 if (d.isOpen) {
 
-    const half = 10;            // ⭐ FIXE BREITE DER SCHWELLE
-    const sw   = 2;             // ⭐ FIXE STRICHSTÄRKE
-    const col  = "#ff0000";     // ⭐ FIXE FARBE (nur Beispiel)
-
-    const s1x = hx + px * half;
-    const s1y = hy + py * half;
-
-    const s2x = ox + px * half;
-    const s2y = oy + py * half;
-
-    const s3x = ox - px * half;
-    const s3y = oy - py * half;
-
-    const s4x = hx - px * half;
-    const s4y = hy - py * half;
+    const sw  = Number(d.design.schwelle.strokeWidth);
+    const col = d.design.schwelle.color;
 
     ctx.save();
     ctx.beginPath();
-    ctx.moveTo(s1x, s1y);
-    ctx.lineTo(s2x, s2y);
-    ctx.lineTo(s3x, s3y);
-    ctx.lineTo(s4x, s4y);
-    ctx.closePath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
 
-    ctx.fillStyle   = col;
     ctx.strokeStyle = col;
     ctx.lineWidth   = sw;
 
-    ctx.fill();
     ctx.stroke();
     ctx.restore();
 }
+
 
 
 
