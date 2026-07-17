@@ -3331,36 +3331,45 @@ render() {
     // ------------------------------------------------------------
     // 2) Unterstrich für aktives Objekt (Glow)
     // ------------------------------------------------------------
-    const isPanning = this.isPanning || this.isPanCandidate;
+// ⭐ Unterstrich nur bei aktivem Objekt
+const isPanning = this.isPanning || this.isPanCandidate;
 
-    if (!isPanning) {
+if (!isPanning) {
 
-        let obj = null;
+    let obj = null;
 
-        if (window.hit) {
-            switch (window.hit.type) {
-                case "door": obj = this.doors[window.hit.index]; break;
-                case "window": obj = this.windows[window.hit.index]; break;
-                case "smart": obj = this.smartContainers?.[window.hit.index]; break;
-                case "device": obj = this.devices?.[window.hit.index]; break;
-                case "furniture": obj = this.furniture?.[window.hit.index]; break;
-                case "garden": obj = this.garden?.[window.hit.index]; break;
-            }
+    // 1) Objekt ist ausgewählt
+    if (window.hit) {
+        switch (window.hit.type) {
+            case "door": obj = this.doors[window.hit.index]; break;
+            case "window": obj = this.windows[window.hit.index]; break;
+            case "smart": obj = this.smartContainers?.[window.hit.index]; break;
+            case "device": obj = this.devices?.[window.hit.index]; break;
+            case "furniture": obj = this.furniture?.[window.hit.index]; break;
+            case "garden": obj = this.garden?.[window.hit.index]; break;
         }
-
-        if (!obj && window.placeMode) {
-            switch (window.placeMode) {
-                case "door": obj = this.doors.at(-1); break;
-                case "window": obj = this.windows.at(-1); break;
-                case "smart": obj = this.smartContainers?.at(-1); break;
-                case "device": obj = this.devices?.at(-1); break;
-                case "furniture": obj = this.furniture?.at(-1); break;
-                case "garden": obj = this.garden?.at(-1); break;
-            }
-        }
-
-        if (obj) this.drawSelectionUnderlineGlow(ctx, obj);
     }
+
+    // 2) Neues Objekt wird gerade gesetzt
+    if (!obj && window.placeMode) {
+        switch (window.placeMode) {
+            case "door": obj = this.doors.at(-1); break;
+            case "window": obj = this.windows.at(-1); break;
+            case "smart": obj = this.smartContainers?.at(-1); break;
+            case "device": obj = this.devices?.at(-1); break;
+            case "furniture": obj = this.furniture?.at(-1); break;
+            case "garden": obj = this.garden?.at(-1); break;
+        }
+    }
+
+    // 3) Objekt wird gerade bewegt (Drag)
+    if (!obj) {
+        if (this.draggingDoorIndex !== null) obj = this.doors[this.draggingDoorIndex];
+        if (this.draggingWindowIndex !== null) obj = this.windows[this.draggingWindowIndex];
+    }
+
+    if (obj) this.drawSelectionUnderlineGlow(ctx, obj);
+}
 
     // ------------------------------------------------------------
     // 3) Winkelanzeige beim Drag (Welt-Kontext)
@@ -3406,22 +3415,18 @@ render() {
 drawSelectionUnderlineGlow(ctx, obj) {
     if (!obj) return;
 
-    // Maße bestimmen
     let w = obj.width || obj.w || obj.length || 80;
     let h = obj.height || obj.h || (obj.thickness ? obj.thickness * 4 : 80);
 
-    const underlineY = obj.y + h / 2 + 12;   // leicht unter dem Objekt
+    const underlineY = obj.y + h / 2 + 10;
     const x1 = obj.x - w / 2;
     const x2 = obj.x + w / 2;
 
     ctx.save();
-
-    // Glow-Effekt
     ctx.shadowColor = "rgba(102,170,255,0.9)";
-    ctx.shadowBlur = 18;
-
+    ctx.shadowBlur = 14;
     ctx.strokeStyle = "rgba(102,170,255,1)";
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 2.5;
 
     ctx.beginPath();
     ctx.moveTo(x1, underlineY);
@@ -3430,6 +3435,7 @@ drawSelectionUnderlineGlow(ctx, obj) {
 
     ctx.restore();
 }
+
 ,
     
 drawModalFocus(ctx, obj) {
