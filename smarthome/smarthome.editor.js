@@ -3967,19 +3967,21 @@ case "zimmertuer": {
     // ------------------------------------------------------------
     // 1. Schwelle (nur offen)
     // ------------------------------------------------------------
-    if (d.isOpen) {
-
+    if (d.isOpen) {        
         const half = Number(d.design.schwelle.height);
-
-        const s1x = hx + px * half;
-        const s1y = hy + py * half;
-        const s2x = ox + px * half;
-        const s2y = oy + py * half;
-        const s3x = ox - px * half;
-        const s3y = oy - py * half;
-        const s4x = hx - px * half;
-        const s4y = hy - py * half;
-
+    
+        const s1x = x1 + px * half;
+        const s1y = y1 + py * half;
+    
+        const s2x = x2 + px * half;
+        const s2y = y2 + py * half;
+    
+        const s3x = x2 - px * half;
+        const s3y = y2 - py * half;
+    
+        const s4x = x1 - px * half;
+        const s4y = y1 - py * half;
+    
         ctx.save();
         ctx.beginPath();
         ctx.moveTo(s1x, s1y);
@@ -3987,16 +3989,16 @@ case "zimmertuer": {
         ctx.lineTo(s3x, s3y);
         ctx.lineTo(s4x, s4y);
         ctx.closePath();
-
-        const sw = Number(d.design.schwelle.strokeWidth);
+    
         ctx.fillStyle   = d.design.schwelle.color;
         ctx.strokeStyle = d.design.schwelle.color;
-        ctx.lineWidth   = sw;
-
+        ctx.lineWidth   = Number(d.design.schwelle.strokeWidth);
+    
         ctx.fill();
         ctx.stroke();
         ctx.restore();
     }
+
 
     // ------------------------------------------------------------
     // 2. Türblatt
