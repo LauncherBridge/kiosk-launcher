@@ -3967,38 +3967,50 @@ case "zimmertuer": {
     // ------------------------------------------------------------
     // 1. Schwelle (nur offen)
     // ------------------------------------------------------------
-    if (d.isOpen) {        
-        const half = Number(d.design.schwelle.height);
-    
-        const s1x = x1 + px * half;
-        const s1y = y1 + py * half;
-    
-        const s2x = x2 + px * half;
-        const s2y = y2 + py * half;
-    
-        const s3x = x2 - px * half;
-        const s3y = y2 - py * half;
-    
-        const s4x = x1 - px * half;
-        const s4y = y1 - py * half;
-    
-        ctx.save();
-        ctx.beginPath();
-        ctx.moveTo(s1x, s1y);
-        ctx.lineTo(s2x, s2y);
-        ctx.lineTo(s3x, s3y);
-        ctx.lineTo(s4x, s4y);
-        ctx.closePath();
-    
-        ctx.fillStyle   = d.design.schwelle.color;
-        ctx.strokeStyle = d.design.schwelle.color;
-        ctx.lineWidth   = Number(d.design.schwelle.strokeWidth);
-    
-        ctx.fill();
-        ctx.stroke();
-        ctx.restore();
-    }
+// ⭐ ZIMMERTÜR – KORREKTE SCHWELLE
+if (d.isOpen) {
 
+    const dx = ox - hx;
+    const dy = oy - hy;
+    const len = Math.hypot(dx, dy);
+    if (!len) return;
+
+    const nx = dx / len;
+    const ny = dy / len;
+
+    const px = -ny;
+    const py = nx;
+
+    const half = Number(d.design.schwelle.height);
+
+    const s1x = hx + px * half;
+    const s1y = hy + py * half;
+
+    const s2x = ox + px * half;
+    const s2y = oy + py * half;
+
+    const s3x = ox - px * half;
+    const s3y = oy - py * half;
+
+    const s4x = hx - px * half;
+    const s4y = hy - py * half;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(s1x, s1y);
+    ctx.lineTo(s2x, s2y);
+    ctx.lineTo(s3x, s3y);
+    ctx.lineTo(s4x, s4y);
+    ctx.closePath();
+
+    ctx.fillStyle   = d.design.schwelle.color;
+    ctx.strokeStyle = d.design.schwelle.color;
+    ctx.lineWidth   = Number(d.design.schwelle.strokeWidth);
+
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+}
 
     // ------------------------------------------------------------
     // 2. Türblatt
