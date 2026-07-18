@@ -6219,71 +6219,23 @@ applyDesignChange(obj, comp, key, value) {
         value = num;
     }
 
-    const scope = obj.design.scope || "single";
-    const applyToList = [];
+    // Änderung auf das Editor-Objekt anwenden
+    ensureDoorDesignStructure(obj);
+    obj.design[comp][key] = value;
 
-    // Scope bestimmen
-    if (scope === "single") {
-        applyToList.push(obj);
-
-    } else {
-        const baseType = obj.type;
-        const currentRoom = project.rooms[activeRoomId];
-
-        if (!currentRoom) {
-            obj.design[comp][key] = value;
-            this.updateObjectVisual(obj);
-            return;
-        }
-
-        if (scope === "room") {
-            currentRoom.doors.forEach(d => {
-                if (d.type === baseType) applyToList.push(d);
-            });
-        }
-
-        if (scope === "floor") {
-            const floor = project.floors[currentRoom.floorId];
-            if (floor) {
-                floor.rooms.forEach(rid => {
-                    const r = project.rooms[rid];
-                    if (!r) return;
-                    r.doors.forEach(d => {
-                        if (d.type === baseType) applyToList.push(d);
-                    });
-                });
-            }
-        }
-
-        if (scope === "project") {
-            Object.values(project.rooms).forEach(r => {
-                r.doors.forEach(d => {
-                    if (d.type === baseType) applyToList.push(d);
-                });
-            });
-        }
-    }
-
-    // Änderungen auf alle Objekte anwenden und speichern
-    applyToList.forEach(target => {
-        ensureDoorDesignStructure(target); // nur ergänzen, nicht überschreiben
-        target.design[comp][key] = value;
-
-        // Projekt-Objekt aktualisieren
-        if (project.doors[target.id]) {
-            project.doors[target.id].design = structuredClone(target.design);
-        }
-    });
-
-    // Live-Update nur für die aktuelle Editor-Tür
+    // Live-Update NUR für das Editor-Objekt
     this.updateObjectVisual(obj);
+
+    // Projekt-Objekt aktualisieren
+    if (project.doors[obj.id]) {
+        project.doors[obj.id].design = structuredClone(obj.design);
+    }
 
     // Projekt speichern
     if (typeof saveProject === "function") {
         saveProject();
     }
 }
-
 ,
 
 
