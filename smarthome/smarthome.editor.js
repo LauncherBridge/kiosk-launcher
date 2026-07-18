@@ -6212,17 +6212,20 @@ initDesignerViewModes(selection) {
 
     
 applyDesignChange(obj, comp, key, value) {
+    // Numerische Werte validieren
     if (key === "strokeWidth" || key === "effectStrength") {
-        value = Number(value);
-        if (!Number.isFinite(value)) return;
+        const num = Number(value);
+        if (!Number.isFinite(num)) return;
+        value = num;
     }
 
     const scope = obj.design.scope || "single";
-
     const applyToList = [];
 
+    // Scope bestimmen
     if (scope === "single") {
         applyToList.push(obj);
+
     } else {
         const baseType = obj.type;
         const currentRoom = project.rooms[activeRoomId];
@@ -6261,13 +6264,26 @@ applyDesignChange(obj, comp, key, value) {
         }
     }
 
+    // Änderungen auf alle Objekte anwenden und speichern
     applyToList.forEach(target => {
-        ensureDoorDesignStructure(target);
+        ensureDoorDesignStructure(target); // nur ergänzen, nicht überschreiben
         target.design[comp][key] = value;
+
+        // Projekt-Objekt aktualisieren
+        if (project.doors[target.id]) {
+            project.doors[target.id].design = structuredClone(target.design);
+        }
     });
 
+    // Visuelles Update nur für das Ausgangsobjekt
     this.updateObjectVisual(obj);
+
+    // Projekt speichern
+    if (typeof saveProject === "function") {
+        saveProject();
+    }
 }
+
 ,
 
 
