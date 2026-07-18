@@ -6212,29 +6212,61 @@ initDesignerViewModes(selection) {
 
     
 applyDesignChange(obj, comp, key, value) {
-    // Numerische Werte validieren
     if (key === "strokeWidth" || key === "effectStrength") {
-        const num = Number(value);
-        if (!Number.isFinite(num)) return;
-        value = num;
+        value = Number(value);
+        if (!Number.isFinite(value)) return;
     }
 
-    // Änderung auf das Editor-Objekt anwenden
-    ensureDoorDesignStructure(obj);
-    obj.design[comp][key] = value;
+    const scope = obj.design.scope || "single";
 
-    // Live-Update NUR für das Editor-Objekt
+    const applyToList = [];
+
+    if (scope === "single") {
+        applyToList.push(obj);
+    } else {
+        const baseType = obj.type;
+        const currentRoom = project.rooms[activeRoomId];
+
+        if (!currentRoom) {
+            obj.design[comp][key] = value;
+            this.updateObjectVisual(obj);
+            return;
+        }
+
+        if (scope === "room") {
+            currentRoom.doors.forEach(d => {
+                if (d.type === baseType) applyToList.push(d);
+            });
+        }
+
+        if (scope === "floor") {
+            const floor = project.floors[currentRoom.floorId];
+            if (floor) {
+                floor.rooms.forEach(rid => {
+                    const r = project.rooms[rid];
+                    if (!r) return;
+                    r.doors.forEach(d => {
+                        if (d.type === baseType) applyToList.push(d);
+                    });
+                });
+            }
+        }
+
+        if (scope === "project") {
+            Object.values(project.rooms).forEach(r => {
+                r.doors.forEach(d => {
+                    if (d.type === baseType) applyToList.push(d);
+                });
+            });
+        }
+    }
+
+    applyToList.forEach(target => {
+        ensureDoorDesignStructure(target);
+        target.design[comp][key] = value;
+    });
+
     this.updateObjectVisual(obj);
-
-    // Projekt-Objekt aktualisieren
-    if (project.doors[obj.id]) {
-        project.doors[obj.id].design = structuredClone(obj.design);
-    }
-
-    // Projekt speichern
-    if (typeof saveProject === "function") {
-        saveProject();
-    }
 }
 ,
 
