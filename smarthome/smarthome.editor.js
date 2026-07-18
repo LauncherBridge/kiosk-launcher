@@ -6218,7 +6218,6 @@ applyDesignChange(obj, comp, key, value) {
     }
 
     const scope = obj.design.scope || "single";
-
     const applyToList = [];
 
     if (scope === "single") {
@@ -6261,13 +6260,30 @@ applyDesignChange(obj, comp, key, value) {
         }
     }
 
+    // ⭐ 1) Editor-Objekte aktualisieren
     applyToList.forEach(target => {
         ensureDoorDesignStructure(target);
         target.design[comp][key] = value;
     });
 
+    // ⭐ 2) Live-Update für das Editor-Objekt
     this.updateObjectVisual(obj);
+
+    // ⭐ 3) Projekt-Objekte aktualisieren (NEU!)
+    const currentRoom = project.rooms[activeRoomId];
+    if (currentRoom) {
+        currentRoom.doors.forEach(projDoor => {
+            const editorDoor = applyToList.find(ed => ed.id === projDoor.id);
+            if (editorDoor) {
+                projDoor.design = structuredClone(editorDoor.design);
+            }
+        });
+    }
+
+    // ⭐ 4) Speichern (NEU!)
+    saveProject();
 }
+
 ,
 
 
