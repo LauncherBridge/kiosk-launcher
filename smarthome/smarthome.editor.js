@@ -6264,10 +6264,13 @@ applyDesignChange(obj, comp, key, value) {
         }
     }
 
-    // Änderungen auf alle Objekte anwenden und speichern
+    // Änderungen anwenden, visuell aktualisieren und speichern
     applyToList.forEach(target => {
         ensureDoorDesignStructure(target); // nur ergänzen, nicht überschreiben
         target.design[comp][key] = value;
+
+        // Live-Update für jedes Objekt
+        this.updateObjectVisual(target);
 
         // Projekt-Objekt aktualisieren
         if (project.doors[target.id]) {
@@ -6275,14 +6278,12 @@ applyDesignChange(obj, comp, key, value) {
         }
     });
 
-    // Visuelles Update nur für das Ausgangsobjekt
-    this.updateObjectVisual(obj);
-
     // Projekt speichern
     if (typeof saveProject === "function") {
         saveProject();
     }
 }
+
 
 ,
 
