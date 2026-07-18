@@ -6380,18 +6380,23 @@ function ensureDoorDesignStructure(obj) {
             const d = obj.design[key];
 
             if (d.strokeWidth != null) {
-                d.strokeWidth = Number(d.strokeWidth);
-                if (!Number.isFinite(d.strokeWidth)) {
-                    d.strokeWidth = defaults[key].strokeWidth;
+                const num = Number(d.strokeWidth);
+                if (Number.isFinite(num)) {
+                    d.strokeWidth = num;
                 }
+                // ❌ NICHT überschreiben, wenn ungültig
             }
 
+
+
             if (d.effectStrength != null) {
-                d.effectStrength = Number(d.effectStrength);
-                if (!Number.isFinite(d.effectStrength)) {
-                    d.effectStrength = defaults[key].effectStrength ?? 0;
+                const num = Number(d.effectStrength);
+                if (Number.isFinite(num)) {
+                    d.effectStrength = num;
                 }
+                // ❌ NICHT überschreiben, wenn ungültig
             }
+
         }
     }
 
@@ -7819,7 +7824,8 @@ function normalizeProjectIds() {
             if (!door) return;
             const newId = String(door.id);
             door.id = newId;
-            ensureDoorDesignStructure(door);
+            // Nur fehlende Felder ergänzen, NICHT überschreiben
+            ensureDoorDesignStructure(door, { preserveExisting: true });
             newDoors[newId] = door;
         });
         project.doors = newDoors;
