@@ -6212,6 +6212,7 @@ initDesignerViewModes(selection) {
 
     
 applyDesignChange(obj, comp, key, value) {
+    // Numerische Werte validieren
     if (key === "strokeWidth" || key === "effectStrength") {
         value = Number(value);
         if (!Number.isFinite(value)) return;
@@ -6220,12 +6221,25 @@ applyDesignChange(obj, comp, key, value) {
     const scope = obj.design.scope || "single";
     const applyToList = [];
 
+    // ------------------------------------------------------------
+    // ⭐ 1) ALWAYS collect EDITOR objects, NEVER project objects
+    // ------------------------------------------------------------
+    const collectEditorDoors = (projDoors) => {
+        projDoors.forEach(projDoor => {
+            const editorDoor = this.doors.find(ed => ed.id === projDoor.id);
+            if (editorDoor && editorDoor.type === obj.type) {
+                applyToList.push(editorDoor);
+            }
+        });
+    };
+
+    // ------------------------------------------------------------
+    // ⭐ Scope: single / room / floor / project
+    // ------------------------------------------------------------
     if (scope === "single") {
         applyToList.push(obj);
     } else {
-        const baseType = obj.type;
         const currentRoom = project.rooms[activeRoomId];
-
         if (!currentRoom) {
             obj.design[comp][key] = value;
             this.updateObjectVisual(obj);
@@ -6233,9 +6247,7 @@ applyDesignChange(obj, comp, key, value) {
         }
 
         if (scope === "room") {
-            currentRoom.doors.forEach(d => {
-                if (d.type === baseType) applyToList.push(d);
-            });
+            collectEditorDoors(currentRoom.doors);
         }
 
         if (scope === "floor") {
@@ -6243,44 +6255,42 @@ applyDesignChange(obj, comp, key, value) {
             if (floor) {
                 floor.rooms.forEach(rid => {
                     const r = project.rooms[rid];
-                    if (!r) return;
-                    r.doors.forEach(d => {
-                        if (d.type === baseType) applyToList.push(d);
-                    });
+                    if (r) collectEditorDoors(r.doors);
                 });
             }
         }
 
         if (scope === "project") {
             Object.values(project.rooms).forEach(r => {
-                r.doors.forEach(d => {
-                    if (d.type === baseType) applyToList.push(d);
-                });
+                collectEditorDoors(r.doors);
             });
         }
     }
 
-    // ⭐ 1) Editor-Objekte aktualisieren
-    applyToList.forEach(target => {
-        ensureDoorDesignStructure(target);
-        target.design[comp][key] = value;
+    // ------------------------------------------------------------
+    // ⭐ 2) Update EDITOR objects (live)
+    // ------------------------------------------------------------
+    applyToList.forEach(editorDoor => {
+        ensureDoorDesignStructure(editorDoor);
+        editorDoor.design[comp][key] = value;
+        this.updateObjectVisual(editorDoor);
     });
 
-    // ⭐ 2) Live-Update für das Editor-Objekt
-    this.updateObjectVisual(obj);
-
-    // ⭐ 3) Projekt-Objekte aktualisieren (NEU!)
-    const currentRoom = project.rooms[activeRoomId];
-    if (currentRoom) {
-        currentRoom.doors.forEach(projDoor => {
+    // ------------------------------------------------------------
+    // ⭐ 3) Update PROJECT objects (persistent)
+    // ------------------------------------------------------------
+    Object.values(project.rooms).forEach(room => {
+        room.doors.forEach(projDoor => {
             const editorDoor = applyToList.find(ed => ed.id === projDoor.id);
             if (editorDoor) {
                 projDoor.design = structuredClone(editorDoor.design);
             }
         });
-    }
+    });
 
-    // ⭐ 4) Speichern (NEU!)
+    // ------------------------------------------------------------
+    // ⭐ 4) Save project
+    // ------------------------------------------------------------
     saveProject();
 }
 
