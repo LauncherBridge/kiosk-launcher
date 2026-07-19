@@ -137,9 +137,9 @@ function createDoorDesign(type) {
     // Typ-spezifische Developer-Defaults
     const typeDefaults = {
         zimmertuer: {
-            blatt: { color: "#ffcc00", strokeWidth: 4 },
-            schwelle: { color: "schwelle.color = "#222222"", strokeWidth: 3 },
-            arc: { color: "#111111", strokeWidth: 2 },
+            blatt: { color: "#1a1a1a", strokeWidth: 4 },
+            schwelle: { color: "#222222", strokeWidth: 2 },
+            arc: { color: "#222222", strokeWidth: 2 },
             hinge: { color: "#111111", strokeWidth: 2 }
         },
         haustuer: {
