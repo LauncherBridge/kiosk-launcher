@@ -4018,1149 +4018,1164 @@ drawAngleAtPoint(P, A, B) {
     },
 
 drawDoorByType(ctx, d, geo) {
-ensureDoorDesignStructure(d);
-
+    
+    ensureDoorDesignStructure(d);
     const { x1, y1, x2, y2 } = geo;
-
+    
     switch (d.type) {
-
         // ------------------------------------------------------------
         // ⭐ Zimmertür
         // ------------------------------------------------------------
-case "zimmertuer": {
-
-    const hx = (d.hinge === "start") ? x1 : x2;
-    const hy = (d.hinge === "start") ? y1 : y2;
-
-    const ox = (d.hinge === "start") ? x2 : x1;
-    const oy = (d.hinge === "start") ? y2 : y1;
-
-    const dx = ox - hx;
-    const dy = oy - hy;
-    const len = Math.hypot(dx, dy);
-    if (!len) return;
-
-    const nx = dx / len;
-    const ny = dy / len;
-    const px = -ny;
-    const py = nx;
-
-    const side = d.side || 1;
-
-    // ------------------------------------------------------------
-    // ⭐ 1. SCHWELLE (nur offen)
-    // ------------------------------------------------------------
-
-if (d.isOpen) {
-
-    const sw  = Number(d.design.schwelle.strokeWidth);
-    const col = d.design.schwelle.color;
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-
-    ctx.strokeStyle = col;
-    ctx.lineWidth   = sw;
-
-    ctx.stroke();
-    ctx.restore();
-}
-
-
-
-
-    // ------------------------------------------------------------
-    // ⭐ 2. TÜRBLATT
-    // ------------------------------------------------------------
-    ctx.save();
-
-    const blattStroke      = Number(d.design.blatt.strokeWidth);
-    const blattEffStrength = Number(d.design.blatt.effectStrength);
-
-    ctx.strokeStyle = d.design.blatt.color;
-    ctx.lineWidth   = blattStroke;
-
-    // ⭐ Effekt anwenden (nur Türblatt)
-    if (d.design.blatt.effect === "glow") {
-        ctx.shadowColor = d.design.blatt.effectColor;
-        ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 2.5;
-    }
-    else if (d.design.blatt.effect === "shadow") {
-        ctx.shadowColor = d.design.blatt.effectColor;
-        ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 1.2;
-    }
-    else if (d.design.blatt.effect === "outline") {
-        ctx.shadowColor = d.design.blatt.effectColor;
-    
-        // ⭐ Outline sichtbar machen – Effektstärke einbeziehen
-        const eff = Math.pow(blattEffStrength, 1.3);
-    
-        // ⭐ Kombination aus Strichstärke + Effektstärke
-        ctx.shadowBlur = blattStroke * 1.5 + eff * 2.0;
-    }
-
-    else if (d.design.blatt.effect === "blur") {
-        ctx.shadowColor = d.design.blatt.effectColor;
-        ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 3.0;
-    }
-    else {
-        ctx.shadowColor = "transparent";
-        ctx.shadowBlur  = 0;
-    }
-
-
-    if (d.isOpen) {
-        const angle = Math.PI / 2 * side;
-        const rx = nx * Math.cos(angle) - ny * Math.sin(angle);
-        const ry = nx * Math.sin(angle) + ny * Math.cos(angle);
-
-        ctx.beginPath();
-        ctx.moveTo(hx, hy);
-        ctx.lineTo(hx + rx * len, hy + ry * len);
-        ctx.stroke();
-
-    } else {
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-        ctx.stroke();
-    }
-
-    ctx.restore();
-    return;
-}
-
-
-
-        // ------------------------------------------------------------
-        // ⭐ Haustür
-        // ------------------------------------------------------------
-case "haustuer": {
-
-    const hx = (d.hinge === "start") ? x1 : x2;
-    const hy = (d.hinge === "start") ? y1 : y2;
-
-    const ox = (d.hinge === "start") ? x2 : x1;
-    const oy = (d.hinge === "start") ? y2 : y1;
-
-    const dx = ox - hx;
-    const dy = oy - hy;
-    const len = Math.hypot(dx, dy);
-    if (!len) return;
-
-    const nx = dx / len;
-    const ny = dy / len;
-    const px = -ny;
-    const py = nx;
-
-    const side = d.side || 1;
-
-    // ------------------------------------------------------------
-    // ⭐ 1. SCHWELLE (nur offen, als Strich auf der Wand)
-    // ------------------------------------------------------------
-    if (d.isOpen) {
-
-        const sw  = Number(d.design.schwelle.strokeWidth);
-        const col = d.design.schwelle.color;
-
-        ctx.save();
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-
-        ctx.strokeStyle = col;
-        ctx.lineWidth   = sw;
-
-        ctx.stroke();
-        ctx.restore();
-    }
-
-    // ------------------------------------------------------------
-    // ⭐ 2. TÜRBLATT
-    // ------------------------------------------------------------
-    ctx.save();
-
-    const blattStroke      = Number(d.design.blatt.strokeWidth);
-    const blattEffStrength = Number(d.design.blatt.effectStrength);
-
-    ctx.strokeStyle = d.design.blatt.color;
-    ctx.lineWidth   = blattStroke;
-
-    // ⭐ Effekt anwenden (nur Türblatt)
-    if (d.design.blatt.effect === "glow") {
-        ctx.shadowColor = d.design.blatt.effectColor;
-        ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 2.5;
-    }
-    else if (d.design.blatt.effect === "shadow") {
-        ctx.shadowColor = d.design.blatt.effectColor;
-        ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 1.2;
-    }
-    else if (d.design.blatt.effect === "outline") {
-        ctx.shadowColor = d.design.blatt.effectColor;
-
-        const eff = Math.pow(blattEffStrength, 1.3);
-        ctx.shadowBlur = blattStroke * 1.5 + eff * 2.0;
-    }
-    else if (d.design.blatt.effect === "blur") {
-        ctx.shadowColor = d.design.blatt.effectColor;
-        ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 3.0;
-    }
-    else {
-        ctx.shadowColor = "transparent";
-        ctx.shadowBlur  = 0;
-    }
-
-    if (d.isOpen) {
-        const angle = Math.PI / 2 * side;
-        const rx = nx * Math.cos(angle) - ny * Math.sin(angle);
-        const ry = nx * Math.sin(angle) + ny * Math.cos(angle);
-
-        ctx.beginPath();
-        ctx.moveTo(hx, hy);
-        ctx.lineTo(hx + rx * len, hy + ry * len);
-        ctx.stroke();
-
-    } else {
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-        ctx.stroke();
-    }
-
-    ctx.restore();
-    return;
-}
-
-
-
-// ------------------------------------------------------------
-// ⭐ Schiebetür → kein Viertelkreis
-// ------------------------------------------------------------
-case "schiebetuer": {
-
-    const dx = x2 - x1;
-    const dy = y2 - y1;
-    const len = Math.hypot(dx, dy);
-    if (!len) return;
-
-    const nx = dx / len;
-    const ny = dy / len;
-    const px = -ny;
-    const py = nx;
-
-    // ------------------------------------------------------------
-    // ⭐ 1. SCHWELLE (als Strich auf der Wand)
-    // ------------------------------------------------------------
-    if (d.isOpen) {
-
-        const sw  = Number(d.design.schwelle.strokeWidth);
-        const col = d.design.schwelle.color;
-
-        ctx.save();
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-
-        ctx.strokeStyle = col;
-        ctx.lineWidth   = sw;
-
-        ctx.stroke();
-        ctx.restore();
-    }
-
-    // ------------------------------------------------------------
-    // ⭐ 2. TÜRBLATT (Schiebetür-Logik bleibt!)
-    // ------------------------------------------------------------
-    let hx, hy, ox, oy;
-    if (d.hinge === "start") {
-        hx = x1; hy = y1;
-        ox = x2; oy = y2;
-    } else {
-        hx = x2; hy = y2;
-        ox = x1; oy = y1;
-    }
-
-    const dx2 = ox - hx;
-    const dy2 = oy - hy;
-    const len2 = Math.hypot(dx2, dy2);
-    if (!len2) return;
-
-    const nx2 = dx2 / len2;
-    const ny2 = dy2 / len2;
-    const px2 = -ny2;
-    const py2 = nx2;
-
-    const side   = d.side || 1;
-    const offset = 4;
-
-    ctx.save();
-
-    const blattStroke      = Number(d.design.blatt.strokeWidth);
-    const blattEffStrength = Number(d.design.blatt.effectStrength);
-
-    ctx.strokeStyle = d.design.blatt.color;
-    ctx.lineWidth   = blattStroke;
-
-    // ⭐ Effekt anwenden (neue Skalierung)
-    if (d.design.blatt.effect === "glow") {
-        ctx.shadowColor = d.design.blatt.effectColor;
-        ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 2.5;
-    }
-    else if (d.design.blatt.effect === "shadow") {
-        ctx.shadowColor = d.design.blatt.effectColor;
-        ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 1.2;
-    }
-    else if (d.design.blatt.effect === "outline") {
-        ctx.shadowColor = d.design.blatt.effectColor;
-
-        const eff = Math.pow(blattEffStrength, 1.3);
-        ctx.shadowBlur = blattStroke * 1.5 + eff * 2.0;
-    }
-    else if (d.design.blatt.effect === "blur") {
-        ctx.shadowColor = d.design.blatt.effectColor;
-        ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 3.0;
-    }
-    else {
-        ctx.shadowColor = "transparent";
-        ctx.shadowBlur  = 0;
-    }
-
-    // ⭐ Schiebetür bleibt Schiebetür
-    if (d.isOpen) {
-
-        const mx = hx + px2 * offset * side;
-        const my = hy + py2 * offset * side;
-
-        const halfLen = len2 / 2;
-
-        const sx = mx - nx2 * halfLen;
-        const sy = my - ny2 * halfLen;
-        const ex = mx + nx2 * halfLen;
-        const ey = my + ny2 * halfLen;
-
-        ctx.beginPath();
-        ctx.moveTo(sx, sy);
-        ctx.lineTo(ex, ey);
-        ctx.stroke();
-
-    } else {
-
-        const bx = hx + px2 * offset * side;
-        const by = hy + py2 * offset * side;
-
-        ctx.beginPath();
-        ctx.moveTo(bx, by);
-        ctx.lineTo(bx + nx2 * len2, by + ny2 * len2);
-        ctx.stroke();
-    }
-
-    ctx.restore();
-    return;
-}
-
-
-        // ------------------------------------------------------------
-        // ⭐ Falttür → segmentiert
-        // ------------------------------------------------------------
-case "falttuer": {
-
-    const dx = x2 - x1;
-    const dy = y2 - y1;
-    const len = Math.hypot(dx, dy);
-    if (!len) return;
-
-    const nx = dx / len;
-    const ny = dy / len;
-    const px = -ny;
-    const py = nx;
-
-    // ------------------------------------------------------------
-    // ⭐ 1. SCHWELLE (als Strich auf der Wand)
-    // ------------------------------------------------------------
-    if (d.isOpen) {
-
-        const sw  = Number(d.design.schwelle.strokeWidth);
-        const col = d.design.schwelle.color;
-
-        ctx.save();
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-
-        ctx.strokeStyle = col;
-        ctx.lineWidth   = sw;
-
-        ctx.stroke();
-        ctx.restore();
-    }
-
-    // ------------------------------------------------------------
-    // ⭐ 2. GESCHLOSSENE FALTTÜR
-    // ------------------------------------------------------------
-    if (!d.isOpen) {
-
-        const c1x = (x1 + x1) / 2;
-        const c1y = (y1 + y1) / 2;
-        const c2x = (x2 + x2) / 2;
-        const c2y = (y2 + y2) / 2;
-
-        ctx.save();
-
-        const blattStroke      = Number(d.design.blatt.strokeWidth);
-        const blattEffStrength = Number(d.design.blatt.effectStrength);
-
-        ctx.strokeStyle = d.design.blatt.color;
-        ctx.lineWidth   = blattStroke;
-
-        // ⭐ Neue Effekte
-        if (d.design.blatt.effect === "glow") {
-            ctx.shadowColor = d.design.blatt.effectColor;
-            ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 2.5;
-        }
-        else if (d.design.blatt.effect === "shadow") {
-            ctx.shadowColor = d.design.blatt.effectColor;
-            ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 1.2;
-        }
-        else if (d.design.blatt.effect === "outline") {
-            ctx.shadowColor = d.design.blatt.effectColor;
-
-            const eff = Math.pow(blattEffStrength, 1.3);
-            ctx.shadowBlur = blattStroke * 1.5 + eff * 2.0;
-        }
-        else if (d.design.blatt.effect === "blur") {
-            ctx.shadowColor = d.design.blatt.effectColor;
-            ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 3.0;
-        }
-        else {
-            ctx.shadowColor = "transparent";
-            ctx.shadowBlur  = 0;
-        }
-
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-        ctx.stroke();
-
-        ctx.restore();
-        return;
-    }
-
-    // ------------------------------------------------------------
-    // ⭐ 3. OFFENE FALTTÜR (Falttür-Mechanik bleibt!)
-    // ------------------------------------------------------------
-    let hx, hy, ox, oy;
-    if (d.hinge === "start") {
-        hx = x1; hy = y1;
-        ox = x2; oy = y2;
-    } else {
-        hx = x2; hy = y2;
-        ox = x1; oy = y1;
-    }
-
-    const dx2 = ox - hx;
-    const dy2 = oy - hy;
-    const len2 = Math.hypot(dx2, dy2);
-    if (!len2) return;
-
-    const nx2 = dx2 / len2;
-    const ny2 = dy2 / len2;
-
-    const step   = 2;
-    const height = 4;
-    const count  = 8;
-
-    ctx.save();
-    ctx.translate(hx, hy);
-    ctx.rotate(Math.atan2(dy2, dx2));
-
-    const blattStroke      = Number(d.design.blatt.strokeWidth);
-    const blattEffStrength = Number(d.design.blatt.effectStrength);
-
-    ctx.strokeStyle = d.design.blatt.color;
-    ctx.lineWidth   = blattStroke;
-
-    // ⭐ Neue Effekte
-    if (d.design.blatt.effect === "glow") {
-        ctx.shadowColor = d.design.blatt.effectColor;
-        ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 2.5;
-    }
-    else if (d.design.blatt.effect === "shadow") {
-        ctx.shadowColor = d.design.blatt.effectColor;
-        ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 1.2;
-    }
-    else if (d.design.blatt.effect === "outline") {
-        ctx.shadowColor = d.design.blatt.effectColor;
-
-        const eff = Math.pow(blattEffStrength, 1.3);
-        ctx.shadowBlur = blattStroke * 1.5 + eff * 2.0;
-    }
-    else if (d.design.blatt.effect === "blur") {
-        ctx.shadowColor = d.design.blatt.effectColor;
-        ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 3.0;
-    }
-    else {
-        ctx.shadowColor = "transparent";
-        ctx.shadowBlur  = 0;
-    }
-
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-
-    for (let i = 1; i <= count; i++) {
-        const x = i * step;
-        const y = (i % 2 === 0) ? -height : 0;
-        ctx.lineTo(x, y);
-    }
-
-    ctx.stroke();
-    ctx.restore();
-
-    return;
-}
-
-        // ------------------------------------------------------------
-        // ⭐ Terrassentür → Glas
-        // ------------------------------------------------------------
-case "terrassentuer": {
-
-    const hx = (d.hinge === "start") ? x1 : x2;
-    const hy = (d.hinge === "start") ? y1 : y2;
-
-    const ox = (d.hinge === "start") ? x2 : x1;
-    const oy = (d.hinge === "start") ? y2 : y1;
-
-    const dx = ox - hx;
-    const dy = oy - hy;
-    const len = Math.hypot(dx, dy);
-    if (!len) return;
-
-    const nx = dx / len;
-    const ny = dy / len;
-    const px = -ny;
-    const py = nx;
-
-    const side = d.side || 1;
-
-    // ------------------------------------------------------------
-    // ⭐ 1. SCHWELLE (als Strich, nur wenn offen)
-    // ------------------------------------------------------------
-    if (d.isOpen) {
-
-        const sw  = Number(d.design.schwelle.strokeWidth);
-        const col = d.design.schwelle.color;
-
-        ctx.save();
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-
-        ctx.strokeStyle = col;
-        ctx.lineWidth   = sw;
-
-        ctx.stroke();
-        ctx.restore();
-    }
-
-    // ------------------------------------------------------------
-    // ⭐ 2. TÜRBLATT
-    // ------------------------------------------------------------
-    ctx.save();
-
-    const blattStroke      = Number(d.design.blatt.strokeWidth);
-    const blattEffStrength = Number(d.design.blatt.effectStrength);
-
-    ctx.strokeStyle = d.design.blatt.color;
-    ctx.lineWidth   = blattStroke;
-
-    // ⭐ Neue skalierte Effekte
-    if (d.design.blatt.effect === "glow") {
-        ctx.shadowColor = d.design.blatt.effectColor;
-        ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 2.5;
-    }
-    else if (d.design.blatt.effect === "shadow") {
-        ctx.shadowColor = d.design.blatt.effectColor;
-        ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 1.2;
-    }
-    else if (d.design.blatt.effect === "outline") {
-        ctx.shadowColor = d.design.blatt.effectColor;
-
-        const eff = Math.pow(blattEffStrength, 1.3);
-        ctx.shadowBlur = blattStroke * 1.5 + eff * 2.0;
-    }
-    else if (d.design.blatt.effect === "blur") {
-        ctx.shadowColor = d.design.blatt.effectColor;
-        ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 3.0;
-    }
-    else {
-        ctx.shadowColor = "transparent";
-        ctx.shadowBlur  = 0;
-    }
-
-    if (d.isOpen) {
-
-        const angle = Math.PI / 2 * side;
-        const rx = nx * Math.cos(angle) - ny * Math.sin(angle);
-        const ry = nx * Math.sin(angle) + ny * Math.cos(angle);
-
-        const ex = hx + rx * len;
-        const ey = hy + ry * len;
-
-        ctx.beginPath();
-        ctx.moveTo(hx, hy);
-        ctx.lineTo(ex, ey);
-        ctx.stroke();
-
-        // ⭐ Glasfüllung bleibt unverändert
-        const inset      = blattStroke * 0.3;
-        const glassWidth = Math.max(1, blattStroke * 0.5);
-
-        ctx.strokeStyle = d.design.blatt.effectColor;
-        ctx.lineWidth   = glassWidth;
-
-        ctx.beginPath();
-        ctx.moveTo(hx + px * inset, hy + py * inset);
-        ctx.lineTo(ex + px * inset, ey + py * inset);
-        ctx.stroke();
-
-    } else {
-
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-        ctx.stroke();
-
-        const inset      = blattStroke * 0.3;
-        const glassWidth = Math.max(1, blattStroke * 0.5);
-
-        ctx.strokeStyle = d.design.blatt.effectColor;
-        ctx.lineWidth   = glassWidth;
-
-        ctx.beginPath();
-        ctx.moveTo(x1 + px * inset, y1 + py * inset);
-        ctx.lineTo(x2 + px * inset, y2 + py * inset);
-        ctx.stroke();
-    }
-
-    ctx.restore();
-    return;
-}
-
-
-
-        // ------------------------------------------------------------
-        // ⭐ Garagentor → dicke Linie
-        // ------------------------------------------------------------
-case "garagentor": {
-
-    // ------------------------------------------------------------
-    // 0. Drehpunkt bestimmen (Scharnierseite)
-    // ------------------------------------------------------------
-    const hx = (d.hinge === "start") ? x1 : x2;
-    const hy = (d.hinge === "start") ? y1 : y2;
-
-    const ox = (d.hinge === "start") ? x2 : x1;
-    const oy = (d.hinge === "start") ? y2 : y1;
-
-    const dx = ox - hx;
-    const dy = oy - hy;
-    const len = Math.hypot(dx, dy);
-    if (!len) return;
-
-    const nx = dx / len;
-    const ny = dy / len;
-
-    const px = -ny;
-    const py = nx;
-
-    const side = d.side || 1;
-
-    // ------------------------------------------------------------
-    // ⭐ 1. SCHWELLE (als Strich, nur wenn offen)
-    // ------------------------------------------------------------
-    if (d.isOpen) {
-
-        const sw  = Number(d.design.schwelle.strokeWidth);
-        const col = d.design.schwelle.color;
-
-        ctx.save();
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-
-        ctx.strokeStyle = col;
-        ctx.lineWidth   = sw;
-
-        ctx.stroke();
-        ctx.restore();
-    }
-
-    // ------------------------------------------------------------
-    // 2. Torblatt (offen = verschoben, geschlossen = normal)
-    // ------------------------------------------------------------
-    let bx1 = x1;
-    let by1 = y1;
-    let bx2 = x2;
-    let by2 = y2;
-
-    if (d.isOpen) {
-        const offset = 40 * side;
-        bx1 = x1 + px * offset;
-        by1 = y1 + py * offset;
-        bx2 = x2 + px * offset;
-        by2 = y2 + py * offset;
-    }
-
-    ctx.save();
-
-    const blattStroke      = Number(d.design.blatt.strokeWidth);
-    const blattEffStrength = Number(d.design.blatt.effectStrength);
-
-    // ------------------------------------------------------------
-    // ⭐ OFFEN: dickes, transparentes Torblatt
-    // ------------------------------------------------------------
-    if (d.isOpen) {
-
-        ctx.strokeStyle = d.design.blatt.color + "40";
-        ctx.lineWidth   = blattStroke * 8;
-
-        // ⭐ Neue skalierte Effekte
-        if (d.design.blatt.effect === "glow") {
-            ctx.shadowColor = d.design.blatt.effectColor;
-            ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 2.5;
-        }
-        else if (d.design.blatt.effect === "shadow") {
-            ctx.shadowColor = d.design.blatt.effectColor;
-            ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 1.2;
-        }
-        else if (d.design.blatt.effect === "outline") {
-            ctx.shadowColor = d.design.blatt.effectColor;
-
-            const eff = Math.pow(blattEffStrength, 1.3);
-            ctx.shadowBlur = blattStroke * 1.5 + eff * 2.0;
-        }
-        else if (d.design.blatt.effect === "blur") {
-            ctx.shadowColor = d.design.blatt.effectColor;
-            ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 3.0;
-        }
-        else {
-            ctx.shadowColor = "transparent";
-            ctx.shadowBlur  = 0;
-        }
-
-        ctx.beginPath();
-        ctx.moveTo(bx1, by1);
-        ctx.lineTo(bx2, by2);
-        ctx.stroke();
-
-        // Strukturstreifen
-        ctx.strokeStyle = d.design.blatt.color;
-        ctx.lineWidth   = blattStroke;
-
-        const steps = 3;
-        for (let i = 1; i <= steps; i++) {
-            const t = i / (steps + 1);
-
-            const sx = bx1 + (bx2 - bx1) * t;
-            const sy = by1 + (by2 - by1) * t;
-
+        case "zimmertuer": {
+        
+            const hx = (d.hinge === "start") ? x1 : x2;
+            const hy = (d.hinge === "start") ? y1 : y2;
+        
+            const ox = (d.hinge === "start") ? x2 : x1;
+            const oy = (d.hinge === "start") ? y2 : y1;
+        
+            const dx = ox - hx;
+            const dy = oy - hy;
+            const len = Math.hypot(dx, dy);
+            if (!len) return;
+        
+            const nx = dx / len;
+            const ny = dy / len;
+            const px = -ny;
+            const py = nx;
+        
+            const side = d.side || 1;
+        
+            // ------------------------------------------------------------
+            // ⭐ 1. SCHWELLE (nur offen)
+            // ------------------------------------------------------------
+        
+        if (d.isOpen) {
+        
+            const sw  = Number(d.design.schwelle.strokeWidth);
+            const col = d.design.schwelle.color;
+        
+            ctx.save();
             ctx.beginPath();
-            ctx.moveTo(sx, sy);
-            ctx.lineTo(
-                sx + (y1 - y2) * 0.15,
-                sy + (x2 - x1) * 0.15
-            );
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+        
+            ctx.strokeStyle = col;
+            ctx.lineWidth   = sw;
+        
             ctx.stroke();
+            ctx.restore();
         }
-
-        ctx.restore();
-        return;
-    }
-
-    // ------------------------------------------------------------
-    // ⭐ GESCHLOSSEN: dünne Linie + optionaler Rahmen
-    // ------------------------------------------------------------
-    ctx.strokeStyle = d.design.blatt.color;
-    ctx.lineWidth   = blattStroke;
-
-    // ⭐ Neue skalierte Effekte
-    if (d.design.blatt.effect === "glow") {
-        ctx.shadowColor = d.design.blatt.effectColor;
-        ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 2.5;
-    }
-    else if (d.design.blatt.effect === "shadow") {
-        ctx.shadowColor = d.design.blatt.effectColor;
-        ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 1.2;
-    }
-    else if (d.design.blatt.effect === "outline") {
-        ctx.shadowColor = d.design.blatt.effectColor;
-
-        const eff = Math.pow(blattEffStrength, 1.3);
-        ctx.shadowBlur = blattStroke * 1.5 + eff * 2.0;
-    }
-    else if (d.design.blatt.effect === "blur") {
-        ctx.shadowColor = d.design.blatt.effectColor;
-        ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 3.0;
-    }
-    else {
-        ctx.shadowColor = "transparent";
-        ctx.shadowBlur  = 0;
-    }
-
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
-
-    // Rahmen für offene Position
-    const offset = 40 * side;
-
-    const fx1 = x1 + px * offset;
-    const fy1 = y1 + py * offset;
-
-    const fx2 = x2 + px * offset;
-    const fy2 = y2 + py * offset;
-
-    ctx.save();
-    ctx.strokeStyle = d.design.blatt.color;
-    ctx.lineWidth   = Math.max(1, blattStroke * 0.5);
-
-    ctx.beginPath();
-    ctx.moveTo(fx1, fy1);
-    ctx.lineTo(fx2, fy2);
-    ctx.stroke();
-    ctx.restore();
-
-    ctx.restore();
-    return;
-}
-
-
+        
+        
+        
+        
+            // ------------------------------------------------------------
+            // ⭐ 2. TÜRBLATT
+            // ------------------------------------------------------------
+            ctx.save();
+        
+            const blattStroke      = Number(d.design.blatt.strokeWidth);
+            const blattEffStrength = Number(d.design.blatt.effectStrength);
+        
+            ctx.strokeStyle = d.design.blatt.color;
+            ctx.lineWidth   = blattStroke;
+        
+            // ⭐ Effekt anwenden (nur Türblatt)
+            if (d.design.blatt.effect === "glow") {
+                ctx.shadowColor = d.design.blatt.effectColor;
+                ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 2.5;
+            }
+            else if (d.design.blatt.effect === "shadow") {
+                ctx.shadowColor = d.design.blatt.effectColor;
+                ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 1.2;
+            }
+            else if (d.design.blatt.effect === "outline") {
+                ctx.shadowColor = d.design.blatt.effectColor;
+            
+                // ⭐ Outline sichtbar machen – Effektstärke einbeziehen
+                const eff = Math.pow(blattEffStrength, 1.3);
+            
+                // ⭐ Kombination aus Strichstärke + Effektstärke
+                ctx.shadowBlur = blattStroke * 1.5 + eff * 2.0;
+            }
+        
+            else if (d.design.blatt.effect === "blur") {
+                ctx.shadowColor = d.design.blatt.effectColor;
+                ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 3.0;
+            }
+            else {
+                ctx.shadowColor = "transparent";
+                ctx.shadowBlur  = 0;
+            }
+        
+        
+            if (d.isOpen) {
+                const angle = Math.PI / 2 * side;
+                const rx = nx * Math.cos(angle) - ny * Math.sin(angle);
+                const ry = nx * Math.sin(angle) + ny * Math.cos(angle);
+        
+                ctx.beginPath();
+                ctx.moveTo(hx, hy);
+                ctx.lineTo(hx + rx * len, hy + ry * len);
+                ctx.stroke();
+        
+            } else {
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+            }
+        
+            ctx.restore();
+            return;
+        }
+        
+        
+        
+                // ------------------------------------------------------------
+                // ⭐ Haustür
+                // ------------------------------------------------------------
+        case "haustuer": {
+        
+            const hx = (d.hinge === "start") ? x1 : x2;
+            const hy = (d.hinge === "start") ? y1 : y2;
+        
+            const ox = (d.hinge === "start") ? x2 : x1;
+            const oy = (d.hinge === "start") ? y2 : y1;
+        
+            const dx = ox - hx;
+            const dy = oy - hy;
+            const len = Math.hypot(dx, dy);
+            if (!len) return;
+        
+            const nx = dx / len;
+            const ny = dy / len;
+            const px = -ny;
+            const py = nx;
+        
+            const side = d.side || 1;
+        
+            // ------------------------------------------------------------
+            // ⭐ 1. SCHWELLE (nur offen)
+            // ------------------------------------------------------------
+            if (d.isOpen) {
+        
+                const sw  = Number(d.design.schwelle.strokeWidth);
+                const col = d.design.schwelle.color;
+        
+                ctx.save();
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+        
+                ctx.strokeStyle = col;
+                ctx.lineWidth   = sw;
+        
+                ctx.stroke();
+                ctx.restore();
+            }
+        
+            // ------------------------------------------------------------
+            // ⭐ 2. TÜRBLATT
+            // ------------------------------------------------------------
+            ctx.save();
+        
+            const blattStroke      = Number(d.design.blatt.strokeWidth);
+            const blattEffStrength = Number(d.design.blatt.effectStrength);
+        
+            ctx.strokeStyle = d.design.blatt.color;
+            ctx.lineWidth   = blattStroke;
+        
+            // ⭐ Effekt anwenden (nur Türblatt)
+            const eff = d.design.blatt.effect;
+        
+            if (eff === "glow") {
+                ctx.shadowColor = d.design.blatt.effectColor;
+                ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 2.5;
+            }
+            else if (eff === "shadow") {
+                ctx.shadowColor = d.design.blatt.effectColor;
+                ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 1.2;
+            }
+            else if (eff === "outline") {
+                ctx.shadowColor = d.design.blatt.effectColor;
+        
+                const e = Math.pow(blattEffStrength, 1.3);
+                ctx.shadowBlur = blattStroke * 1.5 + e * 2.0;
+            }
+            else if (eff === "blur") {
+                ctx.shadowColor = d.design.blatt.effectColor;
+                ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 3.0;
+            }
+            else {
+                ctx.shadowColor = "transparent";
+                ctx.shadowBlur  = 0;
+            }
+        
+            if (d.isOpen) {
+                const angle = Math.PI / 2 * side;
+                const rx = nx * Math.cos(angle) - ny * Math.sin(angle);
+                const ry = nx * Math.sin(angle) + ny * Math.cos(angle);
+        
+                ctx.beginPath();
+                ctx.moveTo(hx, hy);
+                ctx.lineTo(hx + rx * len, hy + ry * len);
+                ctx.stroke();
+        
+            } else {
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+            }
+        
+            ctx.restore();
+            return;
+        }
+        
+        
+        
         // ------------------------------------------------------------
-        // ⭐ Gartentörchen → schmal
+        // ⭐ Schiebetür → kein Viertelkreis
         // ------------------------------------------------------------
-case "gartentor": {
-
-    const hx = (d.hinge === "start") ? x1 : x2;
-    const hy = (d.hinge === "start") ? y1 : y2;
-
-    const ox = (d.hinge === "start") ? x2 : x1;
-    const oy = (d.hinge === "start") ? y2 : y1;
-
-    const dx = ox - hx;
-    const dy = oy - hy;
-    const len = Math.hypot(dx, dy);
-    if (!len) return;
-
-    const nx = dx / len;
-    const ny = dy / len;
-    const px = -ny;
-    const py = nx;
-
-    const side = d.side || 1;
-
-    // ------------------------------------------------------------
-    // Rotation für Torblatt UND Normalenvektor
-    // ------------------------------------------------------------
-    let rx = nx;
-    let ry = ny;
-    let px2 = px;
-    let py2 = py;
-
-    if (d.isOpen) {
-        const angle = Math.PI / 2 * side;
-        const cosA = Math.cos(angle);
-        const sinA = Math.sin(angle);
-
-        rx = nx * cosA - ny * sinA;
-        ry = nx * sinA + ny * cosA;
-
-        px2 = px * cosA - py * sinA;
-        py2 = px * sinA + py * cosA;
-    }
-
-    // ------------------------------------------------------------
-    // ⭐ 1. SCHWELLE (als Strich, immer sichtbar)
-    // ------------------------------------------------------------
-    const sw  = Number(d.design.schwelle.strokeWidth);
-    const col = d.design.schwelle.color;
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-
-    ctx.strokeStyle = col;
-    ctx.lineWidth   = sw;
-
-    ctx.stroke();
-    ctx.restore();
-
-    // ------------------------------------------------------------
-    // ⭐ 2. TORBLATT
-    // ------------------------------------------------------------
-    const torBreite = len;
-    const torHoehe  = 4;
-    const streben   = 6;
-
-    ctx.save();
-    ctx.lineCap = "round";
-
-    const blattStroke      = Number(d.design.blatt.strokeWidth);
-    const blattEffStrength = Number(d.design.blatt.effectStrength);
-
-    ctx.strokeStyle = d.design.blatt.color;
-    ctx.lineWidth   = blattStroke;
-
-    // ⭐ Neue skalierte Effekte
-    if (d.design.blatt.effect === "glow") {
-        ctx.shadowColor = d.design.blatt.effectColor;
-        ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 2.5;
-    }
-    else if (d.design.blatt.effect === "shadow") {
-        ctx.shadowColor = d.design.blatt.effectColor;
-        ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 1.2;
-    }
-    else if (d.design.blatt.effect === "outline") {
-        ctx.shadowColor = d.design.blatt.effectColor;
-
-        const eff = Math.pow(blattEffStrength, 1.3);
-        ctx.shadowBlur = blattStroke * 1.5 + eff * 2.0;
-    }
-    else if (d.design.blatt.effect === "blur") {
-        ctx.shadowColor = d.design.blatt.effectColor;
-        ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 3.0;
-    }
-    else {
-        ctx.shadowColor = "transparent";
-        ctx.shadowBlur  = 0;
-    }
-
-    // Querlatte oben
-    const q1x = hx;
-    const q1y = hy;
-    const q2x = hx + rx * torBreite;
-    const q2y = hy + ry * torBreite;
-
-    ctx.beginPath();
-    ctx.moveTo(q1x, q1y);
-    ctx.lineTo(q2x, q2y);
-    ctx.stroke();
-
-    // Senkrechte Latten
-    const lattenSide = -side;
-
-    for (let i = 0; i <= streben; i++) {
-        const t = i / streben;
-
-        const sx = hx + rx * (t * torBreite);
-        const sy = hy + ry * (t * torBreite);
-
-        const ex = sx + px2 * torHoehe * lattenSide;
-        const ey = sy + py2 * torHoehe * lattenSide;
-
-        ctx.beginPath();
-        ctx.moveTo(sx, sy);
-        ctx.lineTo(ex, ey);
-        ctx.stroke();
-    }
-
-    ctx.restore();
-    return;
-}
-
-
-
-case "dachluke": {
-
-    const r = d.width / 2;
-
-    // -------------------------------
-    // Geschlossen
-    // -------------------------------
-    if (!d.isOpen) {
-
-        const blattStroke      = Number(d.design.blatt.strokeWidth);
-        const blattEffStrength = Number(d.design.blatt.effectStrength);
-
-        ctx.save();
-        ctx.strokeStyle = d.design.blatt.color;
-        ctx.lineWidth   = blattStroke;
-
-        // ⭐ Neue skalierte Effekte
-        if (d.design.blatt.effect === "glow") {
-            ctx.shadowColor = d.design.blatt.effectColor;
-            ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 2.5;
+        case "schiebetuer": {
+        
+            const dx = x2 - x1;
+            const dy = y2 - y1;
+            const len = Math.hypot(dx, dy);
+            if (!len) return;
+        
+            const nx = dx / len;
+            const ny = dy / len;
+            const px = -ny;
+            const py = nx;
+        
+            // ------------------------------------------------------------
+            // ⭐ 1. SCHWELLE (nur offen)
+            // ------------------------------------------------------------
+            if (d.isOpen) {
+        
+                const sw  = Number(d.design.schwelle.strokeWidth);
+                const col = d.design.schwelle.color;
+        
+                ctx.save();
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+        
+                ctx.strokeStyle = col;
+                ctx.lineWidth   = sw;
+        
+                ctx.stroke();
+                ctx.restore();
+            }
+        
+            // ------------------------------------------------------------
+            // ⭐ 2. TÜRBLATT (Schiebetür-Logik bleibt!)
+            // ------------------------------------------------------------
+            let hx, hy, ox, oy;
+            if (d.hinge === "start") {
+                hx = x1; hy = y1;
+                ox = x2; oy = y2;
+            } else {
+                hx = x2; hy = y2;
+                ox = x1; oy = y1;
+            }
+        
+            const dx2 = ox - hx;
+            const dy2 = oy - hy;
+            const len2 = Math.hypot(dx2, dy2);
+            if (!len2) return;
+        
+            const nx2 = dx2 / len2;
+            const ny2 = dy2 / len2;
+            const px2 = -ny2;
+            const py2 = nx2;
+        
+            const side   = d.side || 1;
+            const offset = 4;
+        
+            ctx.save();
+        
+            const blattStroke      = Number(d.design.blatt.strokeWidth);
+            const blattEffStrength = Number(d.design.blatt.effectStrength);
+        
+            ctx.strokeStyle = d.design.blatt.color;
+            ctx.lineWidth   = blattStroke;
+        
+            // ⭐ Effekt anwenden (neue Struktur)
+            const eff = d.design.blatt.effect;
+        
+            if (eff === "glow") {
+                ctx.shadowColor = d.design.blatt.effectColor;
+                ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 2.5;
+            }
+            else if (eff === "shadow") {
+                ctx.shadowColor = d.design.blatt.effectColor;
+                ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 1.2;
+            }
+            else if (eff === "outline") {
+                ctx.shadowColor = d.design.blatt.effectColor;
+        
+                const e = Math.pow(blattEffStrength, 1.3);
+                ctx.shadowBlur = blattStroke * 1.5 + e * 2.0;
+            }
+            else if (eff === "blur") {
+                ctx.shadowColor = d.design.blatt.effectColor;
+                ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 3.0;
+            }
+            else {
+                ctx.shadowColor = "transparent";
+                ctx.shadowBlur  = 0;
+            }
+        
+            // ⭐ Schiebetür bleibt Schiebetür
+            if (d.isOpen) {
+        
+                const mx = hx + px2 * offset * side;
+                const my = hy + py2 * offset * side;
+        
+                const halfLen = len2 / 2;
+        
+                const sx = mx - nx2 * halfLen;
+                const sy = my - ny2 * halfLen;
+                const ex = mx + nx2 * halfLen;
+                const ey = my + ny2 * halfLen;
+        
+                ctx.beginPath();
+                ctx.moveTo(sx, sy);
+                ctx.lineTo(ex, ey);
+                ctx.stroke();
+        
+            } else {
+        
+                const bx = hx + px2 * offset * side;
+                const by = hy + py2 * offset * side;
+        
+                ctx.beginPath();
+                ctx.moveTo(bx, by);
+                ctx.lineTo(bx + nx2 * len2, by + ny2 * len2);
+                ctx.stroke();
+            }
+        
+            ctx.restore();
+            return;
         }
-        else if (d.design.blatt.effect === "shadow") {
-            ctx.shadowColor = d.design.blatt.effectColor;
-            ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 1.2;
+        
+        
+                // ------------------------------------------------------------
+                // ⭐ Falttür → segmentiert
+                // ------------------------------------------------------------
+        case "falttuer": {
+        
+            const dx = x2 - x1;
+            const dy = y2 - y1;
+            const len = Math.hypot(dx, dy);
+            if (!len) return;
+        
+            const nx = dx / len;
+            const ny = dy / len;
+            const px = -ny;
+            const py = nx;
+        
+            // ------------------------------------------------------------
+            // ⭐ 1. SCHWELLE (nur offen)
+            // ------------------------------------------------------------
+            if (d.isOpen) {
+        
+                const sw  = Number(d.design.schwelle.strokeWidth);
+                const col = d.design.schwelle.color;
+        
+                ctx.save();
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+        
+                ctx.strokeStyle = col;
+                ctx.lineWidth   = sw;
+        
+                ctx.stroke();
+                ctx.restore();
+            }
+        
+            // ------------------------------------------------------------
+            // ⭐ 2. GESCHLOSSENE FALTTÜR
+            // ------------------------------------------------------------
+            if (!d.isOpen) {
+        
+                ctx.save();
+        
+                const blattStroke      = Number(d.design.blatt.strokeWidth);
+                const blattEffStrength = Number(d.design.blatt.effectStrength);
+        
+                ctx.strokeStyle = d.design.blatt.color;
+                ctx.lineWidth   = blattStroke;
+        
+                // ⭐ Effekte (neue Struktur)
+                const eff = d.design.blatt.effect;
+        
+                if (eff === "glow") {
+                    ctx.shadowColor = d.design.blatt.effectColor;
+                    ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 2.5;
+                }
+                else if (eff === "shadow") {
+                    ctx.shadowColor = d.design.blatt.effectColor;
+                    ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 1.2;
+                }
+                else if (eff === "outline") {
+                    ctx.shadowColor = d.design.blatt.effectColor;
+        
+                    const e = Math.pow(blattEffStrength, 1.3);
+                    ctx.shadowBlur = blattStroke * 1.5 + e * 2.0;
+                }
+                else if (eff === "blur") {
+                    ctx.shadowColor = d.design.blatt.effectColor;
+                    ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 3.0;
+                }
+                else {
+                    ctx.shadowColor = "transparent";
+                    ctx.shadowBlur  = 0;
+                }
+        
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+        
+                ctx.restore();
+                return;
+            }
+        
+            // ------------------------------------------------------------
+            // ⭐ 3. OFFENE FALTTÜR (Mechanik bleibt!)
+            // ------------------------------------------------------------
+            let hx, hy, ox, oy;
+            if (d.hinge === "start") {
+                hx = x1; hy = y1;
+                ox = x2; oy = y2;
+            } else {
+                hx = x2; hy = y2;
+                ox = x1; oy = y1;
+            }
+        
+            const dx2 = ox - hx;
+            const dy2 = oy - hy;
+            const len2 = Math.hypot(dx2, dy2);
+            if (!len2) return;
+        
+            const nx2 = dx2 / len2;
+            const ny2 = dy2 / len2;
+        
+            const step   = 2;
+            const height = 4;
+            const count  = 8;
+        
+            ctx.save();
+            ctx.translate(hx, hy);
+            ctx.rotate(Math.atan2(dy2, dx2));
+        
+            const blattStroke      = Number(d.design.blatt.strokeWidth);
+            const blattEffStrength = Number(d.design.blatt.effectStrength);
+        
+            ctx.strokeStyle = d.design.blatt.color;
+            ctx.lineWidth   = blattStroke;
+        
+            // ⭐ Effekte (neue Struktur)
+            const eff2 = d.design.blatt.effect;
+        
+            if (eff2 === "glow") {
+                ctx.shadowColor = d.design.blatt.effectColor;
+                ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 2.5;
+            }
+            else if (eff2 === "shadow") {
+                ctx.shadowColor = d.design.blatt.effectColor;
+                ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 1.2;
+            }
+            else if (eff2 === "outline") {
+                ctx.shadowColor = d.design.blatt.effectColor;
+        
+                const e = Math.pow(blattEffStrength, 1.3);
+                ctx.shadowBlur = blattStroke * 1.5 + e * 2.0;
+            }
+            else if (eff2 === "blur") {
+                ctx.shadowColor = d.design.blatt.effectColor;
+                ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 3.0;
+            }
+            else {
+                ctx.shadowColor = "transparent";
+                ctx.shadowBlur  = 0;
+            }
+        
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+        
+            for (let i = 1; i <= count; i++) {
+                const x = i * step;
+                const y = (i % 2 === 0) ? -height : 0;
+                ctx.lineTo(x, y);
+            }
+        
+            ctx.stroke();
+            ctx.restore();
+        
+            return;
         }
-        else if (d.design.blatt.effect === "outline") {
-            ctx.shadowColor = d.design.blatt.effectColor;
-
-            const eff = Math.pow(blattEffStrength, 1.3);
-            ctx.shadowBlur = blattStroke * 1.5 + eff * 2.0;
+        
+        
+                // ------------------------------------------------------------
+                // ⭐ Terrassentür → Glas
+                // ------------------------------------------------------------
+        case "terrassentuer": {
+        
+            const hx = (d.hinge === "start") ? x1 : x2;
+            const hy = (d.hinge === "start") ? y1 : y2;
+        
+            const ox = (d.hinge === "start") ? x2 : x1;
+            const oy = (d.hinge === "start") ? y2 : y1;
+        
+            const dx = ox - hx;
+            const dy = oy - hy;
+            const len = Math.hypot(dx, dy);
+            if (!len) return;
+        
+            const nx = dx / len;
+            const ny = dy / len;
+            const px = -ny;
+            const py = nx;
+        
+            const side = d.side || 1;
+        
+            // ------------------------------------------------------------
+            // ⭐ 1. SCHWELLE (nur offen)
+            // ------------------------------------------------------------
+            if (d.isOpen) {
+        
+                const sw  = Number(d.design.schwelle.strokeWidth);
+                const col = d.design.schwelle.color;
+        
+                ctx.save();
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+        
+                ctx.strokeStyle = col;
+                ctx.lineWidth   = sw;
+        
+                ctx.stroke();
+                ctx.restore();
+            }
+        
+            // ------------------------------------------------------------
+            // ⭐ 2. TÜRBLATT
+            // ------------------------------------------------------------
+            ctx.save();
+        
+            const blattStroke      = Number(d.design.blatt.strokeWidth);
+            const blattEffStrength = Number(d.design.blatt.effectStrength);
+        
+            ctx.strokeStyle = d.design.blatt.color;
+            ctx.lineWidth   = blattStroke;
+        
+            // ⭐ Effekte (neue Struktur)
+            const eff = d.design.blatt.effect;
+        
+            if (eff === "glow") {
+                ctx.shadowColor = d.design.blatt.effectColor;
+                ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 2.5;
+            }
+            else if (eff === "shadow") {
+                ctx.shadowColor = d.design.blatt.effectColor;
+                ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 1.2;
+            }
+            else if (eff === "outline") {
+                ctx.shadowColor = d.design.blatt.effectColor;
+        
+                const e = Math.pow(blattEffStrength, 1.3);
+                ctx.shadowBlur = blattStroke * 1.5 + e * 2.0;
+            }
+            else if (eff === "blur") {
+                ctx.shadowColor = d.design.blatt.effectColor;
+                ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 3.0;
+            }
+            else {
+                ctx.shadowColor = "transparent";
+                ctx.shadowBlur  = 0;
+            }
+        
+            if (d.isOpen) {
+        
+                const angle = Math.PI / 2 * side;
+                const rx = nx * Math.cos(angle) - ny * Math.sin(angle);
+                const ry = nx * Math.sin(angle) + ny * Math.cos(angle);
+        
+                const ex = hx + rx * len;
+                const ey = hy + ry * len;
+        
+                ctx.beginPath();
+                ctx.moveTo(hx, hy);
+                ctx.lineTo(ex, ey);
+                ctx.stroke();
+        
+                // ⭐ Glasfüllung (bleibt unverändert)
+                const inset      = blattStroke * 0.3;
+                const glassWidth = Math.max(1, blattStroke * 0.5);
+        
+                ctx.strokeStyle = d.design.blatt.effectColor;
+                ctx.lineWidth   = glassWidth;
+        
+                ctx.beginPath();
+                ctx.moveTo(hx + px * inset, hy + py * inset);
+                ctx.lineTo(ex + px * inset, ey + py * inset);
+                ctx.stroke();
+        
+            } else {
+        
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+        
+                const inset      = blattStroke * 0.3;
+                const glassWidth = Math.max(1, blattStroke * 0.5);
+        
+                ctx.strokeStyle = d.design.blatt.effectColor;
+                ctx.lineWidth   = glassWidth;
+        
+                ctx.beginPath();
+                ctx.moveTo(x1 + px * inset, y1 + py * inset);
+                ctx.lineTo(x2 + px * inset, y2 + py * inset);
+                ctx.stroke();
+            }
+        
+            ctx.restore();
+            return;
         }
-        else if (d.design.blatt.effect === "blur") {
-            ctx.shadowColor = d.design.blatt.effectColor;
-            ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 3.0;
+        
+        
+        
+        
+                // ------------------------------------------------------------
+                // ⭐ Garagentor → dicke Linie
+                // ------------------------------------------------------------
+        case "garagentor": {
+        
+            // ------------------------------------------------------------
+            // 0. Drehpunkt bestimmen (Scharnierseite)
+            // ------------------------------------------------------------
+            const hx = (d.hinge === "start") ? x1 : x2;
+            const hy = (d.hinge === "start") ? y1 : y2;
+        
+            const ox = (d.hinge === "start") ? x2 : x1;
+            const oy = (d.hinge === "start") ? y2 : y1;
+        
+            const dx = ox - hx;
+            const dy = oy - hy;
+            const len = Math.hypot(dx, dy);
+            if (!len) return;
+        
+            const nx = dx / len;
+            const ny = dy / len;
+        
+            const px = -ny;
+            const py = nx;
+        
+            const side = d.side || 1;
+        
+            // ------------------------------------------------------------
+            // ⭐ 1. SCHWELLE (nur offen)
+            // ------------------------------------------------------------
+            if (d.isOpen) {
+        
+                const sw  = Number(d.design.schwelle.strokeWidth);
+                const col = d.design.schwelle.color;
+        
+                ctx.save();
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+        
+                ctx.strokeStyle = col;
+                ctx.lineWidth   = sw;
+        
+                ctx.stroke();
+                ctx.restore();
+            }
+        
+            // ------------------------------------------------------------
+            // 2. Torblatt (offen = verschoben, geschlossen = normal)
+            // ------------------------------------------------------------
+            let bx1 = x1;
+            let by1 = y1;
+            let bx2 = x2;
+            let by2 = y2;
+        
+            if (d.isOpen) {
+                const offset = 40 * side;
+                bx1 = x1 + px * offset;
+                by1 = y1 + py * offset;
+                bx2 = x2 + px * offset;
+                by2 = y2 + py * offset;
+            }
+        
+            ctx.save();
+        
+            const blattStroke      = Number(d.design.blatt.strokeWidth);
+            const blattEffStrength = Number(d.design.blatt.effectStrength);
+        
+            // ------------------------------------------------------------
+            // ⭐ OFFEN: dickes, transparentes Torblatt
+            // ------------------------------------------------------------
+            if (d.isOpen) {
+        
+                ctx.strokeStyle = d.design.blatt.color + "40";   // transparent
+                ctx.lineWidth   = blattStroke * 8;
+        
+                // ⭐ Effekte
+                const eff = d.design.blatt.effect;
+        
+                if (eff === "glow") {
+                    ctx.shadowColor = d.design.blatt.effectColor;
+                    ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 2.5;
+                }
+                else if (eff === "shadow") {
+                    ctx.shadowColor = d.design.blatt.effectColor;
+                    ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 1.2;
+                }
+                else if (eff === "outline") {
+                    ctx.shadowColor = d.design.blatt.effectColor;
+        
+                    const e = Math.pow(blattEffStrength, 1.3);
+                    ctx.shadowBlur = blattStroke * 1.5 + e * 2.0;
+                }
+                else if (eff === "blur") {
+                    ctx.shadowColor = d.design.blatt.effectColor;
+                    ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 3.0;
+                }
+                else {
+                    ctx.shadowColor = "transparent";
+                    ctx.shadowBlur  = 0;
+                }
+        
+                ctx.beginPath();
+                ctx.moveTo(bx1, by1);
+                ctx.lineTo(bx2, by2);
+                ctx.stroke();
+        
+                // ⭐ Strukturstreifen
+                ctx.strokeStyle = d.design.blatt.color;
+                ctx.lineWidth   = blattStroke;
+        
+                const steps = 3;
+                for (let i = 1; i <= steps; i++) {
+                    const t = i / (steps + 1);
+        
+                    const sx = bx1 + (bx2 - bx1) * t;
+                    const sy = by1 + (by2 - by1) * t;
+        
+                    ctx.beginPath();
+                    ctx.moveTo(sx, sy);
+                    ctx.lineTo(
+                        sx + (y1 - y2) * 0.15,
+                        sy + (x2 - x1) * 0.15
+                    );
+                    ctx.stroke();
+                }
+        
+                ctx.restore();
+                return;
+            }
+        
+            // ------------------------------------------------------------
+            // ⭐ GESCHLOSSEN: dünne Linie + optionaler Rahmen
+            // ------------------------------------------------------------
+            ctx.strokeStyle = d.design.blatt.color;
+            ctx.lineWidth   = blattStroke;
+        
+            // ⭐ Effekte
+            const eff2 = d.design.blatt.effect;
+        
+            if (eff2 === "glow") {
+                ctx.shadowColor = d.design.blatt.effectColor;
+                ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 2.5;
+            }
+            else if (eff2 === "shadow") {
+                ctx.shadowColor = d.design.blatt.effectColor;
+                ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 1.2;
+            }
+            else if (eff2 === "outline") {
+                ctx.shadowColor = d.design.blatt.effectColor;
+        
+                const e = Math.pow(blattEffStrength, 1.3);
+                ctx.shadowBlur = blattStroke * 1.5 + e * 2.0;
+            }
+            else if (eff2 === "blur") {
+                ctx.shadowColor = d.design.blatt.effectColor;
+                ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 3.0;
+            }
+            else {
+                ctx.shadowColor = "transparent";
+                ctx.shadowBlur  = 0;
+            }
+        
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+        
+            // ⭐ Rahmen für offene Position
+            const offset = 40 * side;
+        
+            const fx1 = x1 + px * offset;
+            const fy1 = y1 + py * offset;
+        
+            const fx2 = x2 + px * offset;
+            const fy2 = y2 + py * offset;
+        
+            ctx.save();
+            ctx.strokeStyle = d.design.blatt.color;
+            ctx.lineWidth   = Math.max(1, blattStroke * 0.5);
+        
+            ctx.beginPath();
+            ctx.moveTo(fx1, fy1);
+            ctx.lineTo(fx2, fy2);
+            ctx.stroke();
+            ctx.restore();
+        
+            ctx.restore();
+            return;
         }
-        else {
-            ctx.shadowColor = "transparent";
-            ctx.shadowBlur  = 0;
+        
+        
+        
+                // ------------------------------------------------------------
+                // ⭐ Gartentörchen → schmal
+                // ------------------------------------------------------------
+        case "gartentor": {
+        
+            const hx = (d.hinge === "start") ? x1 : x2;
+            const hy = (d.hinge === "start") ? y1 : y2;
+        
+            const ox = (d.hinge === "start") ? x2 : x1;
+            const oy = (d.hinge === "start") ? y2 : y1;
+        
+            const dx = ox - hx;
+            const dy = oy - hy;
+            const len = Math.hypot(dx, dy);
+            if (!len) return;
+        
+            const nx = dx / len;
+            const ny = dy / len;
+            const px = -ny;
+            const py = nx;
+        
+            const side = d.side || 1;
+        
+            // ------------------------------------------------------------
+            // Rotation für Torblatt UND Normalenvektor
+            // ------------------------------------------------------------
+            let rx = nx;
+            let ry = ny;
+            let px2 = px;
+            let py2 = py;
+        
+            if (d.isOpen) {
+                const angle = Math.PI / 2 * side;
+                const cosA = Math.cos(angle);
+                const sinA = Math.sin(angle);
+        
+                rx  = nx * cosA - ny * sinA;
+                ry  = nx * sinA + ny * cosA;
+        
+                px2 = px * cosA - py * sinA;
+                py2 = px * sinA + py * cosA;
+            }
+        
+            // ------------------------------------------------------------
+            // ⭐ 1. SCHWELLE (immer sichtbar)
+            // ------------------------------------------------------------
+            const sw  = Number(d.design.schwelle.strokeWidth);
+            const col = d.design.schwelle.color;
+        
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+        
+            ctx.strokeStyle = col;
+            ctx.lineWidth   = sw;
+        
+            ctx.stroke();
+            ctx.restore();
+        
+            // ------------------------------------------------------------
+            // ⭐ 2. TORBLATT
+            // ------------------------------------------------------------
+            const torBreite = len;
+            const torHoehe  = 4;
+            const streben   = 6;
+        
+            ctx.save();
+            ctx.lineCap = "round";
+        
+            const blattStroke      = Number(d.design.blatt.strokeWidth);
+            const blattEffStrength = Number(d.design.blatt.effectStrength);
+        
+            ctx.strokeStyle = d.design.blatt.color;
+            ctx.lineWidth   = blattStroke;
+        
+            // ⭐ Effekte (vereinheitlichte Pipeline)
+            const eff = d.design.blatt.effect;
+        
+            if (eff === "glow") {
+                ctx.shadowColor = d.design.blatt.effectColor;
+                ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 2.5;
+            }
+            else if (eff === "shadow") {
+                ctx.shadowColor = d.design.blatt.effectColor;
+                ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 1.2;
+            }
+            else if (eff === "outline") {
+                ctx.shadowColor = d.design.blatt.effectColor;
+        
+                const e = Math.pow(blattEffStrength, 1.3);
+                ctx.shadowBlur = blattStroke * 1.5 + e * 2.0;
+            }
+            else if (eff === "blur") {
+                ctx.shadowColor = d.design.blatt.effectColor;
+                ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 3.0;
+            }
+            else {
+                ctx.shadowColor = "transparent";
+                ctx.shadowBlur  = 0;
+            }
+        
+            // ⭐ Querlatte oben
+            const q1x = hx;
+            const q1y = hy;
+            const q2x = hx + rx * torBreite;
+            const q2y = hy + ry * torBreite;
+        
+            ctx.beginPath();
+            ctx.moveTo(q1x, q1y);
+            ctx.lineTo(q2x, q2y);
+            ctx.stroke();
+        
+            // ⭐ Senkrechte Latten
+            const lattenSide = -side;
+        
+            for (let i = 0; i <= streben; i++) {
+                const t = i / streben;
+        
+                const sx = hx + rx * (t * torBreite);
+                const sy = hy + ry * (t * torBreite);
+        
+                const ex = sx + px2 * torHoehe * lattenSide;
+                const ey = sy + py2 * torHoehe * lattenSide;
+        
+                ctx.beginPath();
+                ctx.moveTo(sx, sy);
+                ctx.lineTo(ex, ey);
+                ctx.stroke();
+            }
+        
+            ctx.restore();
+            return;
         }
-
-        ctx.beginPath();
-        ctx.arc(d.x, d.y, r, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.restore();
-
-        // ⭐ Innenfüllung (Schwelle bleibt Kreis)
-        const half = Number(d.design.schwelle.height);
-        const sw   = Number(d.design.schwelle.strokeWidth);
-
-        ctx.save();
-        ctx.fillStyle   = d.design.schwelle.color;
-        ctx.strokeStyle = d.design.schwelle.color;
-        ctx.lineWidth   = sw;
-
-        ctx.beginPath();
-        ctx.arc(d.x, d.y, Math.max(1, half), 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-        ctx.restore();
-
-        // ⭐ Scharnier-Strich
-        if (d.hingeAngle !== undefined) {
-
-            const hingeStroke = Number(d.design.hinge.strokeWidth);
-
+        
+        
+        
+        case "dachluke": {
+        
+            const r = d.width / 2;
+        
+            // -------------------------------
+            // ⭐ GESCHLOSSEN
+            // -------------------------------
+            if (!d.isOpen) {
+        
+                const blattStroke      = Number(d.design.blatt.strokeWidth);
+                const blattEffStrength = Number(d.design.blatt.effectStrength);
+        
+                ctx.save();
+                ctx.strokeStyle = d.design.blatt.color;
+                ctx.lineWidth   = blattStroke;
+        
+                // ⭐ Effekte (vereinheitlichte Pipeline)
+                const eff = d.design.blatt.effect;
+        
+                if (eff === "glow") {
+                    ctx.shadowColor = d.design.blatt.effectColor;
+                    ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 2.5;
+                }
+                else if (eff === "shadow") {
+                    ctx.shadowColor = d.design.blatt.effectColor;
+                    ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 1.2;
+                }
+                else if (eff === "outline") {
+                    ctx.shadowColor = d.design.blatt.effectColor;
+        
+                    const e = Math.pow(blattEffStrength, 1.3);
+                    ctx.shadowBlur = blattStroke * 1.5 + e * 2.0;
+                }
+                else if (eff === "blur") {
+                    ctx.shadowColor = d.design.blatt.effectColor;
+                    ctx.shadowBlur  = Math.pow(blattEffStrength, 1.3) * 3.0;
+                }
+                else {
+                    ctx.shadowColor = "transparent";
+                    ctx.shadowBlur  = 0;
+                }
+        
+                // Kreis (Deckel)
+                ctx.beginPath();
+                ctx.arc(d.x, d.y, r, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+        
+                // ⭐ Innenfüllung (Schwelle)
+                const half = Number(d.design.schwelle.height);
+                const sw   = Number(d.design.schwelle.strokeWidth);
+        
+                ctx.save();
+                ctx.fillStyle   = d.design.schwelle.color;
+                ctx.strokeStyle = d.design.schwelle.color;
+                ctx.lineWidth   = sw;
+        
+                ctx.beginPath();
+                ctx.arc(d.x, d.y, Math.max(1, half), 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+                ctx.restore();
+        
+                // ⭐ Scharnier-Strich
+                if (d.hingeAngle !== undefined) {
+        
+                    const hingeStroke = Number(d.design.hinge.strokeWidth);
+        
+                    ctx.save();
+                    ctx.strokeStyle = d.design.hinge.color;
+                    ctx.lineWidth   = hingeStroke;
+        
+                    const hingeX = d.x + Math.cos(d.hingeAngle) * r;
+                    const hingeY = d.y + Math.sin(d.hingeAngle) * r;
+        
+                    const hingeLen = r * 1.2;
+                    const tx = Math.cos(d.hingeAngle + Math.PI / 2);
+                    const ty = Math.sin(d.hingeAngle + Math.PI / 2);
+        
+                    ctx.beginPath();
+                    ctx.moveTo(hingeX - tx * hingeLen / 2, hingeY - ty * hingeLen / 2);
+                    ctx.lineTo(hingeX + tx * hingeLen / 2, hingeY + ty * hingeLen / 2);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+        
+                return;
+            }
+        
+            // -------------------------------
+            // ⭐ OFFEN
+            // -------------------------------
+            const hingeStroke      = Number(d.design.hinge.strokeWidth);
+            const blattEffStrength = Number(d.design.blatt.effectStrength);
+        
+            // Hauptkreis (Basis)
             ctx.save();
             ctx.strokeStyle = d.design.hinge.color;
             ctx.lineWidth   = hingeStroke;
-
-            const hingeX = d.x + Math.cos(d.hingeAngle) * r;
-            const hingeY = d.y + Math.sin(d.hingeAngle) * r;
-
+        
+            ctx.beginPath();
+            ctx.arc(d.x, d.y, r, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
+        
+            // Ellipse (Deckel)
+            const angle = d.hingeAngle || 0;
+        
+            const rx = r;
+            const ry = r * 0.35;
+        
+            const offsetX = Math.cos(angle) * (r + ry);
+            const offsetY = Math.sin(angle) * (r + ry);
+        
+            ctx.save();
+            ctx.translate(d.x + offsetX, d.y + offsetY);
+            ctx.rotate(angle + Math.PI / 2);
+        
+            const sw = Number(d.design.schwelle.strokeWidth);
+        
+            ctx.fillStyle   = d.design.schwelle.color;
+            ctx.strokeStyle = d.design.hinge.color;
+            ctx.lineWidth   = hingeStroke;
+        
+            ctx.beginPath();
+            ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+        
+            ctx.restore();
+        
+            // ⭐ Scharnier-Strich
+            const hingeX = d.x + Math.cos(angle) * r;
+            const hingeY = d.y + Math.sin(angle) * r;
+        
             const hingeLen = r * 1.2;
-            const tx = Math.cos(d.hingeAngle + Math.PI / 2);
-            const ty = Math.sin(d.hingeAngle + Math.PI / 2);
-
+            const tx = Math.cos(angle + Math.PI / 2);
+            const ty = Math.sin(angle + Math.PI / 2);
+        
+            ctx.save();
+            ctx.strokeStyle = d.design.hinge.color;
+            ctx.lineWidth   = hingeStroke;
+        
             ctx.beginPath();
             ctx.moveTo(hingeX - tx * hingeLen / 2, hingeY - ty * hingeLen / 2);
             ctx.lineTo(hingeX + tx * hingeLen / 2, hingeY + ty * hingeLen / 2);
             ctx.stroke();
             ctx.restore();
+        
+            return;
         }
-
-        return;
+        
+        case "durchgang": {
+        
+            const hx = x1;
+            const hy = y1;
+        
+            const ox = x2;
+            const oy = y2;
+        
+            const dx = ox - hx;
+            const dy = oy - hy;
+            const len = Math.hypot(dx, dy);
+            if (!len) return;
+        
+            const nx = dx / len;
+            const ny = dy / len;
+        
+            const px = -ny;
+            const py = nx;
+        
+            // ------------------------------------------------------------
+            // ⭐ 1. SCHWELLE ALS STRICH (Durchgang hat kein Türblatt)
+            // ------------------------------------------------------------
+            const sw  = Number(d.design.schwelle.strokeWidth);
+            const col = d.design.schwelle.color;
+        
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+        
+            ctx.strokeStyle = col;
+            ctx.lineWidth   = sw;
+        
+            ctx.stroke();
+            ctx.restore();
+        
+            return;
+        }
     }
-
-    // -------------------------------
-    // Offen
-    // -------------------------------
-    const hingeStroke      = Number(d.design.hinge.strokeWidth);
-    const blattEffStrength = Number(d.design.blatt.effectStrength);
-
-    // Hauptkreis
-    ctx.save();
-    ctx.strokeStyle = d.design.hinge.color;
-    ctx.lineWidth   = hingeStroke;
-
-    ctx.beginPath();
-    ctx.arc(d.x, d.y, r, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.restore();
-
-    // Ellipse (Deckel)
-    const angle = d.hingeAngle || 0;
-
-    const rx = r;
-    const ry = r * 0.35;
-
-    const offsetX = Math.cos(angle) * (r + ry);
-    const offsetY = Math.sin(angle) * (r + ry);
-
-    ctx.save();
-    ctx.translate(d.x + offsetX, d.y + offsetY);
-    ctx.rotate(angle + Math.PI / 2);
-
-    const sw = Number(d.design.schwelle.strokeWidth);
-
-    ctx.fillStyle   = d.design.schwelle.color;
-    ctx.strokeStyle = d.design.hinge.color;
-    ctx.lineWidth   = hingeStroke;
-
-    ctx.beginPath();
-    ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.restore();
-
-    // ⭐ Scharnier-Strich
-    const hingeX = d.x + Math.cos(angle) * r;
-    const hingeY = d.y + Math.sin(angle) * r;
-
-    const hingeLen = r * 1.2;
-    const tx = Math.cos(angle + Math.PI / 2);
-    const ty = Math.sin(angle + Math.PI / 2);
-
-    ctx.save();
-    ctx.strokeStyle = d.design.hinge.color;
-    ctx.lineWidth   = hingeStroke;
-
-    ctx.beginPath();
-    ctx.moveTo(hingeX - tx * hingeLen / 2, hingeY - ty * hingeLen / 2);
-    ctx.lineTo(hingeX + tx * hingeLen / 2, hingeY + ty * hingeLen / 2);
-    ctx.stroke();
-    ctx.restore();
-
-    return;
-}
-
-case "durchgang": {
-
-    const hx = x1;
-    const hy = y1;
-
-    const ox = x2;
-    const oy = y2;
-
-    const dx = ox - hx;
-    const dy = oy - hy;
-    const len = Math.hypot(dx, dy);
-    if (!len) return;
-
-    const nx = dx / len;
-    const ny = dy / len;
-
-    const px = -ny;
-    const py = nx;
-
-    // ------------------------------------------------------------
-    // ⭐ 1. SCHWELLE ALS STRICH (statt Polygon)
-    // ------------------------------------------------------------
-    const sw  = Number(d.design.schwelle.strokeWidth);
-    const col = d.design.schwelle.color;
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-
-    ctx.strokeStyle = col;
-    ctx.lineWidth   = sw;
-
-    ctx.stroke();
-    ctx.restore();
-
-    return;
-}
-
-}
 },
 
 
