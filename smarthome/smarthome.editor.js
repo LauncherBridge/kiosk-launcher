@@ -149,24 +149,32 @@ function sanitizeProject(proj) {
     }
 
     // Räume absichern
-    for (const rid in proj.rooms) {
-        const r = proj.rooms[rid];
-        if (!r || typeof r !== "object") {
-            delete proj.rooms[rid];
-            continue;
-        }
-
-        // floorId reparieren (wenn Etagen existieren)
-        if (!r.floorId) {
-            const floorIds = Object.keys(proj.floors);
-            r.floorId = floorIds.length > 0 ? floorIds[0] : null;
-        }
-
-        // Punkte/Türen/Fenster absichern
-        r.points = Array.isArray(r.points) ? r.points : [];
-        r.doors = Array.isArray(r.doors) ? r.doors : [];
-        r.windows = Array.isArray(r.windows) ? r.windows : [];
+for (const rid in proj.rooms) {
+    const r = proj.rooms[rid];
+    if (!r || typeof r !== "object") {
+        delete proj.rooms[rid];
+        continue;
     }
+
+    // floorId reparieren (wenn Etagen existieren)
+    if (!r.floorId) {
+        const floorIds = Object.keys(proj.floors);
+        r.floorId = floorIds.length > 0 ? floorIds[0] : null;
+    }
+
+    // Punkte/Türen/Fenster absichern
+    r.points = Array.isArray(r.points) ? r.points : [];
+    r.doors = Array.isArray(r.doors) ? r.doors : [];
+    r.windows = Array.isArray(r.windows) ? r.windows : [];
+
+    // ⭐ HIER: Defaults für neue Türen setzen
+    r.doors.forEach(door => {
+        if (!door.design) {
+            door.design = createDoorDesign(door.type);
+        }
+    });
+}
+
 
     return proj;
 }
