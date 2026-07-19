@@ -26,6 +26,86 @@ const project = {
 
 };
 
+const factoryDefaults = {
+    door: {
+        // Globale Basiswerte für ALLE Türen
+        _base: {
+            hingeColor: "#333333",        // dunkel
+            hingeWidth: 1,                // sehr dünn
+            arcColor: "#333333",          // dunkel
+            arcWidth: 1,                  // sehr dünn
+            thresholdWidth: 12,           // Beispiel: Wanddicke fix vermutet
+            thresholdColor: "#444444",    // fast so dunkel wie der Boden
+            effectStrength: 0             // keine Effekte
+        },
+
+        // Haustüre
+        house: {
+            strokeWidth: 14,              // etwas dicker als die Wand
+            color: "#8b4513",             // braun
+        },
+
+        // Zimmertüre
+        room: {
+            strokeWidth: 12,              // so dick wie die Wand
+            color: "#ffd700",             // gelb
+        },
+
+        // Falttüre
+        folding: {
+            strokeWidth: 2,               // sehr dünner Strich
+            color: "#8b4513",             // braun
+        },
+
+        // Gartentüre
+        garden: {
+            strokeWidth: 4,               // relativ dünn
+            color: "#228b22",             // grün
+        },
+
+        // Terrassentüre
+        terrace: {
+            strokeWidth: 10,              // minimal dünner als die Wand
+            color: "#8b4513",             // braun
+        },
+
+        // Garagentor
+        garage: {
+            strokeWidth: 16,              // sehr dick
+            color: "#556b2f",             // braungrün
+        }
+    },
+
+    // Weitere Objektarten können hier ergänzt werden
+    window: {
+        normal: {
+            strokeWidth: 2,
+            color: "#ffffff",
+            effectStrength: 0
+        }
+    }
+};
+// ------------------------------------------------------------
+// Merge-Pipeline für Developer-Defaults + User-Defaults
+// ------------------------------------------------------------
+function buildDesignFromDefaults(objectType, subtype) {
+    const base = factoryDefaults[objectType]._base || {};
+    const dev = factoryDefaults[objectType][subtype] || {};
+    const user = (userDefaults[objectType] && userDefaults[objectType][subtype]) || {};
+
+    return {
+        ...base,
+        ...dev,
+        ...user
+    };
+}
+
+// ------------------------------------------------------------
+// Design-Erstellung für neue Türen
+// ------------------------------------------------------------
+function createDoorDesign(doorSubtype) {
+    return buildDesignFromDefaults("door", doorSubtype);
+}
 
 
 /* ---------------------------------------------------------
@@ -363,10 +443,11 @@ function createFloorModel(id, name = null) {
 
 
 // Tür
-function createDoorModel(id, type, x, y, wallIndex, t, width) {
+function createDoorModel(id, type, x, y, wallIndex, t, width, design, subtype) {
     return {
         id,
         type,
+        subtype,        // wichtig für spätere Resets
         x,
         y,
         wallIndex,
@@ -374,12 +455,13 @@ function createDoorModel(id, type, x, y, wallIndex, t, width) {
         width,
         hinge: null,
         side: 1,
-        isOpen: true,
         connectsToRoom: null,
-        color: "#ffffff",
-        customName: null
+        customName: null,
+
+        design          // das fertige Design übernehmen
     };
 }
+
 
 // Fenster
 function createWindowModel(id, type, x, y, wallIndex, t, width, height = 100) {
@@ -2578,16 +2660,21 @@ if (this.mode === "dachluke") {
         if (!this._placingDoor) {
             if (hit.type === "wall") {
                 const w = hit.data;
-                this.doors.push({
-                    wallIndex: w.index,
-                    t: w.t,
-                    x: w.x,
-                    y: w.y,
-                    width: 36,
-                    hinge: null,
-                    side: 1,
-                    type: type
-                });
+               const subtype = type; // dein currentDoorType
+const design = createDoorDesign(subtype);
+
+this.doors.push({
+    wallIndex: w.index,
+    t: w.t,
+    x: w.x,
+    y: w.y,
+    width: 36,
+    hinge: null,
+    side: 1,
+    type: subtype,
+    design
+});
+
                 this._placingDoor = true;
                 this.render();
                 this.saveRoom(activeRoomId);
