@@ -167,15 +167,7 @@ for (const rid in proj.rooms) {
     r.doors = Array.isArray(r.doors) ? r.doors : [];
     r.windows = Array.isArray(r.windows) ? r.windows : [];
 
-    // ⭐ HIER: Defaults für neue Türen setzen
-    r.doors.forEach(door => {
-        if (!door.design) {
-            door.design = createDoorDesign(door.type);
-        }
-    });
-}
-
-
+    }
     return proj;
 }
 
@@ -6466,7 +6458,11 @@ function getDoorComponents(d) {
 
 
 function ensureDoorDesignStructure(obj) {
-    if (!obj.design) obj.design = {};
+
+    // ⭐ Wenn kein Design existiert → Developer-Defaults laden
+    if (!obj.design) {
+        obj.design = createDoorDesign(obj.type);
+    }
 
     const defaults = {
         blatt: {
@@ -6490,6 +6486,7 @@ function ensureDoorDesignStructure(obj) {
         }
     };
 
+    // ⭐ Fallbacks ergänzen, aber NICHT Developer-Defaults überschreiben
     for (const key in defaults) {
         if (!obj.design[key]) {
             obj.design[key] = { ...defaults[key] };
@@ -6498,22 +6495,13 @@ function ensureDoorDesignStructure(obj) {
 
             if (d.strokeWidth != null) {
                 const num = Number(d.strokeWidth);
-                if (Number.isFinite(num)) {
-                    d.strokeWidth = num;
-                }
-                // ❌ NICHT überschreiben, wenn ungültig
+                if (Number.isFinite(num)) d.strokeWidth = num;
             }
-
-
 
             if (d.effectStrength != null) {
                 const num = Number(d.effectStrength);
-                if (Number.isFinite(num)) {
-                    d.effectStrength = num;
-                }
-                // ❌ NICHT überschreiben, wenn ungültig
+                if (Number.isFinite(num)) d.effectStrength = num;
             }
-
         }
     }
 
