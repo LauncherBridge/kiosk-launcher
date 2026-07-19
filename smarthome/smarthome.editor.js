@@ -103,8 +103,81 @@ function buildDesignFromDefaults(objectType, subtype) {
 // ------------------------------------------------------------
 // Design-Erstellung für neue Türen
 // ------------------------------------------------------------
-function createDoorDesign(doorSubtype) {
-    return buildDesignFromDefaults("door", doorSubtype);
+function createDoorDesign(type) {
+
+    // Basis-Defaults für alle Türtypen
+    const base = {
+        blatt: {
+            color: "#ffffff",
+            strokeWidth: 4,
+            effect: "none",
+            effectStrength: 0,
+            effectColor: "#ffffff"
+        },
+        schwelle: {
+            color: "#cccccc",
+            strokeWidth: 2
+        },
+        arc: {
+            color: "#ffffff",
+            strokeWidth: 2
+        },
+        hinge: {
+            color: "#ffffff",
+            strokeWidth: 2
+        },
+        viewModes: {
+            room: true,
+            floor: true,
+            object: true
+        },
+        scope: "single"
+    };
+
+    // Typ-spezifische Developer-Defaults
+    const typeDefaults = {
+        zimmertuer: {
+            blatt: { color: "#ffcc00", strokeWidth: 4 },
+            schwelle: { color: "#aaaaaa", strokeWidth: 2 },
+            arc: { color: "#ffcc00", strokeWidth: 2 },
+            hinge: { color: "#ffcc00", strokeWidth: 2 }
+        },
+        haustuer: {
+            blatt: { color: "#8b4513", strokeWidth: 5 },
+            schwelle: { color: "#555555", strokeWidth: 3 },
+            arc: { color: "#8b4513", strokeWidth: 3 },
+            hinge: { color: "#8b4513", strokeWidth: 3 }
+        },
+        terrassentuer: {
+            blatt: { color: "#a0522d", strokeWidth: 3 },
+            schwelle: { color: "#666666", strokeWidth: 2 },
+            arc: { color: "#a0522d", strokeWidth: 2 },
+            hinge: { color: "#a0522d", strokeWidth: 2 }
+        },
+        gartentor: {
+            blatt: { color: "#228b22", strokeWidth: 3 },
+            schwelle: { color: "#444444", strokeWidth: 2 },
+            arc: { color: "#228b22", strokeWidth: 2 },
+            hinge: { color: "#228b22", strokeWidth: 2 }
+        },
+        dachluke: {
+            blatt: { color: "#999999", strokeWidth: 3 },
+            schwelle: { color: "#777777", strokeWidth: 2 },
+            arc: { color: "#999999", strokeWidth: 2 },
+            hinge: { color: "#999999", strokeWidth: 2 }
+        }
+    };
+
+    // Merge: Basis + Typ-Defaults
+    const merged = structuredClone(base);
+
+    if (typeDefaults[type]) {
+        for (const key in typeDefaults[type]) {
+            merged[key] = { ...merged[key], ...typeDefaults[type][key] };
+        }
+    }
+
+    return merged;
 }
 
 
