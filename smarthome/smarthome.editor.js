@@ -62,38 +62,73 @@ function createDoorDesign(type) {
     };
 
     // Typ-spezifische Developer-Defaults
-    const typeDefaults = {
-        zimmertuer: {
-            blatt: { color: "#ffcc00", strokeWidth: 5 },
-            schwelle: { color: "#222222", strokeWidth: 4 },
-            arc: { color: "#222222", strokeWidth: 2 },
-            hinge: { color: "#111111", strokeWidth: 2 }
-        },
-        haustuer: {
-            blatt: { color: "#8b4513", strokeWidth: 5 },
-            schwelle: { color: "#555555", strokeWidth: 3 },
-            arc: { color: "#8b4513", strokeWidth: 3 },
-            hinge: { color: "#8b4513", strokeWidth: 3 }
-        },
-        terrassentuer: {
-            blatt: { color: "#a0522d", strokeWidth: 3 },
-            schwelle: { color: "#666666", strokeWidth: 2 },
-            arc: { color: "#a0522d", strokeWidth: 2 },
-            hinge: { color: "#a0522d", strokeWidth: 2 }
-        },
-        gartentor: {
-            blatt: { color: "#228b22", strokeWidth: 3 },
-            schwelle: { color: "#444444", strokeWidth: 2 },
-            arc: { color: "#228b22", strokeWidth: 2 },
-            hinge: { color: "#228b22", strokeWidth: 2 }
-        },
-        dachluke: {
-            blatt: { color: "#999999", strokeWidth: 3 },
-            schwelle: { color: "#777777", strokeWidth: 2 },
-            arc: { color: "#999999", strokeWidth: 2 },
-            hinge: { color: "#999999", strokeWidth: 2 }
-        }
-    };
+const typeDefaults = {
+
+    // ✔ Zimmertür (war korrekt)
+    zimmertuer: {
+        blatt:   { color: "#ffcc00", strokeWidth: 5 },
+        schwelle:{ color: "#222222", strokeWidth: 4 },
+        arc:     { color: "#222222", strokeWidth: 2 },
+        hinge:   { color: "#111111", strokeWidth: 2 }
+    },
+
+    // ✔ Haustür → Blatt in Braun
+    haustuer: {
+        blatt:   { color: "#8b4513", strokeWidth: 5 },
+        schwelle:{ color: "#555555", strokeWidth: 3 },
+        arc:     { color: "#8b4513", strokeWidth: 3 },
+        hinge:   { color: "#8b4513", strokeWidth: 3 }
+    },
+
+    // ✔ Terrassentür → Blatt in Braun
+    terrassentuer: {
+        blatt:   { color: "#a0522d", strokeWidth: 3 },
+        schwelle:{ color: "#666666", strokeWidth: 2 },
+        arc:     { color: "#a0522d", strokeWidth: 2 },
+        hinge:   { color: "#a0522d", strokeWidth: 2 }
+    },
+
+    // ✔ Gartentor → Blatt in Grün
+    gartentor: {
+        blatt:   { color: "#228b22", strokeWidth: 3 },
+        schwelle:{ color: "#444444", strokeWidth: 2 },
+        arc:     { color: "#228b22", strokeWidth: 2 },
+        hinge:   { color: "#228b22", strokeWidth: 2 }
+    },
+
+    // ✔ Dachluke → Blatt in Grau
+    dachluke: {
+        blatt:   { color: "#999999", strokeWidth: 3 },
+        schwelle:{ color: "#777777", strokeWidth: 2 },
+        arc:     { color: "#999999", strokeWidth: 2 },
+        hinge:   { color: "#999999", strokeWidth: 2 }
+    },
+
+    // ⭐ Falttür → Blatt in hellerem Gelb
+    falttuer: {
+        blatt:   { color: "#ffe066", strokeWidth: 3 },
+        schwelle:{ color: "#222222", strokeWidth: 2 },
+        arc:     { color: "#ffe066", strokeWidth: 2 },
+        hinge:   { color: "#ffe066", strokeWidth: 2 }
+    },
+
+    // ⭐ Garagentor → Blatt in Braun‑Grün
+    garagentor: {
+        blatt:   { color: "#556b2f", strokeWidth: 4 },
+        schwelle:{ color: "#444444", strokeWidth: 3 },
+        arc:     { color: "#556b2f", strokeWidth: 3 },
+        hinge:   { color: "#556b2f", strokeWidth: 3 }
+    },
+
+    // ⭐ Durchgang → nur Schwelle, Strich auf 7
+    durchgang: {
+        blatt:   { color: "#00000000", strokeWidth: 0 },   // kein Blatt
+        schwelle:{ color: "#222222", strokeWidth: 7 },     // Strich = 7
+        arc:     { color: "#00000000", strokeWidth: 0 },
+        hinge:   { color: "#00000000", strokeWidth: 0 }
+    }
+};
+
 
     // Merge: Basis + Typ-Defaults
     const merged = structuredClone(base);
