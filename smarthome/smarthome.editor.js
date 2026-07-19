@@ -2660,20 +2660,16 @@ if (this.mode === "dachluke") {
         if (!this._placingDoor) {
             if (hit.type === "wall") {
                 const w = hit.data;
-               const subtype = type; // dein currentDoorType
-const design = createDoorDesign(subtype);
-
-this.doors.push({
-    wallIndex: w.index,
-    t: w.t,
-    x: w.x,
-    y: w.y,
-    width: 36,
-    hinge: null,
-    side: 1,
-    type: subtype,
-    design
-});
+                this.doors.push({
+                    wallIndex: w.index,
+                    t: w.t,
+                    x: w.x,
+                    y: w.y,
+                    width: 36,
+                    hinge: null,
+                    side: 1,
+                    type: type
+                });
 
                 this._placingDoor = true;
                 this.render();
